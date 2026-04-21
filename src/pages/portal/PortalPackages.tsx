@@ -8,12 +8,8 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { usePortalClient } from "@/features/portal/PortalClientProvider";
-import {
-  listMyMemberships,
-  listMyPackages,
-  type PortalMembershipView,
-  type PortalPackageView,
-} from "@/repositories/portal";
+import { listMyMemberships, listMyPackages } from "@/repositories/portal";
+import type { PortalMembershipView, PortalPackageView } from "@/domain/portal";
 
 export default function PortalPackages() {
   const { activeLink } = usePortalClient();

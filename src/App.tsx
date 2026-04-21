@@ -22,9 +22,17 @@ import Dashboard from "./pages/app/Dashboard";
 import Settings from "./pages/app/Settings";
 import SuperAdmin from "./pages/app/SuperAdmin";
 import {
-  Agenda, Clients, Services, Packages, Waitlist, Analytics, ClientPortal,
+  Agenda, Clients, Services, Packages, Waitlist, Analytics,
 } from "./pages/app/placeholders";
 import ConfirmationCenter from "./pages/app/ConfirmationCenter";
+import { PortalClientProvider } from "@/features/portal/PortalClientProvider";
+import { PortalLayout } from "@/components/shell/PortalLayout";
+import PortalHome from "./pages/portal/PortalHome";
+import PortalAgenda from "./pages/portal/PortalAgenda";
+import PortalBooking from "./pages/portal/PortalBooking";
+import PortalHistory from "./pages/portal/PortalHistory";
+import PortalPackages from "./pages/portal/PortalPackages";
+import PortalProfile from "./pages/portal/PortalProfile";
 
 const queryClient = new QueryClient();
 
@@ -54,7 +62,21 @@ const App = () => (
 
                 {/* Portal do cliente */}
                 <Route element={<ProtectedRoute />}>
-                  <Route path="/portal" element={<ClientPortal />} />
+                  <Route
+                    path="/portal"
+                    element={
+                      <PortalClientProvider>
+                        <PortalLayout />
+                      </PortalClientProvider>
+                    }
+                  >
+                    <Route index element={<PortalHome />} />
+                    <Route path="agenda" element={<PortalAgenda />} />
+                    <Route path="agendar" element={<PortalBooking />} />
+                    <Route path="historico" element={<PortalHistory />} />
+                    <Route path="pacotes" element={<PortalPackages />} />
+                    <Route path="perfil" element={<PortalProfile />} />
+                  </Route>
                 </Route>
 
                 {/* App autenticado + onboarding completo */}
