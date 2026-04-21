@@ -18,6 +18,7 @@ import {
   Settings,
   ShieldCheck,
   CreditCard,
+  Database,
   type LucideIcon,
 } from "lucide-react";
 import type { Role } from "@/domain/roles";
@@ -96,6 +97,13 @@ export const navItems: NavItem[] = [
     to: "/app/meu-plano",
     label: "Meu plano",
     icon: CreditCard,
+    roles: ["owner", "manager"],
+    group: "sistema",
+  },
+  {
+    to: "/app/dados",
+    label: "Importar & Exportar",
+    icon: Database,
     roles: ["owner", "manager"],
     group: "sistema",
   },
