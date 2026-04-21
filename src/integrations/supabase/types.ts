@@ -55,6 +55,53 @@ export type Database = {
           },
         ]
       }
+      cancellation_policies: {
+        Row: {
+          created_at: string
+          description: string | null
+          hours_before_no_charge: number
+          id: string
+          is_default: boolean
+          late_cancel_fee_pct: number
+          name: string
+          no_show_fee_pct: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          hours_before_no_charge?: number
+          id?: string
+          is_default?: boolean
+          late_cancel_fee_pct?: number
+          name: string
+          no_show_fee_pct?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          hours_before_no_charge?: number
+          id?: string
+          is_default?: boolean
+          late_cancel_fee_pct?: number
+          name?: string
+          no_show_fee_pct?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cancellation_policies_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_custom_field_values: {
         Row: {
           client_id: string
@@ -161,6 +208,134 @@ export type Database = {
           },
         ]
       }
+      client_membership_balances: {
+        Row: {
+          created_at: string
+          cycle_end: string | null
+          cycle_start: string
+          id: string
+          service_id: string
+          sessions_total: number
+          sessions_used: number
+          subscription_id: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          cycle_end?: string | null
+          cycle_start?: string
+          id?: string
+          service_id: string
+          sessions_total?: number
+          sessions_used?: number
+          subscription_id: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          cycle_end?: string | null
+          cycle_start?: string
+          id?: string
+          service_id?: string
+          sessions_total?: number
+          sessions_used?: number
+          subscription_id?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_membership_balances_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_membership_balances_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "client_membership_subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_membership_balances_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_membership_subscriptions: {
+        Row: {
+          canceled_at: string | null
+          client_id: string
+          created_at: string
+          current_cycle_end: string | null
+          current_cycle_start: string
+          id: string
+          membership_id: string
+          notes: string | null
+          started_at: string
+          status: Database["public"]["Enums"]["client_subscription_status"]
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          canceled_at?: string | null
+          client_id: string
+          created_at?: string
+          current_cycle_end?: string | null
+          current_cycle_start?: string
+          id?: string
+          membership_id: string
+          notes?: string | null
+          started_at?: string
+          status?: Database["public"]["Enums"]["client_subscription_status"]
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          canceled_at?: string | null
+          client_id?: string
+          created_at?: string
+          current_cycle_end?: string | null
+          current_cycle_start?: string
+          id?: string
+          membership_id?: string
+          notes?: string | null
+          started_at?: string
+          status?: Database["public"]["Enums"]["client_subscription_status"]
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_membership_subscriptions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_membership_subscriptions_membership_id_fkey"
+            columns: ["membership_id"]
+            isOneToOne: false
+            referencedRelation: "memberships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_membership_subscriptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_notes: {
         Row: {
           author_id: string | null
@@ -202,6 +377,83 @@ export type Database = {
           },
           {
             foreignKeyName: "client_notes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_package_balances: {
+        Row: {
+          client_id: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          notes: string | null
+          package_id: string
+          purchased_at: string
+          service_id: string | null
+          sessions_total: number
+          sessions_used: number
+          status: Database["public"]["Enums"]["client_package_status"]
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          notes?: string | null
+          package_id: string
+          purchased_at?: string
+          service_id?: string | null
+          sessions_total?: number
+          sessions_used?: number
+          status?: Database["public"]["Enums"]["client_package_status"]
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          notes?: string | null
+          package_id?: string
+          purchased_at?: string
+          service_id?: string | null
+          sessions_total?: number
+          sessions_used?: number
+          status?: Database["public"]["Enums"]["client_package_status"]
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_package_balances_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_package_balances_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_package_balances_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_package_balances_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -687,6 +939,213 @@ export type Database = {
           },
         ]
       }
+      membership_benefits: {
+        Row: {
+          created_at: string
+          discount_pct: number
+          id: string
+          membership_id: string
+          service_id: string
+          sessions_per_cycle: number
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          discount_pct?: number
+          id?: string
+          membership_id: string
+          service_id: string
+          sessions_per_cycle?: number
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          discount_pct?: number
+          id?: string
+          membership_id?: string
+          service_id?: string
+          sessions_per_cycle?: number
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "membership_benefits_membership_id_fkey"
+            columns: ["membership_id"]
+            isOneToOne: false
+            referencedRelation: "memberships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "membership_benefits_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "membership_benefits_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memberships: {
+        Row: {
+          billing_cycle: Database["public"]["Enums"]["membership_billing_cycle"]
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          price_cents: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          billing_cycle?: Database["public"]["Enums"]["membership_billing_cycle"]
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          price_cents?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          billing_cycle?: Database["public"]["Enums"]["membership_billing_cycle"]
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          price_cents?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memberships_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      package_items: {
+        Row: {
+          created_at: string
+          id: string
+          package_id: string
+          position: number
+          service_id: string
+          sessions: number
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          package_id: string
+          position?: number
+          service_id: string
+          sessions?: number
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          package_id?: string
+          position?: number
+          service_id?: string
+          sessions?: number
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "package_items_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_items_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      packages: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          kind: Database["public"]["Enums"]["package_kind"]
+          name: string
+          notes: string | null
+          price_cents: number
+          recommended_interval_days: number | null
+          tenant_id: string
+          updated_at: string
+          usage_rules: string | null
+          validity_days: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          kind?: Database["public"]["Enums"]["package_kind"]
+          name: string
+          notes?: string | null
+          price_cents?: number
+          recommended_interval_days?: number | null
+          tenant_id: string
+          updated_at?: string
+          usage_rules?: string | null
+          validity_days?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          kind?: Database["public"]["Enums"]["package_kind"]
+          name?: string
+          notes?: string | null
+          price_cents?: number
+          recommended_interval_days?: number | null
+          tenant_id?: string
+          updated_at?: string
+          usage_rules?: string | null
+          validity_days?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "packages_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       permissions: {
         Row: {
           created_at: string
@@ -792,6 +1251,114 @@ export type Database = {
         }
         Relationships: []
       }
+      protocol_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          interval_days: number | null
+          notes: string | null
+          protocol_id: string
+          service_id: string
+          step: number
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          interval_days?: number | null
+          notes?: string | null
+          protocol_id: string
+          service_id: string
+          step?: number
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          interval_days?: number | null
+          notes?: string | null
+          protocol_id?: string
+          service_id?: string
+          step?: number
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "protocol_sessions_protocol_id_fkey"
+            columns: ["protocol_id"]
+            isOneToOne: false
+            referencedRelation: "protocols"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "protocol_sessions_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "protocol_sessions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      protocols: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          post_instructions: string | null
+          pre_instructions: string | null
+          recommended_interval_days: number | null
+          tenant_id: string
+          total_price_cents: number | null
+          total_sessions: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          post_instructions?: string | null
+          pre_instructions?: string | null
+          recommended_interval_days?: number | null
+          tenant_id: string
+          total_price_cents?: number | null
+          total_sessions?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          post_instructions?: string | null
+          pre_instructions?: string | null
+          recommended_interval_days?: number | null
+          tenant_id?: string
+          total_price_cents?: number | null
+          total_sessions?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "protocols_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       role_permissions: {
         Row: {
           permission_key: string
@@ -812,6 +1379,333 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "permissions"
             referencedColumns: ["key"]
+          },
+        ]
+      }
+      service_categories: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean
+          name: string
+          parent_id: string | null
+          position: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          parent_id?: string | null
+          position?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          parent_id?: string | null
+          position?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "service_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_categories_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_prices: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          currency: string
+          id: string
+          is_default: boolean
+          service_id: string
+          tenant_id: string
+          updated_at: string
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          is_default?: boolean
+          service_id: string
+          tenant_id: string
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          is_default?: boolean
+          service_id?: string
+          tenant_id?: string
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_prices_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_prices_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_professional_prices: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          duration_minutes: number | null
+          id: string
+          professional_id: string
+          service_id: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          professional_id: string
+          service_id: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          professional_id?: string
+          service_id?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_professional_prices_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_professional_prices_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_professional_prices_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_unit_prices: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          duration_minutes: number | null
+          id: string
+          service_id: string
+          tenant_id: string
+          unit_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          service_id: string
+          tenant_id: string
+          unit_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          service_id?: string
+          tenant_id?: string
+          unit_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_unit_prices_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_unit_prices_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_unit_prices_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      services: {
+        Row: {
+          buffer_after_minutes: number
+          buffer_before_minutes: number
+          cancellation_policy_id: string | null
+          category_id: string | null
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          eligible_for_membership: boolean
+          eligible_for_package: boolean
+          id: string
+          ideal_return_window_days: number | null
+          internal_code: string | null
+          is_active: boolean
+          is_featured: boolean
+          max_advance_days: number
+          min_advance_hours: number
+          name: string
+          position: number
+          post_appointment_instructions: string | null
+          pre_appointment_instructions: string | null
+          processing_minutes: number
+          requires_resource: boolean
+          resource_label: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          buffer_after_minutes?: number
+          buffer_before_minutes?: number
+          cancellation_policy_id?: string | null
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          eligible_for_membership?: boolean
+          eligible_for_package?: boolean
+          id?: string
+          ideal_return_window_days?: number | null
+          internal_code?: string | null
+          is_active?: boolean
+          is_featured?: boolean
+          max_advance_days?: number
+          min_advance_hours?: number
+          name: string
+          position?: number
+          post_appointment_instructions?: string | null
+          pre_appointment_instructions?: string | null
+          processing_minutes?: number
+          requires_resource?: boolean
+          resource_label?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          buffer_after_minutes?: number
+          buffer_before_minutes?: number
+          cancellation_policy_id?: string | null
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          eligible_for_membership?: boolean
+          eligible_for_package?: boolean
+          id?: string
+          ideal_return_window_days?: number | null
+          internal_code?: string | null
+          is_active?: boolean
+          is_featured?: boolean
+          max_advance_days?: number
+          min_advance_hours?: number
+          name?: string
+          position?: number
+          post_appointment_instructions?: string | null
+          pre_appointment_instructions?: string | null
+          processing_minutes?: number
+          requires_resource?: boolean
+          resource_label?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "services_cancellation_policy_id_fkey"
+            columns: ["cancellation_policy_id"]
+            isOneToOne: false
+            referencedRelation: "cancellation_policies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "services_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "service_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "services_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1103,9 +1997,11 @@ export type Database = {
         | "frontdesk"
         | "professional"
         | "client"
+      client_package_status: "active" | "completed" | "expired" | "canceled"
       client_photo_type: "before" | "after" | "general"
       client_risk_level: "low" | "medium" | "high"
       client_status: "active" | "inactive" | "blocked"
+      client_subscription_status: "active" | "paused" | "canceled" | "expired"
       consent_response_status: "pending" | "signed" | "declined"
       custom_field_type:
         | "text"
@@ -1115,7 +2011,9 @@ export type Database = {
         | "select"
         | "multiselect"
         | "textarea"
+      membership_billing_cycle: "monthly" | "quarterly" | "yearly"
       membership_status: "active" | "invited" | "suspended"
+      package_kind: "package" | "combo"
       tenant_segment:
         | "salao"
         | "clinica_estetica"
@@ -1273,9 +2171,11 @@ export const Constants = {
         "professional",
         "client",
       ],
+      client_package_status: ["active", "completed", "expired", "canceled"],
       client_photo_type: ["before", "after", "general"],
       client_risk_level: ["low", "medium", "high"],
       client_status: ["active", "inactive", "blocked"],
+      client_subscription_status: ["active", "paused", "canceled", "expired"],
       consent_response_status: ["pending", "signed", "declined"],
       custom_field_type: [
         "text",
@@ -1286,7 +2186,9 @@ export const Constants = {
         "multiselect",
         "textarea",
       ],
+      membership_billing_cycle: ["monthly", "quarterly", "yearly"],
       membership_status: ["active", "invited", "suspended"],
+      package_kind: ["package", "combo"],
       tenant_segment: [
         "salao",
         "clinica_estetica",
