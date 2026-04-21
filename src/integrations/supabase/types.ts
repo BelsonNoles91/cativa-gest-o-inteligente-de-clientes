@@ -962,6 +962,77 @@ export type Database = {
           },
         ]
       }
+      client_reviews: {
+        Row: {
+          appointment_id: string
+          client_id: string
+          comment: string | null
+          created_at: string
+          id: string
+          is_public: boolean
+          professional_id: string | null
+          rating: number
+          tenant_id: string
+          updated_at: string
+          would_recommend: boolean | null
+        }
+        Insert: {
+          appointment_id: string
+          client_id: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          professional_id?: string | null
+          rating: number
+          tenant_id: string
+          updated_at?: string
+          would_recommend?: boolean | null
+        }
+        Update: {
+          appointment_id?: string
+          client_id?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          professional_id?: string | null
+          rating?: number
+          tenant_id?: string
+          updated_at?: string
+          would_recommend?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_reviews_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: true
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_reviews_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_reviews_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_reviews_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_tag_relations: {
         Row: {
           client_id: string
@@ -1087,6 +1158,57 @@ export type Database = {
           },
           {
             foreignKeyName: "client_timeline_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_users: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          last_seen_at: string | null
+          linked_at: string
+          status: Database["public"]["Enums"]["client_user_status"]
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          last_seen_at?: string | null
+          linked_at?: string
+          status?: Database["public"]["Enums"]["client_user_status"]
+          tenant_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          last_seen_at?: string | null
+          linked_at?: string
+          status?: Database["public"]["Enums"]["client_user_status"]
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_users_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_users_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -3139,6 +3261,14 @@ export type Database = {
         }
         Returns: number
       }
+      client_owns_appointment: {
+        Args: { _appointment_id: string; _user_id: string }
+        Returns: boolean
+      }
+      client_user_tenant: {
+        Args: { _tenant_id: string; _user_id: string }
+        Returns: string
+      }
       get_available_slots: {
         Args: {
           _day: string
@@ -3167,6 +3297,10 @@ export type Database = {
           _tenant_id: string
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_portal_client_of: {
+        Args: { _client_id: string; _user_id: string }
         Returns: boolean
       }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
@@ -3214,6 +3348,7 @@ export type Database = {
       client_risk_level: "low" | "medium" | "high"
       client_status: "active" | "inactive" | "blocked"
       client_subscription_status: "active" | "paused" | "canceled" | "expired"
+      client_user_status: "active" | "pending" | "blocked"
       confirmation_queue_status:
         | "pending"
         | "in_progress"
@@ -3461,6 +3596,7 @@ export const Constants = {
       client_risk_level: ["low", "medium", "high"],
       client_status: ["active", "inactive", "blocked"],
       client_subscription_status: ["active", "paused", "canceled", "expired"],
+      client_user_status: ["active", "pending", "blocked"],
       confirmation_queue_status: [
         "pending",
         "in_progress",
