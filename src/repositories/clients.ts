@@ -422,6 +422,7 @@ export async function addTimelineEvent(input: {
   referenceId?: string;
   metadata?: Record<string, unknown>;
 }): Promise<void> {
+  // cast: types Supabase ainda serão regenerados após esta migration
   const { error } = await supabase.from("client_timeline_events").insert({
     tenant_id: input.tenantId,
     client_id: input.clientId,
@@ -431,7 +432,7 @@ export async function addTimelineEvent(input: {
     description: input.description ?? null,
     reference_id: input.referenceId ?? null,
     metadata: input.metadata ?? {},
-  });
+  } as never);
   if (error) throw error;
 }
 
