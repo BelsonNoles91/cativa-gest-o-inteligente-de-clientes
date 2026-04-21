@@ -22,8 +22,9 @@ import Dashboard from "./pages/app/Dashboard";
 import Settings from "./pages/app/Settings";
 import SuperAdmin from "./pages/app/SuperAdmin";
 import {
-  Agenda, Clients, Services, Packages, Confirmations, Waitlist, Analytics, ClientPortal,
+  Agenda, Clients, Services, Packages, Waitlist, Analytics, ClientPortal,
 } from "./pages/app/placeholders";
+import ConfirmationCenter from "./pages/app/ConfirmationCenter";
 
 const queryClient = new QueryClient();
 
@@ -63,7 +64,7 @@ const App = () => (
                       <Route index element={<Dashboard />} />
                       <Route path="agenda" element={<Agenda />} />
                       <Route path="clientes" element={<Clients />} />
-                      <Route path="confirmacoes" element={<Confirmations />} />
+                      <Route path="confirmacoes" element={<ConfirmationCenter />} />
                       <Route path="lista-de-espera" element={<Waitlist />} />
 
                       <Route element={<RoleGuard allowed={["owner", "manager"]} />}>
