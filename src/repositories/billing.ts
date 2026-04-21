@@ -140,23 +140,25 @@ export async function listPlanFeatures(planIds: string[]): Promise<PlanFeature[]
 }
 
 export async function upsertPlan(plan: Partial<Plan> & { code: string; name: string }) {
-  const payload: Record<string, unknown> = {
-    code: plan.code,
-    name: plan.name,
-    description: plan.description ?? null,
-    billing_period: plan.billingPeriod ?? "monthly",
-    price_cents: plan.priceCents ?? 0,
-    trial_days: plan.trialDays ?? 14,
-    grace_period_days: plan.gracePeriodDays ?? 7,
-    max_units: plan.maxUnits ?? null,
-    max_professionals: plan.maxProfessionals ?? null,
-    max_active_clients: plan.maxActiveClients ?? null,
-    max_storage_mb: plan.maxStorageMb ?? null,
-    status: plan.status ?? "public",
-    is_default: plan.isDefault ?? false,
-    display_order: plan.displayOrder ?? 0,
-  };
-  const { error } = await supabase.from("plans").upsert(payload, { onConflict: "code" });
+  const { error } = await supabase.from("plans").upsert(
+    {
+      code: plan.code,
+      name: plan.name,
+      description: plan.description ?? null,
+      billing_period: plan.billingPeriod ?? "monthly",
+      price_cents: plan.priceCents ?? 0,
+      trial_days: plan.trialDays ?? 14,
+      grace_period_days: plan.gracePeriodDays ?? 7,
+      max_units: plan.maxUnits ?? null,
+      max_professionals: plan.maxProfessionals ?? null,
+      max_active_clients: plan.maxActiveClients ?? null,
+      max_storage_mb: plan.maxStorageMb ?? null,
+      status: plan.status ?? "public",
+      is_default: plan.isDefault ?? false,
+      display_order: plan.displayOrder ?? 0,
+    },
+    { onConflict: "code" },
+  );
   if (error) throw error;
 }
 
@@ -203,8 +205,13 @@ export async function setSubscriptionStatus(input: {
   fromStatus: SubscriptionStatus;
   notes?: string;
 }) {
-  const patch: Record<string, unknown> = { status: input.newStatus };
   const now = new Date().toISOString();
+  const patch: {
+    status: SubscriptionStatus;
+    canceled_at?: string | null;
+    suspended_at?: string | null;
+    overdue_since?: string | null;
+  } = { status: input.newStatus };
   if (input.newStatus === "canceled") patch.canceled_at = now;
   if (input.newStatus === "suspended") patch.suspended_at = now;
   if (input.newStatus === "overdue") patch.overdue_since = now;
