@@ -6,8 +6,6 @@ import {
   CheckCircle2,
   Hourglass,
   BarChart3,
-  Settings,
-  ShieldCheck,
   Smartphone,
 } from "lucide-react";
 import { PlaceholderPage } from "@/components/shell/PlaceholderPage";
@@ -68,22 +66,6 @@ export const Analytics = () => (
   />
 );
 
-export const SettingsPage = () => (
-  <PlaceholderPage
-    title="Configurações"
-    description="Personalize seu negócio: equipe, horários, unidades, plano e preferências."
-    icon={<Settings className="h-5 w-5" />}
-  />
-);
-
-export const SuperAdmin = () => (
-  <PlaceholderPage
-    title="Super Admin"
-    description="Visão global da plataforma: tenants, planos, feature flags e auditoria."
-    icon={<ShieldCheck className="h-5 w-5" />}
-  />
-);
-
 export const ClientPortal = () => (
   <PlaceholderPage
     title="Portal do cliente"
@@ -91,3 +73,4 @@ export const ClientPortal = () => (
     icon={<Smartphone className="h-5 w-5" />}
   />
 );
+
