@@ -368,77 +368,6 @@ export type Database = {
           },
         ]
       }
-      call_logs: {
-        Row: {
-          appointment_id: string | null
-          called_at: string
-          called_by: string | null
-          client_id: string
-          created_at: string
-          duration_seconds: number | null
-          id: string
-          notes: string | null
-          outcome: Database["public"]["Enums"]["call_outcome"]
-          queue_id: string | null
-          tenant_id: string
-        }
-        Insert: {
-          appointment_id?: string | null
-          called_at?: string
-          called_by?: string | null
-          client_id: string
-          created_at?: string
-          duration_seconds?: number | null
-          id?: string
-          notes?: string | null
-          outcome: Database["public"]["Enums"]["call_outcome"]
-          queue_id?: string | null
-          tenant_id: string
-        }
-        Update: {
-          appointment_id?: string | null
-          called_at?: string
-          called_by?: string | null
-          client_id?: string
-          created_at?: string
-          duration_seconds?: number | null
-          id?: string
-          notes?: string | null
-          outcome?: Database["public"]["Enums"]["call_outcome"]
-          queue_id?: string | null
-          tenant_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "call_logs_appointment_id_fkey"
-            columns: ["appointment_id"]
-            isOneToOne: false
-            referencedRelation: "appointments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "call_logs_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "call_logs_queue_id_fkey"
-            columns: ["queue_id"]
-            isOneToOne: false
-            referencedRelation: "confirmation_queue"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "call_logs_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       cancellation_policies: {
         Row: {
           created_at: string
@@ -479,69 +408,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "cancellation_policies_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      channel_preferences: {
-        Row: {
-          client_id: string
-          created_at: string
-          do_not_disturb: boolean
-          fallback_channel:
-            | Database["public"]["Enums"]["message_channel"]
-            | null
-          id: string
-          notes: string | null
-          preferred_channel: Database["public"]["Enums"]["message_channel"]
-          preferred_window_end: string | null
-          preferred_window_start: string | null
-          tenant_id: string
-          updated_at: string
-        }
-        Insert: {
-          client_id: string
-          created_at?: string
-          do_not_disturb?: boolean
-          fallback_channel?:
-            | Database["public"]["Enums"]["message_channel"]
-            | null
-          id?: string
-          notes?: string | null
-          preferred_channel?: Database["public"]["Enums"]["message_channel"]
-          preferred_window_end?: string | null
-          preferred_window_start?: string | null
-          tenant_id: string
-          updated_at?: string
-        }
-        Update: {
-          client_id?: string
-          created_at?: string
-          do_not_disturb?: boolean
-          fallback_channel?:
-            | Database["public"]["Enums"]["message_channel"]
-            | null
-          id?: string
-          notes?: string | null
-          preferred_channel?: Database["public"]["Enums"]["message_channel"]
-          preferred_window_end?: string | null
-          preferred_window_start?: string | null
-          tenant_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "channel_preferences_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: true
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "channel_preferences_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -962,77 +828,6 @@ export type Database = {
           },
         ]
       }
-      client_reviews: {
-        Row: {
-          appointment_id: string
-          client_id: string
-          comment: string | null
-          created_at: string
-          id: string
-          is_public: boolean
-          professional_id: string | null
-          rating: number
-          tenant_id: string
-          updated_at: string
-          would_recommend: boolean | null
-        }
-        Insert: {
-          appointment_id: string
-          client_id: string
-          comment?: string | null
-          created_at?: string
-          id?: string
-          is_public?: boolean
-          professional_id?: string | null
-          rating: number
-          tenant_id: string
-          updated_at?: string
-          would_recommend?: boolean | null
-        }
-        Update: {
-          appointment_id?: string
-          client_id?: string
-          comment?: string | null
-          created_at?: string
-          id?: string
-          is_public?: boolean
-          professional_id?: string | null
-          rating?: number
-          tenant_id?: string
-          updated_at?: string
-          would_recommend?: boolean | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "client_reviews_appointment_id_fkey"
-            columns: ["appointment_id"]
-            isOneToOne: true
-            referencedRelation: "appointments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "client_reviews_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "client_reviews_professional_id_fkey"
-            columns: ["professional_id"]
-            isOneToOne: false
-            referencedRelation: "professionals"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "client_reviews_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       client_tag_relations: {
         Row: {
           client_id: string
@@ -1158,57 +953,6 @@ export type Database = {
           },
           {
             foreignKeyName: "client_timeline_events_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      client_users: {
-        Row: {
-          client_id: string
-          created_at: string
-          id: string
-          last_seen_at: string | null
-          linked_at: string
-          status: Database["public"]["Enums"]["client_user_status"]
-          tenant_id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          client_id: string
-          created_at?: string
-          id?: string
-          last_seen_at?: string | null
-          linked_at?: string
-          status?: Database["public"]["Enums"]["client_user_status"]
-          tenant_id: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          client_id?: string
-          created_at?: string
-          id?: string
-          last_seen_at?: string | null
-          linked_at?: string
-          status?: Database["public"]["Enums"]["client_user_status"]
-          tenant_id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "client_users_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "client_users_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -1344,167 +1088,6 @@ export type Database = {
           },
         ]
       }
-      confirmation_queue: {
-        Row: {
-          appointment_id: string
-          appointment_starts_at: string
-          assigned_to: string | null
-          attempts_count: number
-          client_id: string
-          closed_at: string | null
-          created_at: string
-          follow_up_at: string | null
-          id: string
-          last_attempt_at: string | null
-          notes: string | null
-          priority: number
-          rule_id: string | null
-          scheduled_for: string
-          stage: Database["public"]["Enums"]["confirmation_stage"]
-          status: Database["public"]["Enums"]["confirmation_queue_status"]
-          tenant_id: string
-          updated_at: string
-        }
-        Insert: {
-          appointment_id: string
-          appointment_starts_at: string
-          assigned_to?: string | null
-          attempts_count?: number
-          client_id: string
-          closed_at?: string | null
-          created_at?: string
-          follow_up_at?: string | null
-          id?: string
-          last_attempt_at?: string | null
-          notes?: string | null
-          priority?: number
-          rule_id?: string | null
-          scheduled_for?: string
-          stage: Database["public"]["Enums"]["confirmation_stage"]
-          status?: Database["public"]["Enums"]["confirmation_queue_status"]
-          tenant_id: string
-          updated_at?: string
-        }
-        Update: {
-          appointment_id?: string
-          appointment_starts_at?: string
-          assigned_to?: string | null
-          attempts_count?: number
-          client_id?: string
-          closed_at?: string | null
-          created_at?: string
-          follow_up_at?: string | null
-          id?: string
-          last_attempt_at?: string | null
-          notes?: string | null
-          priority?: number
-          rule_id?: string | null
-          scheduled_for?: string
-          stage?: Database["public"]["Enums"]["confirmation_stage"]
-          status?: Database["public"]["Enums"]["confirmation_queue_status"]
-          tenant_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "confirmation_queue_appointment_id_fkey"
-            columns: ["appointment_id"]
-            isOneToOne: false
-            referencedRelation: "appointments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "confirmation_queue_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "confirmation_queue_rule_id_fkey"
-            columns: ["rule_id"]
-            isOneToOne: false
-            referencedRelation: "confirmation_rules"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "confirmation_queue_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      confirmation_rules: {
-        Row: {
-          applies_to_high_risk: boolean
-          applies_to_protocol: boolean
-          applies_to_vip: boolean
-          base_priority: number
-          created_at: string
-          hours_before_appointment: number
-          id: string
-          is_active: boolean
-          min_appointment_value_cents: number | null
-          name: string
-          skip_if_already_confirmed: boolean
-          stage: Database["public"]["Enums"]["confirmation_stage"]
-          tenant_id: string
-          unit_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          applies_to_high_risk?: boolean
-          applies_to_protocol?: boolean
-          applies_to_vip?: boolean
-          base_priority?: number
-          created_at?: string
-          hours_before_appointment?: number
-          id?: string
-          is_active?: boolean
-          min_appointment_value_cents?: number | null
-          name: string
-          skip_if_already_confirmed?: boolean
-          stage: Database["public"]["Enums"]["confirmation_stage"]
-          tenant_id: string
-          unit_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          applies_to_high_risk?: boolean
-          applies_to_protocol?: boolean
-          applies_to_vip?: boolean
-          base_priority?: number
-          created_at?: string
-          hours_before_appointment?: number
-          id?: string
-          is_active?: boolean
-          min_appointment_value_cents?: number | null
-          name?: string
-          skip_if_already_confirmed?: boolean
-          stage?: Database["public"]["Enums"]["confirmation_stage"]
-          tenant_id?: string
-          unit_id?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "confirmation_rules_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "confirmation_rules_unit_id_fkey"
-            columns: ["unit_id"]
-            isOneToOne: false
-            referencedRelation: "units"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       consent_form_responses: {
         Row: {
           client_id: string
@@ -1612,93 +1195,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "consent_form_templates_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      contact_attempts: {
-        Row: {
-          appointment_id: string | null
-          attempted_at: string
-          attempted_by: string | null
-          channel: Database["public"]["Enums"]["message_channel"]
-          client_id: string
-          created_at: string
-          follow_up_at: string | null
-          id: string
-          message_preview: string | null
-          notes: string | null
-          queue_id: string | null
-          result: Database["public"]["Enums"]["contact_attempt_result"]
-          template_id: string | null
-          tenant_id: string
-        }
-        Insert: {
-          appointment_id?: string | null
-          attempted_at?: string
-          attempted_by?: string | null
-          channel: Database["public"]["Enums"]["message_channel"]
-          client_id: string
-          created_at?: string
-          follow_up_at?: string | null
-          id?: string
-          message_preview?: string | null
-          notes?: string | null
-          queue_id?: string | null
-          result?: Database["public"]["Enums"]["contact_attempt_result"]
-          template_id?: string | null
-          tenant_id: string
-        }
-        Update: {
-          appointment_id?: string | null
-          attempted_at?: string
-          attempted_by?: string | null
-          channel?: Database["public"]["Enums"]["message_channel"]
-          client_id?: string
-          created_at?: string
-          follow_up_at?: string | null
-          id?: string
-          message_preview?: string | null
-          notes?: string | null
-          queue_id?: string | null
-          result?: Database["public"]["Enums"]["contact_attempt_result"]
-          template_id?: string | null
-          tenant_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "contact_attempts_appointment_id_fkey"
-            columns: ["appointment_id"]
-            isOneToOne: false
-            referencedRelation: "appointments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contact_attempts_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contact_attempts_queue_id_fkey"
-            columns: ["queue_id"]
-            isOneToOne: false
-            referencedRelation: "confirmation_queue"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contact_attempts_template_id_fkey"
-            columns: ["template_id"]
-            isOneToOne: false
-            referencedRelation: "message_templates"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contact_attempts_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -1851,79 +1347,6 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      message_templates: {
-        Row: {
-          body: string
-          channel: Database["public"]["Enums"]["message_channel"]
-          created_at: string
-          created_by: string | null
-          id: string
-          is_active: boolean
-          is_default: boolean
-          name: string
-          service_id: string | null
-          stage: Database["public"]["Enums"]["message_template_stage"]
-          tenant_id: string
-          unit_id: string | null
-          updated_at: string
-          variables: Json
-        }
-        Insert: {
-          body: string
-          channel?: Database["public"]["Enums"]["message_channel"]
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          is_active?: boolean
-          is_default?: boolean
-          name: string
-          service_id?: string | null
-          stage: Database["public"]["Enums"]["message_template_stage"]
-          tenant_id: string
-          unit_id?: string | null
-          updated_at?: string
-          variables?: Json
-        }
-        Update: {
-          body?: string
-          channel?: Database["public"]["Enums"]["message_channel"]
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          is_active?: boolean
-          is_default?: boolean
-          name?: string
-          service_id?: string | null
-          stage?: Database["public"]["Enums"]["message_template_stage"]
-          tenant_id?: string
-          unit_id?: string | null
-          updated_at?: string
-          variables?: Json
-        }
-        Relationships: [
-          {
-            foreignKeyName: "message_templates_service_id_fkey"
-            columns: ["service_id"]
-            isOneToOne: false
-            referencedRelation: "services"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "message_templates_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "message_templates_unit_id_fkey"
-            columns: ["unit_id"]
-            isOneToOne: false
-            referencedRelation: "units"
             referencedColumns: ["id"]
           },
         ]
@@ -3251,24 +2674,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      calculate_queue_priority: {
-        Args: {
-          _appointment_id: string
-          _base_priority?: number
-          _client_id: string
-          _stage: Database["public"]["Enums"]["confirmation_stage"]
-          _tenant_id: string
-        }
-        Returns: number
-      }
-      client_owns_appointment: {
-        Args: { _appointment_id: string; _user_id: string }
-        Returns: boolean
-      }
-      client_user_tenant: {
-        Args: { _tenant_id: string; _user_id: string }
-        Returns: string
-      }
       get_available_slots: {
         Args: {
           _day: string
@@ -3297,10 +2702,6 @@ export type Database = {
           _tenant_id: string
           _user_id: string
         }
-        Returns: boolean
-      }
-      is_portal_client_of: {
-        Args: { _client_id: string; _user_id: string }
         Returns: boolean
       }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
@@ -3336,46 +2737,12 @@ export type Database = {
         | "completed"
         | "canceled"
         | "no_show"
-      call_outcome:
-        | "answered"
-        | "no_answer"
-        | "voicemail"
-        | "wrong_number"
-        | "busy"
-        | "callback_requested"
       client_package_status: "active" | "completed" | "expired" | "canceled"
       client_photo_type: "before" | "after" | "general"
       client_risk_level: "low" | "medium" | "high"
       client_status: "active" | "inactive" | "blocked"
       client_subscription_status: "active" | "paused" | "canceled" | "expired"
-      client_user_status: "active" | "pending" | "blocked"
-      confirmation_queue_status:
-        | "pending"
-        | "in_progress"
-        | "confirmed"
-        | "reschedule_requested"
-        | "canceled"
-        | "no_response"
-        | "follow_up_scheduled"
-        | "closed"
-      confirmation_stage:
-        | "today"
-        | "tomorrow"
-        | "upcoming"
-        | "high_risk"
-        | "premium"
-        | "reschedule"
-        | "recovery"
       consent_response_status: "pending" | "signed" | "declined"
-      contact_attempt_result:
-        | "pending"
-        | "sent"
-        | "confirmed"
-        | "reschedule_requested"
-        | "canceled"
-        | "no_response"
-        | "call_made"
-        | "follow_up_scheduled"
       custom_field_type:
         | "text"
         | "number"
@@ -3386,16 +2753,6 @@ export type Database = {
         | "textarea"
       membership_billing_cycle: "monthly" | "quarterly" | "yearly"
       membership_status: "active" | "invited" | "suspended"
-      message_channel: "whatsapp" | "phone" | "email" | "sms" | "in_person"
-      message_template_stage:
-        | "confirmation"
-        | "reminder"
-        | "reschedule"
-        | "cancellation"
-        | "recovery"
-        | "reactivation"
-        | "thanks"
-        | "custom"
       package_kind: "package" | "combo"
       resource_type: "room" | "equipment" | "chair" | "station" | "other"
       tenant_segment:
@@ -3583,50 +2940,12 @@ export const Constants = {
         "canceled",
         "no_show",
       ],
-      call_outcome: [
-        "answered",
-        "no_answer",
-        "voicemail",
-        "wrong_number",
-        "busy",
-        "callback_requested",
-      ],
       client_package_status: ["active", "completed", "expired", "canceled"],
       client_photo_type: ["before", "after", "general"],
       client_risk_level: ["low", "medium", "high"],
       client_status: ["active", "inactive", "blocked"],
       client_subscription_status: ["active", "paused", "canceled", "expired"],
-      client_user_status: ["active", "pending", "blocked"],
-      confirmation_queue_status: [
-        "pending",
-        "in_progress",
-        "confirmed",
-        "reschedule_requested",
-        "canceled",
-        "no_response",
-        "follow_up_scheduled",
-        "closed",
-      ],
-      confirmation_stage: [
-        "today",
-        "tomorrow",
-        "upcoming",
-        "high_risk",
-        "premium",
-        "reschedule",
-        "recovery",
-      ],
       consent_response_status: ["pending", "signed", "declined"],
-      contact_attempt_result: [
-        "pending",
-        "sent",
-        "confirmed",
-        "reschedule_requested",
-        "canceled",
-        "no_response",
-        "call_made",
-        "follow_up_scheduled",
-      ],
       custom_field_type: [
         "text",
         "number",
@@ -3638,17 +2957,6 @@ export const Constants = {
       ],
       membership_billing_cycle: ["monthly", "quarterly", "yearly"],
       membership_status: ["active", "invited", "suspended"],
-      message_channel: ["whatsapp", "phone", "email", "sms", "in_person"],
-      message_template_stage: [
-        "confirmation",
-        "reminder",
-        "reschedule",
-        "cancellation",
-        "recovery",
-        "reactivation",
-        "thanks",
-        "custom",
-      ],
       package_kind: ["package", "combo"],
       resource_type: ["room", "equipment", "chair", "station", "other"],
       tenant_segment: [
