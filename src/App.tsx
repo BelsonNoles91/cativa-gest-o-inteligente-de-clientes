@@ -22,6 +22,7 @@ import Dashboard from "./pages/app/Dashboard";
 import Settings from "./pages/app/Settings";
 import Billing from "./pages/app/Billing";
 import SuperAdmin from "./pages/app/SuperAdmin";
+import DataImportExport from "./pages/app/DataImportExport";
 import {
   Agenda, Clients, Services, Packages, Waitlist, Analytics,
 } from "./pages/app/placeholders";
@@ -95,6 +96,7 @@ const App = () => (
                         <Route path="pacotes" element={<Packages />} />
                         <Route path="analytics" element={<Analytics />} />
                         <Route path="meu-plano" element={<Billing />} />
+                        <Route path="dados" element={<DataImportExport />} />
                         <Route path="configuracoes" element={<Settings />} />
                       </Route>
 
