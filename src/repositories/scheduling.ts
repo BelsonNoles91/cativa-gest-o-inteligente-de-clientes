@@ -1,9 +1,6 @@
 /**
- * Repositório da agenda.
- * Concentra TODOS os queries Supabase de appointments, disponibilidade,
- * bloqueios, recursos e lista de espera.
- *
- * UI consome apenas estes métodos (mantém o app portável).
+ * Repositório da agenda (resources, business hours, availability,
+ * blocks, appointments, waitlist). UI consome apenas estes métodos.
  */
 import { supabase } from "@/integrations/supabase/client";
 import type {
@@ -15,6 +12,7 @@ import type {
   ProfessionalAvailability,
   RecurringBlock,
   Resource,
+  ResourceType,
   TimeOffBlock,
   UnitBusinessHour,
   WaitlistEntry,
@@ -70,45 +68,49 @@ function toAppointment(r: Record<string, unknown>): Appointment {
 // =============================================================================
 // RESOURCES
 // =============================================================================
+const RESOURCE_COLS = "id, tenant_id, unit_id, name, resource_type, color, notes, is_active";
+
 export async function listResources(tenantId: string, unitId?: string | null): Promise<Resource[]> {
   let q = supabase
     .from("resources")
-    .select("id, tenant_id, unit_id, name, description, is_active")
+    .select(RESOURCE_COLS)
     .eq("tenant_id", tenantId)
     .order("name");
   if (unitId) q = q.or(`unit_id.eq.${unitId},unit_id.is.null`);
   const { data, error } = await q;
   if (error) throw error;
   return (data ?? []).map((r) => ({
-    id: r.id,
-    tenantId: r.tenant_id,
-    unitId: r.unit_id,
-    name: r.name,
-    description: r.description,
+    id: r.id, tenantId: r.tenant_id, unitId: r.unit_id, name: r.name,
+    resourceType: r.resource_type as ResourceType, color: r.color, notes: r.notes,
     isActive: r.is_active,
   }));
 }
 
 export async function createResource(input: {
   tenantId: string;
-  unitId?: string | null;
   name: string;
-  description?: string | null;
+  resourceType?: ResourceType;
+  unitId?: string | null;
+  color?: string | null;
+  notes?: string | null;
 }): Promise<Resource> {
   const { data, error } = await supabase
     .from("resources")
     .insert({
       tenant_id: input.tenantId,
-      unit_id: input.unitId ?? null,
       name: input.name,
-      description: input.description ?? null,
+      resource_type: input.resourceType ?? "room",
+      unit_id: input.unitId ?? null,
+      color: input.color ?? null,
+      notes: input.notes ?? null,
     })
-    .select("id, tenant_id, unit_id, name, description, is_active")
+    .select(RESOURCE_COLS)
     .single();
   if (error) throw error;
   return {
-    id: data.id, tenantId: data.tenant_id, unitId: data.unit_id,
-    name: data.name, description: data.description, isActive: data.is_active,
+    id: data.id, tenantId: data.tenant_id, unitId: data.unit_id, name: data.name,
+    resourceType: data.resource_type as ResourceType, color: data.color, notes: data.notes,
+    isActive: data.is_active,
   };
 }
 
@@ -170,8 +172,8 @@ export async function listProfessionalAvailability(
   if (error) throw error;
   return (data ?? []).map((r) => ({
     id: r.id, tenantId: r.tenant_id, professionalId: r.professional_id,
-    unitId: r.unit_id, weekday: r.weekday, startsAt: r.starts_at, endsAt: r.ends_at,
-    isActive: r.is_active,
+    unitId: r.unit_id, weekday: r.weekday,
+    startsAt: r.starts_at, endsAt: r.ends_at, isActive: r.is_active,
   }));
 }
 
@@ -196,7 +198,7 @@ export async function deleteAvailability(id: string): Promise<void> {
 }
 
 // =============================================================================
-// TIME OFF BLOCKS (pontuais) e RECURRING BLOCKS (recorrentes)
+// TIME OFF (pontuais) e RECURRING BLOCKS
 // =============================================================================
 export async function listTimeOff(
   tenantId: string,
@@ -205,7 +207,7 @@ export async function listTimeOff(
 ): Promise<TimeOffBlock[]> {
   const { data, error } = await supabase
     .from("time_off_blocks")
-    .select("id, tenant_id, scope, professional_id, unit_id, resource_id, starts_at, ends_at, reason")
+    .select("id, tenant_id, scope, professional_id, unit_id, starts_at, ends_at, reason")
     .eq("tenant_id", tenantId)
     .lt("starts_at", rangeEnd)
     .gt("ends_at", rangeStart)
@@ -213,20 +215,14 @@ export async function listTimeOff(
   if (error) throw error;
   return (data ?? []).map((r) => ({
     id: r.id, tenantId: r.tenant_id, scope: r.scope as BlockScope,
-    professionalId: r.professional_id, unitId: r.unit_id, resourceId: r.resource_id,
+    professionalId: r.professional_id, unitId: r.unit_id,
     startsAt: r.starts_at, endsAt: r.ends_at, reason: r.reason,
   }));
 }
 
 export async function createTimeOff(input: {
-  tenantId: string;
-  scope: BlockScope;
-  startsAt: string;
-  endsAt: string;
-  reason?: string | null;
-  professionalId?: string | null;
-  unitId?: string | null;
-  resourceId?: string | null;
+  tenantId: string; scope: BlockScope; startsAt: string; endsAt: string;
+  reason?: string | null; professionalId?: string | null; unitId?: string | null;
 }): Promise<void> {
   const { error } = await supabase.from("time_off_blocks").insert({
     tenant_id: input.tenantId,
@@ -236,7 +232,6 @@ export async function createTimeOff(input: {
     reason: input.reason ?? null,
     professional_id: input.professionalId ?? null,
     unit_id: input.unitId ?? null,
-    resource_id: input.resourceId ?? null,
   });
   if (error) throw error;
 }
@@ -301,10 +296,8 @@ export async function getAvailableSlots(input: {
     _slot_step_minutes: input.slotStepMinutes ?? 15,
   });
   if (error) throw error;
-  return (data ?? []).map((r: { slot_start: string; slot_end: string }) => ({
-    startsAt: r.slot_start,
-    endsAt: r.slot_end,
-  }));
+  type Slot = { slot_start: string; slot_end: string };
+  return ((data ?? []) as Slot[]).map((r) => ({ startsAt: r.slot_start, endsAt: r.slot_end }));
 }
 
 // =============================================================================
@@ -368,7 +361,6 @@ export interface CreateAppointmentInput {
   isWalkIn?: boolean;
   isOverbooked?: boolean;
   createdBy?: string | null;
-  /** preço do item de serviço (se vazio, usa totalPriceCents). */
   itemPriceCents?: number;
 }
 
@@ -401,7 +393,7 @@ export async function insertAppointment(input: CreateAppointmentInput): Promise<
   if (error) throw error;
   const created = toAppointment(data as Record<string, unknown>);
 
-  // item de serviço (1 item por agendamento na v1)
+  // Item de serviço (1 item por agendamento na v1)
   await supabase.from("appointment_items").insert({
     tenant_id: input.tenantId,
     appointment_id: created.id,
@@ -486,13 +478,16 @@ export async function listAppointmentItems(appointmentId: string): Promise<Appoi
 // =============================================================================
 // WAITLIST
 // =============================================================================
+const WAITLIST_COLS = `
+  id, tenant_id, preferred_unit_id, client_id, service_id, preferred_professional_id,
+  desired_window_start, desired_window_end, notes, priority, status,
+  contacted_at, scheduled_appointment_id, created_at
+`;
+
 export async function listWaitlist(tenantId: string, status?: WaitlistStatus): Promise<WaitlistEntry[]> {
   let q = supabase
     .from("waitlist_entries")
-    .select(`
-      id, tenant_id, unit_id, client_id, service_id, preferred_professional_id,
-      desired_from, desired_to, preferred_weekdays, notes, priority, status, created_at
-    `)
+    .select(WAITLIST_COLS)
     .eq("tenant_id", tenantId)
     .order("priority", { ascending: false })
     .order("created_at");
@@ -500,11 +495,12 @@ export async function listWaitlist(tenantId: string, status?: WaitlistStatus): P
   const { data, error } = await q;
   if (error) throw error;
   return (data ?? []).map((r) => ({
-    id: r.id, tenantId: r.tenant_id, unitId: r.unit_id, clientId: r.client_id,
-    serviceId: r.service_id, preferredProfessionalId: r.preferred_professional_id,
-    desiredFrom: r.desired_from, desiredTo: r.desired_to,
-    preferredWeekdays: (r.preferred_weekdays ?? []) as number[],
+    id: r.id, tenantId: r.tenant_id,
+    preferredUnitId: r.preferred_unit_id, clientId: r.client_id, serviceId: r.service_id,
+    preferredProfessionalId: r.preferred_professional_id,
+    desiredWindowStart: r.desired_window_start, desiredWindowEnd: r.desired_window_end,
     notes: r.notes, priority: r.priority, status: r.status as WaitlistStatus,
+    contactedAt: r.contacted_at, scheduledAppointmentId: r.scheduled_appointment_id,
     createdAt: r.created_at,
   }));
 }
@@ -512,24 +508,22 @@ export async function listWaitlist(tenantId: string, status?: WaitlistStatus): P
 export async function createWaitlistEntry(input: {
   tenantId: string;
   clientId: string;
-  unitId?: string | null;
+  preferredUnitId?: string | null;
   serviceId?: string | null;
   preferredProfessionalId?: string | null;
-  desiredFrom?: string | null;
-  desiredTo?: string | null;
-  preferredWeekdays?: number[];
+  desiredWindowStart?: string | null;
+  desiredWindowEnd?: string | null;
   notes?: string | null;
   priority?: number;
 }): Promise<void> {
   const { error } = await supabase.from("waitlist_entries").insert({
     tenant_id: input.tenantId,
     client_id: input.clientId,
-    unit_id: input.unitId ?? null,
+    preferred_unit_id: input.preferredUnitId ?? null,
     service_id: input.serviceId ?? null,
     preferred_professional_id: input.preferredProfessionalId ?? null,
-    desired_from: input.desiredFrom ?? null,
-    desired_to: input.desiredTo ?? null,
-    preferred_weekdays: input.preferredWeekdays ?? [],
+    desired_window_start: input.desiredWindowStart ?? null,
+    desired_window_end: input.desiredWindowEnd ?? null,
     notes: input.notes ?? null,
     priority: input.priority ?? 50,
   });
@@ -537,9 +531,11 @@ export async function createWaitlistEntry(input: {
 }
 
 export async function setWaitlistStatus(id: string, status: WaitlistStatus): Promise<void> {
+  const dbPatch: Record<string, unknown> = { status };
+  if (status === "contacted") dbPatch.contacted_at = new Date().toISOString();
   const { error } = await supabase
     .from("waitlist_entries")
-    .update({ status } as never)
+    .update(dbPatch as never)
     .eq("id", id);
   if (error) throw error;
 }
@@ -550,7 +546,7 @@ export async function deleteWaitlistEntry(id: string): Promise<void> {
 }
 
 // =============================================================================
-// HELPERS para UI (combos com clientes/profissionais/serviços)
+// HELPERS para UI (combos com profissionais)
 // =============================================================================
 export interface ProfessionalLite {
   id: string;
@@ -560,7 +556,10 @@ export interface ProfessionalLite {
   isActive: boolean;
 }
 
-export async function listProfessionalsLite(tenantId: string, unitId?: string | null): Promise<ProfessionalLite[]> {
+export async function listProfessionalsLite(
+  tenantId: string,
+  unitId?: string | null,
+): Promise<ProfessionalLite[]> {
   let q = supabase
     .from("professionals")
     .select("id, display_name, color, unit_id, is_active")
@@ -571,6 +570,7 @@ export async function listProfessionalsLite(tenantId: string, unitId?: string | 
   const { data, error } = await q;
   if (error) throw error;
   return (data ?? []).map((r) => ({
-    id: r.id, displayName: r.display_name, color: r.color, unitId: r.unit_id, isActive: r.is_active,
+    id: r.id, displayName: r.display_name, color: r.color, unitId: r.unit_id,
+    isActive: r.is_active,
   }));
 }

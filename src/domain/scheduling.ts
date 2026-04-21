@@ -1,6 +1,5 @@
 /**
- * Domínio: Agenda (recursos, disponibilidades, bloqueios, agendamentos,
- * histórico de status e lista de espera). Tipos puros — sem Supabase.
+ * Domínio: Agenda. Tipos puros (sem Supabase).
  */
 
 export type AppointmentStatus =
@@ -16,21 +15,26 @@ export type AppointmentStatus =
 
 export type AppointmentSource =
   | "frontdesk"
+  | "professional"
   | "client_portal"
-  | "whatsapp"
-  | "phone"
   | "walk_in"
-  | "other";
+  | "phone"
+  | "whatsapp"
+  | "recurring"
+  | "system";
 
-export type BlockScope = "professional" | "unit" | "resource";
-export type WaitlistStatus = "waiting" | "offered" | "scheduled" | "expired" | "canceled";
+export type BlockScope = "professional" | "unit";
+export type ResourceType = "room" | "equipment" | "chair" | "station" | "other";
+export type WaitlistStatus = "open" | "contacted" | "scheduled" | "expired" | "canceled";
 
 export interface Resource {
   id: string;
   tenantId: string;
   unitId: string | null;
   name: string;
-  description: string | null;
+  resourceType: ResourceType;
+  color: string | null;
+  notes: string | null;
   isActive: boolean;
 }
 
@@ -50,7 +54,7 @@ export interface ProfessionalAvailability {
   professionalId: string;
   unitId: string | null;
   weekday: number;
-  startsAt: string;
+  startsAt: string;         // "HH:MM:SS"
   endsAt: string;
   isActive: boolean;
 }
@@ -61,9 +65,8 @@ export interface TimeOffBlock {
   scope: BlockScope;
   professionalId: string | null;
   unitId: string | null;
-  resourceId: string | null;
-  startsAt: string;
-  endsAt: string;
+  startsAt: string;         // ISO
+  endsAt: string;           // ISO
   reason: string | null;
 }
 
@@ -124,16 +127,17 @@ export interface AppointmentItem {
 export interface WaitlistEntry {
   id: string;
   tenantId: string;
-  unitId: string | null;
+  preferredUnitId: string | null;
   clientId: string;
   serviceId: string | null;
   preferredProfessionalId: string | null;
-  desiredFrom: string | null;
-  desiredTo: string | null;
-  preferredWeekdays: number[];
+  desiredWindowStart: string | null;
+  desiredWindowEnd: string | null;
   notes: string | null;
   priority: number;
   status: WaitlistStatus;
+  contactedAt: string | null;
+  scheduledAppointmentId: string | null;
   createdAt: string;
 }
 
@@ -155,10 +159,28 @@ export const appointmentStatusLabels: Record<AppointmentStatus, string> = {
 
 export const appointmentSourceLabels: Record<AppointmentSource, string> = {
   frontdesk: "Recepção",
+  professional: "Profissional",
   client_portal: "Portal do cliente",
-  whatsapp: "WhatsApp",
+  walk_in: "Encaixe",
   phone: "Telefone",
-  walk_in: "Encaixe / sem hora",
+  whatsapp: "WhatsApp",
+  recurring: "Recorrência",
+  system: "Sistema",
+};
+
+export const waitlistStatusLabels: Record<WaitlistStatus, string> = {
+  open: "Aguardando",
+  contacted: "Contatado",
+  scheduled: "Agendado",
+  expired: "Expirado",
+  canceled: "Cancelado",
+};
+
+export const resourceTypeLabels: Record<ResourceType, string> = {
+  room: "Sala",
+  equipment: "Equipamento",
+  chair: "Cadeira",
+  station: "Estação",
   other: "Outro",
 };
 
@@ -168,9 +190,9 @@ export const weekdayFullLabels = [
   "Quinta-feira", "Sexta-feira", "Sábado",
 ];
 
-/** Cor semântica do status para uso em badges. */
-export function statusTone(status: AppointmentStatus):
-  "default" | "success" | "warning" | "destructive" | "info" | "muted" {
+export type StatusTone = "default" | "success" | "warning" | "destructive" | "info" | "muted";
+
+export function statusTone(status: AppointmentStatus): StatusTone {
   switch (status) {
     case "completed":
     case "in_service":
@@ -190,7 +212,7 @@ export function statusTone(status: AppointmentStatus):
   }
 }
 
-/** Transições válidas entre status (regras simples; pode evoluir). */
+/** Transições válidas entre status. */
 export const allowedTransitions: Record<AppointmentStatus, AppointmentStatus[]> = {
   requested: ["pending", "confirmed", "canceled"],
   pending: ["confirmed", "reminded", "arrived", "canceled", "no_show"],
@@ -207,10 +229,9 @@ export function canTransition(from: AppointmentStatus, to: AppointmentStatus): b
   return allowedTransitions[from]?.includes(to) ?? false;
 }
 
-/** Formata "HH:MM" a partir de "HH:MM:SS" ou ISO. */
+/** "HH:MM" a partir de "HH:MM:SS" ou ISO. */
 export function formatHourMinute(value: string): string {
   if (!value) return "";
-  // ISO datetime
   if (value.includes("T")) {
     const d = new Date(value);
     return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
