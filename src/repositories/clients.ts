@@ -223,7 +223,8 @@ export async function updateClient(clientId: string, input: UpdateClientInput): 
 
   const { data, error } = await supabase
     .from("clients")
-    .update(patch)
+    // cast: types Supabase ainda serão regenerados após esta migration
+    .update(patch as never)
     .eq("id", clientId)
     .select(CLIENT_COLUMNS)
     .single();
