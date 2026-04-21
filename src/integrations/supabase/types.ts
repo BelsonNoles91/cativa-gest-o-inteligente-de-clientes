@@ -55,6 +55,638 @@ export type Database = {
           },
         ]
       }
+      client_custom_field_values: {
+        Row: {
+          client_id: string
+          created_at: string
+          definition_id: string
+          id: string
+          tenant_id: string
+          updated_at: string
+          value: Json | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          definition_id: string
+          id?: string
+          tenant_id: string
+          updated_at?: string
+          value?: Json | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          definition_id?: string
+          id?: string
+          tenant_id?: string
+          updated_at?: string
+          value?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_custom_field_values_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_custom_field_values_definition_id_fkey"
+            columns: ["definition_id"]
+            isOneToOne: false
+            referencedRelation: "custom_field_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_custom_field_values_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_files: {
+        Row: {
+          client_id: string
+          created_at: string
+          description: string | null
+          file_name: string
+          id: string
+          mime_type: string | null
+          size_bytes: number | null
+          storage_path: string
+          tenant_id: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          description?: string | null
+          file_name: string
+          id?: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path: string
+          tenant_id: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          description?: string | null
+          file_name?: string
+          id?: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path?: string
+          tenant_id?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_files_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_files_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_notes: {
+        Row: {
+          author_id: string | null
+          body: string
+          client_id: string
+          created_at: string
+          id: string
+          is_pinned: boolean
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          body: string
+          client_id: string
+          created_at?: string
+          id?: string
+          is_pinned?: boolean
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          body?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+          is_pinned?: boolean
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_notes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_notes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_photos: {
+        Row: {
+          caption: string | null
+          client_id: string
+          created_at: string
+          id: string
+          pair_id: string | null
+          photo_type: Database["public"]["Enums"]["client_photo_type"]
+          storage_path: string
+          taken_at: string | null
+          tenant_id: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          caption?: string | null
+          client_id: string
+          created_at?: string
+          id?: string
+          pair_id?: string | null
+          photo_type?: Database["public"]["Enums"]["client_photo_type"]
+          storage_path: string
+          taken_at?: string | null
+          tenant_id: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          caption?: string | null
+          client_id?: string
+          created_at?: string
+          id?: string
+          pair_id?: string | null
+          photo_type?: Database["public"]["Enums"]["client_photo_type"]
+          storage_path?: string
+          taken_at?: string | null
+          tenant_id?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_photos_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_photos_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_tag_relations: {
+        Row: {
+          client_id: string
+          created_at: string
+          tag_id: string
+          tenant_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          tag_id: string
+          tenant_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          tag_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tag_relations_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_tag_relations_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "client_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_tag_relations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_tags: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          name: string
+          tenant_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          tenant_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tags_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_timeline_events: {
+        Row: {
+          actor_id: string | null
+          client_id: string
+          created_at: string
+          description: string | null
+          event_type: Database["public"]["Enums"]["timeline_event_type"]
+          id: string
+          metadata: Json
+          occurred_at: string
+          reference_id: string | null
+          tenant_id: string
+          title: string
+        }
+        Insert: {
+          actor_id?: string | null
+          client_id: string
+          created_at?: string
+          description?: string | null
+          event_type: Database["public"]["Enums"]["timeline_event_type"]
+          id?: string
+          metadata?: Json
+          occurred_at?: string
+          reference_id?: string | null
+          tenant_id: string
+          title: string
+        }
+        Update: {
+          actor_id?: string | null
+          client_id?: string
+          created_at?: string
+          description?: string | null
+          event_type?: Database["public"]["Enums"]["timeline_event_type"]
+          id?: string
+          metadata?: Json
+          occurred_at?: string
+          reference_id?: string | null
+          tenant_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_timeline_events_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_timeline_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          address_line1: string | null
+          address_line2: string | null
+          allergies: string | null
+          birth_date: string | null
+          city: string | null
+          contraindications: string | null
+          country: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          full_name: string
+          id: string
+          is_vip: boolean
+          last_visit_at: string | null
+          needs_reactivation: boolean
+          next_visit_at: string | null
+          notes: string | null
+          origin: string | null
+          phone: string | null
+          postal_code: string | null
+          preferences: string | null
+          preferred_professional_id: string | null
+          preferred_unit_id: string | null
+          referred_by_client_id: string | null
+          risk_level: Database["public"]["Enums"]["client_risk_level"]
+          state: string | null
+          status: Database["public"]["Enums"]["client_status"]
+          tenant_id: string
+          updated_at: string
+          whatsapp_phone: string | null
+        }
+        Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
+          allergies?: string | null
+          birth_date?: string | null
+          city?: string | null
+          contraindications?: string | null
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          full_name: string
+          id?: string
+          is_vip?: boolean
+          last_visit_at?: string | null
+          needs_reactivation?: boolean
+          next_visit_at?: string | null
+          notes?: string | null
+          origin?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          preferences?: string | null
+          preferred_professional_id?: string | null
+          preferred_unit_id?: string | null
+          referred_by_client_id?: string | null
+          risk_level?: Database["public"]["Enums"]["client_risk_level"]
+          state?: string | null
+          status?: Database["public"]["Enums"]["client_status"]
+          tenant_id: string
+          updated_at?: string
+          whatsapp_phone?: string | null
+        }
+        Update: {
+          address_line1?: string | null
+          address_line2?: string | null
+          allergies?: string | null
+          birth_date?: string | null
+          city?: string | null
+          contraindications?: string | null
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          full_name?: string
+          id?: string
+          is_vip?: boolean
+          last_visit_at?: string | null
+          needs_reactivation?: boolean
+          next_visit_at?: string | null
+          notes?: string | null
+          origin?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          preferences?: string | null
+          preferred_professional_id?: string | null
+          preferred_unit_id?: string | null
+          referred_by_client_id?: string | null
+          risk_level?: Database["public"]["Enums"]["client_risk_level"]
+          state?: string | null
+          status?: Database["public"]["Enums"]["client_status"]
+          tenant_id?: string
+          updated_at?: string
+          whatsapp_phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clients_preferred_professional_id_fkey"
+            columns: ["preferred_professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clients_preferred_unit_id_fkey"
+            columns: ["preferred_unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clients_referred_by_client_id_fkey"
+            columns: ["referred_by_client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clients_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      consent_form_responses: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          metadata: Json
+          signed_at: string | null
+          signed_by: string | null
+          signed_name: string | null
+          signed_text: string | null
+          status: Database["public"]["Enums"]["consent_response_status"]
+          template_id: string
+          template_version: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          signed_at?: string | null
+          signed_by?: string | null
+          signed_name?: string | null
+          signed_text?: string | null
+          status?: Database["public"]["Enums"]["consent_response_status"]
+          template_id: string
+          template_version?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          signed_at?: string | null
+          signed_by?: string | null
+          signed_name?: string | null
+          signed_text?: string | null
+          status?: Database["public"]["Enums"]["consent_response_status"]
+          template_id?: string
+          template_version?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consent_form_responses_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "consent_form_responses_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "consent_form_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "consent_form_responses_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      consent_form_templates: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          tenant_id: string
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          tenant_id: string
+          title: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consent_form_templates_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_field_definitions: {
+        Row: {
+          created_at: string
+          entity: string
+          field_type: Database["public"]["Enums"]["custom_field_type"]
+          id: string
+          is_required: boolean
+          key: string
+          label: string
+          options: Json
+          position: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          entity?: string
+          field_type: Database["public"]["Enums"]["custom_field_type"]
+          id?: string
+          is_required?: boolean
+          key: string
+          label: string
+          options?: Json
+          position?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          entity?: string
+          field_type?: Database["public"]["Enums"]["custom_field_type"]
+          id?: string
+          is_required?: boolean
+          key?: string
+          label?: string
+          options?: Json
+          position?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_field_definitions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       permissions: {
         Row: {
           created_at: string
@@ -471,6 +1103,18 @@ export type Database = {
         | "frontdesk"
         | "professional"
         | "client"
+      client_photo_type: "before" | "after" | "general"
+      client_risk_level: "low" | "medium" | "high"
+      client_status: "active" | "inactive" | "blocked"
+      consent_response_status: "pending" | "signed" | "declined"
+      custom_field_type:
+        | "text"
+        | "number"
+        | "date"
+        | "boolean"
+        | "select"
+        | "multiselect"
+        | "textarea"
       membership_status: "active" | "invited" | "suspended"
       tenant_segment:
         | "salao"
@@ -485,6 +1129,15 @@ export type Database = {
         | "past_due"
         | "canceled"
         | "suspended"
+      timeline_event_type:
+        | "note"
+        | "file"
+        | "photo"
+        | "consent"
+        | "manual"
+        | "status_change"
+        | "appointment"
+        | "system"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -620,6 +1273,19 @@ export const Constants = {
         "professional",
         "client",
       ],
+      client_photo_type: ["before", "after", "general"],
+      client_risk_level: ["low", "medium", "high"],
+      client_status: ["active", "inactive", "blocked"],
+      consent_response_status: ["pending", "signed", "declined"],
+      custom_field_type: [
+        "text",
+        "number",
+        "date",
+        "boolean",
+        "select",
+        "multiselect",
+        "textarea",
+      ],
       membership_status: ["active", "invited", "suspended"],
       tenant_segment: [
         "salao",
@@ -635,6 +1301,16 @@ export const Constants = {
         "past_due",
         "canceled",
         "suspended",
+      ],
+      timeline_event_type: [
+        "note",
+        "file",
+        "photo",
+        "consent",
+        "manual",
+        "status_change",
+        "appointment",
+        "system",
       ],
     },
   },
