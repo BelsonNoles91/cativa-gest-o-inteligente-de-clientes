@@ -649,7 +649,7 @@ export async function listMyPendingConsents(
     )
     .eq("tenant_id", tenantId)
     .eq("client_id", clientId)
-    .in("status", ["pending", "viewed"])
+    .eq("status", "pending")
     .order("created_at", { ascending: false });
   if (error) throw error;
   type Row = {
@@ -666,7 +666,7 @@ export async function listMyPendingConsents(
     templateVersion: r.template_version,
     templateTitle: r.consent_form_templates?.title ?? "Termo",
     templateBody: r.consent_form_templates?.body ?? "",
-    status: r.status as "pending" | "viewed",
+    status: "pending",
     createdAt: r.created_at,
   }));
 }
