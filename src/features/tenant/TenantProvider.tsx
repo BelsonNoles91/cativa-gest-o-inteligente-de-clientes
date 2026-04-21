@@ -1,59 +1,149 @@
 /**
- * TenantContext — base para multi-tenant.
- * Por enquanto fornece um tenant mock para desenvolvimento da UI.
- * Quando Lovable Cloud + Auth estiverem ativos, substituir o mock
- * por dados reais do usuário autenticado.
+ * TenantProvider — agora carrega memberships reais do usuário autenticado.
+ * Mantém compatibilidade com a Etapa 1 (mesma API: currentTenant, currentUnit,
+ * availableTenants, availableUnits, currentRole, setCurrentTenantId, setCurrentUnitId).
  */
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
-import type { Tenant, Unit } from "@/domain/tenant";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/features/auth/AuthProvider";
 import type { Role } from "@/domain/roles";
+import type { TenantSegment } from "@/domain/tenant";
+
+interface TenantRow {
+  id: string;
+  name: string;
+  slug: string;
+  segment: TenantSegment;
+}
+interface UnitRow {
+  id: string;
+  tenant_id: string;
+  name: string;
+  is_default: boolean;
+}
+interface MembershipRow {
+  tenant_id: string;
+  role: Role;
+  tenants: TenantRow | null;
+}
 
 interface TenantContextValue {
-  currentTenant: Tenant | null;
-  currentUnit: Unit | null;
-  availableTenants: Tenant[];
-  availableUnits: Unit[];
-  currentRole: Role;
+  loading: boolean;
+  isSuperAdmin: boolean;
+  currentTenant: TenantRow | null;
+  currentUnit: UnitRow | null;
+  availableTenants: TenantRow[];
+  availableUnits: UnitRow[];
+  currentRole: Role | null;
   setCurrentTenantId: (id: string) => void;
   setCurrentUnitId: (id: string) => void;
+  refresh: () => Promise<void>;
 }
 
 const TenantContext = createContext<TenantContextValue | undefined>(undefined);
-
-const MOCK_TENANTS: Tenant[] = [
-  { id: "t-1", name: "Studio Aurora", slug: "studio-aurora", segment: "salao", createdAt: new Date().toISOString() },
-  { id: "t-2", name: "Clínica Lumière", slug: "clinica-lumiere", segment: "clinica_estetica", createdAt: new Date().toISOString() },
-];
-
-const MOCK_UNITS: Unit[] = [
-  { id: "u-1", tenantId: "t-1", name: "Matriz", isDefault: true },
-  { id: "u-2", tenantId: "t-1", name: "Filial Jardins" },
-  { id: "u-3", tenantId: "t-2", name: "Unidade única", isDefault: true },
-];
+const LS_TENANT = "cativa.currentTenantId";
+const LS_UNIT = "cativa.currentUnitId";
 
 export function TenantProvider({ children }: { children: ReactNode }) {
-  const [currentTenantId, setCurrentTenantId] = useState<string>("t-1");
-  const [currentUnitId, setCurrentUnitId] = useState<string>("u-1");
+  const { user, loading: authLoading } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [memberships, setMemberships] = useState<MembershipRow[]>([]);
+  const [units, setUnits] = useState<UnitRow[]>([]);
+  const [currentTenantId, setCurrentTenantIdState] = useState<string | null>(
+    () => localStorage.getItem(LS_TENANT),
+  );
+  const [currentUnitId, setCurrentUnitIdState] = useState<string | null>(
+    () => localStorage.getItem(LS_UNIT),
+  );
+
+  const setCurrentTenantId = (id: string) => {
+    localStorage.setItem(LS_TENANT, id);
+    setCurrentTenantIdState(id);
+  };
+  const setCurrentUnitId = (id: string) => {
+    localStorage.setItem(LS_UNIT, id);
+    setCurrentUnitIdState(id);
+  };
+
+  const load = async () => {
+    if (!user) {
+      setMemberships([]);
+      setUnits([]);
+      setIsSuperAdmin(false);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+
+    const [{ data: profile }, { data: memb }] = await Promise.all([
+      supabase.from("profiles").select("is_super_admin").eq("id", user.id).maybeSingle(),
+      supabase
+        .from("tenant_memberships")
+        .select("tenant_id, role, tenants:tenants!inner(id, name, slug, segment)")
+        .eq("user_id", user.id)
+        .eq("status", "active"),
+    ]);
+
+    setIsSuperAdmin(Boolean(profile?.is_super_admin));
+    const list = (memb ?? []) as unknown as MembershipRow[];
+    setMemberships(list);
+
+    const tenantIds = list.map((m) => m.tenant_id);
+    if (tenantIds.length > 0) {
+      const { data: us } = await supabase
+        .from("units")
+        .select("id, tenant_id, name, is_default")
+        .in("tenant_id", tenantIds)
+        .order("is_default", { ascending: false });
+      setUnits((us ?? []) as UnitRow[]);
+    } else {
+      setUnits([]);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (!authLoading) void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, user?.id]);
 
   const value = useMemo<TenantContextValue>(() => {
-    const currentTenant = MOCK_TENANTS.find((t) => t.id === currentTenantId) ?? null;
-    const availableUnits = MOCK_UNITS.filter((u) => u.tenantId === currentTenantId);
-    const currentUnit = availableUnits.find((u) => u.id === currentUnitId) ?? availableUnits[0] ?? null;
+    const availableTenants = memberships
+      .map((m) => m.tenants)
+      .filter((t): t is TenantRow => Boolean(t));
+
+    const effectiveTenantId =
+      currentTenantId && availableTenants.some((t) => t.id === currentTenantId)
+        ? currentTenantId
+        : availableTenants[0]?.id ?? null;
+
+    const currentTenant = availableTenants.find((t) => t.id === effectiveTenantId) ?? null;
+    const availableUnits = units.filter((u) => u.tenant_id === effectiveTenantId);
+    const effectiveUnitId =
+      currentUnitId && availableUnits.some((u) => u.id === currentUnitId)
+        ? currentUnitId
+        : availableUnits[0]?.id ?? null;
+    const currentUnit = availableUnits.find((u) => u.id === effectiveUnitId) ?? null;
+
+    const currentRole =
+      memberships.find((m) => m.tenant_id === effectiveTenantId)?.role ??
+      (isSuperAdmin ? ("super_admin" as Role) : null);
 
     return {
+      loading,
+      isSuperAdmin,
       currentTenant,
       currentUnit,
-      availableTenants: MOCK_TENANTS,
+      availableTenants,
       availableUnits,
-      currentRole: "owner",
-      setCurrentTenantId: (id) => {
-        setCurrentTenantId(id);
-        const firstUnit = MOCK_UNITS.find((u) => u.tenantId === id);
-        if (firstUnit) setCurrentUnitId(firstUnit.id);
-      },
+      currentRole,
+      setCurrentTenantId,
       setCurrentUnitId,
+      refresh: load,
     };
-  }, [currentTenantId, currentUnitId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [memberships, units, currentTenantId, currentUnitId, isSuperAdmin, loading]);
 
   return <TenantContext.Provider value={value}>{children}</TenantContext.Provider>;
 }
