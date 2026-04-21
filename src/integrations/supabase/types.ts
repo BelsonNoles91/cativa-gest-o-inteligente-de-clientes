@@ -1756,6 +1756,45 @@ export type Database = {
           },
         ]
       }
+      feature_flags: {
+        Row: {
+          created_at: string
+          description: string | null
+          flag_key: string
+          id: string
+          is_global: boolean
+          label: string
+          tenant_id: string | null
+          updated_at: string
+          value: Json
+          value_type: Database["public"]["Enums"]["feature_flag_value_type"]
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          flag_key: string
+          id?: string
+          is_global?: boolean
+          label: string
+          tenant_id?: string | null
+          updated_at?: string
+          value?: Json
+          value_type?: Database["public"]["Enums"]["feature_flag_value_type"]
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          flag_key?: string
+          id?: string
+          is_global?: boolean
+          label?: string
+          tenant_id?: string | null
+          updated_at?: string
+          value?: Json
+          value_type?: Database["public"]["Enums"]["feature_flag_value_type"]
+        }
+        Relationships: []
+      }
       membership_benefits: {
         Row: {
           created_at: string
@@ -2051,6 +2090,113 @@ export type Database = {
           created_at?: string
           description?: string
           key?: string
+        }
+        Relationships: []
+      }
+      plan_features: {
+        Row: {
+          created_at: string
+          display_order: number
+          feature_key: string
+          id: string
+          label: string
+          plan_id: string
+          value: Json
+          value_type: Database["public"]["Enums"]["feature_flag_value_type"]
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          feature_key: string
+          id?: string
+          label: string
+          plan_id: string
+          value?: Json
+          value_type?: Database["public"]["Enums"]["feature_flag_value_type"]
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          feature_key?: string
+          id?: string
+          label?: string
+          plan_id?: string
+          value?: Json
+          value_type?: Database["public"]["Enums"]["feature_flag_value_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_features_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plans: {
+        Row: {
+          billing_period: Database["public"]["Enums"]["plan_billing_period"]
+          code: string
+          created_at: string
+          currency: string
+          description: string | null
+          display_order: number
+          grace_period_days: number
+          id: string
+          is_default: boolean
+          max_active_clients: number | null
+          max_professionals: number | null
+          max_storage_mb: number | null
+          max_units: number | null
+          metadata: Json
+          name: string
+          price_cents: number
+          status: Database["public"]["Enums"]["plan_status"]
+          trial_days: number
+          updated_at: string
+        }
+        Insert: {
+          billing_period?: Database["public"]["Enums"]["plan_billing_period"]
+          code: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          display_order?: number
+          grace_period_days?: number
+          id?: string
+          is_default?: boolean
+          max_active_clients?: number | null
+          max_professionals?: number | null
+          max_storage_mb?: number | null
+          max_units?: number | null
+          metadata?: Json
+          name: string
+          price_cents?: number
+          status?: Database["public"]["Enums"]["plan_status"]
+          trial_days?: number
+          updated_at?: string
+        }
+        Update: {
+          billing_period?: Database["public"]["Enums"]["plan_billing_period"]
+          code?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          display_order?: number
+          grace_period_days?: number
+          id?: string
+          is_default?: boolean
+          max_active_clients?: number | null
+          max_professionals?: number | null
+          max_storage_mb?: number | null
+          max_units?: number | null
+          metadata?: Json
+          name?: string
+          price_cents?: number
+          status?: Database["public"]["Enums"]["plan_status"]
+          trial_days?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -2451,6 +2597,45 @@ export type Database = {
           },
         ]
       }
+      segment_templates: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          is_active: boolean
+          is_default: boolean
+          name: string
+          payload: Json
+          segment: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name: string
+          payload?: Json
+          segment: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name?: string
+          payload?: Json
+          segment?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       service_categories: {
         Row: {
           color: string | null
@@ -2778,6 +2963,77 @@ export type Database = {
           },
         ]
       }
+      subscription_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          event_type: Database["public"]["Enums"]["subscription_event_type"]
+          from_plan_id: string | null
+          from_status: Database["public"]["Enums"]["subscription_status"] | null
+          id: string
+          metadata: Json
+          notes: string | null
+          subscription_id: string | null
+          tenant_id: string
+          to_plan_id: string | null
+          to_status: Database["public"]["Enums"]["subscription_status"] | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          event_type: Database["public"]["Enums"]["subscription_event_type"]
+          from_plan_id?: string | null
+          from_status?:
+            | Database["public"]["Enums"]["subscription_status"]
+            | null
+          id?: string
+          metadata?: Json
+          notes?: string | null
+          subscription_id?: string | null
+          tenant_id: string
+          to_plan_id?: string | null
+          to_status?: Database["public"]["Enums"]["subscription_status"] | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          event_type?: Database["public"]["Enums"]["subscription_event_type"]
+          from_plan_id?: string | null
+          from_status?:
+            | Database["public"]["Enums"]["subscription_status"]
+            | null
+          id?: string
+          metadata?: Json
+          notes?: string | null
+          subscription_id?: string | null
+          tenant_id?: string
+          to_plan_id?: string | null
+          to_status?: Database["public"]["Enums"]["subscription_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_events_from_plan_id_fkey"
+            columns: ["from_plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_events_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_events_to_plan_id_fkey"
+            columns: ["to_plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_memberships: {
         Row: {
           accepted_at: string | null
@@ -2881,6 +3137,74 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: true
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_subscriptions: {
+        Row: {
+          canceled_at: string | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string
+          discount_cents: number
+          discount_reason: string | null
+          id: string
+          notes: string | null
+          overdue_since: string | null
+          override_limits: Json
+          plan_id: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          suspended_at: string | null
+          tenant_id: string
+          trial_ends_at: string | null
+          trial_started_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          canceled_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string
+          discount_cents?: number
+          discount_reason?: string | null
+          id?: string
+          notes?: string | null
+          overdue_since?: string | null
+          override_limits?: Json
+          plan_id: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          suspended_at?: string | null
+          tenant_id: string
+          trial_ends_at?: string | null
+          trial_started_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          canceled_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string
+          discount_cents?: number
+          discount_reason?: string | null
+          id?: string
+          notes?: string | null
+          overdue_since?: string | null
+          override_limits?: Json
+          plan_id?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          suspended_at?: string | null
+          tenant_id?: string
+          trial_ends_at?: string | null
+          trial_started_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
             referencedColumns: ["id"]
           },
         ]
@@ -3146,6 +3470,42 @@ export type Database = {
           },
         ]
       }
+      usage_snapshots: {
+        Row: {
+          active_clients_count: number
+          appointments_last_30d: number
+          captured_at: string
+          id: string
+          metadata: Json
+          professionals_count: number
+          storage_mb: number
+          tenant_id: string
+          units_count: number
+        }
+        Insert: {
+          active_clients_count?: number
+          appointments_last_30d?: number
+          captured_at?: string
+          id?: string
+          metadata?: Json
+          professionals_count?: number
+          storage_mb?: number
+          tenant_id: string
+          units_count?: number
+        }
+        Update: {
+          active_clients_count?: number
+          appointments_last_30d?: number
+          captured_at?: string
+          id?: string
+          metadata?: Json
+          professionals_count?: number
+          storage_mb?: number
+          tenant_id?: string
+          units_count?: number
+        }
+        Relationships: []
+      }
       waitlist_entries: {
         Row: {
           client_id: string
@@ -3269,6 +3629,10 @@ export type Database = {
         Args: { _tenant_id: string; _user_id: string }
         Returns: string
       }
+      effective_subscription_limits: {
+        Args: { _tenant_id: string }
+        Returns: Json
+      }
       get_available_slots: {
         Args: {
           _day: string
@@ -3384,6 +3748,7 @@ export type Database = {
         | "select"
         | "multiselect"
         | "textarea"
+      feature_flag_value_type: "boolean" | "number" | "string" | "json"
       membership_billing_cycle: "monthly" | "quarterly" | "yearly"
       membership_status: "active" | "invited" | "suspended"
       message_channel: "whatsapp" | "phone" | "email" | "sms" | "in_person"
@@ -3397,7 +3762,33 @@ export type Database = {
         | "thanks"
         | "custom"
       package_kind: "package" | "combo"
+      plan_billing_period:
+        | "monthly"
+        | "quarterly"
+        | "semiannual"
+        | "annual"
+        | "custom"
+      plan_status: "public" | "private" | "archived"
       resource_type: "room" | "equipment" | "chair" | "station" | "other"
+      subscription_event_type:
+        | "created"
+        | "trial_started"
+        | "trial_extended"
+        | "activated"
+        | "renewed"
+        | "upgraded"
+        | "downgraded"
+        | "suspended"
+        | "reactivated"
+        | "canceled"
+        | "overdue"
+        | "note"
+      subscription_status:
+        | "trialing"
+        | "active"
+        | "overdue"
+        | "suspended"
+        | "canceled"
       tenant_segment:
         | "salao"
         | "clinica_estetica"
@@ -3636,6 +4027,7 @@ export const Constants = {
         "multiselect",
         "textarea",
       ],
+      feature_flag_value_type: ["boolean", "number", "string", "json"],
       membership_billing_cycle: ["monthly", "quarterly", "yearly"],
       membership_status: ["active", "invited", "suspended"],
       message_channel: ["whatsapp", "phone", "email", "sms", "in_person"],
@@ -3650,7 +4042,36 @@ export const Constants = {
         "custom",
       ],
       package_kind: ["package", "combo"],
+      plan_billing_period: [
+        "monthly",
+        "quarterly",
+        "semiannual",
+        "annual",
+        "custom",
+      ],
+      plan_status: ["public", "private", "archived"],
       resource_type: ["room", "equipment", "chair", "station", "other"],
+      subscription_event_type: [
+        "created",
+        "trial_started",
+        "trial_extended",
+        "activated",
+        "renewed",
+        "upgraded",
+        "downgraded",
+        "suspended",
+        "reactivated",
+        "canceled",
+        "overdue",
+        "note",
+      ],
+      subscription_status: [
+        "trialing",
+        "active",
+        "overdue",
+        "suspended",
+        "canceled",
+      ],
       tenant_segment: [
         "salao",
         "clinica_estetica",
