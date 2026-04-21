@@ -20,6 +20,7 @@ import Onboarding from "./pages/auth/Onboarding";
 import { AppLayout } from "@/components/shell/AppLayout";
 import Dashboard from "./pages/app/Dashboard";
 import Settings from "./pages/app/Settings";
+import Billing from "./pages/app/Billing";
 import SuperAdmin from "./pages/app/SuperAdmin";
 import {
   Agenda, Clients, Services, Packages, Waitlist, Analytics,
@@ -93,6 +94,7 @@ const App = () => (
                         <Route path="servicos" element={<Services />} />
                         <Route path="pacotes" element={<Packages />} />
                         <Route path="analytics" element={<Analytics />} />
+                        <Route path="meu-plano" element={<Billing />} />
                         <Route path="configuracoes" element={<Settings />} />
                       </Route>
 

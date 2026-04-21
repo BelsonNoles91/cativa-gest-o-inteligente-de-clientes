@@ -17,6 +17,7 @@ import {
   BarChart3,
   Settings,
   ShieldCheck,
+  CreditCard,
   type LucideIcon,
 } from "lucide-react";
 import type { Role } from "@/domain/roles";
@@ -90,6 +91,13 @@ export const navItems: NavItem[] = [
     icon: BarChart3,
     roles: ["owner", "manager"],
     group: "gestao",
+  },
+  {
+    to: "/app/meu-plano",
+    label: "Meu plano",
+    icon: CreditCard,
+    roles: ["owner", "manager"],
+    group: "sistema",
   },
   {
     to: "/app/configuracoes",
