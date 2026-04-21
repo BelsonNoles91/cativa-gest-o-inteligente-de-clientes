@@ -124,7 +124,7 @@ export interface PortalConsentPending {
   templateTitle: string;
   templateBody: string;
   templateVersion: number;
-  status: "pending" | "viewed";
+  status: "pending";
   createdAt: string;
 }
 
