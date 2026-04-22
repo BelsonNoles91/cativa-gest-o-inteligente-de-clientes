@@ -83,17 +83,18 @@ export function ProvisionTestUsersCard() {
 
   return (
     <Card className="border-dashed border-primary/40 bg-primary/5">
-      <CardHeader>
+      <CardHeader className="space-y-0">
         <div className="flex items-start gap-3">
-          <div className="rounded-lg bg-primary/10 p-2 text-primary">
+          <div className="shrink-0 rounded-lg bg-primary/10 p-2 text-primary">
             <Sparkles className="h-5 w-5" />
           </div>
-          <div className="flex-1">
-            <CardTitle>Contas de teste por perfil</CardTitle>
-            <CardDescription>
+          <div className="min-w-0 flex-1 space-y-1.5">
+            <CardTitle className="text-base sm:text-lg">Contas de teste por perfil</CardTitle>
+            <CardDescription className="text-xs leading-relaxed sm:text-sm">
               Cria contas demo (owner, manager, frontdesk, professional, client) para o tenant
-              atual <strong>{currentTenant?.name ?? "—"}</strong>. Idempotente: se já existirem,
-              apenas garante o vínculo e reseta a senha.
+              atual{" "}
+              <strong className="text-foreground">{currentTenant?.name ?? "—"}</strong>.
+              Idempotente: se já existirem, apenas garante o vínculo e reseta a senha.
             </CardDescription>
           </div>
         </div>
