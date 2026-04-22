@@ -555,3 +555,116 @@ export async function listTenantsWithSubscriptions(): Promise<TenantWithSub[]> {
     };
   });
 }
+
+// ---------- logs de ativação de trial ----------
+
+export type TrialLogStatus = "success" | "already_existed" | "failure";
+export type TrialLogReason =
+  | "rls_denied"
+  | "no_plan"
+  | "unauthenticated"
+  | "unknown"
+  | null;
+
+export interface TrialActivationLog {
+  id: string;
+  createdAt: string;
+  tenantId: string | null;
+  tenantName: string | null;
+  tenantSlug: string | null;
+  actorId: string | null;
+  actorEmail: string | null;
+  actorName: string | null;
+  status: TrialLogStatus;
+  reason: TrialLogReason;
+  errorMessage: string | null;
+  errorCode: string | null;
+  recommendedAction: string | null;
+  metadata: Record<string, unknown>;
+}
+
+/**
+ * Lista as últimas tentativas de ativação de trial registradas em
+ * audit_logs. RLS garante que apenas owner/manager do tenant ou
+ * super_admin enxergam essas linhas.
+ */
+export async function listTrialActivationLogs(opts: {
+  limit?: number;
+  status?: TrialLogStatus | "all";
+  tenantId?: string | null;
+} = {}): Promise<TrialActivationLog[]> {
+  const limit = opts.limit ?? 100;
+  let q = supabase
+    .from("audit_logs")
+    .select("id, created_at, tenant_id, actor_id, action, metadata")
+    .like("action", "trial.activation.%")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (opts.status && opts.status !== "all") {
+    q = q.eq("action", `trial.activation.${opts.status}`);
+  }
+  if (opts.tenantId) {
+    q = q.eq("tenant_id", opts.tenantId);
+  }
+
+  const { data, error } = await q;
+  if (error) throw error;
+  const rows = data ?? [];
+
+  // Carrega tenants e profiles dos atores em paralelo para enriquecer.
+  const tenantIds = Array.from(
+    new Set(rows.map((r) => r.tenant_id).filter((v): v is string => Boolean(v))),
+  );
+  const actorIds = Array.from(
+    new Set(rows.map((r) => r.actor_id).filter((v): v is string => Boolean(v))),
+  );
+
+  const [tenantsRes, profilesRes] = await Promise.all([
+    tenantIds.length > 0
+      ? supabase.from("tenants").select("id, name, slug").in("id", tenantIds)
+      : Promise.resolve({ data: [] as Array<{ id: string; name: string; slug: string }>, error: null }),
+    actorIds.length > 0
+      ? supabase.from("profiles").select("id, full_name, email").in("id", actorIds)
+      : Promise.resolve({ data: [] as Array<{ id: string; full_name: string | null; email: string | null }>, error: null }),
+  ]);
+
+  const tenantMap = new Map(
+    (tenantsRes.data ?? []).map((t) => [t.id, { name: t.name, slug: t.slug }]),
+  );
+  const profileMap = new Map(
+    (profilesRes.data ?? []).map((p) => [
+      p.id,
+      { name: p.full_name ?? null, email: p.email ?? null },
+    ]),
+  );
+
+  return rows.map<TrialActivationLog>((r) => {
+    const meta = (r.metadata ?? {}) as Record<string, unknown>;
+    const action = r.action as string;
+    const status: TrialLogStatus = action.endsWith("success")
+      ? "success"
+      : action.endsWith("already_existed")
+        ? "already_existed"
+        : "failure";
+    const tenant = r.tenant_id ? tenantMap.get(r.tenant_id) ?? null : null;
+    const profile = r.actor_id ? profileMap.get(r.actor_id) ?? null : null;
+    return {
+      id: r.id as string,
+      createdAt: r.created_at as string,
+      tenantId: (r.tenant_id as string) ?? null,
+      tenantName: tenant?.name ?? null,
+      tenantSlug: tenant?.slug ?? null,
+      actorId: (r.actor_id as string) ?? null,
+      actorEmail: profile?.email ?? null,
+      actorName: profile?.name ?? null,
+      status,
+      reason: (meta.reason as TrialLogReason) ?? null,
+      errorMessage: (meta.error_message as string) ?? null,
+      errorCode: (meta.error_code as string) ?? null,
+      recommendedAction: (meta.recommended_action as string) ?? null,
+      metadata: meta,
+    };
+  });
+}
+
