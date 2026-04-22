@@ -12,7 +12,14 @@
  * persistência via repositories. Isso preserva portabilidade.
  */
 
-export type ImportFieldType = "string" | "number" | "boolean" | "date" | "phone" | "email";
+export type ImportFieldType =
+  | "string"
+  | "number"
+  | "boolean"
+  | "date"
+  | "datetime"
+  | "phone"
+  | "email";
 
 export interface ImportField {
   key: string;
@@ -61,8 +68,30 @@ export function parseCell(value: string, type: ImportFieldType = "string"): unkn
   if (v === "") return null;
   switch (type) {
     case "number": {
-      // aceita 1.234,56 (BR) e 1234.56 (EN)
-      const cleaned = v.replace(/\./g, "").replace(",", ".");
+      // aceita 1.234,56 (BR), 1234.56 (EN), 1,234.56 e variações simples
+      const hasComma = v.includes(",");
+      const hasDot = v.includes(".");
+      let cleaned = v;
+
+      if (hasComma && hasDot) {
+        // O último separador costuma ser o decimal.
+        if (v.lastIndexOf(",") > v.lastIndexOf(".")) {
+          cleaned = v.replace(/\./g, "").replace(",", ".");
+        } else {
+          cleaned = v.replace(/,/g, "");
+        }
+      } else if (hasComma) {
+        const parts = v.split(",");
+        cleaned = parts.length === 2 && parts[1].length <= 2
+          ? `${parts[0].replace(/\./g, "")}.${parts[1]}`
+          : v.replace(/,/g, "");
+      } else if (hasDot) {
+        const parts = v.split(".");
+        cleaned = parts.length === 2 && parts[1].length <= 2
+          ? v
+          : v.replace(/\./g, "");
+      }
+
       const n = Number(cleaned);
       return Number.isFinite(n) ? n : null;
     }
@@ -79,6 +108,33 @@ export function parseCell(value: string, type: ImportFieldType = "string"): unkn
         const month = m[2].padStart(2, "0");
         const year = m[3].length === 2 ? `20${m[3]}` : m[3];
         return `${year}-${month}-${day}`;
+      }
+      return v;
+    }
+    case "datetime": {
+      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(v)) {
+        const parsedIso = new Date(v);
+        return Number.isNaN(parsedIso.getTime()) ? v : parsedIso.toISOString();
+      }
+      const isoMinuteMatch = v.match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?$/);
+      if (isoMinuteMatch) {
+        const parsedIso = new Date(
+          `${isoMinuteMatch[1]}T${isoMinuteMatch[2]}:${isoMinuteMatch[3]}:${isoMinuteMatch[4] ?? "00"}`,
+        );
+        return Number.isNaN(parsedIso.getTime()) ? v : parsedIso.toISOString();
+      }
+      const brMatch = v.match(
+        /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/,
+      );
+      if (brMatch) {
+        const day = brMatch[1].padStart(2, "0");
+        const month = brMatch[2].padStart(2, "0");
+        const year = brMatch[3].length === 2 ? `20${brMatch[3]}` : brMatch[3];
+        const hour = (brMatch[4] ?? "0").padStart(2, "0");
+        const minute = brMatch[5] ?? "00";
+        const second = brMatch[6] ?? "00";
+        const parsed = new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}`);
+        return Number.isNaN(parsed.getTime()) ? v : parsed.toISOString();
       }
       return v;
     }
@@ -201,10 +257,35 @@ export const appointmentImportSchema: ImportSchema = {
   fields: [
     { key: "clientName", label: "Cliente", required: true, aliases: ["cliente", "nome_cliente"] },
     { key: "professionalName", label: "Profissional", required: true, aliases: ["profissional", "atendente"] },
+    { key: "unitName", label: "Unidade", aliases: ["unidade", "unit", "salao", "clinica"] },
     { key: "serviceName", label: "Serviço", required: true, aliases: ["servico", "service"] },
-    { key: "startsAt", label: "Início (ISO ou dd/mm/aaaa hh:mm)", required: true, aliases: ["inicio", "data_hora"] },
+    {
+      key: "startsAt",
+      label: "Início (ISO ou dd/mm/aaaa hh:mm)",
+      required: true,
+      type: "datetime",
+      aliases: ["inicio", "data_hora", "data_hora_inicio", "starts_at"],
+    },
     { key: "durationMinutes", label: "Duração (min)", type: "number", aliases: ["duracao"] },
     { key: "priceCents", label: "Preço (R$)", type: "number", aliases: ["preco", "valor"] },
+    {
+      key: "source",
+      label: "Origem",
+      aliases: ["origem", "canal"],
+      validate: (v) =>
+        v === null || ["frontdesk", "professional", "client_portal", "walk_in", "phone", "whatsapp", "recurring", "system"].includes(String(v))
+          ? null
+          : "Origem inválida.",
+    },
+    {
+      key: "status",
+      label: "Status",
+      aliases: ["status", "situacao"],
+      validate: (v) =>
+        v === null || ["requested", "pending", "confirmed", "reminded", "arrived", "in_service", "completed", "canceled", "no_show"].includes(String(v))
+          ? null
+          : "Status inválido.",
+    },
     { key: "notes", label: "Observações", aliases: ["obs", "anotacoes"] },
   ],
 };

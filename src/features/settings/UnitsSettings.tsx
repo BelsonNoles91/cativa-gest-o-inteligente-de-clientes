@@ -6,6 +6,7 @@ import { Loader2, MapPin, Plus, Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenant } from "@/features/tenant/TenantProvider";
+import { useTenantBilling } from "@/features/billing/useTenantBilling";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +27,7 @@ interface UnitRow {
 
 export function UnitsSettings() {
   const { currentTenant, refresh } = useTenant();
+  const { limits, usage, hasFeature } = useTenantBilling();
   const [units, setUnits] = useState<UnitRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -51,6 +53,14 @@ export function UnitsSettings() {
 
   const onCreate = async () => {
     if (!currentTenant || !name.trim()) return;
+    if (!hasFeature("multi_unit") && usage.unitsCount >= 1) {
+      toast.error("Seu plano não permite múltiplas unidades.");
+      return;
+    }
+    if (limits?.maxUnits !== null && limits?.maxUnits !== undefined && usage.unitsCount >= limits.maxUnits) {
+      toast.error("Limite de unidades atingido", { description: "Ajuste o plano ou os overrides antes de criar outra unidade." });
+      return;
+    }
     setSaving(true);
     const { error } = await supabase.from("units").insert({
       tenant_id: currentTenant.id,
@@ -91,7 +101,15 @@ export function UnitsSettings() {
         <p className="text-sm text-muted-foreground">{units.length} {units.length === 1 ? "unidade" : "unidades"}</p>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="rounded-xl bg-gradient-brand"><Plus className="mr-2 h-4 w-4" /> Nova unidade</Button>
+            <Button
+              className="rounded-xl bg-gradient-brand"
+              disabled={
+                (!hasFeature("multi_unit") && usage.unitsCount >= 1) ||
+                (limits?.maxUnits !== null && limits?.maxUnits !== undefined && usage.unitsCount >= limits.maxUnits)
+              }
+            >
+              <Plus className="mr-2 h-4 w-4" /> Nova unidade
+            </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader><DialogTitle>Nova unidade</DialogTitle></DialogHeader>
@@ -114,6 +132,10 @@ export function UnitsSettings() {
 
       {loading ? (
         <div className="flex h-40 items-center justify-center"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>
+      ) : !hasFeature("multi_unit") && usage.unitsCount >= 1 ? (
+        <div className="rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm text-warning-foreground">
+          Seu plano atual permite apenas uma unidade. Faça upgrade para liberar operação multi-unidade.
+        </div>
       ) : units.length === 0 ? (
         <EmptyState icon={<MapPin className="h-6 w-6" />} title="Nenhuma unidade" description="Cadastre sua primeira unidade para começar a operar." />
       ) : (

@@ -85,6 +85,17 @@ export async function listMyClientLinks(userId: string): Promise<ClientUserLink[
   }));
 }
 
+export async function claimPortalLinksForCurrentUser(): Promise<number> {
+  const { data, error } = await supabase.rpc("claim_portal_links_for_current_user");
+  if (error) throw error;
+  return typeof data === "number" ? data : 0;
+}
+
+export async function touchPortalLink(linkId: string): Promise<void> {
+  const { error } = await supabase.rpc("touch_portal_last_seen", { _link_id: linkId });
+  if (error) throw error;
+}
+
 /** Lê branding do tenant (+ unidade preferida do cliente, se houver). */
 export async function getPortalBranding(
   tenantId: string,

@@ -304,6 +304,12 @@ export async function createRule(input: {
   hoursBeforeAppointment?: number;
   basePriority?: number;
   unitId?: string | null;
+  appliesToVip?: boolean;
+  appliesToProtocol?: boolean;
+  appliesToHighRisk?: boolean;
+  minAppointmentValueCents?: number | null;
+  skipIfAlreadyConfirmed?: boolean;
+  isActive?: boolean;
 }): Promise<void> {
   const { error } = await supabase.from("confirmation_rules").insert({
     tenant_id: input.tenantId,
@@ -312,7 +318,48 @@ export async function createRule(input: {
     hours_before_appointment: input.hoursBeforeAppointment ?? 24,
     base_priority: input.basePriority ?? 50,
     unit_id: input.unitId ?? null,
+    applies_to_vip: input.appliesToVip ?? false,
+    applies_to_protocol: input.appliesToProtocol ?? false,
+    applies_to_high_risk: input.appliesToHighRisk ?? false,
+    min_appointment_value_cents: input.minAppointmentValueCents ?? null,
+    skip_if_already_confirmed: input.skipIfAlreadyConfirmed ?? true,
+    is_active: input.isActive ?? true,
   });
+  if (error) throw error;
+}
+
+export async function updateRule(
+  id: string,
+  patch: Partial<{
+    name: string;
+    stage: ConfirmationStage;
+    hoursBeforeAppointment: number;
+    basePriority: number;
+    unitId: string | null;
+    appliesToVip: boolean;
+    appliesToProtocol: boolean;
+    appliesToHighRisk: boolean;
+    minAppointmentValueCents: number | null;
+    skipIfAlreadyConfirmed: boolean;
+    isActive: boolean;
+  }>,
+): Promise<void> {
+  const dbPatch: Record<string, unknown> = {};
+  if (patch.name !== undefined) dbPatch.name = patch.name;
+  if (patch.stage !== undefined) dbPatch.stage = patch.stage;
+  if (patch.hoursBeforeAppointment !== undefined) dbPatch.hours_before_appointment = patch.hoursBeforeAppointment;
+  if (patch.basePriority !== undefined) dbPatch.base_priority = patch.basePriority;
+  if (patch.unitId !== undefined) dbPatch.unit_id = patch.unitId;
+  if (patch.appliesToVip !== undefined) dbPatch.applies_to_vip = patch.appliesToVip;
+  if (patch.appliesToProtocol !== undefined) dbPatch.applies_to_protocol = patch.appliesToProtocol;
+  if (patch.appliesToHighRisk !== undefined) dbPatch.applies_to_high_risk = patch.appliesToHighRisk;
+  if (patch.minAppointmentValueCents !== undefined) dbPatch.min_appointment_value_cents = patch.minAppointmentValueCents;
+  if (patch.skipIfAlreadyConfirmed !== undefined) dbPatch.skip_if_already_confirmed = patch.skipIfAlreadyConfirmed;
+  if (patch.isActive !== undefined) dbPatch.is_active = patch.isActive;
+  const { error } = await supabase
+    .from("confirmation_rules")
+    .update(dbPatch as never)
+    .eq("id", id);
   if (error) throw error;
 }
 
@@ -508,6 +555,8 @@ export async function upsertChannelPreference(input: {
   clientId: string;
   preferredChannel: MessageChannel;
   fallbackChannel?: MessageChannel | null;
+  preferredWindowStart?: string | null;
+  preferredWindowEnd?: string | null;
   doNotDisturb?: boolean;
   notes?: string | null;
 }): Promise<void> {
@@ -519,6 +568,8 @@ export async function upsertChannelPreference(input: {
         client_id: input.clientId,
         preferred_channel: input.preferredChannel,
         fallback_channel: input.fallbackChannel ?? null,
+        preferred_window_start: input.preferredWindowStart ?? null,
+        preferred_window_end: input.preferredWindowEnd ?? null,
         do_not_disturb: input.doNotDisturb ?? false,
         notes: input.notes ?? null,
       },

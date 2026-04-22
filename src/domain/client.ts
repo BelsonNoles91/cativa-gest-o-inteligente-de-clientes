@@ -203,7 +203,10 @@ export function computeCompleteness(c: Pick<
  */
 export function daysUntilBirthday(birthDate: string | null, ref: Date = new Date()): number | null {
   if (!birthDate) return null;
-  const d = new Date(birthDate);
+  const match = birthDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const d = match
+    ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+    : new Date(birthDate);
   if (Number.isNaN(d.getTime())) return null;
   const next = new Date(ref.getFullYear(), d.getMonth(), d.getDate());
   if (next < new Date(ref.getFullYear(), ref.getMonth(), ref.getDate())) {

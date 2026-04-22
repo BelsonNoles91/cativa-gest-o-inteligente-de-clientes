@@ -42,7 +42,7 @@ export async function fetchAppointments(input: AnalyticsRangeInput): Promise<App
     .lt("starts_at", input.end)
     .order("starts_at");
   if (error) throw error;
-  return (data ?? []).map(rowToAppt);
+  return hydrateAppointmentsWithServices((data ?? []) as Record<string, unknown>[]);
 }
 
 /** Agendamentos futuros (para “valor futuro” e “receita em risco”). */
@@ -57,7 +57,35 @@ export async function fetchFutureAppointments(tenantId: string): Promise<ApptFac
     .lt("starts_at", horizon)
     .order("starts_at");
   if (error) throw error;
-  return (data ?? []).map(rowToAppt);
+  return hydrateAppointmentsWithServices((data ?? []) as Record<string, unknown>[]);
+}
+
+async function hydrateAppointmentsWithServices(
+  rows: Record<string, unknown>[],
+): Promise<ApptFact[]> {
+  const facts = rows.map(rowToAppt);
+  const appointmentIds = facts.map((fact) => fact.id);
+  if (appointmentIds.length === 0) return facts;
+
+  const { data: items, error } = await supabase
+    .from("appointment_items")
+    .select("appointment_id, service_id, position")
+    .in("appointment_id", appointmentIds)
+    .order("position", { ascending: true });
+  if (error) throw error;
+
+  const primaryServiceByAppointment = new Map<string, string>();
+  for (const item of items ?? []) {
+    const appointmentId = item.appointment_id as string;
+    const serviceId = item.service_id as string | null;
+    if (!serviceId || primaryServiceByAppointment.has(appointmentId)) continue;
+    primaryServiceByAppointment.set(appointmentId, serviceId);
+  }
+
+  return facts.map((fact) => ({
+    ...fact,
+    serviceId: primaryServiceByAppointment.get(fact.id) ?? null,
+  }));
 }
 
 function rowToAppt(r: Record<string, unknown>): ApptFact {
@@ -66,6 +94,7 @@ function rowToAppt(r: Record<string, unknown>): ApptFact {
     tenantId: r.tenant_id as string,
     unitId: r.unit_id as string,
     professionalId: r.professional_id as string,
+    serviceId: null,
     clientId: r.client_id as string,
     startsAt: r.starts_at as string,
     endsAt: r.ends_at as string,

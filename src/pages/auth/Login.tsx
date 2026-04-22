@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Mail, Lock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { AuthLayout } from "@/components/shell/AuthLayout";
@@ -11,6 +11,7 @@ import { useAuth } from "@/features/auth/AuthProvider";
 export default function Login() {
   const { signIn } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -25,7 +26,9 @@ export default function Login() {
       return;
     }
     toast.success("Bem-vindo de volta!");
-    navigate("/app", { replace: true });
+    const target =
+      (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? "/app";
+    navigate(target, { replace: true });
   };
 
   return (

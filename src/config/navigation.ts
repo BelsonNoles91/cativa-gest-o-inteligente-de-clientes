@@ -28,6 +28,7 @@ export interface NavItem {
   label: string;
   icon: LucideIcon;
   roles: Role[];
+  featureKey?: string;
   showInBottomNav?: boolean;
   group: "operacao" | "gestao" | "sistema";
 }
@@ -62,6 +63,7 @@ export const navItems: NavItem[] = [
     label: "Confirmações",
     icon: CheckCircle2,
     roles: ["owner", "manager", "frontdesk"],
+    featureKey: "confirmation_center",
     showInBottomNav: true,
     group: "operacao",
   },
@@ -84,6 +86,7 @@ export const navItems: NavItem[] = [
     label: "Pacotes & Protocolos",
     icon: PackageOpen,
     roles: ["owner", "manager"],
+    featureKey: "packages_memberships",
     group: "gestao",
   },
   {
@@ -91,6 +94,7 @@ export const navItems: NavItem[] = [
     label: "Analytics",
     icon: BarChart3,
     roles: ["owner", "manager"],
+    featureKey: "analytics",
     group: "gestao",
   },
   {

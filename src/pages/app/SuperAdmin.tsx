@@ -1,50 +1,181 @@
-/**
- * SuperAdmin — painel administrativo SaaS.
- *
- * Abas:
- *  - Tenants: lista todos com plano e status da assinatura
- *  - Planos: CRUD de planos + features
- *  - Feature flags: globais e por tenant
- *  - Templates: por segmento
- */
-import { useEffect, useMemo, useState } from "react";
-import { ShieldCheck, Loader2, Building2, Package, Flag, FileStack, Search } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Building2,
+  CreditCard,
+  FileStack,
+  Flag,
+  Loader2,
+  Package,
+  Pencil,
+  Plus,
+  Search,
+  ShieldCheck,
+  SlidersHorizontal,
+  Trash2,
+} from "lucide-react";
+import { PageHeader } from "@/components/shell/PageHeader";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { PageHeader } from "@/components/shell/PageHeader";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { PlanCard } from "@/features/billing/PlanCard";
 import { useToast } from "@/hooks/use-toast";
-import { segmentLabels } from "@/domain/tenant";
 import {
   billingPeriodLabels,
-  formatPrice,
+  eventLabels,
+  planStatusLabels,
   subscriptionStatusLabels,
   subscriptionStatusTone,
+  type FeatureFlag,
   type Plan,
   type PlanFeature,
-  type FeatureFlag,
   type SegmentTemplate,
+  type SubscriptionEvent,
 } from "@/domain/billing";
+import { segmentLabels, type TenantSegment } from "@/domain/tenant";
 import {
+  archivePlan,
   changeSubscriptionPlan,
+  deleteFeatureFlag,
+  deletePlanFeature,
+  deleteSegmentTemplate,
   extendTrial,
   listAllFeatureFlags,
-  listAllSubscriptions,
   listPlanFeatures,
   listPlans,
   listSegmentTemplates,
+  listSubscriptionEvents,
   listTenantsWithSubscriptions,
+  setDiscount,
   setFeatureFlagValue,
+  setOverrideLimits,
   setSubscriptionStatus,
+  upsertFeatureFlag,
+  upsertPlan,
+  upsertPlanFeature,
+  upsertSegmentTemplate,
   type TenantWithSub,
 } from "@/repositories/billing";
+
+const TENANT_SEGMENTS: TenantSegment[] = [
+  "salao",
+  "barbearia",
+  "clinica_estetica",
+  "lash_brow",
+  "esmalteria",
+  "wellness",
+];
+
+const FEATURE_VALUE_TYPES: Array<PlanFeature["valueType"]> = ["boolean", "number", "string", "json"];
+const PLAN_STATUSES: Array<Plan["status"]> = ["public", "private", "archived"];
+const SUBSCRIPTION_STATUSES = ["trialing", "active", "overdue", "suspended", "canceled"] as const;
+
+type PlanFormState = {
+  code: string;
+  name: string;
+  description: string;
+  billingPeriod: Plan["billingPeriod"];
+  priceCents: string;
+  trialDays: string;
+  gracePeriodDays: string;
+  maxUnits: string;
+  maxProfessionals: string;
+  maxActiveClients: string;
+  maxStorageMb: string;
+  status: Plan["status"];
+  isDefault: boolean;
+  displayOrder: string;
+};
+
+type FeatureFormState = {
+  featureKey: string;
+  label: string;
+  valueType: PlanFeature["valueType"];
+  valueRaw: string;
+  displayOrder: string;
+};
+
+type FlagFormState = {
+  tenantId: string;
+  flagKey: string;
+  label: string;
+  description: string;
+  valueType: FeatureFlag["valueType"];
+  valueRaw: string;
+  isGlobal: boolean;
+};
+
+type TemplateFormState = {
+  segment: TenantSegment;
+  name: string;
+  description: string;
+  payloadRaw: string;
+  isDefault: boolean;
+  isActive: boolean;
+  displayOrder: string;
+};
+
+const EMPTY_PLAN_FORM: PlanFormState = {
+  code: "",
+  name: "",
+  description: "",
+  billingPeriod: "monthly",
+  priceCents: "0",
+  trialDays: "14",
+  gracePeriodDays: "7",
+  maxUnits: "",
+  maxProfessionals: "",
+  maxActiveClients: "",
+  maxStorageMb: "",
+  status: "public",
+  isDefault: false,
+  displayOrder: "0",
+};
+
+const EMPTY_FEATURE_FORM: FeatureFormState = {
+  featureKey: "",
+  label: "",
+  valueType: "boolean",
+  valueRaw: "true",
+  displayOrder: "0",
+};
+
+const EMPTY_FLAG_FORM: FlagFormState = {
+  tenantId: "global",
+  flagKey: "",
+  label: "",
+  description: "",
+  valueType: "boolean",
+  valueRaw: "false",
+  isGlobal: true,
+};
+
+const EMPTY_TEMPLATE_FORM: TemplateFormState = {
+  segment: "salao",
+  name: "",
+  description: "",
+  payloadRaw: "{}",
+  isDefault: false,
+  isActive: true,
+  displayOrder: "0",
+};
 
 export default function SuperAdmin() {
   const [loading, setLoading] = useState(true);
@@ -56,18 +187,18 @@ export default function SuperAdmin() {
 
   async function reload() {
     setLoading(true);
-    const [t, p, fl, tpl] = await Promise.all([
+    const [tenantRows, planRows, flagRows, templateRows] = await Promise.all([
       listTenantsWithSubscriptions(),
       listPlans(),
       listAllFeatureFlags(),
       listSegmentTemplates(),
     ]);
-    const ft = p.length > 0 ? await listPlanFeatures(p.map((x) => x.id)) : [];
-    setTenants(t);
-    setPlans(p);
-    setFeatures(ft);
-    setFlags(fl);
-    setTemplates(tpl);
+    const featureRows = planRows.length > 0 ? await listPlanFeatures(planRows.map((item) => item.id)) : [];
+    setTenants(tenantRows);
+    setPlans(planRows);
+    setFeatures(featureRows);
+    setFlags(flagRows);
+    setTemplates(templateRows);
     setLoading(false);
   }
 
@@ -79,7 +210,7 @@ export default function SuperAdmin() {
     <>
       <PageHeader
         title="Super Admin"
-        description="Painel administrativo SaaS. Apenas para super administradores."
+        description="Gestão SaaS de tenants, planos, limites, feature flags e templates por segmento."
         icon={<ShieldCheck className="h-5 w-5" />}
         actions={<StatusBadge tone="brand">{tenants.length} tenants</StatusBadge>}
       />
@@ -93,24 +224,24 @@ export default function SuperAdmin() {
           <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
             <TabsTrigger value="tenants"><Building2 className="mr-1.5 h-3.5 w-3.5" />Tenants</TabsTrigger>
             <TabsTrigger value="plans"><Package className="mr-1.5 h-3.5 w-3.5" />Planos</TabsTrigger>
-            <TabsTrigger value="flags"><Flag className="mr-1.5 h-3.5 w-3.5" />Feature flags</TabsTrigger>
+            <TabsTrigger value="flags"><Flag className="mr-1.5 h-3.5 w-3.5" />Flags</TabsTrigger>
             <TabsTrigger value="templates"><FileStack className="mr-1.5 h-3.5 w-3.5" />Templates</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="tenants" className="space-y-3">
-            <TenantsTab tenants={tenants} plans={plans} onChange={reload} />
+          <TabsContent value="tenants">
+            <TenantsTab tenants={tenants} plans={plans} onReload={reload} />
           </TabsContent>
 
-          <TabsContent value="plans" className="space-y-3">
-            <PlansTab plans={plans} features={features} />
+          <TabsContent value="plans">
+            <PlansTab plans={plans} features={features} onReload={reload} />
           </TabsContent>
 
-          <TabsContent value="flags" className="space-y-3">
-            <FlagsTab flags={flags} onChange={reload} />
+          <TabsContent value="flags">
+            <FlagsTab flags={flags} tenants={tenants} onReload={reload} />
           </TabsContent>
 
-          <TabsContent value="templates" className="space-y-3">
-            <TemplatesTab templates={templates} />
+          <TabsContent value="templates">
+            <TemplatesTab templates={templates} onReload={reload} />
           </TabsContent>
         </Tabs>
       )}
@@ -118,52 +249,97 @@ export default function SuperAdmin() {
   );
 }
 
-// ---------------- TENANTS ----------------
 function TenantsTab({
   tenants,
   plans,
-  onChange,
+  onReload,
 }: {
   tenants: TenantWithSub[];
   plans: Plan[];
-  onChange: () => void;
+  onReload: () => Promise<void>;
 }) {
+  const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const { toast } = useToast();
+  const [selectedTenant, setSelectedTenant] = useState<TenantWithSub | null>(null);
+  const [events, setEvents] = useState<SubscriptionEvent[]>([]);
+  const [loadingEvents, setLoadingEvents] = useState(false);
+  const [overrideForm, setOverrideForm] = useState({
+    maxUnits: "",
+    maxProfessionals: "",
+    maxActiveClients: "",
+    maxStorageMb: "",
+    discountCents: "0",
+    discountReason: "",
+  });
 
-  const filtered = useMemo(() => {
-    return tenants.filter((t) => {
-      const matchSearch =
-        !search ||
-        t.name.toLowerCase().includes(search.toLowerCase()) ||
-        t.slug.toLowerCase().includes(search.toLowerCase());
-      const matchStatus = statusFilter === "all" || t.subscription?.status === statusFilter;
-      return matchSearch && matchStatus;
+  const filtered = useMemo(
+    () =>
+      tenants.filter((tenant) => {
+        const matchSearch =
+          !search ||
+          tenant.name.toLowerCase().includes(search.toLowerCase()) ||
+          tenant.slug.toLowerCase().includes(search.toLowerCase());
+        const matchStatus =
+          statusFilter === "all" || tenant.subscription?.status === statusFilter;
+        return matchSearch && matchStatus;
+      }),
+    [search, statusFilter, tenants],
+  );
+
+  useEffect(() => {
+    if (!selectedTenant?.subscription) {
+      setEvents([]);
+      return;
+    }
+    let cancelled = false;
+    setLoadingEvents(true);
+    void (async () => {
+      try {
+        const loaded = await listSubscriptionEvents(selectedTenant.subscription!.id);
+        if (!cancelled) setEvents(loaded);
+      } finally {
+        if (!cancelled) setLoadingEvents(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedTenant?.subscription?.id]);
+
+  function openTenantDialog(tenant: TenantWithSub) {
+    setSelectedTenant(tenant);
+    setOverrideForm({
+      maxUnits: numberField(tenant.subscription?.overrideLimits.max_units),
+      maxProfessionals: numberField(tenant.subscription?.overrideLimits.max_professionals),
+      maxActiveClients: numberField(tenant.subscription?.overrideLimits.max_active_clients),
+      maxStorageMb: numberField(tenant.subscription?.overrideLimits.max_storage_mb),
+      discountCents: String(tenant.subscription?.discountCents ?? 0),
+      discountReason: tenant.subscription?.discountReason ?? "",
     });
-  }, [tenants, search, statusFilter]);
+  }
 
-  async function handleChangePlan(tenant: TenantWithSub, toPlanId: string) {
+  async function handleChangePlan(tenant: TenantWithSub, nextPlanId: string) {
     if (!tenant.subscription) return;
-    const fromPlan = plans.find((p) => p.id === tenant.subscription!.planId);
-    const toPlan = plans.find((p) => p.id === toPlanId);
-    if (!fromPlan || !toPlan) return;
+    const currentPlan = plans.find((plan) => plan.id === tenant.subscription?.planId);
+    const nextPlan = plans.find((plan) => plan.id === nextPlanId);
+    if (!currentPlan || !nextPlan) return;
     try {
       await changeSubscriptionPlan({
         subscriptionId: tenant.subscription.id,
         tenantId: tenant.id,
-        fromPlanId: fromPlan.id,
-        toPlanId: toPlan.id,
-        isUpgrade: toPlan.priceCents > fromPlan.priceCents,
+        fromPlanId: currentPlan.id,
+        toPlanId: nextPlan.id,
+        isUpgrade: nextPlan.priceCents > currentPlan.priceCents,
       });
-      toast({ title: "Plano alterado", description: `${tenant.name}: ${fromPlan.name} → ${toPlan.name}` });
-      onChange();
-    } catch (e) {
-      toast({ title: "Erro", description: String(e), variant: "destructive" });
+      toast({ title: "Plano alterado" });
+      await onReload();
+    } catch (error) {
+      toast({ title: "Erro ao trocar plano", description: String(error), variant: "destructive" });
     }
   }
 
-  async function handleStatus(tenant: TenantWithSub, newStatus: "active" | "suspended" | "canceled") {
+  async function handleStatus(tenant: TenantWithSub, newStatus: (typeof SUBSCRIPTION_STATUSES)[number]) {
     if (!tenant.subscription) return;
     try {
       await setSubscriptionStatus({
@@ -173,40 +349,76 @@ function TenantsTab({
         newStatus,
       });
       toast({ title: "Status atualizado" });
-      onChange();
-    } catch (e) {
-      toast({ title: "Erro", description: String(e), variant: "destructive" });
+      await onReload();
+      openTenantDialog({ ...tenant, subscription: { ...tenant.subscription, status: newStatus } });
+    } catch (error) {
+      toast({ title: "Erro ao atualizar status", description: String(error), variant: "destructive" });
+    }
+  }
+
+  async function handleSaveTenantAdjustments() {
+    if (!selectedTenant?.subscription) return;
+    try {
+      await Promise.all([
+        setOverrideLimits({
+          subscriptionId: selectedTenant.subscription.id,
+          tenantId: selectedTenant.id,
+          override: {
+            max_units: parseNullableNumber(overrideForm.maxUnits),
+            max_professionals: parseNullableNumber(overrideForm.maxProfessionals),
+            max_active_clients: parseNullableNumber(overrideForm.maxActiveClients),
+            max_storage_mb: parseNullableNumber(overrideForm.maxStorageMb),
+          },
+        }),
+        setDiscount({
+          subscriptionId: selectedTenant.subscription.id,
+          tenantId: selectedTenant.id,
+          discountCents: parseInt(overrideForm.discountCents || "0", 10) || 0,
+          discountReason: overrideForm.discountReason.trim() || null,
+        }),
+      ]);
+      toast({ title: "Ajustes salvos" });
+      await onReload();
+    } catch (error) {
+      toast({ title: "Erro ao salvar ajustes", description: String(error), variant: "destructive" });
     }
   }
 
   async function handleExtendTrial(tenant: TenantWithSub) {
     if (!tenant.subscription) return;
-    const newEnd = new Date(Date.now() + 14 * 86_400_000).toISOString();
     try {
-      await extendTrial({ subscriptionId: tenant.subscription.id, tenantId: tenant.id, newTrialEndsAt: newEnd, notes: "+14d via super admin" });
-      toast({ title: "Trial estendido", description: "+14 dias" });
-      onChange();
-    } catch (e) {
-      toast({ title: "Erro", description: String(e), variant: "destructive" });
+      await extendTrial({
+        subscriptionId: tenant.subscription.id,
+        tenantId: tenant.id,
+        newTrialEndsAt: new Date(Date.now() + 14 * 86_400_000).toISOString(),
+        notes: "+14d via super admin",
+      });
+      toast({ title: "Trial estendido" });
+      await onReload();
+    } catch (error) {
+      toast({ title: "Erro ao estender trial", description: String(error), variant: "destructive" });
     }
   }
 
   return (
-    <>
+    <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        <div className="relative flex-1 min-w-[200px]">
+        <div className="relative min-w-[220px] flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar tenant…" className="pl-9" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar tenant..."
+            className="pl-9"
+          />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos os status</SelectItem>
-            <SelectItem value="trialing">Em trial</SelectItem>
-            <SelectItem value="active">Ativa</SelectItem>
-            <SelectItem value="overdue">Em atraso</SelectItem>
-            <SelectItem value="suspended">Suspensa</SelectItem>
-            <SelectItem value="canceled">Cancelada</SelectItem>
+            {SUBSCRIPTION_STATUSES.map((status) => (
+              <SelectItem key={status} value={status}>{subscriptionStatusLabels[status]}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -216,44 +428,42 @@ function TenantsTab({
       ) : (
         <div className="surface-card overflow-hidden">
           <ul className="divide-y divide-border/60">
-            {filtered.map((t) => (
-              <li key={t.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
+            {filtered.map((tenant) => (
+              <li key={tenant.id} className="flex flex-col gap-3 p-4 xl:flex-row xl:items-center">
                 <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-soft text-primary">
                   <Building2 className="h-4 w-4" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{t.name}</p>
+                  <p className="truncate text-sm font-medium">{tenant.name}</p>
                   <p className="truncate text-xs text-muted-foreground">
-                    {segmentLabels[t.segment]} · {t.slug}
-                    {t.planName && ` · ${t.planName}`}
+                    {segmentLabels[tenant.segment]} · {tenant.slug} · {tenant.planName ?? "Sem plano"}
                   </p>
                 </div>
-                {t.subscription ? (
+                {tenant.subscription ? (
                   <>
-                    <StatusBadge tone={subscriptionStatusTone[t.subscription.status]}>
-                      {subscriptionStatusLabels[t.subscription.status]}
+                    <StatusBadge tone={subscriptionStatusTone[tenant.subscription.status]}>
+                      {subscriptionStatusLabels[tenant.subscription.status]}
                     </StatusBadge>
-                    <Select value={t.subscription.planId} onValueChange={(v) => handleChangePlan(t, v)}>
-                      <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
+                    <Select
+                      value={tenant.subscription.planId}
+                      onValueChange={(value) => void handleChangePlan(tenant, value)}
+                    >
+                      <SelectTrigger className="w-[150px]"><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {plans.filter((p) => p.status !== "archived").map((p) => (
-                          <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                        {plans.filter((plan) => plan.status !== "archived").map((plan) => (
+                          <SelectItem key={plan.id} value={plan.id}>{plan.name}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    <div className="flex flex-wrap gap-1.5">
-                      {t.subscription.status === "trialing" && (
-                        <Button size="sm" variant="outline" onClick={() => handleExtendTrial(t)}>+14d trial</Button>
+                    <div className="flex flex-wrap gap-2">
+                      {tenant.subscription.status === "trialing" && (
+                        <Button size="sm" variant="outline" onClick={() => void handleExtendTrial(tenant)}>
+                          +14d trial
+                        </Button>
                       )}
-                      {t.subscription.status !== "active" && (
-                        <Button size="sm" variant="outline" onClick={() => handleStatus(t, "active")}>Ativar</Button>
-                      )}
-                      {t.subscription.status !== "suspended" && t.subscription.status !== "canceled" && (
-                        <Button size="sm" variant="outline" onClick={() => handleStatus(t, "suspended")}>Suspender</Button>
-                      )}
-                      {t.subscription.status !== "canceled" && (
-                        <Button size="sm" variant="outline" onClick={() => handleStatus(t, "canceled")}>Cancelar</Button>
-                      )}
+                      <Button size="sm" variant="outline" onClick={() => openTenantDialog(tenant)}>
+                        <SlidersHorizontal className="mr-1.5 h-3.5 w-3.5" /> Ajustes
+                      </Button>
                     </div>
                   </>
                 ) : (
@@ -264,115 +474,730 @@ function TenantsTab({
           </ul>
         </div>
       )}
-    </>
-  );
-}
 
-// ---------------- PLANS ----------------
-function PlansTab({ plans, features }: { plans: Plan[]; features: PlanFeature[] }) {
-  if (plans.length === 0) {
-    return <EmptyState icon={<Package className="h-6 w-6" />} title="Sem planos" description="Crie planos via migrations ou API." />;
-  }
-  return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {plans.map((p) => (
-        <PlanCard key={p.id} plan={p} features={features.filter((f) => f.planId === p.id)} highlight={p.isDefault} />
-      ))}
+      <Dialog open={!!selectedTenant} onOpenChange={(open) => !open && setSelectedTenant(null)}>
+        <DialogContent className="max-h-[90vh] overflow-hidden sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{selectedTenant?.name ?? "Tenant"}</DialogTitle>
+          </DialogHeader>
+          {selectedTenant?.subscription ? (
+            <div className="grid gap-6 overflow-y-auto pr-2 md:grid-cols-[1fr_1fr]">
+              <div className="space-y-4">
+                <div className="grid gap-3">
+                  <Label>Status</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {SUBSCRIPTION_STATUSES.map((status) => (
+                      <Button
+                        key={status}
+                        size="sm"
+                        variant={selectedTenant.subscription?.status === status ? "default" : "outline"}
+                        onClick={() => void handleStatus(selectedTenant, status)}
+                      >
+                        {subscriptionStatusLabels[status]}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field label="Override unidades">
+                    <Input value={overrideForm.maxUnits} onChange={(e) => setOverrideForm((current) => ({ ...current, maxUnits: e.target.value }))} placeholder="Sem override" />
+                  </Field>
+                  <Field label="Override profissionais">
+                    <Input value={overrideForm.maxProfessionals} onChange={(e) => setOverrideForm((current) => ({ ...current, maxProfessionals: e.target.value }))} placeholder="Sem override" />
+                  </Field>
+                  <Field label="Override clientes ativos">
+                    <Input value={overrideForm.maxActiveClients} onChange={(e) => setOverrideForm((current) => ({ ...current, maxActiveClients: e.target.value }))} placeholder="Sem override" />
+                  </Field>
+                  <Field label="Override storage MB">
+                    <Input value={overrideForm.maxStorageMb} onChange={(e) => setOverrideForm((current) => ({ ...current, maxStorageMb: e.target.value }))} placeholder="Sem override" />
+                  </Field>
+                  <Field label="Desconto em centavos">
+                    <Input value={overrideForm.discountCents} onChange={(e) => setOverrideForm((current) => ({ ...current, discountCents: e.target.value }))} />
+                  </Field>
+                  <Field label="Motivo do desconto">
+                    <Input value={overrideForm.discountReason} onChange={(e) => setOverrideForm((current) => ({ ...current, discountReason: e.target.value }))} />
+                  </Field>
+                </div>
+
+                <Button onClick={() => void handleSaveTenantAdjustments()}>
+                  Salvar ajustes
+                </Button>
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="font-display text-lg font-semibold">Eventos recentes</h3>
+                {loadingEvents ? (
+                  <div className="flex h-32 items-center justify-center">
+                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                  </div>
+                ) : events.length === 0 ? (
+                  <EmptyState icon={<CreditCard className="h-6 w-6" />} title="Sem eventos" description="Nenhuma movimentação registrada." />
+                ) : (
+                  <ul className="space-y-2">
+                    {events.map((event) => (
+                      <li key={event.id} className="rounded-xl border border-border/60 p-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-sm font-medium">{eventLabels[event.eventType]}</p>
+                          <span className="text-[11px] text-muted-foreground">{formatDateTime(event.createdAt)}</span>
+                        </div>
+                        {event.notes && <p className="mt-1 text-xs text-muted-foreground">{event.notes}</p>}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          ) : (
+            <EmptyState icon={<CreditCard className="h-6 w-6" />} title="Sem assinatura" description="Este tenant ainda não possui assinatura vinculada." />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
-// ---------------- FLAGS ----------------
-function FlagsTab({ flags, onChange }: { flags: FeatureFlag[]; onChange: () => void }) {
+function PlansTab({
+  plans,
+  features,
+  onReload,
+}: {
+  plans: Plan[];
+  features: PlanFeature[];
+  onReload: () => Promise<void>;
+}) {
   const { toast } = useToast();
+  const [openPlanDialog, setOpenPlanDialog] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
+  const [planForm, setPlanForm] = useState<PlanFormState>(EMPTY_PLAN_FORM);
 
-  async function toggleFlag(flag: FeatureFlag) {
-    const newValue = !(flag.value === true);
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+  const [featureForm, setFeatureForm] = useState<FeatureFormState>(EMPTY_FEATURE_FORM);
+  const [editingFeature, setEditingFeature] = useState<PlanFeature | null>(null);
+
+  function openPlanEditor(plan?: Plan) {
+    setEditingPlan(plan ?? null);
+    setPlanForm(
+      plan
+        ? {
+            code: plan.code,
+            name: plan.name,
+            description: plan.description ?? "",
+            billingPeriod: plan.billingPeriod,
+            priceCents: String(plan.priceCents),
+            trialDays: String(plan.trialDays),
+            gracePeriodDays: String(plan.gracePeriodDays),
+            maxUnits: numberField(plan.maxUnits),
+            maxProfessionals: numberField(plan.maxProfessionals),
+            maxActiveClients: numberField(plan.maxActiveClients),
+            maxStorageMb: numberField(plan.maxStorageMb),
+            status: plan.status,
+            isDefault: plan.isDefault,
+            displayOrder: String(plan.displayOrder),
+          }
+        : EMPTY_PLAN_FORM,
+    );
+    setOpenPlanDialog(true);
+  }
+
+  function openFeatureEditor(plan: Plan, feature?: PlanFeature) {
+    setSelectedPlan(plan);
+    setEditingFeature(feature ?? null);
+    setFeatureForm(
+      feature
+        ? {
+            featureKey: feature.featureKey,
+            label: feature.label,
+            valueType: feature.valueType,
+            valueRaw: stringifyValue(feature.valueType, feature.value),
+            displayOrder: String(feature.displayOrder),
+          }
+        : EMPTY_FEATURE_FORM,
+    );
+  }
+
+  async function savePlan() {
     try {
-      await setFeatureFlagValue(flag.id, newValue);
-      toast({ title: "Flag atualizada", description: `${flag.label}: ${newValue ? "ativa" : "inativa"}` });
-      onChange();
-    } catch (e) {
-      toast({ title: "Erro", description: String(e), variant: "destructive" });
+      await upsertPlan({
+        code: planForm.code.trim(),
+        name: planForm.name.trim(),
+        description: planForm.description.trim() || null,
+        billingPeriod: planForm.billingPeriod,
+        priceCents: parseInt(planForm.priceCents || "0", 10) || 0,
+        trialDays: parseInt(planForm.trialDays || "14", 10) || 14,
+        gracePeriodDays: parseInt(planForm.gracePeriodDays || "7", 10) || 7,
+        maxUnits: parseNullableNumber(planForm.maxUnits),
+        maxProfessionals: parseNullableNumber(planForm.maxProfessionals),
+        maxActiveClients: parseNullableNumber(planForm.maxActiveClients),
+        maxStorageMb: parseNullableNumber(planForm.maxStorageMb),
+        status: planForm.status,
+        isDefault: planForm.isDefault,
+        displayOrder: parseInt(planForm.displayOrder || "0", 10) || 0,
+      });
+      toast({ title: editingPlan ? "Plano atualizado" : "Plano criado" });
+      setOpenPlanDialog(false);
+      await onReload();
+    } catch (error) {
+      toast({ title: "Erro ao salvar plano", description: String(error), variant: "destructive" });
     }
   }
 
-  if (flags.length === 0) {
-    return <EmptyState icon={<Flag className="h-6 w-6" />} title="Nenhuma flag" description="Adicione flags via SQL." />;
+  async function saveFeature() {
+    if (!selectedPlan) return;
+    try {
+      await upsertPlanFeature({
+        id: editingFeature?.id,
+        planId: selectedPlan.id,
+        featureKey: featureForm.featureKey.trim(),
+        label: featureForm.label.trim(),
+        valueType: featureForm.valueType,
+        value: parseFeatureValue(featureForm.valueType, featureForm.valueRaw),
+        displayOrder: parseInt(featureForm.displayOrder || "0", 10) || 0,
+      });
+      toast({ title: editingFeature ? "Feature atualizada" : "Feature criada" });
+      setEditingFeature(null);
+      setFeatureForm(EMPTY_FEATURE_FORM);
+      await onReload();
+    } catch (error) {
+      toast({ title: "Erro ao salvar feature", description: String(error), variant: "destructive" });
+    }
   }
 
-  const globals = flags.filter((f) => f.isGlobal);
-  const tenantSpecific = flags.filter((f) => !f.isGlobal);
+  async function removeFeature(featureId: string) {
+    try {
+      await deletePlanFeature(featureId);
+      toast({ title: "Feature removida" });
+      await onReload();
+    } catch (error) {
+      toast({ title: "Erro ao remover feature", description: String(error), variant: "destructive" });
+    }
+  }
+
+  async function archive(planId: string) {
+    try {
+      await archivePlan(planId);
+      toast({ title: "Plano arquivado" });
+      await onReload();
+    } catch (error) {
+      toast({ title: "Erro ao arquivar plano", description: String(error), variant: "destructive" });
+    }
+  }
 
   return (
     <div className="space-y-4">
-      <FlagSection title="Globais (todos os tenants)" flags={globals} onToggle={toggleFlag} />
-      <FlagSection title="Por tenant" flags={tenantSpecific} onToggle={toggleFlag} />
-    </div>
-  );
-}
+      <div className="flex justify-end">
+        <Button onClick={() => openPlanEditor()}>
+          <Plus className="mr-2 h-4 w-4" /> Novo plano
+        </Button>
+      </div>
 
-function FlagSection({
-  title,
-  flags,
-  onToggle,
-}: {
-  title: string;
-  flags: FeatureFlag[];
-  onToggle: (f: FeatureFlag) => void;
-}) {
-  if (flags.length === 0) return null;
-  return (
-    <section className="surface-card overflow-hidden">
-      <header className="border-b border-border/60 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</header>
-      <ul className="divide-y divide-border/60">
-        {flags.map((f) => (
-          <li key={f.id} className="flex items-center gap-3 p-4">
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium">{f.label}</p>
-              <p className="text-xs text-muted-foreground">
-                <code className="text-[10px]">{f.flagKey}</code>
-                {f.description && ` · ${f.description}`}
-              </p>
-            </div>
-            {f.valueType === "boolean" ? (
-              <Switch checked={f.value === true} onCheckedChange={() => onToggle(f)} />
+      {plans.length === 0 ? (
+        <EmptyState icon={<Package className="h-6 w-6" />} title="Sem planos" description="Cadastre o primeiro plano do SaaS." />
+      ) : (
+        <div className="grid gap-4 xl:grid-cols-[1fr_380px]">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {plans.map((plan) => (
+              <div key={plan.id} className="space-y-3">
+                <PlanCard plan={plan} features={features.filter((feature) => feature.planId === plan.id)} highlight={plan.isDefault} />
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" variant="outline" onClick={() => openPlanEditor(plan)}>
+                    <Pencil className="mr-1.5 h-3.5 w-3.5" /> Editar
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => openFeatureEditor(plan)}>
+                    <Plus className="mr-1.5 h-3.5 w-3.5" /> Feature
+                  </Button>
+                  {plan.status !== "archived" && (
+                    <Button size="sm" variant="ghost" onClick={() => void archive(plan.id)}>
+                      <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Arquivar
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="surface-card space-y-4 p-5">
+            <h3 className="font-display text-lg font-semibold">
+              {selectedPlan ? `Features de ${selectedPlan.name}` : "Editor de features"}
+            </h3>
+            {selectedPlan ? (
+              <>
+                <div className="grid gap-3">
+                  <Field label="Chave">
+                    <Input value={featureForm.featureKey} onChange={(e) => setFeatureForm((current) => ({ ...current, featureKey: e.target.value }))} />
+                  </Field>
+                  <Field label="Rótulo">
+                    <Input value={featureForm.label} onChange={(e) => setFeatureForm((current) => ({ ...current, label: e.target.value }))} />
+                  </Field>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field label="Tipo">
+                      <Select value={featureForm.valueType} onValueChange={(value) => setFeatureForm((current) => ({ ...current, valueType: value as PlanFeature["valueType"] }))}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {FEATURE_VALUE_TYPES.map((valueType) => (
+                            <SelectItem key={valueType} value={valueType}>{valueType}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    <Field label="Ordem">
+                      <Input value={featureForm.displayOrder} onChange={(e) => setFeatureForm((current) => ({ ...current, displayOrder: e.target.value }))} />
+                    </Field>
+                  </div>
+                  <Field label="Valor">
+                    <Textarea rows={3} value={featureForm.valueRaw} onChange={(e) => setFeatureForm((current) => ({ ...current, valueRaw: e.target.value }))} />
+                  </Field>
+                </div>
+                <Button onClick={() => void saveFeature()}>
+                  {editingFeature ? "Salvar feature" : "Adicionar feature"}
+                </Button>
+
+                <div className="space-y-2">
+                  {features.filter((feature) => feature.planId === selectedPlan.id).map((feature) => (
+                    <div key={feature.id} className="rounded-xl border border-border/60 p-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-medium">{feature.label}</p>
+                          <p className="text-xs text-muted-foreground">{feature.featureKey} · {feature.valueType}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" onClick={() => openFeatureEditor(selectedPlan, feature)}>
+                            Editar
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => void removeFeature(feature.id)}>
+                            Remover
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             ) : (
-              <code className="rounded bg-muted px-2 py-1 text-xs">{JSON.stringify(f.value)}</code>
+              <p className="text-sm text-muted-foreground">Escolha um plano e clique em “Feature” para editar benefícios e habilitações.</p>
             )}
-          </li>
-        ))}
-      </ul>
-    </section>
+          </div>
+        </div>
+      )}
+
+      <Dialog open={openPlanDialog} onOpenChange={setOpenPlanDialog}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{editingPlan ? "Editar plano" : "Novo plano"}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Código">
+                <Input value={planForm.code} onChange={(e) => setPlanForm((current) => ({ ...current, code: e.target.value }))} />
+              </Field>
+              <Field label="Nome">
+                <Input value={planForm.name} onChange={(e) => setPlanForm((current) => ({ ...current, name: e.target.value }))} />
+              </Field>
+            </div>
+            <Field label="Descrição">
+              <Textarea rows={3} value={planForm.description} onChange={(e) => setPlanForm((current) => ({ ...current, description: e.target.value }))} />
+            </Field>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Periodicidade">
+                <Select value={planForm.billingPeriod} onValueChange={(value) => setPlanForm((current) => ({ ...current, billingPeriod: value as Plan["billingPeriod"] }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(billingPeriodLabels).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field label="Status">
+                <Select value={planForm.status} onValueChange={(value) => setPlanForm((current) => ({ ...current, status: value as Plan["status"] }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {PLAN_STATUSES.map((status) => (
+                      <SelectItem key={status} value={status}>{planStatusLabels[status]}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Preço em centavos">
+                <Input value={planForm.priceCents} onChange={(e) => setPlanForm((current) => ({ ...current, priceCents: e.target.value }))} />
+              </Field>
+              <Field label="Ordem">
+                <Input value={planForm.displayOrder} onChange={(e) => setPlanForm((current) => ({ ...current, displayOrder: e.target.value }))} />
+              </Field>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <Field label="Trial (dias)">
+                <Input value={planForm.trialDays} onChange={(e) => setPlanForm((current) => ({ ...current, trialDays: e.target.value }))} />
+              </Field>
+              <Field label="Grace (dias)">
+                <Input value={planForm.gracePeriodDays} onChange={(e) => setPlanForm((current) => ({ ...current, gracePeriodDays: e.target.value }))} />
+              </Field>
+              <Field label="Unidades">
+                <Input value={planForm.maxUnits} onChange={(e) => setPlanForm((current) => ({ ...current, maxUnits: e.target.value }))} placeholder="Ilimitado" />
+              </Field>
+              <Field label="Profissionais">
+                <Input value={planForm.maxProfessionals} onChange={(e) => setPlanForm((current) => ({ ...current, maxProfessionals: e.target.value }))} placeholder="Ilimitado" />
+              </Field>
+              <Field label="Clientes ativos">
+                <Input value={planForm.maxActiveClients} onChange={(e) => setPlanForm((current) => ({ ...current, maxActiveClients: e.target.value }))} placeholder="Ilimitado" />
+              </Field>
+              <Field label="Storage MB">
+                <Input value={planForm.maxStorageMb} onChange={(e) => setPlanForm((current) => ({ ...current, maxStorageMb: e.target.value }))} placeholder="Ilimitado" />
+              </Field>
+            </div>
+            <label className="flex items-center gap-2 text-sm">
+              <Switch checked={planForm.isDefault} onCheckedChange={(checked) => setPlanForm((current) => ({ ...current, isDefault: checked }))} />
+              Plano padrão
+            </label>
+            <Button onClick={() => void savePlan()}>
+              {editingPlan ? "Salvar plano" : "Criar plano"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
 
-// ---------------- TEMPLATES ----------------
-function TemplatesTab({ templates }: { templates: SegmentTemplate[] }) {
-  if (templates.length === 0) {
-    return <EmptyState icon={<FileStack className="h-6 w-6" />} title="Sem templates" description="Adicione templates por segmento." />;
+function FlagsTab({
+  flags,
+  tenants,
+  onReload,
+}: {
+  flags: FeatureFlag[];
+  tenants: TenantWithSub[];
+  onReload: () => Promise<void>;
+}) {
+  const { toast } = useToast();
+  const [editingFlag, setEditingFlag] = useState<FeatureFlag | null>(null);
+  const [form, setForm] = useState<FlagFormState>(EMPTY_FLAG_FORM);
+
+  function openEditor(flag?: FeatureFlag) {
+    setEditingFlag(flag ?? null);
+    setForm(
+      flag
+        ? {
+            tenantId: flag.isGlobal ? "global" : (flag.tenantId ?? "global"),
+            flagKey: flag.flagKey,
+            label: flag.label,
+            description: flag.description ?? "",
+            valueType: flag.valueType,
+            valueRaw: stringifyValue(flag.valueType, flag.value),
+            isGlobal: flag.isGlobal,
+          }
+        : EMPTY_FLAG_FORM,
+    );
   }
+
+  async function saveFlag() {
+    try {
+      await upsertFeatureFlag({
+        id: editingFlag?.id,
+        tenantId: form.isGlobal ? null : form.tenantId === "global" ? null : form.tenantId,
+        flagKey: form.flagKey.trim(),
+        label: form.label.trim(),
+        description: form.description.trim() || null,
+        valueType: form.valueType,
+        value: parseFeatureValue(form.valueType, form.valueRaw),
+        isGlobal: form.isGlobal,
+      });
+      toast({ title: editingFlag ? "Flag atualizada" : "Flag criada" });
+      setEditingFlag(null);
+      setForm(EMPTY_FLAG_FORM);
+      await onReload();
+    } catch (error) {
+      toast({ title: "Erro ao salvar flag", description: String(error), variant: "destructive" });
+    }
+  }
+
+  async function removeFlag(flagId: string) {
+    try {
+      await deleteFeatureFlag(flagId);
+      toast({ title: "Flag removida" });
+      await onReload();
+    } catch (error) {
+      toast({ title: "Erro ao remover flag", description: String(error), variant: "destructive" });
+    }
+  }
+
+  async function toggleFlag(flag: FeatureFlag) {
+    try {
+      await setFeatureFlagValue(flag.id, !(flag.value === true));
+      toast({ title: "Flag atualizada" });
+      await onReload();
+    } catch (error) {
+      toast({ title: "Erro ao alternar flag", description: String(error), variant: "destructive" });
+    }
+  }
+
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {templates.map((t) => (
-        <article key={t.id} className="surface-card p-4">
-          <header className="mb-2 flex items-start justify-between gap-2">
-            <div>
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">{segmentLabels[t.segment]}</p>
-              <h3 className="font-display text-base font-semibold">{t.name}</h3>
-            </div>
-            {t.isDefault && <StatusBadge tone="brand">padrão</StatusBadge>}
-          </header>
-          {t.description && <p className="mb-2 text-xs text-muted-foreground">{t.description}</p>}
-          <details className="text-xs">
-            <summary className="cursor-pointer text-muted-foreground hover:text-foreground">Ver payload</summary>
-            <pre className="mt-2 overflow-auto rounded bg-muted/50 p-2 text-[10px]">{JSON.stringify(t.payload, null, 2)}</pre>
-          </details>
-          <p className="mt-2 text-[10px] text-muted-foreground">
-            Periodicidade aplicável: {Object.values(billingPeriodLabels).join(", ")} · {formatPrice(0)}
-          </p>
-        </article>
-      ))}
+    <div className="grid gap-4 xl:grid-cols-[360px_1fr]">
+      <div className="surface-card space-y-4 p-5">
+        <h3 className="font-display text-lg font-semibold">{editingFlag ? "Editar flag" : "Nova flag"}</h3>
+        <Field label="Chave">
+          <Input value={form.flagKey} onChange={(e) => setForm((current) => ({ ...current, flagKey: e.target.value }))} />
+        </Field>
+        <Field label="Rótulo">
+          <Input value={form.label} onChange={(e) => setForm((current) => ({ ...current, label: e.target.value }))} />
+        </Field>
+        <Field label="Descrição">
+          <Textarea rows={3} value={form.description} onChange={(e) => setForm((current) => ({ ...current, description: e.target.value }))} />
+        </Field>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="Tipo">
+            <Select value={form.valueType} onValueChange={(value) => setForm((current) => ({ ...current, valueType: value as FeatureFlag["valueType"] }))}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {FEATURE_VALUE_TYPES.map((valueType) => (
+                  <SelectItem key={valueType} value={valueType}>{valueType}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field label="Escopo">
+            <Select value={form.isGlobal ? "global" : "tenant"} onValueChange={(value) => setForm((current) => ({ ...current, isGlobal: value === "global", tenantId: value === "global" ? "global" : current.tenantId }))}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="global">Global</SelectItem>
+                <SelectItem value="tenant">Por tenant</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+        </div>
+        {!form.isGlobal && (
+          <Field label="Tenant">
+            <Select value={form.tenantId} onValueChange={(value) => setForm((current) => ({ ...current, tenantId: value }))}>
+              <SelectTrigger><SelectValue placeholder="Escolha o tenant" /></SelectTrigger>
+              <SelectContent>
+                {tenants.map((tenant) => (
+                  <SelectItem key={tenant.id} value={tenant.id}>{tenant.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+        )}
+        <Field label="Valor">
+          <Textarea rows={3} value={form.valueRaw} onChange={(e) => setForm((current) => ({ ...current, valueRaw: e.target.value }))} />
+        </Field>
+        <Button onClick={() => void saveFlag()}>{editingFlag ? "Salvar flag" : "Criar flag"}</Button>
+      </div>
+
+      <div className="space-y-4">
+        {flags.length === 0 ? (
+          <EmptyState icon={<Flag className="h-6 w-6" />} title="Sem flags" description="Cadastre a primeira flag do ambiente." />
+        ) : (
+          <div className="surface-card overflow-hidden">
+            <ul className="divide-y divide-border/60">
+              {flags.map((flag) => (
+                <li key={flag.id} className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-medium">{flag.label}</p>
+                      <StatusBadge tone={flag.isGlobal ? "brand" : "info"} dot={false}>
+                        {flag.isGlobal ? "global" : "tenant"}
+                      </StatusBadge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {flag.flagKey} · {flag.valueType}
+                      {flag.description ? ` · ${flag.description}` : ""}
+                    </p>
+                  </div>
+                  {flag.valueType === "boolean" ? (
+                    <Switch checked={flag.value === true} onCheckedChange={() => void toggleFlag(flag)} />
+                  ) : (
+                    <code className="rounded bg-muted px-2 py-1 text-xs">{stringifyValue(flag.valueType, flag.value)}</code>
+                  )}
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => openEditor(flag)}>Editar</Button>
+                    <Button size="sm" variant="ghost" onClick={() => void removeFlag(flag.id)}>Remover</Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
     </div>
   );
+}
+
+function TemplatesTab({
+  templates,
+  onReload,
+}: {
+  templates: SegmentTemplate[];
+  onReload: () => Promise<void>;
+}) {
+  const { toast } = useToast();
+  const [editingTemplate, setEditingTemplate] = useState<SegmentTemplate | null>(null);
+  const [form, setForm] = useState<TemplateFormState>(EMPTY_TEMPLATE_FORM);
+
+  function openEditor(template?: SegmentTemplate) {
+    setEditingTemplate(template ?? null);
+    setForm(
+      template
+        ? {
+            segment: template.segment,
+            name: template.name,
+            description: template.description ?? "",
+            payloadRaw: JSON.stringify(template.payload, null, 2),
+            isDefault: template.isDefault,
+            isActive: template.isActive,
+            displayOrder: String(template.displayOrder),
+          }
+        : EMPTY_TEMPLATE_FORM,
+    );
+  }
+
+  async function saveTemplate() {
+    try {
+      await upsertSegmentTemplate({
+        id: editingTemplate?.id,
+        segment: form.segment,
+        name: form.name.trim(),
+        description: form.description.trim() || null,
+        payload: JSON.parse(form.payloadRaw || "{}") as Record<string, unknown>,
+        isDefault: form.isDefault,
+        isActive: form.isActive,
+        displayOrder: parseInt(form.displayOrder || "0", 10) || 0,
+      });
+      toast({ title: editingTemplate ? "Template atualizado" : "Template criado" });
+      setEditingTemplate(null);
+      setForm(EMPTY_TEMPLATE_FORM);
+      await onReload();
+    } catch (error) {
+      toast({ title: "Erro ao salvar template", description: String(error), variant: "destructive" });
+    }
+  }
+
+  async function removeTemplate(templateId: string) {
+    try {
+      await deleteSegmentTemplate(templateId);
+      toast({ title: "Template removido" });
+      await onReload();
+    } catch (error) {
+      toast({ title: "Erro ao remover template", description: String(error), variant: "destructive" });
+    }
+  }
+
+  return (
+    <div className="grid gap-4 xl:grid-cols-[380px_1fr]">
+      <div className="surface-card space-y-4 p-5">
+        <h3 className="font-display text-lg font-semibold">{editingTemplate ? "Editar template" : "Novo template"}</h3>
+        <Field label="Segmento">
+          <Select value={form.segment} onValueChange={(value) => setForm((current) => ({ ...current, segment: value as TenantSegment }))}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {TENANT_SEGMENTS.map((segment) => (
+                <SelectItem key={segment} value={segment}>{segmentLabels[segment]}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field label="Nome">
+          <Input value={form.name} onChange={(e) => setForm((current) => ({ ...current, name: e.target.value }))} />
+        </Field>
+        <Field label="Descrição">
+          <Textarea rows={3} value={form.description} onChange={(e) => setForm((current) => ({ ...current, description: e.target.value }))} />
+        </Field>
+        <Field label="Payload JSON">
+          <Textarea rows={10} value={form.payloadRaw} onChange={(e) => setForm((current) => ({ ...current, payloadRaw: e.target.value }))} className="font-mono text-xs" />
+        </Field>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="Ordem">
+            <Input value={form.displayOrder} onChange={(e) => setForm((current) => ({ ...current, displayOrder: e.target.value }))} />
+          </Field>
+          <div className="space-y-3">
+            <label className="flex items-center gap-2 text-sm">
+              <Switch checked={form.isDefault} onCheckedChange={(checked) => setForm((current) => ({ ...current, isDefault: checked }))} />
+              Template padrão
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <Switch checked={form.isActive} onCheckedChange={(checked) => setForm((current) => ({ ...current, isActive: checked }))} />
+              Ativo
+            </label>
+          </div>
+        </div>
+        <Button onClick={() => void saveTemplate()}>{editingTemplate ? "Salvar template" : "Criar template"}</Button>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {templates.length === 0 ? (
+          <EmptyState icon={<FileStack className="h-6 w-6" />} title="Sem templates" description="Cadastre o primeiro template por segmento." />
+        ) : (
+          templates.map((template) => (
+            <article key={template.id} className="surface-card flex flex-col gap-3 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">{segmentLabels[template.segment]}</p>
+                  <h3 className="font-display text-base font-semibold">{template.name}</h3>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {template.isDefault && <StatusBadge tone="brand" dot={false}>padrão</StatusBadge>}
+                  {!template.isActive && <StatusBadge tone="neutral" dot={false}>inativo</StatusBadge>}
+                </div>
+              </div>
+              {template.description && <p className="text-xs text-muted-foreground">{template.description}</p>}
+              <pre className="max-h-40 overflow-auto rounded-lg bg-muted/50 p-3 text-[10px]">{JSON.stringify(template.payload, null, 2)}</pre>
+              <div className="mt-auto flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => openEditor(template)}>Editar</Button>
+                <Button size="sm" variant="ghost" onClick={() => void removeTemplate(template.id)}>Remover</Button>
+              </div>
+            </article>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      {children}
+    </div>
+  );
+}
+
+function parseNullableNumber(value: string): number | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const parsed = parseInt(trimmed, 10);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+function parseFeatureValue(valueType: PlanFeature["valueType"], raw: string): unknown {
+  if (valueType === "boolean") return raw.trim().toLowerCase() === "true";
+  if (valueType === "number") return Number(raw || 0);
+  if (valueType === "json") return JSON.parse(raw || "{}");
+  return raw;
+}
+
+function stringifyValue(valueType: PlanFeature["valueType"], value: unknown): string {
+  if (valueType === "json") return JSON.stringify(value ?? {}, null, 2);
+  if (typeof value === "string") return value;
+  return String(value ?? "");
+}
+
+function numberField(value: number | null | undefined): string {
+  return value === null || value === undefined ? "" : String(value);
+}
+
+function formatDateTime(iso: string) {
+  return new Date(iso).toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }

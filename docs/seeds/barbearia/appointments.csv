@@ -1,0 +1,5 @@
+Cliente;Profissional;Unidade;Serviço;Início (ISO ou dd/mm/aaaa hh:mm);Duração (min);Preço (R$);Origem;Status;Observações
+Rafael Lima;Diego;;Combo Corte + Barba;22/04/2026 08:30;75;115;whatsapp;confirmed;Cliente VIP
+Bruno Sales;Braga;;Corte Masculino Premium;22/04/2026 10:15;45;70;phone;pending;Pediu atraso máximo de 10 min
+Caio Menezes;Diego;;Barba Terapia;22/04/2026 13:00;35;55;client_portal;requested;Primeira visita
+Leandro Pires;JV;;Pigmentação de Barba;23/04/2026 17:00;40;80;frontdesk;confirmed;Atendimento de fim de expediente

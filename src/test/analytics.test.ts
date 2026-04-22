@@ -4,6 +4,7 @@
  */
 import { describe, it, expect } from "vitest";
 import {
+  applyFilters,
   attendanceRate,
   noShowRate,
   cancellationRate,
@@ -22,6 +23,7 @@ function fact(over: Partial<ApptFact>): ApptFact {
     tenantId: "t1",
     unitId: "u1",
     professionalId: "p1",
+    serviceId: "s1",
     clientId: "c1",
     startsAt: "2026-04-21T10:00:00Z",
     endsAt: "2026-04-21T11:00:00Z",
@@ -148,5 +150,20 @@ describe("domain/analytics — métricas operacionais", () => {
     expect(r.eligible).toBe(2);
     expect(r.rebooked).toBe(1);
     expect(r.rate).toBe(50);
+  });
+
+  it("applyFilters respeita serviceId além de unidade/profissional/origem", () => {
+    const rows = [
+      fact({ id: "a1", serviceId: "s1" }),
+      fact({ id: "a2", serviceId: "s2" }),
+    ];
+    const filtered = applyFilters(rows, {
+      unitId: null,
+      professionalId: null,
+      serviceId: "s2",
+      source: null,
+    });
+    expect(filtered).toHaveLength(1);
+    expect(filtered[0]?.id).toBe("a2");
   });
 });

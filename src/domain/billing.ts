@@ -231,3 +231,9 @@ export function isUsageBlocked(used: number, limit: number | null): boolean {
 export function formatPrice(priceCents: number, currency = "BRL"): string {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(priceCents / 100);
 }
+
+export function isBooleanFeatureEnabled(value: unknown): boolean {
+  if (value === true || value === "true" || value === 1) return true;
+  if (typeof value === "number") return value > 0;
+  return false;
+}

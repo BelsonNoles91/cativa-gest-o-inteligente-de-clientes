@@ -36,7 +36,14 @@ Para migrar **um único negócio** sem mexer no banco inteiro, use a tela de
 
 - Clientes
 - Serviços (com preços base)
+- Equipe
+- Pacotes
+- Memberships
+- Protocolos
 - Agendamentos (últimos 5 mil)
 - Métricas resumo
 
 Esse pacote é suficiente para reimportar em outra instância.
+
+Para demo rápida ou tenant novo, use também os packs em
+[11-seeds-demo.md](./11-seeds-demo.md).

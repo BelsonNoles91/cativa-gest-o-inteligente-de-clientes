@@ -3,13 +3,14 @@
  *
  * NÃO é módulo fiscal. É a tela "Meu plano" do SaaS.
  */
-import { Loader2, CreditCard, Sparkles, AlertTriangle, Calendar } from "lucide-react";
+import { Loader2, CreditCard, Sparkles, AlertTriangle, Calendar, History, Layers3 } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { PlanCard } from "@/features/billing/PlanCard";
 import { UsageBar } from "@/features/billing/UsageBar";
 import { useTenantBilling } from "@/features/billing/useTenantBilling";
 import {
+  eventLabels,
   formatPrice,
   isInGracePeriod,
   subscriptionStatusLabels,
@@ -18,7 +19,7 @@ import {
 } from "@/domain/billing";
 
 export default function Billing() {
-  const { loading, subscription, plan, features, flags, usage, limits } = useTenantBilling();
+  const { loading, subscription, plan, allPlans, features, flags, usage, limits, events } = useTenantBilling();
 
   if (loading) {
     return (
@@ -79,6 +80,18 @@ export default function Billing() {
           </div>
 
           <div className="surface-card p-5">
+            <h2 className="mb-3 flex items-center gap-2 font-display text-lg font-semibold">
+              <Layers3 className="h-4 w-4 text-primary" /> Limites efetivos
+            </h2>
+            <dl className="grid gap-3 text-sm sm:grid-cols-2">
+              <Detail label="Unidades" value={formatLimit(limits?.maxUnits ?? null)} />
+              <Detail label="Profissionais" value={formatLimit(limits?.maxProfessionals ?? null)} />
+              <Detail label="Clientes ativos" value={formatLimit(limits?.maxActiveClients ?? null)} />
+              <Detail label="Armazenamento" value={formatLimit(limits?.maxStorageMb ?? null, " MB")} />
+            </dl>
+          </div>
+
+          <div className="surface-card p-5">
             <h2 className="mb-3 font-display text-lg font-semibold">Detalhes da assinatura</h2>
             <dl className="grid gap-3 text-sm sm:grid-cols-2">
               <Detail label="Início do período" value={formatDate(subscription.currentPeriodStart)} />
@@ -90,6 +103,25 @@ export default function Billing() {
               />
             </dl>
           </div>
+
+          {events.length > 0 && (
+            <div className="surface-card p-5">
+              <h2 className="mb-3 flex items-center gap-2 font-display text-lg font-semibold">
+                <History className="h-4 w-4 text-primary" /> Histórico recente
+              </h2>
+              <ul className="space-y-2 text-sm">
+                {events.slice(0, 8).map((event) => (
+                  <li key={event.id} className="rounded-lg bg-muted/40 px-3 py-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="font-medium">{eventLabels[event.eventType]}</span>
+                      <span className="text-xs text-muted-foreground">{formatDate(event.createdAt)}</span>
+                    </div>
+                    {event.notes && <p className="mt-1 text-xs text-muted-foreground">{event.notes}</p>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {flags.length > 0 && (
             <div className="surface-card p-5">
@@ -110,6 +142,26 @@ export default function Billing() {
 
         <aside className="space-y-3">
           <PlanCard plan={plan} features={features} highlight />
+          {allPlans.filter((item) => item.status !== "archived" && item.id !== plan.id).length > 0 && (
+            <div className="surface-card space-y-3 p-5">
+              <h2 className="font-display text-lg font-semibold">Outros planos disponíveis</h2>
+              <div className="space-y-3">
+                {allPlans
+                  .filter((item) => item.status !== "archived" && item.id !== plan.id)
+                  .map((item) => (
+                    <div key={item.id} className="rounded-lg border border-border/60 p-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-medium">{item.name}</p>
+                          <p className="text-xs text-muted-foreground">{item.description ?? "Sem descrição"}</p>
+                        </div>
+                        <span className="text-sm font-semibold">{formatPrice(item.priceCents, item.currency)}</span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
           <p className="px-1 text-xs text-muted-foreground">
             Para mudar de plano, fale com o suporte. A integração com pagamento será adicionada em breve.
           </p>
@@ -132,4 +184,8 @@ function Detail({ label, value }: { label: string; value: string }) {
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function formatLimit(value: number | null, suffix = ""): string {
+  return value === null ? "Ilimitado" : `${value.toLocaleString("pt-BR")}${suffix}`;
 }

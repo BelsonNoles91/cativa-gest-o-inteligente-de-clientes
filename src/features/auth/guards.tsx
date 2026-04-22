@@ -28,7 +28,10 @@ export function ProtectedRoute({ children }: { children?: ReactNode }) {
   const location = useLocation();
 
   if (loading) return <FullScreenLoader />;
-  if (!user) return <Navigate to="/auth/login" replace state={{ from: location }} />;
+  if (!user) {
+    const fallback = location.pathname.startsWith("/portal") ? "/portal/acesso" : "/auth/login";
+    return <Navigate to={fallback} replace state={{ from: location }} />;
+  }
 
   return <>{children ?? <Outlet />}</>;
 }

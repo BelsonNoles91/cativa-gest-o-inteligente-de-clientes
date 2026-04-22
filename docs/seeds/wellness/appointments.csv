@@ -1,0 +1,5 @@
+Cliente;Profissional;Unidade;Serviço;Início (ISO ou dd/mm/aaaa hh:mm);Duração (min);Preço (R$);Origem;Status;Observações
+Helena Duarte;Ana Clara;;Massagem Relaxante;22/04/2026 09:30;60;180;phone;confirmed;Cliente pediu ambiente mais silencioso
+Gabriela Mota;Clara;;Ritual Anti-stress;22/04/2026 15:00;90;320;whatsapp;pending;Inclui aromaterapia
+Sérgio Bastos;Pedro;;Deep Tissue;23/04/2026 08:00;75;240;phone;confirmed;Foco em lombar e posterior
+Lívia Queiroz;Ana Clara;;Spa dos Pés;23/04/2026 18:15;45;110;frontdesk;requested;Sessão avulsa antes do pacote

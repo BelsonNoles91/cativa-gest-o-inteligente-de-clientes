@@ -20,7 +20,9 @@ import {
 import { navItems } from "@/config/navigation";
 import { Logo } from "@/components/brand/Logo";
 import { useTenant } from "@/features/tenant/TenantProvider";
+import { useTenantBilling } from "@/features/billing/useTenantBilling";
 import { canAccess } from "@/domain/roles";
+import { subscriptionStatusLabels } from "@/domain/billing";
 import { cn } from "@/lib/utils";
 
 const groupLabels: Record<string, string> = {
@@ -34,6 +36,7 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const location = useLocation();
   const { currentRole } = useTenant();
+  const { loading, plan, subscription, hasFeature } = useTenantBilling();
 
   const groups = ["operacao", "gestao", "sistema"] as const;
   const isActive = (to: string) =>
@@ -47,7 +50,12 @@ export function AppSidebar() {
 
       <SidebarContent className="px-2">
         {groups.map((g) => {
-          const items = navItems.filter((i) => i.group === g && canAccess(currentRole, i.roles));
+          const items = navItems.filter(
+            (i) =>
+              i.group === g &&
+              canAccess(currentRole, i.roles) &&
+              (!i.featureKey || hasFeature(i.featureKey)),
+          );
           if (items.length === 0) return null;
           return (
             <SidebarGroup key={g}>
@@ -86,9 +94,11 @@ export function AppSidebar() {
       <SidebarFooter className="px-3 py-3">
         {!collapsed && (
           <div className="rounded-xl border border-border/70 bg-gradient-soft p-3">
-            <p className="text-xs font-medium text-primary">Plano Studio</p>
+            <p className="text-xs font-medium text-primary">
+              {loading ? "Carregando plano…" : plan?.name ?? "Sem plano"}
+            </p>
             <p className="mt-0.5 text-[11px] text-muted-foreground">
-              14 dias de trial restantes
+              {subscription ? subscriptionStatusLabels[subscription.status] : "Sem assinatura"}
             </p>
           </div>
         )}

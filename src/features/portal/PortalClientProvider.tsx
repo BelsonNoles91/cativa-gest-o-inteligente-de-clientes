@@ -16,9 +16,11 @@ import {
 } from "react";
 import { useAuth } from "@/features/auth/AuthProvider";
 import {
+  claimPortalLinksForCurrentUser,
   getClientProfile,
   getPortalBranding,
   listMyClientLinks,
+  touchPortalLink,
   type ClientProfile,
 } from "@/repositories/portal";
 import type {
@@ -64,6 +66,7 @@ export function PortalClientProvider({ children }: { children: ReactNode }) {
     }
     setLoading(true);
     try {
+      await claimPortalLinksForCurrentUser();
       const ls = await listMyClientLinks(user.id);
       setLinks(ls);
 
@@ -76,6 +79,7 @@ export function PortalClientProvider({ children }: { children: ReactNode }) {
       }
 
       if (effective) {
+        void touchPortalLink(effective.id).catch(() => undefined);
         const prof = await getClientProfile(effective.clientId);
         setProfile(prof);
         const b = await getPortalBranding(effective.tenantId, prof?.preferredUnitId ?? null);

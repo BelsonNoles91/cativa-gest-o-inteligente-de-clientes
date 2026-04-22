@@ -1,0 +1,5 @@
+Cliente;Profissional;Unidade;Serviço;Início (ISO ou dd/mm/aaaa hh:mm);Duração (min);Preço (R$);Origem;Status;Observações
+Mariana Costa;Dra. Luiza;;Limpeza de Pele Premium;22/04/2026 09:00;75;220;whatsapp;confirmed;Retorno pós férias
+Juliana Freitas;Dra. Luiza;;Peeling de Diamante;22/04/2026 11:00;50;180;whatsapp;pending;Primeira sessão do trimestre
+Patrícia Gomes;Fer Alves;;Drenagem Linfática;22/04/2026 14:30;60;170;phone;confirmed;Cliente pediu sala mais reservada
+Camila Rocha;Dra. Luiza;;Microagulhamento Facial;23/04/2026 10:00;90;390;frontdesk;requested;Avaliação convertida em procedimento

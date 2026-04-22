@@ -5,8 +5,7 @@
  */
 import { serializeCsv } from "@/utils/csv";
 import type { Client } from "@/domain/client";
-import type { Service } from "@/domain/catalog";
-import type { Appointment } from "@/domain/scheduling";
+import type { Membership, Package, Protocol, Service } from "@/domain/catalog";
 
 // -----------------------------------------------------------------------------
 // CLIENTS
@@ -20,6 +19,7 @@ export interface ClientExportRow extends Record<string, unknown> {
   cidade: string;
   uf: string;
   origem: string;
+  observacoes: string;
   vip: string;
   status: string;
   ultima_visita: string;
@@ -34,6 +34,7 @@ const CLIENT_HEADERS: Array<keyof ClientExportRow> = [
   "cidade",
   "uf",
   "origem",
+  "observacoes",
   "vip",
   "status",
   "ultima_visita",
@@ -49,6 +50,7 @@ export function buildClientRows(clients: Client[]): ClientExportRow[] {
     cidade: c.city ?? "",
     uf: c.state ?? "",
     origem: c.origin ?? "",
+    observacoes: c.notes ?? "",
     vip: c.isVip ? "sim" : "não",
     status: c.status,
     ultima_visita: c.lastVisitAt ?? "",
@@ -64,8 +66,9 @@ export function exportClientsCsv(clients: Client[]): string {
 // -----------------------------------------------------------------------------
 export interface ServiceExportRow extends Record<string, unknown> {
   nome: string;
+  categoria: string;
   duracao_minutos: number;
-  preco_centavos: number;
+  preco: number;
   buffer_antes: number;
   buffer_depois: number;
   ativo: string;
@@ -75,8 +78,9 @@ export interface ServiceExportRow extends Record<string, unknown> {
 
 const SERVICE_HEADERS: Array<keyof ServiceExportRow> = [
   "nome",
+  "categoria",
   "duracao_minutos",
-  "preco_centavos",
+  "preco",
   "buffer_antes",
   "buffer_depois",
   "ativo",
@@ -87,11 +91,13 @@ const SERVICE_HEADERS: Array<keyof ServiceExportRow> = [
 export function buildServiceRows(
   services: Service[],
   prices: Map<string, number>,
+  categories?: Map<string, string>,
 ): ServiceExportRow[] {
   return services.map((s) => ({
     nome: s.name,
+    categoria: s.categoryId ? (categories?.get(s.categoryId) ?? "") : "",
     duracao_minutos: s.durationMinutes,
-    preco_centavos: prices.get(s.id) ?? 0,
+    preco: (prices.get(s.id) ?? 0) / 100,
     buffer_antes: s.bufferBeforeMinutes,
     buffer_depois: s.bufferAfterMinutes,
     ativo: s.isActive ? "sim" : "não",
@@ -100,58 +106,249 @@ export function buildServiceRows(
   }));
 }
 
-export function exportServicesCsv(services: Service[], prices: Map<string, number>): string {
-  return serializeCsv(buildServiceRows(services, prices), SERVICE_HEADERS, {
+export function exportServicesCsv(
+  services: Service[],
+  prices: Map<string, number>,
+  categories?: Map<string, string>,
+): string {
+  return serializeCsv(buildServiceRows(services, prices, categories), SERVICE_HEADERS, {
     bom: true,
     crlf: true,
   });
 }
 
 // -----------------------------------------------------------------------------
+// TEAM
+// -----------------------------------------------------------------------------
+export interface TeamExportRow extends Record<string, unknown> {
+  nome_completo: string;
+  apelido_publico: string;
+  email: string;
+  telefone: string;
+  especialidade: string;
+  comissao_pct: number;
+  ativo: string;
+}
+
+const TEAM_HEADERS: Array<keyof TeamExportRow> = [
+  "nome_completo",
+  "apelido_publico",
+  "email",
+  "telefone",
+  "especialidade",
+  "comissao_pct",
+  "ativo",
+];
+
+export function buildTeamRows(
+  professionals: Array<{
+    fullName: string;
+    displayName: string | null;
+    email: string | null;
+    phone: string | null;
+    specialty: string | null;
+    commissionPct: number;
+    isActive: boolean;
+  }>,
+): TeamExportRow[] {
+  return professionals.map((p) => ({
+    nome_completo: p.fullName,
+    apelido_publico: p.displayName ?? "",
+    email: p.email ?? "",
+    telefone: p.phone ?? "",
+    especialidade: p.specialty ?? "",
+    comissao_pct: p.commissionPct,
+    ativo: p.isActive ? "sim" : "não",
+  }));
+}
+
+export function exportTeamCsv(
+  professionals: Array<{
+    fullName: string;
+    displayName: string | null;
+    email: string | null;
+    phone: string | null;
+    specialty: string | null;
+    commissionPct: number;
+    isActive: boolean;
+  }>,
+): string {
+  return serializeCsv(buildTeamRows(professionals), TEAM_HEADERS, { bom: true, crlf: true });
+}
+
+// -----------------------------------------------------------------------------
+// PACKAGES / MEMBERSHIPS / PROTOCOLS
+// -----------------------------------------------------------------------------
+export interface PackageExportRow extends Record<string, unknown> {
+  nome: string;
+  tipo: string;
+  preco: number;
+  validade_dias: number | string;
+  intervalo_ideal_dias: number | string;
+  descricao: string;
+}
+
+const PACKAGE_HEADERS: Array<keyof PackageExportRow> = [
+  "nome",
+  "tipo",
+  "preco",
+  "validade_dias",
+  "intervalo_ideal_dias",
+  "descricao",
+];
+
+export function buildPackageRows(packages: Package[]): PackageExportRow[] {
+  return packages.map((pkg) => ({
+    nome: pkg.name,
+    tipo: pkg.kind,
+    preco: pkg.priceCents / 100,
+    validade_dias: pkg.validityDays ?? "",
+    intervalo_ideal_dias: pkg.recommendedIntervalDays ?? "",
+    descricao: pkg.description ?? "",
+  }));
+}
+
+export function exportPackagesCsv(packages: Package[]): string {
+  return serializeCsv(buildPackageRows(packages), PACKAGE_HEADERS, { bom: true, crlf: true });
+}
+
+export interface MembershipExportRow extends Record<string, unknown> {
+  nome: string;
+  preco: number;
+  ciclo: string;
+  ativo: string;
+  descricao: string;
+  observacoes: string;
+}
+
+const MEMBERSHIP_HEADERS: Array<keyof MembershipExportRow> = [
+  "nome",
+  "preco",
+  "ciclo",
+  "ativo",
+  "descricao",
+  "observacoes",
+];
+
+export function buildMembershipRows(memberships: Membership[]): MembershipExportRow[] {
+  return memberships.map((membership) => ({
+    nome: membership.name,
+    preco: membership.priceCents / 100,
+    ciclo: membership.billingCycle,
+    ativo: membership.isActive ? "sim" : "não",
+    descricao: membership.description ?? "",
+    observacoes: membership.notes ?? "",
+  }));
+}
+
+export function exportMembershipsCsv(memberships: Membership[]): string {
+  return serializeCsv(buildMembershipRows(memberships), MEMBERSHIP_HEADERS, { bom: true, crlf: true });
+}
+
+export interface ProtocolExportRow extends Record<string, unknown> {
+  nome: string;
+  sessoes_totais: number;
+  intervalo_ideal_dias: number | string;
+  preco_total: number | string;
+  ativo: string;
+  descricao: string;
+}
+
+const PROTOCOL_HEADERS: Array<keyof ProtocolExportRow> = [
+  "nome",
+  "sessoes_totais",
+  "intervalo_ideal_dias",
+  "preco_total",
+  "ativo",
+  "descricao",
+];
+
+export function buildProtocolRows(protocols: Protocol[]): ProtocolExportRow[] {
+  return protocols.map((protocol) => ({
+    nome: protocol.name,
+    sessoes_totais: protocol.totalSessions,
+    intervalo_ideal_dias: protocol.recommendedIntervalDays ?? "",
+    preco_total: protocol.totalPriceCents === null ? "" : protocol.totalPriceCents / 100,
+    ativo: protocol.isActive ? "sim" : "não",
+    descricao: protocol.description ?? "",
+  }));
+}
+
+export function exportProtocolsCsv(protocols: Protocol[]): string {
+  return serializeCsv(buildProtocolRows(protocols), PROTOCOL_HEADERS, { bom: true, crlf: true });
+}
+
+// -----------------------------------------------------------------------------
 // APPOINTMENTS
 // -----------------------------------------------------------------------------
 export interface AppointmentExportRow extends Record<string, unknown> {
+  cliente: string;
+  profissional: string;
+  unidade: string;
+  servico: string;
   inicio: string;
-  fim: string;
-  duracao_minutos: number;
-  cliente_id: string;
-  profissional_id: string;
-  unidade_id: string;
+  duracao: number;
+  preco: number;
   status: string;
   origem: string;
-  preco_centavos: number;
   observacoes: string;
 }
 
 const APPT_HEADERS: Array<keyof AppointmentExportRow> = [
+  "cliente",
+  "profissional",
+  "unidade",
+  "servico",
   "inicio",
-  "fim",
-  "duracao_minutos",
-  "cliente_id",
-  "profissional_id",
-  "unidade_id",
+  "duracao",
+  "preco",
   "status",
   "origem",
-  "preco_centavos",
   "observacoes",
 ];
 
-export function buildAppointmentRows(appts: Appointment[]): AppointmentExportRow[] {
+export function buildAppointmentRows(
+  appts: Array<{
+    startsAt: string;
+    durationMinutes: number;
+    totalPriceCents: number;
+    status: string;
+    source: string;
+    notes: string | null;
+    clientName: string | null;
+    professionalName: string | null;
+    unitName: string | null;
+    serviceName: string | null;
+  }>,
+): AppointmentExportRow[] {
   return appts.map((a) => ({
+    cliente: a.clientName ?? "",
+    profissional: a.professionalName ?? "",
+    unidade: a.unitName ?? "",
+    servico: a.serviceName ?? "",
     inicio: a.startsAt,
-    fim: a.endsAt,
-    duracao_minutos: a.durationMinutes,
-    cliente_id: a.clientId,
-    profissional_id: a.professionalId,
-    unidade_id: a.unitId,
+    duracao: a.durationMinutes,
+    preco: a.totalPriceCents / 100,
     status: a.status,
     origem: a.source,
-    preco_centavos: a.totalPriceCents,
     observacoes: a.notes ?? "",
   }));
 }
 
-export function exportAppointmentsCsv(appts: Appointment[]): string {
+export function exportAppointmentsCsv(
+  appts: Array<{
+    startsAt: string;
+    durationMinutes: number;
+    totalPriceCents: number;
+    status: string;
+    source: string;
+    notes: string | null;
+    clientName: string | null;
+    professionalName: string | null;
+    unitName: string | null;
+    serviceName: string | null;
+  }>,
+): string {
   return serializeCsv(buildAppointmentRows(appts), APPT_HEADERS, { bom: true, crlf: true });
 }
 

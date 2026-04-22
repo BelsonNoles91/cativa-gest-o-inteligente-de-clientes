@@ -313,6 +313,16 @@ export interface ListAppointmentsParams {
   excludeStatuses?: AppointmentStatus[];
 }
 
+export interface HydratedAppointment {
+  appointment: Appointment;
+  serviceId: string | null;
+  serviceName: string | null;
+  clientName: string | null;
+  professionalName: string | null;
+  unitName: string | null;
+  resourceName: string | null;
+}
+
 export async function listAppointments(params: ListAppointmentsParams): Promise<Appointment[]> {
   let q = supabase
     .from("appointments")
@@ -328,6 +338,65 @@ export async function listAppointments(params: ListAppointmentsParams): Promise<
   const { data, error } = await q;
   if (error) throw error;
   return (data ?? []).map((r) => toAppointment(r as Record<string, unknown>));
+}
+
+export async function listAppointmentsHydrated(params: ListAppointmentsParams): Promise<HydratedAppointment[]> {
+  const appointments = await listAppointments(params);
+  if (appointments.length === 0) return [];
+
+  const appointmentIds = appointments.map((appointment) => appointment.id);
+  const clientIds = Array.from(new Set(appointments.map((appointment) => appointment.clientId)));
+  const professionalIds = Array.from(new Set(appointments.map((appointment) => appointment.professionalId)));
+  const unitIds = Array.from(new Set(appointments.map((appointment) => appointment.unitId)));
+  const resourceIds = Array.from(
+    new Set(appointments.map((appointment) => appointment.resourceId).filter((id): id is string => Boolean(id))),
+  );
+
+  const [items, clients, professionals, units, resources] = await Promise.all([
+    listAppointmentItemsForAppointments(appointmentIds),
+    supabase.from("clients").select("id, full_name").in("id", clientIds),
+    supabase.from("professionals").select("id, display_name").in("id", professionalIds),
+    supabase.from("units").select("id, name").in("id", unitIds),
+    resourceIds.length
+      ? supabase.from("resources").select("id, name").in("id", resourceIds)
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+
+  if (clients.error) throw clients.error;
+  if (professionals.error) throw professionals.error;
+  if (units.error) throw units.error;
+  if (resources.error) throw resources.error;
+
+  const itemRows = items;
+  const serviceIds = Array.from(new Set(itemRows.map((item) => item.serviceId)));
+  const { data: services, error: servicesError } = serviceIds.length
+    ? await supabase.from("services").select("id, name").in("id", serviceIds)
+    : { data: [], error: null };
+  if (servicesError) throw servicesError;
+
+  const itemMap = new Map<string, AppointmentItem>();
+  itemRows.forEach((item) => {
+    if (!itemMap.has(item.appointmentId)) itemMap.set(item.appointmentId, item);
+  });
+
+  const clientMap = new Map((clients.data ?? []).map((row) => [row.id, row.full_name]));
+  const professionalMap = new Map((professionals.data ?? []).map((row) => [row.id, row.display_name]));
+  const unitMap = new Map((units.data ?? []).map((row) => [row.id, row.name]));
+  const resourceMap = new Map((resources.data ?? []).map((row) => [row.id, row.name]));
+  const serviceMap = new Map((services ?? []).map((row) => [row.id, row.name]));
+
+  return appointments.map((appointment) => {
+    const item = itemMap.get(appointment.id) ?? null;
+    return {
+      appointment,
+      serviceId: item?.serviceId ?? null,
+      serviceName: item ? (serviceMap.get(item.serviceId) ?? null) : null,
+      clientName: clientMap.get(appointment.clientId) ?? null,
+      professionalName: professionalMap.get(appointment.professionalId) ?? null,
+      unitName: unitMap.get(appointment.unitId) ?? null,
+      resourceName: appointment.resourceId ? (resourceMap.get(appointment.resourceId) ?? null) : null,
+    };
+  });
 }
 
 export async function getAppointment(id: string): Promise<Appointment | null> {
@@ -411,6 +480,7 @@ export async function updateAppointment(
   patch: Partial<{
     startsAt: string;
     endsAt: string;
+    unitId: string;
     professionalId: string;
     resourceId: string | null;
     notes: string | null;
@@ -421,6 +491,7 @@ export async function updateAppointment(
   const dbPatch: Record<string, unknown> = {};
   if (patch.startsAt !== undefined) dbPatch.starts_at = patch.startsAt;
   if (patch.endsAt !== undefined) dbPatch.ends_at = patch.endsAt;
+  if (patch.unitId !== undefined) dbPatch.unit_id = patch.unitId;
   if (patch.professionalId !== undefined) dbPatch.professional_id = patch.professionalId;
   if (patch.resourceId !== undefined) dbPatch.resource_id = patch.resourceId;
   if (patch.notes !== undefined) dbPatch.notes = patch.notes;
@@ -475,6 +546,25 @@ export async function listAppointmentItems(appointmentId: string): Promise<Appoi
   }));
 }
 
+export async function listAppointmentItemsForAppointments(appointmentIds: string[]): Promise<AppointmentItem[]> {
+  if (appointmentIds.length === 0) return [];
+  const { data, error } = await supabase
+    .from("appointment_items")
+    .select("id, appointment_id, service_id, duration_minutes, price_cents, position, notes")
+    .in("appointment_id", appointmentIds)
+    .order("position");
+  if (error) throw error;
+  return (data ?? []).map((r) => ({
+    id: r.id,
+    appointmentId: r.appointment_id,
+    serviceId: r.service_id,
+    durationMinutes: r.duration_minutes,
+    priceCents: r.price_cents,
+    position: r.position,
+    notes: r.notes,
+  }));
+}
+
 // =============================================================================
 // WAITLIST
 // =============================================================================
@@ -505,6 +595,66 @@ export async function listWaitlist(tenantId: string, status?: WaitlistStatus): P
   }));
 }
 
+export interface HydratedWaitlistEntry {
+  entry: WaitlistEntry;
+  clientName: string | null;
+  serviceName: string | null;
+  professionalName: string | null;
+  unitName: string | null;
+}
+
+export async function listWaitlistHydrated(
+  tenantId: string,
+  status?: WaitlistStatus,
+): Promise<HydratedWaitlistEntry[]> {
+  const entries = await listWaitlist(tenantId, status);
+  if (entries.length === 0) return [];
+
+  const clientIds = Array.from(new Set(entries.map((entry) => entry.clientId)));
+  const serviceIds = Array.from(
+    new Set(entries.map((entry) => entry.serviceId).filter((id): id is string => Boolean(id))),
+  );
+  const professionalIds = Array.from(
+    new Set(entries.map((entry) => entry.preferredProfessionalId).filter((id): id is string => Boolean(id))),
+  );
+  const unitIds = Array.from(
+    new Set(entries.map((entry) => entry.preferredUnitId).filter((id): id is string => Boolean(id))),
+  );
+
+  const [clients, services, professionals, units] = await Promise.all([
+    supabase.from("clients").select("id, full_name").in("id", clientIds),
+    serviceIds.length
+      ? supabase.from("services").select("id, name").in("id", serviceIds)
+      : Promise.resolve({ data: [], error: null }),
+    professionalIds.length
+      ? supabase.from("professionals").select("id, display_name").in("id", professionalIds)
+      : Promise.resolve({ data: [], error: null }),
+    unitIds.length
+      ? supabase.from("units").select("id, name").in("id", unitIds)
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+
+  if (clients.error) throw clients.error;
+  if (services.error) throw services.error;
+  if (professionals.error) throw professionals.error;
+  if (units.error) throw units.error;
+
+  const clientMap = new Map((clients.data ?? []).map((row) => [row.id, row.full_name]));
+  const serviceMap = new Map((services.data ?? []).map((row) => [row.id, row.name]));
+  const professionalMap = new Map((professionals.data ?? []).map((row) => [row.id, row.display_name]));
+  const unitMap = new Map((units.data ?? []).map((row) => [row.id, row.name]));
+
+  return entries.map((entry) => ({
+    entry,
+    clientName: clientMap.get(entry.clientId) ?? null,
+    serviceName: entry.serviceId ? (serviceMap.get(entry.serviceId) ?? null) : null,
+    professionalName: entry.preferredProfessionalId
+      ? (professionalMap.get(entry.preferredProfessionalId) ?? null)
+      : null,
+    unitName: entry.preferredUnitId ? (unitMap.get(entry.preferredUnitId) ?? null) : null,
+  }));
+}
+
 export async function createWaitlistEntry(input: {
   tenantId: string;
   clientId: string;
@@ -530,9 +680,38 @@ export async function createWaitlistEntry(input: {
   if (error) throw error;
 }
 
-export async function setWaitlistStatus(id: string, status: WaitlistStatus): Promise<void> {
+export async function updateWaitlistEntry(
+  id: string,
+  patch: Partial<{
+    preferredUnitId: string | null;
+    preferredProfessionalId: string | null;
+    serviceId: string | null;
+    desiredWindowStart: string | null;
+    desiredWindowEnd: string | null;
+    notes: string | null;
+    priority: number;
+  }>,
+): Promise<void> {
+  const dbPatch: Record<string, unknown> = {};
+  if (patch.preferredUnitId !== undefined) dbPatch.preferred_unit_id = patch.preferredUnitId;
+  if (patch.preferredProfessionalId !== undefined) dbPatch.preferred_professional_id = patch.preferredProfessionalId;
+  if (patch.serviceId !== undefined) dbPatch.service_id = patch.serviceId;
+  if (patch.desiredWindowStart !== undefined) dbPatch.desired_window_start = patch.desiredWindowStart;
+  if (patch.desiredWindowEnd !== undefined) dbPatch.desired_window_end = patch.desiredWindowEnd;
+  if (patch.notes !== undefined) dbPatch.notes = patch.notes;
+  if (patch.priority !== undefined) dbPatch.priority = patch.priority;
+  const { error } = await supabase.from("waitlist_entries").update(dbPatch as never).eq("id", id);
+  if (error) throw error;
+}
+
+export async function setWaitlistStatus(
+  id: string,
+  status: WaitlistStatus,
+  extras?: { scheduledAppointmentId?: string | null },
+): Promise<void> {
   const dbPatch: Record<string, unknown> = { status };
   if (status === "contacted") dbPatch.contacted_at = new Date().toISOString();
+  if (status === "scheduled") dbPatch.scheduled_appointment_id = extras?.scheduledAppointmentId ?? null;
   const { error } = await supabase
     .from("waitlist_entries")
     .update(dbPatch as never)

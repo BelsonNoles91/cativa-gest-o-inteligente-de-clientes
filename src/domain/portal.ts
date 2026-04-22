@@ -14,7 +14,7 @@ export interface ClientUserLink {
   tenantId: string;
   clientId: string;
   userId: string;
-  status: "active" | "invited" | "blocked";
+  status: "active" | "pending" | "blocked";
   linkedAt: string;
 }
 

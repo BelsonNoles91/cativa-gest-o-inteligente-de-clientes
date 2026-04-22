@@ -44,7 +44,6 @@ import {
   fetchAvailability,
   fetchClients,
   fetchClientPackages,
-  fetchContactAttempts,
   fetchFutureAppointments,
   fetchLabels,
   fetchWaitlistMetrics,
@@ -153,10 +152,10 @@ export function useAnalytics() {
     () =>
       ticketByGroup(
         filteredAppts,
-        (r) => r.id, // placeholder — sem appointment_items, agrupamos por serviço a partir de label se disponível futuramente
-        () => "—",
+        (r) => r.serviceId ?? "unknown",
+        (k) => (k === "unknown" ? "Sem serviço" : labels?.services.get(k) ?? "Serviço"),
       ),
-    [filteredAppts],
+    [filteredAppts, labels],
   );
   const ticketByPro = useMemo(
     () =>

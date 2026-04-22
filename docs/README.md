@@ -20,3 +20,5 @@ contém a visão de produto.
 8. [Portabilidade e pontos de acoplamento](./08-portabilidade.md)
 9. [Segurança e privacidade](./09-seguranca.md)
 10. [Métricas e Índice Cativa](./10-metricas.md)
+11. [Seeds operacionais de demonstração](./11-seeds-demo.md)
+12. [Rastreabilidade do prompt original](./12-rastreabilidade-prompt.md)

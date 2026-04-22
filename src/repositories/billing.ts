@@ -167,6 +167,46 @@ export async function archivePlan(planId: string) {
   if (error) throw error;
 }
 
+export async function upsertPlanFeature(feature: {
+  id?: string;
+  planId: string;
+  featureKey: string;
+  label: string;
+  valueType: PlanFeature["valueType"];
+  value: unknown;
+  displayOrder?: number;
+}) {
+  if (feature.id) {
+    const { error } = await supabase
+      .from("plan_features")
+      .update({
+        feature_key: feature.featureKey,
+        label: feature.label,
+        value_type: feature.valueType,
+        value: feature.value as never,
+        display_order: feature.displayOrder ?? 0,
+      })
+      .eq("id", feature.id);
+    if (error) throw error;
+    return;
+  }
+
+  const { error } = await supabase.from("plan_features").insert({
+    plan_id: feature.planId,
+    feature_key: feature.featureKey,
+    label: feature.label,
+    value_type: feature.valueType,
+    value: feature.value as never,
+    display_order: feature.displayOrder ?? 0,
+  });
+  if (error) throw error;
+}
+
+export async function deletePlanFeature(featureId: string) {
+  const { error } = await supabase.from("plan_features").delete().eq("id", featureId);
+  if (error) throw error;
+}
+
 // ---------- subscriptions ----------
 export async function listAllSubscriptions(): Promise<TenantSubscription[]> {
   const { data, error } = await supabase
@@ -358,6 +398,50 @@ export async function setFeatureFlagValue(flagId: string, value: unknown) {
   if (error) throw error;
 }
 
+export async function upsertFeatureFlag(flag: {
+  id?: string;
+  tenantId: string | null;
+  flagKey: string;
+  label: string;
+  description?: string | null;
+  valueType: FeatureFlag["valueType"];
+  value: unknown;
+  isGlobal: boolean;
+}) {
+  if (flag.id) {
+    const { error } = await supabase
+      .from("feature_flags")
+      .update({
+        tenant_id: flag.tenantId,
+        flag_key: flag.flagKey,
+        label: flag.label,
+        description: flag.description ?? null,
+        value_type: flag.valueType,
+        value: flag.value as never,
+        is_global: flag.isGlobal,
+      })
+      .eq("id", flag.id);
+    if (error) throw error;
+    return;
+  }
+
+  const { error } = await supabase.from("feature_flags").insert({
+    tenant_id: flag.tenantId,
+    flag_key: flag.flagKey,
+    label: flag.label,
+    description: flag.description ?? null,
+    value_type: flag.valueType,
+    value: flag.value as never,
+    is_global: flag.isGlobal,
+  });
+  if (error) throw error;
+}
+
+export async function deleteFeatureFlag(flagId: string) {
+  const { error } = await supabase.from("feature_flags").delete().eq("id", flagId);
+  if (error) throw error;
+}
+
 // ---------- usage ----------
 export async function latestUsage(tenantId: string): Promise<UsageSnapshot | null> {
   const { data, error } = await supabase
@@ -420,7 +504,15 @@ export async function upsertSegmentTemplate(t: Partial<SegmentTemplate> & { segm
     is_active: t.isActive ?? true,
     display_order: t.displayOrder ?? 0,
   };
-  const { error } = await supabase.from("segment_templates").insert(payload);
+  const query = t.id
+    ? supabase.from("segment_templates").update(payload).eq("id", t.id)
+    : supabase.from("segment_templates").insert(payload);
+  const { error } = await query;
+  if (error) throw error;
+}
+
+export async function deleteSegmentTemplate(templateId: string) {
+  const { error } = await supabase.from("segment_templates").delete().eq("id", templateId);
   if (error) throw error;
 }
 

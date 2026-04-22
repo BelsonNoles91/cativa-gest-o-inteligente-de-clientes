@@ -44,6 +44,15 @@ dados.
 Cada negócio pode exportar seus próprios dados a qualquer momento (CSV/JSON)
 em **Configurações → Importar & Exportar**. Não há lock-in de dados.
 
+### Cuidados operacionais no import/export
+
+- Importadores nunca confiam em nomes vindos do CSV sem reconciliar com o tenant atual.
+- Agendamentos importados resolvem cliente/profissional/serviço/unidade dentro do
+  tenant ativo antes de gravar.
+- Exportações evitam IDs internos quando há alternativa portável em nomes e aliases.
+- Arquivos de mídia seguem fora do CSV/JSON e continuam protegidos pelo bucket
+  privado `client-media`.
+
 ## Anonimização / desativação
 
 - Cliente pode ser **desativado** (`status = 'inactive'`) — mantém histórico

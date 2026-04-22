@@ -10,7 +10,8 @@ Suporta:
 - **Serviços** — catálogo com duração e preço.
 - **Equipe** — profissionais (vinculação a auth.user é manual depois).
 - **Pacotes & Protocolos**.
-- **Agendamentos** — apenas via suporte/migração guiada (requer mapeamento de IDs).
+- **Agendamentos** — via nomes de cliente/profissional/serviço; a unidade pode vir vazia
+  quando o tenant tiver apenas uma unidade ativa.
 
 Fluxo:
 
@@ -19,6 +20,26 @@ Fluxo:
 3. Mapeamento automático por header. Ajuste manualmente se quiser.
 4. Prévia + validação (campos obrigatórios, parsing de número/data/telefone).
 5. Confirma → grava em chunks de 100 registros.
+
+### Importação de agendamentos
+
+O CSV de agendamentos é deliberadamente **portável**, sem exigir IDs internos:
+
+- `cliente` → casa por `clients.full_name`
+- `profissional` → casa por `professionals.display_name` ou `full_name`
+- `servico` → casa por `services.name`
+- `unidade` → opcional quando houver só uma unidade ativa no tenant
+
+Campos aceitos:
+
+- `inicio` em ISO (`2026-04-21T14:30:00Z`) ou `dd/mm/aaaa hh:mm`
+- `duracao`
+- `preco` em reais
+- `status`
+- `origem`
+- `observacoes`
+
+Falhas de mapeamento ficam registradas por linha no resumo da importação.
 
 ### Modelos prontos
 
@@ -39,8 +60,18 @@ Disponível em CSV (com BOM, abre direto em Excel) e JSON:
 
 - Clientes
 - Serviços (com preços base)
+- Equipe
+- Pacotes
+- Memberships
+- Protocolos
 - Agendamentos (últimos 5 mil)
 - Métricas resumo (contadores agregados)
+
+As exportações foram ajustadas para serem **round-trip friendly**:
+
+- preços saem em reais, não em centavos crus;
+- agendamentos saem com nomes de cliente/profissional/serviço/unidade;
+- os headers seguem aliases aceitos pelo importador.
 
 ## Convenções
 
@@ -49,3 +80,4 @@ Disponível em CSV (com BOM, abre direto em Excel) e JSON:
   prefixadas por DB internals).
 - Os exporters vivem em `src/services/import-export/exporters.ts` —
   trocar de backend não exige mexer aqui.
+- Seeds de demonstração prontos para importação ficam em [11-seeds-demo.md](./11-seeds-demo.md).

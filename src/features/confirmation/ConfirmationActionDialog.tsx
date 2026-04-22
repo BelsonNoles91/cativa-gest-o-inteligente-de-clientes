@@ -30,11 +30,13 @@ import {
   callOutcomeLabels,
   channelLabels,
   digitsOnly,
+  queueStatusLabels,
   type CallOutcome,
+  type ChannelPreference,
   type MessageChannel,
   type MessageTemplate,
 } from "@/domain/confirmation";
-import { listAttempts } from "@/repositories/confirmation";
+import { getChannelPreference, listAttempts, listCallLogs, upsertChannelPreference } from "@/repositories/confirmation";
 import type { QueueItemHydrated } from "@/repositories/confirmation";
 import type { useConfirmationCenter } from "./useConfirmationCenter";
 
@@ -55,6 +57,14 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
   const [callOutcome, setCallOutcome] = useState<CallOutcome>("answered");
   const [notes, setNotes] = useState("");
   const [history, setHistory] = useState<Awaited<ReturnType<typeof listAttempts>>>([]);
+  const [calls, setCalls] = useState<Awaited<ReturnType<typeof listCallLogs>>>([]);
+  const [preference, setPreference] = useState<ChannelPreference | null>(null);
+  const [prefChannel, setPrefChannel] = useState<MessageChannel>("whatsapp");
+  const [fallbackChannel, setFallbackChannel] = useState<string>("none");
+  const [prefWindowStart, setPrefWindowStart] = useState("");
+  const [prefWindowEnd, setPrefWindowEnd] = useState("");
+  const [doNotDisturb, setDoNotDisturb] = useState(false);
+  const [prefNotes, setPrefNotes] = useState("");
 
   const phoneDigits = useMemo(
     () => (item?.clientWhatsapp ? digitsOnly(item.clientWhatsapp) : ""),
@@ -85,15 +95,33 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
     void (async () => {
       try {
         if (currentTenant) {
-          const h = await listAttempts({
-            tenantId: currentTenant.id,
-            queueId: item.id,
-            limit: 20,
-          });
+          const [h, c, p] = await Promise.all([
+            listAttempts({
+              tenantId: currentTenant.id,
+              queueId: item.id,
+              limit: 20,
+            }),
+            listCallLogs({
+              tenantId: currentTenant.id,
+              queueId: item.id,
+              limit: 20,
+            }),
+            getChannelPreference(currentTenant.id, item.clientId),
+          ]);
           setHistory(h);
+          setCalls(c);
+          setPreference(p);
+          setPrefChannel(p?.preferredChannel ?? "whatsapp");
+          setFallbackChannel(p?.fallbackChannel ?? "none");
+          setPrefWindowStart(p?.preferredWindowStart?.slice(0, 5) ?? "");
+          setPrefWindowEnd(p?.preferredWindowEnd?.slice(0, 5) ?? "");
+          setDoNotDisturb(p?.doNotDisturb ?? false);
+          setPrefNotes(p?.notes ?? "");
         }
       } catch {
         setHistory([]);
+        setCalls([]);
+        setPreference(null);
       }
     })();
   }, [open, item, currentTenant]);
@@ -168,6 +196,25 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
     });
   }
 
+  async function savePreference() {
+    if (!item || !currentTenant) return;
+    try {
+      await upsertChannelPreference({
+        tenantId: currentTenant.id,
+        clientId: item.clientId,
+        preferredChannel: prefChannel,
+        fallbackChannel: fallbackChannel === "none" ? null : (fallbackChannel as MessageChannel),
+        preferredWindowStart: prefWindowStart ? `${prefWindowStart}:00` : null,
+        preferredWindowEnd: prefWindowEnd ? `${prefWindowEnd}:00` : null,
+        doNotDisturb,
+        notes: prefNotes || null,
+      });
+      toast({ title: preference ? "Preferência atualizada" : "Preferência registrada" });
+    } catch {
+      toast({ title: "Não foi possível salvar a preferência", variant: "destructive" });
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-hidden p-0">
@@ -190,10 +237,11 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
             </DialogHeader>
 
             <Tabs defaultValue="message" className="mt-4">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="message">Mensagem</TabsTrigger>
                 <TabsTrigger value="call">Ligação</TabsTrigger>
                 <TabsTrigger value="status">Status</TabsTrigger>
+                <TabsTrigger value="prefs">Preferências</TabsTrigger>
                 <TabsTrigger value="history">Histórico</TabsTrigger>
               </TabsList>
 
@@ -321,6 +369,9 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
                 <p className="text-sm text-muted-foreground">
                   Atualize o status final deste item da fila.
                 </p>
+                <p className="text-xs text-muted-foreground">
+                  Status atual: {queueStatusLabels[item.status]}
+                </p>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                   <Button
                     variant="default"
@@ -361,9 +412,86 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
                 </div>
               </TabsContent>
 
+              <TabsContent value="prefs" className="space-y-4">
+                <div>
+                  <Label className="mb-1.5 block">Canal preferido</Label>
+                  <Select value={prefChannel} onValueChange={(v) => setPrefChannel(v as MessageChannel)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(Object.keys(channelLabels) as MessageChannel[]).map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {channelLabels[c]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="mb-1.5 block">Canal reserva</Label>
+                  <Select value={fallbackChannel} onValueChange={setFallbackChannel}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Sem reserva</SelectItem>
+                      {(Object.keys(channelLabels) as MessageChannel[]).map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {channelLabels[c]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="mb-1.5 block">Janela inicial</Label>
+                    <input
+                      type="time"
+                      value={prefWindowStart}
+                      onChange={(e) => setPrefWindowStart(e.target.value)}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <Label className="mb-1.5 block">Janela final</Label>
+                    <input
+                      type="time"
+                      value={prefWindowEnd}
+                      onChange={(e) => setPrefWindowEnd(e.target.value)}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    />
+                  </div>
+                </div>
+
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={doNotDisturb}
+                    onChange={(e) => setDoNotDisturb(e.target.checked)}
+                  />
+                  Não perturbar
+                </label>
+
+                <div>
+                  <Label className="mb-1.5 block">Observações</Label>
+                  <Textarea
+                    rows={3}
+                    value={prefNotes}
+                    onChange={(e) => setPrefNotes(e.target.value)}
+                    placeholder="Ex.: só responde após 14h, prefere ligação."
+                  />
+                </div>
+
+                <Button onClick={savePreference}>Salvar preferência</Button>
+              </TabsContent>
+
               {/* HISTÓRICO */}
               <TabsContent value="history" className="space-y-2">
-                {history.length === 0 ? (
+                {history.length === 0 && calls.length === 0 ? (
                   <p className="text-sm text-muted-foreground">
                     Nenhuma tentativa registrada ainda.
                   </p>
@@ -390,6 +518,31 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
                         {h.notes && (
                           <p className="mt-1 text-xs italic text-muted-foreground">
                             “{h.notes}”
+                          </p>
+                        )}
+                      </li>
+                    ))}
+                    {calls.map((c) => (
+                      <li
+                        key={c.id}
+                        className="rounded-md border bg-card p-3 text-sm"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-medium">
+                            Ligação • {callOutcomeLabels[c.outcome]}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(c.calledAt).toLocaleString("pt-BR")}
+                          </span>
+                        </div>
+                        {c.durationSeconds ? (
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            duração: {Math.round(c.durationSeconds / 60)} min
+                          </p>
+                        ) : null}
+                        {c.notes && (
+                          <p className="mt-1 text-xs italic text-muted-foreground">
+                            “{c.notes}”
                           </p>
                         )}
                       </li>

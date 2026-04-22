@@ -21,6 +21,22 @@ import type {
   ServicePrice,
 } from "@/domain/catalog";
 
+export interface ServiceUnitPriceOverride {
+  id: string;
+  serviceId: string;
+  unitId: string;
+  amountCents: number;
+  durationMinutes: number | null;
+}
+
+export interface ServiceProfessionalPriceOverride {
+  id: string;
+  serviceId: string;
+  professionalId: string;
+  amountCents: number;
+  durationMinutes: number | null;
+}
+
 // =============================================================================
 // CATEGORIES
 // =============================================================================
@@ -59,6 +75,7 @@ export async function createCategory(input: {
   icon?: string | null;
   description?: string | null;
   position?: number;
+  isActive?: boolean;
 }): Promise<ServiceCategory> {
   const { data, error } = await supabase
     .from("service_categories")
@@ -70,6 +87,7 @@ export async function createCategory(input: {
       icon: input.icon ?? null,
       description: input.description ?? null,
       position: input.position ?? 0,
+      is_active: input.isActive ?? true,
     })
     .select(CATEGORY_COLS)
     .single();
@@ -79,6 +97,7 @@ export async function createCategory(input: {
 
 export async function updateCategory(id: string, patch: Partial<{
   name: string;
+  parentId: string | null;
   color: string | null;
   icon: string | null;
   description: string | null;
@@ -87,6 +106,7 @@ export async function updateCategory(id: string, patch: Partial<{
 }>): Promise<ServiceCategory> {
   const dbPatch: Record<string, unknown> = {};
   if (patch.name !== undefined) dbPatch.name = patch.name;
+  if (patch.parentId !== undefined) dbPatch.parent_id = patch.parentId;
   if (patch.color !== undefined) dbPatch.color = patch.color;
   if (patch.icon !== undefined) dbPatch.icon = patch.icon;
   if (patch.description !== undefined) dbPatch.description = patch.description;
@@ -333,6 +353,90 @@ export async function listBasePrices(tenantId: string): Promise<Map<string, Serv
   return map;
 }
 
+export async function listUnitPriceOverrides(serviceId: string): Promise<ServiceUnitPriceOverride[]> {
+  const { data, error } = await supabase
+    .from("service_unit_prices")
+    .select("id, service_id, unit_id, amount_cents, duration_minutes")
+    .eq("service_id", serviceId)
+    .order("created_at");
+  if (error) throw error;
+  return (data ?? []).map((r) => ({
+    id: r.id,
+    serviceId: r.service_id,
+    unitId: r.unit_id,
+    amountCents: r.amount_cents,
+    durationMinutes: r.duration_minutes,
+  }));
+}
+
+export async function saveUnitPriceOverrides(input: {
+  tenantId: string;
+  serviceId: string;
+  overrides: Array<{
+    unitId: string;
+    amountCents: number;
+    durationMinutes?: number | null;
+  }>;
+}): Promise<void> {
+  const { error: deleteError } = await supabase
+    .from("service_unit_prices")
+    .delete()
+    .eq("service_id", input.serviceId);
+  if (deleteError) throw deleteError;
+  if (input.overrides.length === 0) return;
+  const rows = input.overrides.map((override) => ({
+    tenant_id: input.tenantId,
+    service_id: input.serviceId,
+    unit_id: override.unitId,
+    amount_cents: override.amountCents,
+    duration_minutes: override.durationMinutes ?? null,
+  }));
+  const { error } = await supabase.from("service_unit_prices").insert(rows);
+  if (error) throw error;
+}
+
+export async function listProfessionalPriceOverrides(serviceId: string): Promise<ServiceProfessionalPriceOverride[]> {
+  const { data, error } = await supabase
+    .from("service_professional_prices")
+    .select("id, service_id, professional_id, amount_cents, duration_minutes")
+    .eq("service_id", serviceId)
+    .order("created_at");
+  if (error) throw error;
+  return (data ?? []).map((r) => ({
+    id: r.id,
+    serviceId: r.service_id,
+    professionalId: r.professional_id,
+    amountCents: r.amount_cents,
+    durationMinutes: r.duration_minutes,
+  }));
+}
+
+export async function saveProfessionalPriceOverrides(input: {
+  tenantId: string;
+  serviceId: string;
+  overrides: Array<{
+    professionalId: string;
+    amountCents: number;
+    durationMinutes?: number | null;
+  }>;
+}): Promise<void> {
+  const { error: deleteError } = await supabase
+    .from("service_professional_prices")
+    .delete()
+    .eq("service_id", input.serviceId);
+  if (deleteError) throw deleteError;
+  if (input.overrides.length === 0) return;
+  const rows = input.overrides.map((override) => ({
+    tenant_id: input.tenantId,
+    service_id: input.serviceId,
+    professional_id: override.professionalId,
+    amount_cents: override.amountCents,
+    duration_minutes: override.durationMinutes ?? null,
+  }));
+  const { error } = await supabase.from("service_professional_prices").insert(rows);
+  if (error) throw error;
+}
+
 // =============================================================================
 // PACKAGES
 // =============================================================================
@@ -398,16 +502,7 @@ export async function createPackage(input: CreatePackageInput): Promise<Package>
     .single();
   if (error) throw error;
   const created = toPackage(data);
-  if (input.items?.length) {
-    const rows = input.items.map((it, idx) => ({
-      tenant_id: input.tenantId,
-      package_id: created.id,
-      service_id: it.serviceId,
-      sessions: it.sessions,
-      position: idx,
-    }));
-    await supabase.from("package_items").insert(rows);
-  }
+  await replacePackageItems(created.id, input.tenantId, input.items ?? []);
   return created;
 }
 
@@ -425,6 +520,9 @@ export async function updatePackage(id: string, patch: Partial<CreatePackageInpu
   if (Object.keys(dbPatch).length) {
     const { error } = await supabase.from("packages").update(dbPatch as never).eq("id", id);
     if (error) throw error;
+  }
+  if (patch.tenantId && patch.items) {
+    await replacePackageItems(id, patch.tenantId, patch.items);
   }
 }
 
@@ -447,6 +545,25 @@ export async function listPackageItems(packageId: string): Promise<PackageItem[]
     sessions: r.sessions,
     position: r.position,
   }));
+}
+
+async function replacePackageItems(
+  packageId: string,
+  tenantId: string,
+  items: Array<{ serviceId: string; sessions: number }>,
+): Promise<void> {
+  const { error: deleteError } = await supabase.from("package_items").delete().eq("package_id", packageId);
+  if (deleteError) throw deleteError;
+  if (items.length === 0) return;
+  const rows = items.map((it, idx) => ({
+    tenant_id: tenantId,
+    package_id: packageId,
+    service_id: it.serviceId,
+    sessions: it.sessions,
+    position: idx,
+  }));
+  const { error } = await supabase.from("package_items").insert(rows);
+  if (error) throw error;
 }
 
 // =============================================================================
@@ -505,16 +622,7 @@ export async function createMembership(input: CreateMembershipInput): Promise<Me
     .single();
   if (error) throw error;
   const created = toMembership(data);
-  if (input.benefits?.length) {
-    const rows = input.benefits.map((b) => ({
-      tenant_id: input.tenantId,
-      membership_id: created.id,
-      service_id: b.serviceId,
-      sessions_per_cycle: b.sessionsPerCycle,
-      discount_pct: b.discountPct ?? 0,
-    }));
-    await supabase.from("membership_benefits").insert(rows);
-  }
+  await replaceMembershipBenefits(created.id, input.tenantId, input.benefits ?? []);
   return created;
 }
 
@@ -529,6 +637,9 @@ export async function updateMembership(id: string, patch: Partial<CreateMembersh
   if (Object.keys(dbPatch).length) {
     const { error } = await supabase.from("memberships").update(dbPatch as never).eq("id", id);
     if (error) throw error;
+  }
+  if (patch.tenantId && patch.benefits) {
+    await replaceMembershipBenefits(id, patch.tenantId, patch.benefits);
   }
 }
 
@@ -550,6 +661,28 @@ export async function listMembershipBenefits(membershipId: string): Promise<Memb
     sessionsPerCycle: r.sessions_per_cycle,
     discountPct: r.discount_pct,
   }));
+}
+
+async function replaceMembershipBenefits(
+  membershipId: string,
+  tenantId: string,
+  benefits: Array<{ serviceId: string; sessionsPerCycle: number; discountPct?: number }>,
+): Promise<void> {
+  const { error: deleteError } = await supabase
+    .from("membership_benefits")
+    .delete()
+    .eq("membership_id", membershipId);
+  if (deleteError) throw deleteError;
+  if (benefits.length === 0) return;
+  const rows = benefits.map((benefit) => ({
+    tenant_id: tenantId,
+    membership_id: membershipId,
+    service_id: benefit.serviceId,
+    sessions_per_cycle: benefit.sessionsPerCycle,
+    discount_pct: benefit.discountPct ?? 0,
+  }));
+  const { error } = await supabase.from("membership_benefits").insert(rows);
+  if (error) throw error;
 }
 
 // =============================================================================
@@ -614,17 +747,7 @@ export async function createProtocol(input: CreateProtocolInput): Promise<Protoc
     .single();
   if (error) throw error;
   const created = toProtocol(data);
-  if (input.steps?.length) {
-    const rows = input.steps.map((s, idx) => ({
-      tenant_id: input.tenantId,
-      protocol_id: created.id,
-      service_id: s.serviceId,
-      step: idx + 1,
-      interval_days: s.intervalDays ?? null,
-      notes: s.notes ?? null,
-    }));
-    await supabase.from("protocol_sessions").insert(rows);
-  }
+  await replaceProtocolSteps(created.id, input.tenantId, input.steps ?? []);
   return created;
 }
 
@@ -641,6 +764,9 @@ export async function updateProtocol(id: string, patch: Partial<CreateProtocolIn
   if (Object.keys(dbPatch).length) {
     const { error } = await supabase.from("protocols").update(dbPatch as never).eq("id", id);
     if (error) throw error;
+  }
+  if (patch.tenantId && patch.steps) {
+    await replaceProtocolSteps(id, patch.tenantId, patch.steps);
   }
 }
 
@@ -664,6 +790,29 @@ export async function listProtocolSessions(protocolId: string): Promise<Protocol
     intervalDays: r.interval_days,
     notes: r.notes,
   }));
+}
+
+async function replaceProtocolSteps(
+  protocolId: string,
+  tenantId: string,
+  steps: Array<{ serviceId: string; intervalDays?: number; notes?: string }>,
+): Promise<void> {
+  const { error: deleteError } = await supabase
+    .from("protocol_sessions")
+    .delete()
+    .eq("protocol_id", protocolId);
+  if (deleteError) throw deleteError;
+  if (steps.length === 0) return;
+  const rows = steps.map((step, idx) => ({
+    tenant_id: tenantId,
+    protocol_id: protocolId,
+    service_id: step.serviceId,
+    step: idx + 1,
+    interval_days: step.intervalDays ?? null,
+    notes: step.notes ?? null,
+  }));
+  const { error } = await supabase.from("protocol_sessions").insert(rows);
+  if (error) throw error;
 }
 
 // =============================================================================
@@ -693,4 +842,60 @@ export async function listCancellationPolicies(tenantId: string): Promise<Cancel
     .order("name");
   if (error) throw error;
   return (data ?? []).map(toPolicy);
+}
+
+export async function createCancellationPolicy(input: {
+  tenantId: string;
+  name: string;
+  description?: string | null;
+  hoursBeforeNoCharge?: number;
+  lateCancelFeePct?: number;
+  noShowFeePct?: number;
+  isDefault?: boolean;
+}): Promise<CancellationPolicy> {
+  const { data, error } = await supabase
+    .from("cancellation_policies")
+    .insert({
+      tenant_id: input.tenantId,
+      name: input.name,
+      description: input.description ?? null,
+      hours_before_no_charge: input.hoursBeforeNoCharge ?? 24,
+      late_cancel_fee_pct: input.lateCancelFeePct ?? 0,
+      no_show_fee_pct: input.noShowFeePct ?? 0,
+      is_default: input.isDefault ?? false,
+    })
+    .select(POLICY_COLS)
+    .single();
+  if (error) throw error;
+  return toPolicy(data);
+}
+
+export async function updateCancellationPolicy(id: string, patch: Partial<{
+  name: string;
+  description: string | null;
+  hoursBeforeNoCharge: number;
+  lateCancelFeePct: number;
+  noShowFeePct: number;
+  isDefault: boolean;
+}>): Promise<CancellationPolicy> {
+  const dbPatch: Record<string, unknown> = {};
+  if (patch.name !== undefined) dbPatch.name = patch.name;
+  if (patch.description !== undefined) dbPatch.description = patch.description;
+  if (patch.hoursBeforeNoCharge !== undefined) dbPatch.hours_before_no_charge = patch.hoursBeforeNoCharge;
+  if (patch.lateCancelFeePct !== undefined) dbPatch.late_cancel_fee_pct = patch.lateCancelFeePct;
+  if (patch.noShowFeePct !== undefined) dbPatch.no_show_fee_pct = patch.noShowFeePct;
+  if (patch.isDefault !== undefined) dbPatch.is_default = patch.isDefault;
+  const { data, error } = await supabase
+    .from("cancellation_policies")
+    .update(dbPatch as never)
+    .eq("id", id)
+    .select(POLICY_COLS)
+    .single();
+  if (error) throw error;
+  return toPolicy(data);
+}
+
+export async function deleteCancellationPolicy(id: string): Promise<void> {
+  const { error } = await supabase.from("cancellation_policies").delete().eq("id", id);
+  if (error) throw error;
 }

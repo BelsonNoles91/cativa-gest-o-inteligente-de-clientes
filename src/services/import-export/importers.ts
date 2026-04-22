@@ -8,6 +8,8 @@
  * para preservar progresso parcial em importações grandes.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { insertAppointment } from "@/repositories/scheduling";
+import type { AppointmentSource, AppointmentStatus } from "@/domain/scheduling";
 
 export interface ImportRunResult {
   inserted: number;
@@ -16,6 +18,14 @@ export interface ImportRunResult {
 }
 
 const CHUNK = 100;
+
+function normalizeText(value: unknown): string {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+}
 
 async function insertChunked(
   table: string,
@@ -132,4 +142,131 @@ export async function importTeam(
     is_active: true,
   }));
   return insertChunked("professionals", payload);
+}
+
+export async function importAppointments(
+  rows: Array<Record<string, unknown>>,
+  ctx: { tenantId: string; createdBy?: string | null },
+): Promise<ImportRunResult> {
+  const result: ImportRunResult = { inserted: 0, failed: 0, errors: [] };
+
+  const [
+    clientsResponse,
+    professionalsResponse,
+    servicesResponse,
+    servicePricesResponse,
+    unitsResponse,
+  ] = await Promise.all([
+    supabase.from("clients").select("id, full_name").eq("tenant_id", ctx.tenantId),
+    supabase.from("professionals").select("id, full_name, display_name").eq("tenant_id", ctx.tenantId),
+    supabase.from("services").select("id, name, duration_minutes").eq("tenant_id", ctx.tenantId),
+    supabase
+      .from("service_prices")
+      .select("service_id, amount_cents, is_default")
+      .eq("tenant_id", ctx.tenantId),
+    supabase.from("units").select("id, name, is_active").eq("tenant_id", ctx.tenantId),
+  ]);
+
+  if (clientsResponse.error) throw clientsResponse.error;
+  if (professionalsResponse.error) throw professionalsResponse.error;
+  if (servicesResponse.error) throw servicesResponse.error;
+  if (servicePricesResponse.error) throw servicePricesResponse.error;
+  if (unitsResponse.error) throw unitsResponse.error;
+
+  const clientByName = new Map(
+    (clientsResponse.data ?? []).map((row) => [normalizeText(row.full_name), row.id]),
+  );
+  const professionalByName = new Map<string, string>();
+  (professionalsResponse.data ?? []).forEach((row) => {
+    const displayName = normalizeText(row.display_name);
+    const fullName = normalizeText(row.full_name);
+    if (displayName) professionalByName.set(displayName, row.id);
+    if (fullName && !professionalByName.has(fullName)) professionalByName.set(fullName, row.id);
+  });
+  const serviceByName = new Map(
+    (servicesResponse.data ?? []).map((row) => [
+      normalizeText(row.name),
+      { id: row.id, durationMinutes: row.duration_minutes },
+    ]),
+  );
+  const unitRows = (unitsResponse.data ?? []).filter((row) => row.is_active);
+  const unitByName = new Map(unitRows.map((row) => [normalizeText(row.name), row.id]));
+  const defaultUnitId = unitRows.length === 1 ? unitRows[0].id : null;
+  const defaultPriceByServiceId = new Map<string, number>();
+  (servicePricesResponse.data ?? []).forEach((row) => {
+    if (row.is_default && !defaultPriceByServiceId.has(row.service_id)) {
+      defaultPriceByServiceId.set(row.service_id, row.amount_cents);
+    }
+  });
+
+  for (let index = 0; index < rows.length; index += 1) {
+    const row = rows[index];
+    try {
+      const clientId = clientByName.get(normalizeText(row.clientName));
+      if (!clientId) throw new Error(`Cliente não encontrado: ${row.clientName ?? "—"}`);
+
+      const professionalId = professionalByName.get(normalizeText(row.professionalName));
+      if (!professionalId) throw new Error(`Profissional não encontrado: ${row.professionalName ?? "—"}`);
+
+      const service = serviceByName.get(normalizeText(row.serviceName));
+      if (!service) throw new Error(`Serviço não encontrado: ${row.serviceName ?? "—"}`);
+
+      const unitName = normalizeText(row.unitName);
+      const unitId = unitName ? unitByName.get(unitName) : defaultUnitId;
+      if (!unitId) {
+        throw new Error(
+          unitName
+            ? `Unidade não encontrada: ${row.unitName ?? "—"}`
+            : "Informe a unidade na planilha ou deixe apenas uma unidade ativa no tenant para importação guiada.",
+        );
+      }
+
+      const startsAtRaw = row.startsAt;
+      if (typeof startsAtRaw !== "string" || Number.isNaN(new Date(startsAtRaw).getTime())) {
+        throw new Error(`Data/hora inválida: ${row.startsAt ?? "—"}`);
+      }
+
+      const durationMinutes =
+        typeof row.durationMinutes === "number" && row.durationMinutes > 0
+          ? Number(row.durationMinutes)
+          : service.durationMinutes;
+      if (!durationMinutes || durationMinutes <= 0) {
+        throw new Error("Não foi possível determinar a duração do agendamento.");
+      }
+
+      const startsAt = new Date(startsAtRaw);
+      const endsAt = new Date(startsAt.getTime() + durationMinutes * 60_000).toISOString();
+      const totalPriceCents =
+        typeof row.priceCents === "number"
+          ? Math.round(Number(row.priceCents) * 100)
+          : defaultPriceByServiceId.get(service.id) ?? 0;
+
+      await insertAppointment({
+        tenantId: ctx.tenantId,
+        unitId,
+        clientId,
+        professionalId,
+        serviceId: service.id,
+        startsAt: startsAt.toISOString(),
+        endsAt,
+        durationMinutes,
+        source: ((row.source as AppointmentSource | null) ?? "frontdesk"),
+        status: ((row.status as AppointmentStatus | null) ?? "pending"),
+        notes: (row.notes as string) ?? null,
+        totalPriceCents,
+        itemPriceCents: totalPriceCents,
+        createdBy: ctx.createdBy ?? null,
+      });
+
+      result.inserted += 1;
+    } catch (error) {
+      result.failed += 1;
+      result.errors.push({
+        rowIndex: index,
+        message: error instanceof Error ? error.message : "Erro inesperado ao importar agendamento.",
+      });
+    }
+  }
+
+  return result;
 }

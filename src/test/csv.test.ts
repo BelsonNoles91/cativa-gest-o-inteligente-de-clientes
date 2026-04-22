@@ -104,6 +104,11 @@ describe("import-export/schemas — parseCell", () => {
     expect(parseCell("1/3/26", "date")).toBe("2026-03-01");
   });
 
+  it("datetime aceita ISO e dd/mm/aaaa hh:mm", () => {
+    expect(parseCell("2026-04-21T14:30:00Z", "datetime")).toBe("2026-04-21T14:30:00.000Z");
+    expect(String(parseCell("21/04/2026 09:15", "datetime"))).toMatch(/^2026-04-21T/);
+  });
+
   it("phone retira tudo que não é dígito", () => {
     expect(parseCell("(11) 99999-1234", "phone")).toBe("11999991234");
   });

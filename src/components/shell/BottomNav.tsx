@@ -5,12 +5,21 @@
 import { NavLink } from "@/components/NavLink";
 import { navItems } from "@/config/navigation";
 import { useTenant } from "@/features/tenant/TenantProvider";
+import { useTenantBilling } from "@/features/billing/useTenantBilling";
 import { canAccess } from "@/domain/roles";
 import { cn } from "@/lib/utils";
 
 export function BottomNav() {
   const { currentRole } = useTenant();
-  const items = navItems.filter((i) => i.showInBottomNav && canAccess(currentRole, i.roles)).slice(0, 5);
+  const { hasFeature } = useTenantBilling();
+  const items = navItems
+    .filter(
+      (i) =>
+        i.showInBottomNav &&
+        canAccess(currentRole, i.roles) &&
+        (!i.featureKey || hasFeature(i.featureKey)),
+    )
+    .slice(0, 5);
 
   return (
     <nav

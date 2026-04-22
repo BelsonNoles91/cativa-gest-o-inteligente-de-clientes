@@ -41,19 +41,34 @@ import {
   importServices,
   importPackages,
   importTeam,
+  importAppointments,
   type ImportRunResult,
 } from "@/services/import-export/importers";
 import {
   exportClientsCsv,
   exportServicesCsv,
+  exportTeamCsv,
+  exportPackagesCsv,
+  exportMembershipsCsv,
+  exportProtocolsCsv,
   exportAppointmentsCsv,
   exportMetricsCsv,
   buildClientRows,
   buildServiceRows,
+  buildTeamRows,
+  buildPackageRows,
+  buildMembershipRows,
+  buildProtocolRows,
   buildAppointmentRows,
 } from "@/services/import-export/exporters";
 import { listClients } from "@/repositories/clients";
-import { listServices, listBasePrices } from "@/repositories/catalog";
+import {
+  listServices,
+  listBasePrices,
+  listPackages,
+  listMemberships,
+  listProtocols,
+} from "@/repositories/catalog";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Upload,
@@ -188,13 +203,8 @@ function ImportPanel({ tenantId, userId }: { tenantId: string; userId: string })
           res = await importTeam(fullValidation.rows, { tenantId });
           break;
         case "appointments":
-          toast({
-            title: "Indisponível neste momento",
-            description:
-              "Importação de agendamentos requer mapeamento de IDs e está liberada via suporte para migrações guiadas.",
-          });
-          setRunning(false);
-          return;
+          res = await importAppointments(fullValidation.rows, { tenantId, createdBy: userId });
+          break;
         default:
           throw new Error("Entidade não suportada.");
       }
@@ -435,14 +445,86 @@ function ExportPanel({ tenantId }: { tenantId: string }) {
   async function exportServices(format: "csv" | "json") {
     setBusy("services-" + format);
     try {
-      const services = await listServices({ tenantId });
-      const priceMap = await listBasePrices(tenantId);
+      const [services, priceMap, categoryResponse] = await Promise.all([
+        listServices({ tenantId }),
+        listBasePrices(tenantId),
+        supabase.from("service_categories").select("id, name").eq("tenant_id", tenantId),
+      ]);
+      if (categoryResponse.error) throw categoryResponse.error;
       const cents = new Map<string, number>();
       priceMap.forEach((p, k) => cents.set(k, p.amountCents));
+      const categories = new Map((categoryResponse.data ?? []).map((row) => [row.id, row.name]));
       const filename = `servicos_${dateStamp()}.${format}`;
-      if (format === "csv") downloadFile(filename, exportServicesCsv(services, cents));
-      else downloadJson(filename, buildServiceRows(services, cents));
+      if (format === "csv") downloadFile(filename, exportServicesCsv(services, cents, categories));
+      else downloadJson(filename, buildServiceRows(services, cents, categories));
       toast({ title: "Exportação concluída", description: `${services.length} serviços.` });
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function exportTeam(format: "csv" | "json") {
+    setBusy("team-" + format);
+    try {
+      const { data, error } = await supabase
+        .from("professionals")
+        .select("full_name, display_name, email, phone, specialty, commission_pct, is_active")
+        .eq("tenant_id", tenantId)
+        .order("display_name");
+      if (error) throw error;
+
+      const professionals = (data ?? []).map((row) => ({
+        fullName: row.full_name,
+        displayName: row.display_name,
+        email: row.email,
+        phone: row.phone,
+        specialty: row.specialty,
+        commissionPct: row.commission_pct ?? 0,
+        isActive: row.is_active,
+      }));
+      const filename = `equipe_${dateStamp()}.${format}`;
+      if (format === "csv") downloadFile(filename, exportTeamCsv(professionals));
+      else downloadJson(filename, buildTeamRows(professionals));
+      toast({ title: "Exportação concluída", description: `${professionals.length} profissionais.` });
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function exportPackagesData(format: "csv" | "json") {
+    setBusy("packages-" + format);
+    try {
+      const packages = await listPackages(tenantId);
+      const filename = `pacotes_${dateStamp()}.${format}`;
+      if (format === "csv") downloadFile(filename, exportPackagesCsv(packages));
+      else downloadJson(filename, buildPackageRows(packages));
+      toast({ title: "Exportação concluída", description: `${packages.length} pacotes.` });
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function exportMemberships(format: "csv" | "json") {
+    setBusy("memberships-" + format);
+    try {
+      const memberships = await listMemberships(tenantId);
+      const filename = `memberships_${dateStamp()}.${format}`;
+      if (format === "csv") downloadFile(filename, exportMembershipsCsv(memberships));
+      else downloadJson(filename, buildMembershipRows(memberships));
+      toast({ title: "Exportação concluída", description: `${memberships.length} memberships.` });
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function exportProtocols(format: "csv" | "json") {
+    setBusy("protocols-" + format);
+    try {
+      const protocols = await listProtocols(tenantId);
+      const filename = `protocolos_${dateStamp()}.${format}`;
+      if (format === "csv") downloadFile(filename, exportProtocolsCsv(protocols));
+      else downloadJson(filename, buildProtocolRows(protocols));
+      toast({ title: "Exportação concluída", description: `${protocols.length} protocolos.` });
     } finally {
       setBusy(null);
     }
@@ -462,39 +544,77 @@ function ExportPanel({ tenantId }: { tenantId: string }) {
       if (error) throw error;
       const appts = (data ?? []).map((a) => ({
         id: a.id,
-        tenantId: a.tenant_id,
-        unitId: a.unit_id,
-        clientId: a.client_id,
-        professionalId: a.professional_id,
-        resourceId: a.resource_id,
-        cancellationPolicyId: a.cancellation_policy_id,
         status: a.status,
         source: a.source,
         startsAt: a.starts_at,
-        endsAt: a.ends_at,
         durationMinutes: a.duration_minutes,
-        bufferBeforeMinutes: a.buffer_before_minutes,
-        bufferAfterMinutes: a.buffer_after_minutes,
-        isWalkIn: a.is_walk_in,
-        isOverbooked: a.is_overbooked,
         totalPriceCents: a.total_price_cents,
         notes: a.notes,
-        internalNotes: a.internal_notes,
-        confirmedAt: a.confirmed_at,
-        remindedAt: a.reminded_at,
-        arrivedAt: a.arrived_at,
-        startedAt: a.started_at,
-        completedAt: a.completed_at,
-        canceledAt: a.canceled_at,
-        noShowAt: a.no_show_at,
-        canceledReason: a.canceled_reason,
-        createdAt: a.created_at,
-        updatedAt: a.updated_at,
+        unitId: a.unit_id,
+        clientId: a.client_id,
+        professionalId: a.professional_id,
+      }));
+      const appointmentIds = appts.map((item) => item.id);
+      const clientIds = Array.from(new Set(appts.map((item) => item.clientId)));
+      const professionalIds = Array.from(new Set(appts.map((item) => item.professionalId)));
+      const unitIds = Array.from(new Set(appts.map((item) => item.unitId)));
+      const [itemResponse, clientResponse, professionalResponse, unitResponse] = await Promise.all([
+        appointmentIds.length
+          ? supabase
+              .from("appointment_items")
+              .select("appointment_id, service_id, position")
+              .in("appointment_id", appointmentIds)
+              .order("position")
+          : Promise.resolve({ data: [], error: null }),
+        clientIds.length
+          ? supabase.from("clients").select("id, full_name").in("id", clientIds)
+          : Promise.resolve({ data: [], error: null }),
+        professionalIds.length
+          ? supabase.from("professionals").select("id, display_name, full_name").in("id", professionalIds)
+          : Promise.resolve({ data: [], error: null }),
+        unitIds.length
+          ? supabase.from("units").select("id, name").in("id", unitIds)
+          : Promise.resolve({ data: [], error: null }),
+      ]);
+      if (itemResponse.error) throw itemResponse.error;
+      if (clientResponse.error) throw clientResponse.error;
+      if (professionalResponse.error) throw professionalResponse.error;
+      if (unitResponse.error) throw unitResponse.error;
+
+      const firstItemByAppointment = new Map<string, string>();
+      (itemResponse.data ?? []).forEach((row) => {
+        if (!firstItemByAppointment.has(row.appointment_id)) {
+          firstItemByAppointment.set(row.appointment_id, row.service_id);
+        }
+      });
+      const serviceIds = Array.from(new Set(Array.from(firstItemByAppointment.values())));
+      const { data: serviceData, error: serviceError } = serviceIds.length
+        ? await supabase.from("services").select("id, name").in("id", serviceIds)
+        : { data: [], error: null };
+      if (serviceError) throw serviceError;
+
+      const clientMap = new Map((clientResponse.data ?? []).map((row) => [row.id, row.full_name]));
+      const professionalMap = new Map(
+        (professionalResponse.data ?? []).map((row) => [row.id, row.display_name ?? row.full_name]),
+      );
+      const unitMap = new Map((unitResponse.data ?? []).map((row) => [row.id, row.name]));
+      const serviceMap = new Map((serviceData ?? []).map((row) => [row.id, row.name]));
+      const exportRows = appts.map((appt) => ({
+        startsAt: appt.startsAt,
+        durationMinutes: appt.durationMinutes,
+        totalPriceCents: appt.totalPriceCents,
+        status: appt.status,
+        source: appt.source,
+        notes: appt.notes,
+        clientName: clientMap.get(appt.clientId) ?? null,
+        professionalName: professionalMap.get(appt.professionalId) ?? null,
+        unitName: unitMap.get(appt.unitId) ?? null,
+        serviceName: serviceMap.get(firstItemByAppointment.get(appt.id) ?? "") ?? null,
       }));
       const filename = `agendamentos_${dateStamp()}.${format}`;
-      if (format === "csv") downloadFile(filename, exportAppointmentsCsv(appts));
-      else downloadJson(filename, buildAppointmentRows(appts));
-      toast({ title: "Exportação concluída", description: `${appts.length} agendamentos.` });
+      if (format === "csv") downloadFile(filename, exportAppointmentsCsv(exportRows));
+      else downloadJson(filename, buildAppointmentRows(exportRows));
+      toast({ title: "Exportação concluída", description: `${exportRows.length} agendamentos.` });
     } catch (err) {
       toast({
         title: "Falha ao exportar",
@@ -547,6 +667,34 @@ function ExportPanel({ tenantId }: { tenantId: string }) {
       onCsv: () => exportServices("csv"),
       onJson: () => exportServices("json"),
       keyId: "services",
+    },
+    {
+      title: "Equipe",
+      description: "Profissionais ativos e inativos do negócio.",
+      onCsv: () => exportTeam("csv"),
+      onJson: () => exportTeam("json"),
+      keyId: "team",
+    },
+    {
+      title: "Pacotes",
+      description: "Pacotes comerciais configurados no tenant.",
+      onCsv: () => exportPackagesData("csv"),
+      onJson: () => exportPackagesData("json"),
+      keyId: "packages",
+    },
+    {
+      title: "Memberships",
+      description: "Assinaturas recorrentes com ciclo e preço.",
+      onCsv: () => exportMemberships("csv"),
+      onJson: () => exportMemberships("json"),
+      keyId: "memberships",
+    },
+    {
+      title: "Protocolos",
+      description: "Protocolos operacionais ativos e inativos.",
+      onCsv: () => exportProtocols("csv"),
+      onJson: () => exportProtocols("json"),
+      keyId: "protocols",
     },
     {
       title: "Agendamentos",

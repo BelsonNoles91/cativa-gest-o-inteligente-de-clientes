@@ -104,6 +104,7 @@ export interface ApptFact {
   tenantId: string;
   unitId: string;
   professionalId: string;
+  serviceId: string | null;
   clientId: string;
   startsAt: string;
   endsAt: string;
@@ -174,14 +175,15 @@ function pct(n: number): number {
 }
 
 /** Filtra um conjunto de appts pelos filtros declarados. */
-export function applyFilters<T extends Pick<ApptFact, "unitId" | "professionalId" | "source">>(
+export function applyFilters<T extends Pick<ApptFact, "unitId" | "professionalId" | "serviceId" | "source">>(
   rows: T[],
-  f: Pick<AnalyticsFilters, "unitId" | "professionalId" | "source">,
+  f: Pick<AnalyticsFilters, "unitId" | "professionalId" | "serviceId" | "source">,
 ): T[] {
   return rows.filter(
     (r) =>
       (!f.unitId || r.unitId === f.unitId) &&
       (!f.professionalId || r.professionalId === f.professionalId) &&
+      (!f.serviceId || r.serviceId === f.serviceId) &&
       (!f.source || r.source === f.source),
   );
 }

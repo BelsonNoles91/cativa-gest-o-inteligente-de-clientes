@@ -360,6 +360,62 @@ export async function deleteFile(fileId: string, storagePath: string): Promise<v
   if (error) throw error;
 }
 
+export async function uploadClientFile(input: {
+  tenantId: string;
+  clientId: string;
+  uploadedBy: string | null;
+  file: File;
+  description?: string | null;
+}): Promise<ClientFile> {
+  const safeName = input.file.name.replace(/[^\w.\-]+/g, "_");
+  const storagePath = `${input.tenantId}/${input.clientId}/${crypto.randomUUID()}-${safeName}`;
+  const { error: uploadError } = await supabase.storage
+    .from("client-media")
+    .upload(storagePath, input.file, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: input.file.type || undefined,
+    });
+  if (uploadError) throw uploadError;
+
+  const { data, error } = await supabase
+    .from("client_files")
+    .insert({
+      tenant_id: input.tenantId,
+      client_id: input.clientId,
+      uploaded_by: input.uploadedBy,
+      storage_path: storagePath,
+      file_name: input.file.name,
+      mime_type: input.file.type || null,
+      size_bytes: input.file.size,
+      description: input.description ?? null,
+    })
+    .select("id, client_id, storage_path, file_name, mime_type, size_bytes, description, created_at")
+    .single();
+  if (error) throw error;
+
+  await addTimelineEvent({
+    tenantId: input.tenantId,
+    clientId: input.clientId,
+    actorId: input.uploadedBy,
+    eventType: "file",
+    title: "Arquivo anexado",
+    description: input.file.name,
+    referenceId: data.id,
+  });
+
+  return {
+    id: data.id,
+    clientId: data.client_id,
+    storagePath: data.storage_path,
+    fileName: data.file_name,
+    mimeType: data.mime_type,
+    sizeBytes: data.size_bytes,
+    description: data.description,
+    createdAt: data.created_at,
+  };
+}
+
 // -----------------------------------------------------------------------------
 // PHOTOS
 // -----------------------------------------------------------------------------
@@ -386,6 +442,76 @@ export async function deletePhoto(photoId: string, storagePath: string): Promise
   await supabase.storage.from("client-media").remove([storagePath]);
   const { error } = await supabase.from("client_photos").delete().eq("id", photoId);
   if (error) throw error;
+}
+
+export async function createClientMediaSignedUrl(
+  storagePath: string,
+  expiresInSeconds = 3600,
+): Promise<string | null> {
+  const { data, error } = await supabase.storage
+    .from("client-media")
+    .createSignedUrl(storagePath, expiresInSeconds);
+  if (error) throw error;
+  return data?.signedUrl ?? null;
+}
+
+export async function uploadClientPhoto(input: {
+  tenantId: string;
+  clientId: string;
+  uploadedBy: string | null;
+  file: File;
+  photoType?: ClientPhoto["photoType"];
+  pairId?: string | null;
+  caption?: string | null;
+  takenAt?: string | null;
+}): Promise<ClientPhoto> {
+  const safeName = input.file.name.replace(/[^\w.\-]+/g, "_");
+  const storagePath = `${input.tenantId}/${input.clientId}/${crypto.randomUUID()}-${safeName}`;
+  const { error: uploadError } = await supabase.storage
+    .from("client-media")
+    .upload(storagePath, input.file, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: input.file.type || undefined,
+    });
+  if (uploadError) throw uploadError;
+
+  const { data, error } = await supabase
+    .from("client_photos")
+    .insert({
+      tenant_id: input.tenantId,
+      client_id: input.clientId,
+      uploaded_by: input.uploadedBy,
+      storage_path: storagePath,
+      photo_type: input.photoType ?? "general",
+      pair_id: input.pairId ?? null,
+      caption: input.caption ?? null,
+      taken_at: input.takenAt ?? null,
+    })
+    .select("id, client_id, storage_path, photo_type, pair_id, caption, taken_at, created_at")
+    .single();
+  if (error) throw error;
+
+  await addTimelineEvent({
+    tenantId: input.tenantId,
+    clientId: input.clientId,
+    actorId: input.uploadedBy,
+    eventType: "photo",
+    title: "Foto adicionada",
+    description: input.caption ?? input.file.name,
+    referenceId: data.id,
+  });
+
+  return {
+    id: data.id,
+    clientId: data.client_id,
+    storagePath: data.storage_path,
+    photoType: data.photo_type,
+    pairId: data.pair_id,
+    caption: data.caption,
+    takenAt: data.taken_at,
+    createdAt: data.created_at,
+  };
 }
 
 // -----------------------------------------------------------------------------
@@ -557,4 +683,34 @@ export async function listConsentResponses(clientId: string): Promise<ConsentRes
     signedAt: r.signed_at,
     createdAt: r.created_at,
   }));
+}
+
+export async function createConsentResponse(input: {
+  tenantId: string;
+  clientId: string;
+  templateId: string;
+  templateVersion?: number;
+}): Promise<ConsentResponse> {
+  const { data, error } = await supabase
+    .from("consent_form_responses")
+    .insert({
+      tenant_id: input.tenantId,
+      client_id: input.clientId,
+      template_id: input.templateId,
+      template_version: input.templateVersion ?? 1,
+      status: "pending",
+    })
+    .select("id, client_id, template_id, template_version, status, signed_name, signed_at, created_at")
+    .single();
+  if (error) throw error;
+  return {
+    id: data.id,
+    clientId: data.client_id,
+    templateId: data.template_id,
+    templateVersion: data.template_version,
+    status: data.status,
+    signedName: data.signed_name,
+    signedAt: data.signed_at,
+    createdAt: data.created_at,
+  };
 }
