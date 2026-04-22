@@ -235,8 +235,29 @@ export default function Onboarding() {
         </div>
       )}
 
-      {/* Step 0 — signup */}
-      {step === 0 && (
+      {/* Step 0 — signup (ou continuar, se já houver sessão sem tenant) */}
+      {step === 0 && user && (
+        <div className="space-y-4 animate-fade-in">
+          <h1 className="text-2xl font-semibold">Vamos finalizar seu cadastro</h1>
+          <p className="text-sm text-muted-foreground">
+            Você já está autenticado como <span className="font-medium text-foreground">{user.email}</span>,
+            mas ainda não há um estabelecimento configurado. Continue para criar seu workspace.
+          </p>
+
+          <Button onClick={() => setStep(1)} className="h-11 w-full rounded-xl bg-gradient-brand">
+            Continuar setup <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+
+          <p className="text-center text-xs text-muted-foreground">
+            Não é você?{" "}
+            <Link to="/auth/login" className="font-medium text-primary hover:underline">
+              Entrar com outra conta
+            </Link>
+          </p>
+        </div>
+      )}
+
+      {step === 0 && !user && (
         <form onSubmit={handleSignup} className="space-y-4 animate-fade-in">
           <h1 className="text-2xl font-semibold">Criar sua conta</h1>
           <p className="text-sm text-muted-foreground">
