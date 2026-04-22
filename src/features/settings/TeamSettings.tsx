@@ -341,17 +341,50 @@ export function TeamSettings() {
 
           {pending.length > 0 && (
             <div className="mt-6">
-              <h4 className="mb-2 text-sm font-medium">Convites registrados</h4>
+              <h4 className="mb-2 text-sm font-medium">Convites pendentes</h4>
               <ul className="space-y-1.5">
-                {pending.map((i) => (
-                  <li key={i.id} className="flex items-center justify-between rounded-lg bg-muted/60 px-3 py-2 text-sm">
-                    <span>{i.metadata?.invited_email}</span>
-                    <StatusBadge tone="warning" dot={false}>{i.metadata?.role ? roleLabels[i.metadata.role as Role] : "—"}</StatusBadge>
-                  </li>
-                ))}
+                {pending.map((i) => {
+                  const expired = new Date(i.expires_at).getTime() <= Date.now();
+                  return (
+                    <li
+                      key={i.id}
+                      className="flex flex-wrap items-center gap-2 rounded-lg bg-muted/60 px-3 py-2 text-sm"
+                    >
+                      <span className="truncate font-medium">{i.email}</span>
+                      <StatusBadge tone={expired ? "danger" : "warning"} dot={false}>
+                        {roleLabels[i.role]}
+                      </StatusBadge>
+                      <span className="text-[11px] text-muted-foreground">
+                        {expired
+                          ? "Expirou"
+                          : `expira ${new Date(i.expires_at).toLocaleDateString()}`}
+                      </span>
+                      <div className="ml-auto flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => onCopyInviteLink(i.token)}
+                          aria-label="Copiar link"
+                          title="Copiar link de aceite"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => onRevokeInvite(i.id)}
+                          aria-label="Revogar convite"
+                          title="Revogar convite"
+                        >
+                          <XCircle className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
               <p className="mt-2 text-[11px] text-muted-foreground">
-                Os convites ficam registrados aqui. Quando o convidado se cadastrar com este e-mail, a vinculação ao tenant será feita na próxima etapa.
+                Compartilhe o link de aceite com a pessoa convidada. Ao aceitar, ela passará a fazer parte do tenant com o papel atribuído.
               </p>
             </div>
           )}
