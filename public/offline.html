@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#FAF7F9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1A1015" media="(prefers-color-scheme: dark)" />
+    <title>Cativa — Sem conexão</title>
+    <style>
+      :root {
+        --bg: #FAF7F9;
+        --fg: #1A1015;
+        --muted: #6b5560;
+        --primary: #6E3B5D;
+        --card: #ffffff;
+        --border: #ece1e7;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1A1015;
+          --fg: #FAF7F9;
+          --muted: #b9a4ad;
+          --primary: #d99fc5;
+          --card: #261820;
+          --border: #3a2731;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; height: 100%; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background: var(--bg);
+        color: var(--fg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        padding-top: max(24px, env(safe-area-inset-top));
+        padding-bottom: max(24px, env(safe-area-inset-bottom));
+      }
+      .card {
+        max-width: 440px;
+        width: 100%;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 32px 28px;
+        text-align: center;
+        box-shadow: 0 18px 50px -28px rgba(110, 59, 93, 0.35);
+      }
+      .icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 20px;
+        border-radius: 18px;
+        background: color-mix(in srgb, var(--primary) 14%, transparent);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      h1 {
+        font-size: 22px;
+        margin: 0 0 8px;
+        letter-spacing: -0.01em;
+      }
+      p {
+        margin: 0 0 24px;
+        color: var(--muted);
+        line-height: 1.55;
+        font-size: 15px;
+      }
+      button {
+        appearance: none;
+        border: 0;
+        background: var(--primary);
+        color: #fff;
+        font-size: 15px;
+        font-weight: 600;
+        padding: 12px 22px;
+        border-radius: 999px;
+        cursor: pointer;
+        min-height: 44px;
+        min-width: 160px;
+        transition: transform 120ms ease, opacity 120ms ease;
+      }
+      button:active { transform: scale(0.97); }
+      .hint { margin-top: 18px; font-size: 12px; color: var(--muted); }
+      .status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; }
+      .dot { width: 8px; height: 8px; border-radius: 999px; background: #c44; }
+      .online .dot { background: #2c8a4a; }
+    </style>
+  </head>
+  <body>
+    <main class="card" role="main">
+      <div class="icon" aria-hidden="true">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 1l22 22"/>
+          <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
+          <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
+          <path d="M10.71 5.05A16 16 0 0 1 22.58 9"/>
+          <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
+          <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+          <line x1="12" y1="20" x2="12.01" y2="20"/>
+        </svg>
+      </div>
+      <h1>Sem conexão</h1>
+      <p>
+        Esta tela ainda não está disponível offline. Verifique sua internet e
+        tente novamente — assim que a conexão voltar, recarregamos a página.
+      </p>
+      <button type="button" id="retry">Tentar de novo</button>
+      <div class="hint">
+        <span class="status" id="status"><span class="dot"></span><span id="statusText">Offline</span></span>
+      </div>
+    </main>
+
+    <script>
+      const retry = document.getElementById("retry");
+      const status = document.getElementById("status");
+      const statusText = document.getElementById("statusText");
+
+      function refreshStatus() {
+        if (navigator.onLine) {
+          status.classList.add("online");
+          statusText.textContent = "Conexão restaurada";
+        } else {
+          status.classList.remove("online");
+          statusText.textContent = "Offline";
+        }
+      }
+
+      retry.addEventListener("click", () => {
+        window.location.reload();
+      });
+
+      window.addEventListener("online", () => {
+        refreshStatus();
+        // Reaplica a navegação original assim que a rede voltar
+        setTimeout(() => window.location.reload(), 400);
+      });
+      window.addEventListener("offline", refreshStatus);
+      refreshStatus();
+    </script>
+  </body>
+</html>
