@@ -22,3 +22,4 @@ contém a visão de produto.
 10. [Métricas e Índice Cativa](./10-metricas.md)
 11. [Seeds operacionais de demonstração](./11-seeds-demo.md)
 12. [Rastreabilidade do prompt original](./12-rastreabilidade-prompt.md)
+13. [Visual Regression (Playwright)](./13-visual-regression.md)
