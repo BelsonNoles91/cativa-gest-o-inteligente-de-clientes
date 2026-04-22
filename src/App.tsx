@@ -12,6 +12,7 @@ import { ProtectedRoute, RequireOnboarding, RoleGuard } from "@/features/auth/gu
 import { appConfig } from "@/config/app";
 
 import { FeatureGate } from "@/features/billing/FeatureGate";
+import { DebugConsole } from "@/components/debug/DebugConsole";
 
 const queryClient = new QueryClient();
 
@@ -145,6 +146,7 @@ const App = () => (
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
+              <DebugConsole />
             </TooltipProvider>
           </TenantProvider>
         </AuthProvider>
