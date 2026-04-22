@@ -657,7 +657,13 @@ export async function goOffline(page: Page): Promise<() => Promise<void>> {
  *  - Tem role=status para acessibilidade.
  */
 export async function assertOfflineBannerLayout(page: Page): Promise<void> {
-  const banner = page.locator('[role="status"]', { hasText: /offline/i }).first();
+  // Preferimos o data-testid estável; mantemos fallback por role+texto para
+  // compatibilidade com versões antigas do shell.
+  const banner = page
+    .locator(
+      '[data-testid="offline-banner"][data-offline-state="offline"], [role="status"]:has-text("offline")',
+    )
+    .first();
   await expect(banner).toBeVisible();
   const bannerBox = await banner.boundingBox();
   expect(bannerBox, "OfflineBanner sem bounding box").not.toBeNull();
