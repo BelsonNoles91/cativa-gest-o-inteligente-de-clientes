@@ -57,9 +57,10 @@ export default function Onboarding() {
   } = useTenant();
   const navigate = useNavigate();
 
-  // step 0 (signup) só aparece se não estiver logado
-  const initialStep = user ? 1 : 0;
-  const [step, setStep] = useState(initialStep);
+  // Step 0 sempre aparece quando o usuário ainda não tem tenant/membership completo,
+  // mesmo que já exista uma sessão ativa (preview, navegador antigo, etc.).
+  // Só pulamos o Step 0 quando o avanço for explícito (após signup ou login bem-sucedido).
+  const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [pendingEmailConfirmation, setPendingEmailConfirmation] = useState(false);
 
@@ -87,9 +88,10 @@ export default function Onboarding() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<Role>("frontdesk");
 
-  useEffect(() => {
-    if (!authLoading && user && step === 0) setStep(1);
-  }, [authLoading, user, step]);
+  // Não avançamos automaticamente do Step 0 baseado em sessão. O Step 0 serve como
+  // ponto de entrada para criar conta; quem já tem conta usa o link "Já tenho conta"
+  // ou avança manualmente após o signup. Se o tenant já existir, o efeito abaixo
+  // redireciona direto para /app.
 
   useEffect(() => {
     if (!authLoading && !tenantLoading && currentTenant) {
@@ -233,8 +235,29 @@ export default function Onboarding() {
         </div>
       )}
 
-      {/* Step 0 — signup */}
-      {step === 0 && (
+      {/* Step 0 — signup (ou continuar, se já houver sessão sem tenant) */}
+      {step === 0 && user && (
+        <div className="space-y-4 animate-fade-in">
+          <h1 className="text-2xl font-semibold">Vamos finalizar seu cadastro</h1>
+          <p className="text-sm text-muted-foreground">
+            Você já está autenticado como <span className="font-medium text-foreground">{user.email}</span>,
+            mas ainda não há um estabelecimento configurado. Continue para criar seu workspace.
+          </p>
+
+          <Button onClick={() => setStep(1)} className="h-11 w-full rounded-xl bg-gradient-brand">
+            Continuar setup <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+
+          <p className="text-center text-xs text-muted-foreground">
+            Não é você?{" "}
+            <Link to="/auth/login" className="font-medium text-primary hover:underline">
+              Entrar com outra conta
+            </Link>
+          </p>
+        </div>
+      )}
+
+      {step === 0 && !user && (
         <form onSubmit={handleSignup} className="space-y-4 animate-fade-in">
           <h1 className="text-2xl font-semibold">Criar sua conta</h1>
           <p className="text-sm text-muted-foreground">
