@@ -116,6 +116,7 @@ export function MembersTab() {
   const [statusFilter, setStatusFilter] = useState<MembershipStatus | "all">("all");
   const [editing, setEditing] = useState<MemberRow | null>(null);
   const [saving, setSaving] = useState(false);
+  const [provisionOpen, setProvisionOpen] = useState(false);
 
   async function reload() {
     setLoading(true);
