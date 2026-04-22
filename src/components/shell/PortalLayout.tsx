@@ -157,6 +157,7 @@ export function PortalLayout() {
           ))}
         </div>
       </nav>
+      <SafeAreaDebugOverlay />
     </div>
   );
 }
