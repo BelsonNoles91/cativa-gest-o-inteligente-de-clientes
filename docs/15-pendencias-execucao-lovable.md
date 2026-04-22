@@ -48,51 +48,59 @@ Executar nesta ordem:
 
 ---
 
-## Bloco A — Sanear ambiente de build e testes
+## Bloco A — Sanear ambiente de build e testes ✅
 
-### Prioridade
+### Status
 
-`P0`
+**Concluído** em 2026-04-22.
 
-### Problema atual
+### Resultado
 
-O projeto está funcionalmente avançado, mas o workspace atual não fecha
-validação básica de engenharia:
+- `@tanstack/query-core@^5.83.0` adicionado como dependência direta (peer faltante de `@tanstack/react-query`).
+- `npm test` → **321/321 verde**.
+- `npm run build` → **verde** (PWA gera 89 entries no precache).
+- Nenhuma feature existente foi removida.
 
-- `npm test` falha porque `vitest-axe` não está instalado.
-- `npm run build` falha porque `vite-plugin-pwa` não está instalado.
+---
 
-### Objetivo
+## Bloco B — Fechar convite real de equipe ✅
 
-Restabelecer o estado mínimo esperado de engenharia:
+### Status
 
-- `npm install` coerente com `package.json`
-- `npm test` verde
-- `npm run build` verde
+**Concluído** em 2026-04-22.
 
-### Tarefas
+### Resultado
 
-1. Revisar `package.json`, lockfile e imports usados no projeto.
-2. Adicionar as dependências faltantes necessárias para o estado atual do código.
-3. Garantir compatibilidade entre `vite.config.ts`, testes e dependências.
-4. Rodar:
-   - `npm test`
-   - `npm run build`
-5. Corrigir qualquer quebra residual provocada por dependência ausente ou
-   configuração inconsistente.
+- Migration `team_invitations` aplicada com:
+  - tabela `team_invitations` (token único, expiração de 14 dias, status `pending|accepted|expired|revoked`)
+  - índice único parcial impedindo dois convites pendentes para o mesmo `(tenant, email)`
+  - RLS: gestor (`owner`/`manager`) gerencia tudo; convidado lê apenas o próprio (match por e-mail do JWT)
+  - RPC `accept_team_invitation(token)` — valida e-mail, expiração, **enforcement real de `max_professionals`** quando o papel é `professional`, cria/reativa `tenant_memberships` e registra auditoria
+  - RPC `revoke_team_invitation(id)` — apenas gestor; só revoga pendentes
+  - RPC `list_pending_invitations_for_current_user()` — para claim no login
+- `src/services/team/inviteMember.ts` reescrito:
+  - cria entidade real (não mais apenas log em `audit_logs`)
+  - retorna `{ id, token, inviteUrl, expiresAt }` para compartilhamento
+  - expõe `revokeInvitation()`, `acceptInvitation()`, `listPendingInvitationsForCurrentUser()`
+- Nova rota pública `/auth/aceite-convite?token=...` (`src/pages/auth/AcceptInvite.tsx`):
+  - sem sessão → redireciona para login com `next` preservado
+  - logado com e-mail divergente → mensagem clara
+  - convite expirado/revogado/aceito → bloqueia com motivo
+  - aceite OK → toast + redirect para `/app`
+- `src/features/settings/TeamSettings.tsx` agora lê `team_invitations` reais com:
+  - botão "Copiar link" do convite
+  - botão "Revogar"
+  - badge de papel + indicação de validade/expiração
+  - link copiado automaticamente para a área de transferência ao criar
 
-### Arquivos prováveis
+### Critérios de aceite — atendidos
 
-- `package.json`
-- `package-lock.json` ou `bun.lock`
-- `vite.config.ts`
-- `vitest.config.ts`
+- ✅ Convite deixou de ser apenas log e virou entidade real com fluxo de aceite seguro por token.
+- ✅ Existe fluxo claro de criação, leitura, cancelamento e aceite.
+- ✅ O aceite cria/atualiza `tenant_memberships` no tenant correto, com o papel certo.
+- ✅ O limite `max_professionals` é respeitado dentro da própria RPC (`SECURITY DEFINER`).
 
-### Critérios de aceite
 
-- `npm test` conclui sem falhas.
-- `npm run build` conclui sem falhas.
-- Nenhuma feature existente é removida para “fazer passar”.
 
 ---
 
