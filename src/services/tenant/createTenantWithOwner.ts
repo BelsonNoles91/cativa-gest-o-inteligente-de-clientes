@@ -46,6 +46,19 @@ async function uniqueSlug(base: string): Promise<string> {
 export async function createTenantWithOwner(input: CreateTenantInput): Promise<CreateTenantResult> {
   const slug = await uniqueSlug(input.name);
 
+  // Sanity check: a sessão atual precisa bater com o ownerUserId,
+  // caso contrário a RLS de INSERT em "tenants" rejeita (created_by = auth.uid()).
+  const { data: sessionData } = await supabase.auth.getSession();
+  const sessionUserId = sessionData.session?.user?.id;
+  if (!sessionUserId) {
+    throw new Error("Sessão não encontrada. Faça login novamente.");
+  }
+  if (sessionUserId !== input.ownerUserId) {
+    throw new Error(
+      `Usuário da sessão (${sessionUserId}) não bate com o solicitante (${input.ownerUserId}). Faça login novamente.`,
+    );
+  }
+
   // 1) tenant
   const { data: tenant, error: tErr } = await supabase
     .from("tenants")
@@ -55,12 +68,15 @@ export async function createTenantWithOwner(input: CreateTenantInput): Promise<C
       segment: input.segment,
       timezone: input.timezone ?? "America/Sao_Paulo",
       currency: input.currency ?? "BRL",
-      created_by: input.ownerUserId,
+      created_by: sessionUserId,
       trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
     })
     .select("id")
     .single();
-  if (tErr || !tenant) throw tErr ?? new Error("Falha ao criar estabelecimento");
+  if (tErr || !tenant) {
+    console.error("[createTenantWithOwner] insert tenants falhou", { tErr, sessionUserId });
+    throw tErr ?? new Error("Falha ao criar estabelecimento");
+  }
 
   // 2) membership owner (necessário antes das demais inserções por causa da RLS)
   const { error: mErr } = await supabase.from("tenant_memberships").insert({
