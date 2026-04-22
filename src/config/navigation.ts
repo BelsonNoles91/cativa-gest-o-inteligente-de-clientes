@@ -106,6 +106,13 @@ export const navItems: NavItem[] = [
     group: "sistema",
   },
   {
+    to: "/app/assinatura",
+    label: "Assinatura",
+    icon: Sparkles,
+    roles: ["owner", "manager"],
+    group: "sistema",
+  },
+  {
     to: "/app/dados",
     label: "Importar & Exportar",
     icon: Database,

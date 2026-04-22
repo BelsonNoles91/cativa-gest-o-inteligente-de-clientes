@@ -26,6 +26,7 @@ const Onboarding = lazy(() => import("./pages/auth/Onboarding"));
 const Dashboard = lazy(() => import("./pages/app/Dashboard"));
 const Settings = lazy(() => import("./pages/app/Settings"));
 const Billing = lazy(() => import("./pages/app/Billing"));
+const Subscription = lazy(() => import("./pages/app/Subscription"));
 const SuperAdmin = lazy(() => import("./pages/app/SuperAdmin"));
 const DataImportExport = lazy(() => import("./pages/app/DataImportExport"));
 const ClientsPage = lazy(() => import("./pages/app/Clients"));
@@ -140,6 +141,7 @@ const App = () => (
                             }
                           />
                           <Route path="meu-plano" element={<Billing />} />
+                          <Route path="assinatura" element={<Subscription />} />
                           <Route path="dados" element={<DataImportExport />} />
                           <Route path="configuracoes" element={<Settings />} />
                         </Route>
