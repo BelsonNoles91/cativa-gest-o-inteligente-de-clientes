@@ -60,14 +60,16 @@ async function logAttempt(input: {
 }) {
   try {
     const { data: userData } = await supabase.auth.getUser();
-    await supabase.from("audit_logs").insert({
-      tenant_id: input.tenantId,
-      actor_id: userData?.user?.id ?? null,
-      action: input.action,
-      entity: "tenant_subscriptions",
-      entity_id: input.tenantId,
-      metadata: input.metadata,
-    });
+    await supabase.from("audit_logs").insert([
+      {
+        tenant_id: input.tenantId,
+        actor_id: userData?.user?.id ?? null,
+        action: input.action,
+        entity: "tenant_subscriptions",
+        entity_id: input.tenantId,
+        metadata: input.metadata as never,
+      },
+    ]);
   } catch {
     // Silencioso. O foco aqui é não interferir no fluxo principal.
   }
