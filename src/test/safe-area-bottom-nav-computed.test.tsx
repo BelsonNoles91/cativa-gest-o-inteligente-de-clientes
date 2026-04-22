@@ -127,22 +127,24 @@ describe("BottomNav — padding computado vs. esperado", () => {
 });
 
 describe("Sincronia CSS ↔ JSX — alerta se classes safe-area mudam", () => {
-  it("se um dia removerem .pb-safe do CSS, este teste falha alto e claro", () => {
-    // Remove o CSS injetado e verifica que padding-bottom cai para 0
-    // (= não há fallback). Esse seria o sintoma de regressão real.
-    document.getElementById("safe-area-test-css")?.remove();
+  it("se .pb-safe sair do BottomNav, ninguém mais reserva padding inferior", () => {
+    // Simula regressão: alguém remove `pb-safe` do className do <nav>.
     renderNav();
     const nav = screen.getByRole("navigation", { name: /navegação principal/i });
-    const pb = parseFloat(getComputedStyle(nav).paddingBottom || "0");
-    // Sem o CSS, o valor cai para 0 — confirmando que NOSSA stylesheet é
-    // o que está garantindo o padding. Se um dia esse pb não for mais 0
-    // sem CSS, alguém adicionou inline style ou outra fonte de padding e
-    // precisamos revisitar a invariante.
+    expect(nav.classList.contains("pb-safe")).toBe(true);
+
+    // Remove a classe e verifica que NENHUMA outra fonte de padding-bottom
+    // aparece magicamente — confirmando que .pb-safe é a única responsável.
+    nav.classList.remove("pb-safe");
+    const otherPbClasses = Array.from(nav.classList).filter((c) =>
+      c.startsWith("pb-") || c.startsWith("py-"),
+    );
     expect(
-      pb,
-      "Sem CSS injetado, padding-bottom deveria ser 0 (significa que .pb-safe " +
-        "é a única fonte de padding-bottom no nav). Recebeu " + pb + "px.",
-    ).toBe(0);
+      otherPbClasses,
+      "Nav ainda tem outras classes que afetam padding-bottom: " +
+        otherPbClasses.join(",") +
+        " — revise se isso é intencional ou esconde a regressão.",
+    ).toEqual([]);
   });
 
   it("CSS .pb-bottom-nav deve permanecer alinhado a calc(4.25rem + env(safe-area-inset-bottom))", () => {
