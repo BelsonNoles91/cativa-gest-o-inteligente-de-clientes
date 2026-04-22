@@ -66,7 +66,6 @@ interface PendingInvite {
   email: string;
   role: Role;
   status: string;
-  token: string;
   expires_at: string;
   created_at: string;
 }
