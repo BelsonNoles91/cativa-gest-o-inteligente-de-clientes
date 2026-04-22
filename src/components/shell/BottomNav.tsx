@@ -156,49 +156,75 @@ export function BottomNav() {
             </SheetClose>
           </SheetHeader>
           <div className="overflow-y-auto p-4 pb-safe">
-            <div className="grid grid-cols-3 gap-3">
-              {secondary.map((item) => {
-                const active = item.to === "/app"
-                  ? location.pathname === "/app"
-                  : location.pathname.startsWith(item.to);
-                return (
-                  <button
-                    key={item.to}
-                    type="button"
-                    onClick={() => {
-                      setMoreOpen(false);
-                      navigate(item.to);
-                    }}
-                    data-testid="bottom-nav-sheet-item"
-                    data-route={slugOf(item.to)}
-                    data-locked={item.locked ? "true" : "false"}
-                    data-active={active ? "true" : "false"}
-                    className={cn(
-                      "surface-card flex aspect-square flex-col items-center justify-center gap-2 p-3 tap-feedback transition-colors",
-                      active && "border-primary/50 bg-primary-soft/40",
-                    )}
+            {billingLoading ? (
+              <div
+                className="grid grid-cols-3 gap-3"
+                data-testid="bottom-nav-sheet-skeleton"
+                aria-busy="true"
+              >
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="surface-card flex aspect-square flex-col items-center justify-center gap-2 p-3"
                   >
-                    <span
+                    <Skeleton className="h-10 w-10 rounded-xl" />
+                    <Skeleton className="h-2.5 w-12" />
+                  </div>
+                ))}
+              </div>
+            ) : secondary.length === 0 ? (
+              <div data-testid="bottom-nav-sheet-empty" className="py-6">
+                <EmptyState
+                  icon={<PackageOpen className="h-6 w-6" />}
+                  title="Nada por aqui ainda"
+                  description="Todos os módulos disponíveis para o seu perfil já estão na barra inferior."
+                />
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-3">
+                {secondary.map((item) => {
+                  const active = item.to === "/app"
+                    ? location.pathname === "/app"
+                    : location.pathname.startsWith(item.to);
+                  return (
+                    <button
+                      key={item.to}
+                      type="button"
+                      onClick={() => {
+                        setMoreOpen(false);
+                        navigate(item.to);
+                      }}
+                      data-testid="bottom-nav-sheet-item"
+                      data-route={slugOf(item.to)}
+                      data-locked={item.locked ? "true" : "false"}
+                      data-active={active ? "true" : "false"}
                       className={cn(
-                        "relative grid h-10 w-10 place-items-center rounded-xl bg-gradient-soft text-primary",
-                        active && "bg-primary text-primary-foreground",
+                        "surface-card flex aspect-square flex-col items-center justify-center gap-2 p-3 tap-feedback transition-colors",
+                        active && "border-primary/50 bg-primary-soft/40",
                       )}
                     >
-                      <item.icon className="h-5 w-5" />
-                      {item.locked && (
-                        <Lock
-                          aria-label="Recurso bloqueado pelo plano"
-                          className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-background p-0.5 text-muted-foreground"
-                        />
-                      )}
-                    </span>
-                    <span className="text-center text-[11px] font-medium leading-tight">
-                      {item.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+                      <span
+                        className={cn(
+                          "relative grid h-10 w-10 place-items-center rounded-xl bg-gradient-soft text-primary",
+                          active && "bg-primary text-primary-foreground",
+                        )}
+                      >
+                        <item.icon className="h-5 w-5" />
+                        {item.locked && (
+                          <Lock
+                            aria-label="Recurso bloqueado pelo plano"
+                            className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-background p-0.5 text-muted-foreground"
+                          />
+                        )}
+                      </span>
+                      <span className="text-center text-[11px] font-medium leading-tight">
+                        {item.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </SheetContent>
       </Sheet>
