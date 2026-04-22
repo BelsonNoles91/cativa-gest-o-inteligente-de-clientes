@@ -73,6 +73,8 @@ import {
 import { listProfessionalsLite, type ProfessionalLite } from "@/repositories/scheduling";
 import { computeCompleteness, clientStatusLabels, riskLevelLabels, type Client, type ClientRiskLevel, type ClientStatus, type ClientFile, type ClientNote, type ClientPhoto, type ClientTag, type ConsentResponse, type ConsentTemplate, type CustomFieldDefinition, type TimelineEvent } from "@/domain/client";
 import { canAccess } from "@/domain/roles";
+import { QuickFiltersBar } from "@/features/clients/QuickFiltersBar";
+import { supabase } from "@/integrations/supabase/client";
 
 type FiltersState = {
   search: string;
@@ -150,6 +152,7 @@ export default function ClientsPage() {
 
   const [professionals, setProfessionals] = useState<ProfessionalLite[]>([]);
   const [tags, setTags] = useState<ClientTag[]>([]);
+  const [ownProfessional, setOwnProfessional] = useState<{ id: string; name: string } | null>(null);
 
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
@@ -223,6 +226,30 @@ export default function ClientsPage() {
       }
     })();
   }, [currentTenant, toast]);
+
+  // Descobre o profissional vinculado ao usuário logado dentro do tenant atual,
+  // para habilitar o atalho "Meus clientes". RLS garante isolamento por tenant.
+  useEffect(() => {
+    if (!currentTenant || !user) {
+      setOwnProfessional(null);
+      return;
+    }
+    let ignoreOwn = false;
+    void (async () => {
+      const { data } = await supabase
+        .from("professionals")
+        .select("id, display_name")
+        .eq("tenant_id", currentTenant.id)
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (ignoreOwn) return;
+      setOwnProfessional(data ? { id: data.id, name: data.display_name } : null);
+    })();
+    return () => {
+      ignoreOwn = true;
+    };
+  }, [currentTenant, user]);
 
   useEffect(() => {
     if (!currentTenant) return;
@@ -753,6 +780,24 @@ export default function ClientsPage() {
               </DialogContent>
             </Dialog>
           </>
+        }
+      />
+
+      <QuickFiltersBar
+        filters={filters}
+        setFilters={setFilters}
+        ownProfessionalId={ownProfessional?.id ?? null}
+        ownProfessionalName={ownProfessional?.name ?? null}
+        onClear={() =>
+          setFilters((prev) => ({
+            ...prev,
+            vipOnly: false,
+            inactiveOnly: false,
+            highRiskOnly: false,
+            needsReactivationOnly: false,
+            birthdayMonth: "all",
+            preferredProfessionalId: "all",
+          }))
         }
       />
 
