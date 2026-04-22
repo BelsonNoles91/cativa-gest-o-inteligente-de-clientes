@@ -2,15 +2,44 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#6E3B5D" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover"
+    />
+
+    <!-- Theme color (atualizado dinamicamente em modo escuro pelo ThemeProvider) -->
+    <meta name="theme-color" content="#FAF7F9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1A1015" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
+
+    <!-- PWA / Installable -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+
+    <!-- iOS standalone "app" mode -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Cativa" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="Cativa" />
+
+    <!-- Disable phone-number autodetection on iOS -->
+    <meta name="format-detection" content="telephone=no" />
 
     <title>Cativa — Gestão que faz o cliente voltar</title>
-    <meta name="description" content="Cativa é o SaaS de gestão para salões, clínicas de estética, barbearias e wellness. Agenda, clientes, pacotes e retenção em um só lugar." />
+    <meta
+      name="description"
+      content="Cativa é o SaaS de gestão para salões, clínicas de estética, barbearias e wellness. Agenda, clientes, pacotes e retenção em um só lugar."
+    />
     <meta name="author" content="Cativa" />
 
     <meta property="og:title" content="Cativa — Gestão que faz o cliente voltar" />
-    <meta property="og:description" content="Agenda, clientes, pacotes e retenção em um só lugar. Mobile-first, premium e fácil de operar." />
+    <meta
+      property="og:description"
+      content="Agenda, clientes, pacotes e retenção em um só lugar. Mobile-first, premium e fácil de operar."
+    />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="pt_BR" />
 

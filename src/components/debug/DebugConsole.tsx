@@ -40,11 +40,19 @@ export function DebugConsole() {
   const auth = useAuth();
   const tenant = useTenant();
 
+  // Em mobile (viewport < 768px), começa minimizado para não cobrir a UI.
+  // Em desktop, respeita preferência salva (default: aberto).
   const [open, setOpen] = useState<boolean>(() => {
     try {
-      return localStorage.getItem(LS_VISIBLE) !== "0";
-    } catch {
+      const stored = localStorage.getItem(LS_VISIBLE);
+      if (stored !== null) return stored === "1";
+      // Default: fechado em mobile, aberto em desktop
+      if (typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches) {
+        return false;
+      }
       return true;
+    } catch {
+      return false;
     }
   });
   const [collapsed, setCollapsed] = useState(false);
@@ -98,7 +106,7 @@ export function DebugConsole() {
             /* ignore */
           }
         }}
-        className="fixed bottom-4 right-4 z-[9999] flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/90 text-foreground shadow-lg backdrop-blur transition hover:scale-105"
+        className="fixed bottom-20 right-3 z-[9999] flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background/90 text-foreground shadow-lg backdrop-blur transition hover:scale-105 md:bottom-4 md:right-4 md:h-10 md:w-10"
         aria-label="Abrir console de debug"
       >
         <Bug className="h-4 w-4" />
@@ -112,7 +120,7 @@ export function DebugConsole() {
   return (
     <div
       className={cn(
-        "fixed bottom-4 right-4 z-[9999] w-[360px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-lg border border-border bg-background/95 text-foreground shadow-2xl backdrop-blur",
+        "fixed bottom-20 right-3 z-[9999] w-[300px] max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-lg border border-border bg-background/95 text-foreground shadow-2xl backdrop-blur md:bottom-4 md:right-4 md:w-[360px] md:max-w-[calc(100vw-2rem)]",
         "font-mono text-xs",
       )}
     >

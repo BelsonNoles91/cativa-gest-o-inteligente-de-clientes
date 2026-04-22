@@ -1,19 +1,43 @@
 /**
- * AppHeader — header global do app (desktop + mobile).
+ * AppHeader — header global do app.
+ *
+ * Desktop (md+): linha única com sidebar trigger, tenant, busca, ações.
+ * Mobile     : linha única compacta (avatar tenant + nome + busca + perfil).
+ *               A busca abre num CommandDialog ao tocar no ícone.
  */
-import { Bell } from "lucide-react";
+import { useState } from "react";
+import { Bell, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { TenantSwitcher } from "@/components/shell/TenantSwitcher";
 import { GlobalSearch } from "@/components/shell/GlobalSearch";
 import { ThemeToggle } from "@/components/shell/ThemeToggle";
 import { UserMenu } from "@/components/shell/UserMenu";
-import { Logo } from "@/components/brand/Logo";
+import { useTenant } from "@/features/tenant/TenantProvider";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 export function AppHeader() {
+  const [searchOpen, setSearchOpen] = useState(false);
+  const { currentTenant, currentUnit } = useTenant();
+
+  const initials = currentTenant
+    ? currentTenant.name
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((p) => p[0]?.toUpperCase() ?? "")
+        .join("") || "·"
+    : "·";
+
   return (
-    <header className="sticky top-0 z-30 border-b border-border/70 bg-background/90 backdrop-blur-md pt-safe">
-      {/* Linha 1 — desktop */}
+    <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur-xl pt-safe">
+      {/* Desktop */}
       <div className="hidden h-16 items-center gap-3 px-4 md:flex">
         <SidebarTrigger className="rounded-lg" />
         <div className="ml-1 hidden lg:block">
@@ -29,23 +53,72 @@ export function AppHeader() {
         <UserMenu />
       </div>
 
-      {/* Linha 1 — mobile */}
-      <div className="flex h-14 items-center justify-between gap-3 px-4 md:hidden">
-        <Logo size="sm" />
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" className="rounded-full" aria-label="Notificações">
-            <Bell className="h-4 w-4" />
-          </Button>
-          <ThemeToggle />
-          <UserMenu />
+      {/* Mobile — uma linha apenas */}
+      <div className="flex h-14 items-center gap-2 px-3 md:hidden">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full tap-feedback shrink-0"
+              aria-label="Trocar estabelecimento"
+            >
+              <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-soft text-primary text-[11px] font-semibold">
+                {initials}
+              </span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-[88vw] max-w-sm p-0">
+            <SheetHeader className="border-b border-border/60 p-4">
+              <SheetTitle className="text-left">Estabelecimento</SheetTitle>
+            </SheetHeader>
+            <div className="p-4">
+              <TenantSwitcher compact />
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        <div className="min-w-0 flex-1">
+          {currentTenant && (
+            <>
+              <p className="truncate text-sm font-semibold leading-tight">
+                {currentTenant.name}
+              </p>
+              {currentUnit && (
+                <p className="truncate text-[11px] leading-tight text-muted-foreground">
+                  {currentUnit.name}
+                </p>
+              )}
+            </>
+          )}
         </div>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full tap-feedback shrink-0"
+          aria-label="Buscar"
+          onClick={() => setSearchOpen(true)}
+        >
+          <Search className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full tap-feedback shrink-0"
+          aria-label="Notificações"
+        >
+          <Bell className="h-4 w-4" />
+        </Button>
+        <UserMenu />
       </div>
 
-      {/* Linha 2 mobile — busca + tenant */}
-      <div className="space-y-2 border-t border-border/60 px-4 py-2 md:hidden">
-        <GlobalSearch />
-        <TenantSwitcher compact />
-      </div>
+      {/* CommandDialog de busca controlado pelo botão mobile */}
+      <GlobalSearch
+        controlledOpen={searchOpen}
+        onControlledOpenChange={setSearchOpen}
+        hideTrigger
+      />
     </header>
   );
 }

@@ -69,9 +69,10 @@ export const navItems: NavItem[] = [
   },
   {
     to: "/app/lista-de-espera",
-    label: "Lista de espera",
+    label: "Espera",
     icon: Hourglass,
     roles: ["owner", "manager", "frontdesk"],
+    showInBottomNav: true,
     group: "operacao",
   },
   {
