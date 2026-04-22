@@ -19,6 +19,7 @@ import {
 import { PageHeader } from "@/components/shell/PageHeader";
 import { TrialLogsTab } from "@/features/admin/TrialLogsTab";
 import { MembersTab } from "@/features/admin/MembersTab";
+import { ProvisionTestUsersCard } from "@/features/admin/ProvisionTestUsersCard";
 import { ClientMembershipsTab } from "@/features/admin/ClientMembershipsTab";
 import { AuditLogsTab } from "@/features/admin/AuditLogsTab";
 import { FeatureFlagsConsole } from "@/features/admin/FeatureFlagsConsole";
@@ -247,7 +248,8 @@ export default function SuperAdmin() {
             <TenantsTab tenants={tenants} plans={plans} onReload={reload} />
           </TabsContent>
 
-          <TabsContent value="members">
+          <TabsContent value="members" className="space-y-4">
+            <ProvisionTestUsersCard />
             <MembersTab />
           </TabsContent>
 
