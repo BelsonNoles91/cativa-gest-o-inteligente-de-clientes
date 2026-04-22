@@ -1297,6 +1297,29 @@ function FiltersCard({
   professionals: ProfessionalLite[];
   origins: string[];
 }) {
+  const statusLabel =
+    filters.status === "all"
+      ? "Todos os status"
+      : filters.status === "active"
+        ? "Ativo"
+        : filters.status === "inactive"
+          ? "Inativo"
+          : "Bloqueado";
+  const birthdayLabel =
+    filters.birthdayMonth === "all"
+      ? "Todos os meses"
+      : monthLabel(Number(filters.birthdayMonth) - 1);
+  const unitLabel =
+    filters.preferredUnitId === "all"
+      ? "Todas as unidades"
+      : units.find((u) => u.id === filters.preferredUnitId)?.name ?? "Todas as unidades";
+  const professionalLabel =
+    filters.preferredProfessionalId === "all"
+      ? "Todos os profissionais"
+      : professionals.find((p) => p.id === filters.preferredProfessionalId)?.displayName ??
+        "Todos os profissionais";
+  const originLabel = filters.origin === "all" ? "Todas as origens" : filters.origin;
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -1313,51 +1336,75 @@ function FiltersCard({
           />
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 [&>*]:min-w-0">
-          <Select value={filters.status} onValueChange={(value) => setFilters((prev) => ({ ...prev, status: value as ClientStatus | "all" }))}>
-            <SelectTrigger className="w-full"><SelectValue placeholder="Status" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os status</SelectItem>
-              <SelectItem value="active">Ativo</SelectItem>
-              <SelectItem value="inactive">Inativo</SelectItem>
-              <SelectItem value="blocked">Bloqueado</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={filters.birthdayMonth} onValueChange={(value) => setFilters((prev) => ({ ...prev, birthdayMonth: value }))}>
-            <SelectTrigger className="w-full"><SelectValue placeholder="Aniversariantes" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os meses</SelectItem>
-              {Array.from({ length: 12 }).map((_, i) => (
-                <SelectItem key={i + 1} value={String(i + 1)}>{monthLabel(i)}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={filters.preferredUnitId} onValueChange={(value) => setFilters((prev) => ({ ...prev, preferredUnitId: value }))}>
-            <SelectTrigger className="w-full"><SelectValue placeholder="Unidade preferida" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as unidades</SelectItem>
-              {units.map((unit) => (
-                <SelectItem key={unit.id} value={unit.id}>{unit.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={filters.preferredProfessionalId} onValueChange={(value) => setFilters((prev) => ({ ...prev, preferredProfessionalId: value }))}>
-            <SelectTrigger className="w-full"><SelectValue placeholder="Profissional preferido" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os profissionais</SelectItem>
-              {professionals.map((professional) => (
-                <SelectItem key={professional.id} value={professional.id}>{professional.displayName}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={filters.origin} onValueChange={(value) => setFilters((prev) => ({ ...prev, origin: value }))}>
-            <SelectTrigger className="w-full sm:col-span-2 lg:col-span-1 xl:col-span-2"><SelectValue placeholder="Origem" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as origens</SelectItem>
-              {origins.map((origin) => (
-                <SelectItem key={origin} value={origin}>{origin}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <FilterSelectTooltip fieldLabel="Status" valueLabel={statusLabel}>
+            <Select value={filters.status} onValueChange={(value) => setFilters((prev) => ({ ...prev, status: value as ClientStatus | "all" }))}>
+              <SelectTrigger className="w-full" aria-label={`Status: ${statusLabel}`}>
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os status</SelectItem>
+                <SelectItem value="active">Ativo</SelectItem>
+                <SelectItem value="inactive">Inativo</SelectItem>
+                <SelectItem value="blocked">Bloqueado</SelectItem>
+              </SelectContent>
+            </Select>
+          </FilterSelectTooltip>
+          <FilterSelectTooltip fieldLabel="Aniversariantes" valueLabel={birthdayLabel}>
+            <Select value={filters.birthdayMonth} onValueChange={(value) => setFilters((prev) => ({ ...prev, birthdayMonth: value }))}>
+              <SelectTrigger className="w-full" aria-label={`Aniversariantes: ${birthdayLabel}`}>
+                <SelectValue placeholder="Aniversariantes" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os meses</SelectItem>
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <SelectItem key={i + 1} value={String(i + 1)}>{monthLabel(i)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FilterSelectTooltip>
+          <FilterSelectTooltip fieldLabel="Unidade preferida" valueLabel={unitLabel}>
+            <Select value={filters.preferredUnitId} onValueChange={(value) => setFilters((prev) => ({ ...prev, preferredUnitId: value }))}>
+              <SelectTrigger className="w-full" aria-label={`Unidade preferida: ${unitLabel}`}>
+                <SelectValue placeholder="Unidade preferida" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as unidades</SelectItem>
+                {units.map((unit) => (
+                  <SelectItem key={unit.id} value={unit.id}>{unit.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FilterSelectTooltip>
+          <FilterSelectTooltip fieldLabel="Profissional preferido" valueLabel={professionalLabel}>
+            <Select value={filters.preferredProfessionalId} onValueChange={(value) => setFilters((prev) => ({ ...prev, preferredProfessionalId: value }))}>
+              <SelectTrigger className="w-full" aria-label={`Profissional preferido: ${professionalLabel}`}>
+                <SelectValue placeholder="Profissional preferido" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os profissionais</SelectItem>
+                {professionals.map((professional) => (
+                  <SelectItem key={professional.id} value={professional.id}>{professional.displayName}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FilterSelectTooltip>
+          <FilterSelectTooltip
+            fieldLabel="Origem"
+            valueLabel={originLabel}
+            className="sm:col-span-2 lg:col-span-1 xl:col-span-2"
+          >
+            <Select value={filters.origin} onValueChange={(value) => setFilters((prev) => ({ ...prev, origin: value }))}>
+              <SelectTrigger className="w-full" aria-label={`Origem: ${originLabel}`}>
+                <SelectValue placeholder="Origem" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as origens</SelectItem>
+                {origins.map((origin) => (
+                  <SelectItem key={origin} value={origin}>{origin}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FilterSelectTooltip>
         </div>
         <div className="flex flex-wrap gap-2">
           <FilterChip active={filters.vipOnly} onClick={() => setFilters((prev) => ({ ...prev, vipOnly: !prev.vipOnly }))}>VIP</FilterChip>
