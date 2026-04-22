@@ -227,6 +227,30 @@ export default function ClientsPage() {
     })();
   }, [currentTenant, toast]);
 
+  // Descobre o profissional vinculado ao usuário logado dentro do tenant atual,
+  // para habilitar o atalho "Meus clientes". RLS garante isolamento por tenant.
+  useEffect(() => {
+    if (!currentTenant || !user) {
+      setOwnProfessional(null);
+      return;
+    }
+    let ignoreOwn = false;
+    void (async () => {
+      const { data } = await supabase
+        .from("professionals")
+        .select("id, display_name")
+        .eq("tenant_id", currentTenant.id)
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (ignoreOwn) return;
+      setOwnProfessional(data ? { id: data.id, name: data.display_name } : null);
+    })();
+    return () => {
+      ignoreOwn = true;
+    };
+  }, [currentTenant, user]);
+
   useEffect(() => {
     if (!currentTenant) return;
     let ignore = false;
