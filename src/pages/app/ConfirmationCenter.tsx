@@ -289,25 +289,29 @@ export default function ConfirmationCenter() {
         description="Confirme atendimentos com velocidade. Mensagens prontas, sem WhatsApp API."
         icon={<CheckCircle2 className="h-5 w-5" />}
         actions={
-          <div className="flex gap-2">
-            <Button
-              data-testid="confirmation-refresh"
-              variant="outline"
-              onClick={() => center.refresh()}
-              disabled={center.loading}
-            >
-              <RefreshCcw className="mr-1.5 h-4 w-4" /> Atualizar
-            </Button>
-            <Button
-              data-critical-action
-              data-testid="confirmation-generate-cta"
-              onClick={() => center.generate()}
-              disabled={center.generating}
-            >
-              <Sparkles className="mr-1.5 h-4 w-4" />
-              {center.generating ? "Gerando…" : "Gerar fila"}
-            </Button>
-          </div>
+          <PageActionCluster
+            secondary={[
+              {
+                key: "refresh",
+                label: "Atualizar",
+                icon: RefreshCcw,
+                tooltip: center.loading ? "Atualizando…" : "Recarregar fila",
+                loading: center.loading,
+                onClick: () => void center.refresh(),
+              },
+            ]}
+            primary={
+              <PrimaryAction
+                data-critical-action
+                data-testid="confirmation-generate-cta"
+                onClick={() => center.generate()}
+                disabled={center.generating}
+              >
+                <Sparkles className="mr-2 h-4 w-4" />
+                {center.generating ? "Gerando…" : "Gerar fila"}
+              </PrimaryAction>
+            }
+          />
         }
       />
 

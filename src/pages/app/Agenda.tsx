@@ -547,14 +547,23 @@ export default function AgendaPage() {
         description="Visão diária e semanal com criação, remarcação e controle de status em poucos toques."
         icon={<CalendarDays className="h-5 w-5" />}
         actions={
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={() => void refreshAgenda()}>
-              <RefreshCcw className="mr-2 h-4 w-4" /> Atualizar
-            </Button>
-            <Button onClick={openCreateDialog}>
-              <Plus className="mr-2 h-4 w-4" /> Novo agendamento
-            </Button>
-          </div>
+          <PageActionCluster
+            secondary={[
+              {
+                key: "refresh",
+                label: "Atualizar",
+                icon: RefreshCcw,
+                tooltip: refreshing ? "Atualizando agenda…" : "Recarregar agenda",
+                loading: refreshing,
+                onClick: () => void refreshAgenda(true),
+              },
+            ]}
+            primary={
+              <PrimaryAction onClick={openCreateDialog}>
+                <Plus className="mr-2 h-4 w-4" /> Novo agendamento
+              </PrimaryAction>
+            }
+          />
         }
       />
 
