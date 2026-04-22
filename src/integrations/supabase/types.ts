@@ -3884,12 +3884,11 @@ export type Database = {
         Args: never
         Returns: {
           accepted_at: string
-          created_at: string
           invited_at: string
           invited_email: string
           membership_id: string
           role: Database["public"]["Enums"]["app_role"]
-          status: Database["public"]["Enums"]["membership_status"]
+          status: string
           tenant_id: string
           tenant_name: string
           tenant_slug: string
@@ -3965,70 +3964,44 @@ export type Database = {
       }
       admin_set_super_admin: {
         Args: { p_is_super: boolean; p_user_id: string }
-        Returns: {
-          avatar_url: string | null
-          created_at: string
-          full_name: string | null
-          id: string
-          is_super_admin: boolean
-          phone: string | null
-          updated_at: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "profiles"
-          isOneToOne: true
-          isSetofReturn: false
-        }
+        Returns: undefined
       }
       admin_update_membership_role: {
         Args: {
           p_membership_id: string
           p_new_role: Database["public"]["Enums"]["app_role"]
         }
-        Returns: {
-          accepted_at: string | null
-          created_at: string
-          id: string
-          invited_at: string | null
-          invited_email: string | null
-          role: Database["public"]["Enums"]["app_role"]
-          status: Database["public"]["Enums"]["membership_status"]
-          tenant_id: string
-          updated_at: string
-          user_id: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "tenant_memberships"
-          isOneToOne: true
-          isSetofReturn: false
-        }
+        Returns: undefined
       }
-      admin_update_membership_status: {
-        Args: {
-          p_membership_id: string
-          p_new_status: Database["public"]["Enums"]["membership_status"]
-        }
-        Returns: {
-          accepted_at: string | null
-          created_at: string
-          id: string
-          invited_at: string | null
-          invited_email: string | null
-          role: Database["public"]["Enums"]["app_role"]
-          status: Database["public"]["Enums"]["membership_status"]
-          tenant_id: string
-          updated_at: string
-          user_id: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "tenant_memberships"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
+      admin_update_membership_status:
+        | {
+            Args: {
+              p_membership_id: string
+              p_new_status: Database["public"]["Enums"]["membership_status"]
+            }
+            Returns: {
+              accepted_at: string | null
+              created_at: string
+              id: string
+              invited_at: string | null
+              invited_email: string | null
+              role: Database["public"]["Enums"]["app_role"]
+              status: Database["public"]["Enums"]["membership_status"]
+              tenant_id: string
+              updated_at: string
+              user_id: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "tenant_memberships"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+        | {
+            Args: { p_membership_id: string; p_new_status: string }
+            Returns: undefined
+          }
       admin_update_tenant: {
         Args: {
           _name?: string
@@ -4076,6 +4049,8 @@ export type Database = {
         Args: { _tenant_id: string; _user_id: string }
         Returns: string
       }
+      count_active_owners: { Args: { _tenant_id: string }; Returns: number }
+      count_active_super_admins: { Args: never; Returns: number }
       effective_subscription_limits: {
         Args: { _tenant_id: string }
         Returns: Json
