@@ -466,6 +466,26 @@ function TenantsTab({
     }
   }
 
+  async function handleAssignPlan(tenant: TenantWithSub, planId: string, startTrial = true) {
+    try {
+      const { error } = await supabase.rpc("admin_assign_plan_to_tenant", {
+        _tenant_id: tenant.id,
+        _plan_id: planId,
+        _start_trial: startTrial,
+        _notes: "Atribuído via painel super admin",
+      });
+      if (error) throw error;
+      toast({ title: tenant.subscription ? "Plano alterado" : "Assinatura criada" });
+      await onReload();
+    } catch (err) {
+      toast({
+        title: "Erro ao atribuir plano",
+        description: String(err instanceof Error ? err.message : err),
+        variant: "destructive",
+      });
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
