@@ -9,11 +9,7 @@
  *   não é coberto por nada (z-index correto, safe-area aplicada).
  */
 import { expect, type Page } from "@playwright/test";
-import {
-  captureFailureReport,
-  collectLayoutDiagnostics,
-  type Offender,
-} from "./safeAreaReport";
+import { captureFailureReport, type Offender } from "./safeAreaReport";
 
 /** CSS injetado para tornar screenshots determinísticos. */
 const SNAPSHOT_CSS = `
