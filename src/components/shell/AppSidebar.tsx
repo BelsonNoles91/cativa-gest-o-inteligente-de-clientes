@@ -44,9 +44,10 @@ export function AppSidebar() {
   const isActive = (to: string) =>
     to === "/app" ? location.pathname === "/app" : location.pathname.startsWith(to);
 
-  // Gestores (owner/manager) enxergam itens com featureKey mesmo sem assinatura/feature ativa,
-  // para que possam descobrir o que existe e serem direcionados ao upgrade pelo FeatureGate.
-  const canPreviewLockedFeatures = currentRole === "owner" || currentRole === "manager";
+  // Gestores (owner/manager) e super_admin enxergam itens com featureKey mesmo sem assinatura/feature
+  // ativa, para que possam descobrir o que existe e serem direcionados ao upgrade pelo FeatureGate.
+  const canPreviewLockedFeatures =
+    currentRole === "owner" || currentRole === "manager" || currentRole === "super_admin";
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border/70">
