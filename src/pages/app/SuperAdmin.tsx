@@ -5,6 +5,7 @@ import {
   FileStack,
   Flag,
   Loader2,
+  LogIn,
   Package,
   Pencil,
   Plus,
@@ -18,6 +19,9 @@ import {
 import { PageHeader } from "@/components/shell/PageHeader";
 import { TrialLogsTab } from "@/features/admin/TrialLogsTab";
 import { MembersTab } from "@/features/admin/MembersTab";
+import { AuditLogsTab } from "@/features/admin/AuditLogsTab";
+import { useTenant } from "@/features/tenant/TenantProvider";
+import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -225,13 +229,14 @@ export default function SuperAdmin() {
         </div>
       ) : (
         <Tabs defaultValue="tenants" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6">
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-7">
             <TabsTrigger value="tenants"><Building2 className="mr-1.5 h-3.5 w-3.5" />Tenants</TabsTrigger>
             <TabsTrigger value="members" data-testid="tab-members"><Users className="mr-1.5 h-3.5 w-3.5" />Membros</TabsTrigger>
             <TabsTrigger value="plans"><Package className="mr-1.5 h-3.5 w-3.5" />Planos</TabsTrigger>
             <TabsTrigger value="flags"><Flag className="mr-1.5 h-3.5 w-3.5" />Flags</TabsTrigger>
             <TabsTrigger value="templates"><FileStack className="mr-1.5 h-3.5 w-3.5" />Templates</TabsTrigger>
-            <TabsTrigger value="trial-logs" data-testid="tab-trial-logs"><ScrollText className="mr-1.5 h-3.5 w-3.5" />Logs de trial</TabsTrigger>
+            <TabsTrigger value="audit" data-testid="tab-audit"><ScrollText className="mr-1.5 h-3.5 w-3.5" />Auditoria</TabsTrigger>
+            <TabsTrigger value="trial-logs" data-testid="tab-trial-logs"><CreditCard className="mr-1.5 h-3.5 w-3.5" />Trial</TabsTrigger>
           </TabsList>
 
           <TabsContent value="tenants">
@@ -254,6 +259,10 @@ export default function SuperAdmin() {
             <TemplatesTab templates={templates} onReload={reload} />
           </TabsContent>
 
+          <TabsContent value="audit">
+            <AuditLogsTab tenants={tenants.map((t) => ({ id: t.id, name: t.name }))} />
+          </TabsContent>
+
           <TabsContent value="trial-logs">
             <TrialLogsTab tenants={tenants} />
           </TabsContent>
@@ -273,9 +282,12 @@ function TenantsTab({
   onReload: () => Promise<void>;
 }) {
   const { toast } = useToast();
+  const { impersonateTenant, refresh: refreshTenantContext } = useTenant();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedTenant, setSelectedTenant] = useState<TenantWithSub | null>(null);
+  const [editingTenant, setEditingTenant] = useState<TenantWithSub | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", slug: "", segment: "salao" as TenantSegment });
   const [events, setEvents] = useState<SubscriptionEvent[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(false);
   const [overrideForm, setOverrideForm] = useState({
@@ -286,6 +298,46 @@ function TenantsTab({
     discountCents: "0",
     discountReason: "",
   });
+
+  function openEdit(tenant: TenantWithSub) {
+    setEditingTenant(tenant);
+    setEditForm({ name: tenant.name, slug: tenant.slug, segment: tenant.segment });
+  }
+
+  async function saveEdit() {
+    if (!editingTenant) return;
+    try {
+      const { error } = await supabase.rpc("admin_update_tenant", {
+        _tenant_id: editingTenant.id,
+        _name: editForm.name.trim() || null,
+        _slug: editForm.slug.trim() || null,
+        _segment: editForm.segment,
+      });
+      if (error) throw error;
+      toast({ title: "Tenant atualizado" });
+      setEditingTenant(null);
+      await Promise.all([onReload(), refreshTenantContext()]);
+    } catch (err) {
+      toast({
+        title: "Erro ao atualizar tenant",
+        description: String(err instanceof Error ? err.message : err),
+        variant: "destructive",
+      });
+    }
+  }
+
+  async function handleImpersonate(tenant: TenantWithSub) {
+    try {
+      await impersonateTenant(tenant.id, "switcher-tenants-tab");
+      toast({ title: `Impersonando ${tenant.name}`, description: "Acesso registrado em audit logs." });
+    } catch (err) {
+      toast({
+        title: "Erro ao impersonar",
+        description: String(err instanceof Error ? err.message : err),
+        variant: "destructive",
+      });
+    }
+  }
 
   const filtered = useMemo(
     () =>
@@ -478,10 +530,24 @@ function TenantsTab({
                       <Button size="sm" variant="outline" onClick={() => openTenantDialog(tenant)}>
                         <SlidersHorizontal className="mr-1.5 h-3.5 w-3.5" /> Ajustes
                       </Button>
+                      <Button size="sm" variant="outline" onClick={() => openEdit(tenant)}>
+                        <Pencil className="mr-1.5 h-3.5 w-3.5" /> Editar
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => void handleImpersonate(tenant)}>
+                        <LogIn className="mr-1.5 h-3.5 w-3.5" /> Entrar
+                      </Button>
                     </div>
                   </>
                 ) : (
-                  <StatusBadge tone="neutral">Sem assinatura</StatusBadge>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <StatusBadge tone="neutral">Sem assinatura</StatusBadge>
+                    <Button size="sm" variant="outline" onClick={() => openEdit(tenant)}>
+                      <Pencil className="mr-1.5 h-3.5 w-3.5" /> Editar
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => void handleImpersonate(tenant)}>
+                      <LogIn className="mr-1.5 h-3.5 w-3.5" /> Entrar
+                    </Button>
+                  </div>
                 )}
               </li>
             ))}
@@ -565,6 +631,33 @@ function TenantsTab({
           ) : (
             <EmptyState icon={<CreditCard className="h-6 w-6" />} title="Sem assinatura" description="Este tenant ainda não possui assinatura vinculada." />
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!editingTenant} onOpenChange={(open) => !open && setEditingTenant(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar tenant</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-3">
+            <Field label="Nome">
+              <Input value={editForm.name} onChange={(e) => setEditForm((c) => ({ ...c, name: e.target.value }))} />
+            </Field>
+            <Field label="Slug">
+              <Input value={editForm.slug} onChange={(e) => setEditForm((c) => ({ ...c, slug: e.target.value }))} />
+            </Field>
+            <Field label="Segmento">
+              <Select value={editForm.segment} onValueChange={(v) => setEditForm((c) => ({ ...c, segment: v as TenantSegment }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {TENANT_SEGMENTS.map((s) => (
+                    <SelectItem key={s} value={s}>{segmentLabels[s]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+            <Button onClick={() => void saveEdit()}>Salvar alterações</Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

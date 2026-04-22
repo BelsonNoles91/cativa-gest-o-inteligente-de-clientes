@@ -6,7 +6,7 @@
  *               A busca abre num CommandDialog ao tocar no ícone.
  */
 import { useState } from "react";
-import { Bell, Search } from "lucide-react";
+import { Bell, Search, ShieldCheck, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { TenantSwitcher } from "@/components/shell/TenantSwitcher";
@@ -24,7 +24,7 @@ import {
 
 export function AppHeader() {
   const [searchOpen, setSearchOpen] = useState(false);
-  const { currentTenant, currentUnit, currentLogoUrl } = useTenant();
+  const { currentTenant, currentUnit, currentLogoUrl, isImpersonating, endImpersonation } = useTenant();
 
   const initials = currentTenant
     ? currentTenant.name
