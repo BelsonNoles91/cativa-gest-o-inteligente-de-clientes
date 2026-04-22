@@ -300,26 +300,36 @@ export default function Dashboard() {
               </section>
 
               <section className="surface-card p-5">
-                <div className="mb-3 flex items-center justify-between">
-                  <h3 className="font-display text-lg font-semibold">Atalhos</h3>
-                  <Sparkles className="h-4 w-4 text-primary" />
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <h3 className="font-display text-lg font-semibold leading-tight">Atalhos</h3>
+                    <p className="text-xs text-muted-foreground">Ações mais usadas no dia a dia</p>
+                  </div>
+                  <div className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-soft text-primary">
+                    <Sparkles className="h-4 w-4" />
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2.5">
                   {[
-                    { label: "Novo cliente", icon: Users, to: "/app/clientes" },
-                    { label: "Bloquear horário", icon: Clock3, to: `/app/agenda?date=${todayIso()}` },
-                    { label: "Vender pacote", icon: Sparkles, to: "/app/pacotes" },
-                    { label: "Lista de espera", icon: PhoneCall, to: "/app/lista-de-espera" },
+                    { label: "Novo cliente", hint: "Cadastrar", icon: Users, to: "/app/clientes" },
+                    { label: "Bloquear horário", hint: "Agenda", icon: Clock3, to: `/app/agenda?date=${todayIso()}` },
+                    { label: "Vender pacote", hint: "Comercial", icon: Sparkles, to: "/app/pacotes" },
+                    { label: "Lista de espera", hint: "Encaixes", icon: PhoneCall, to: "/app/lista-de-espera" },
                   ].map((shortcut) => (
-                    <Button
+                    <button
                       key={shortcut.label}
-                      variant="outline"
-                      className="h-auto justify-start gap-2 rounded-xl py-3"
+                      type="button"
                       onClick={() => navigate(shortcut.to)}
+                      className="group flex flex-col items-start gap-2 rounded-xl border border-border bg-card p-3 text-left transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary/5 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      <shortcut.icon className="h-4 w-4 text-primary" />
-                      <span className="text-xs font-medium">{shortcut.label}</span>
-                    </Button>
+                      <div className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-soft text-primary transition-transform group-hover:scale-105">
+                        <shortcut.icon className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 space-y-0.5">
+                        <p className="truncate text-sm font-medium leading-tight">{shortcut.label}</p>
+                        <p className="text-[11px] text-muted-foreground">{shortcut.hint}</p>
+                      </div>
+                    </button>
                   ))}
                 </div>
               </section>
