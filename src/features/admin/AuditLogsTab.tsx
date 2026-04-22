@@ -319,3 +319,60 @@ function formatDateTime(iso: string) {
     minute: "2-digit",
   });
 }
+
+/**
+ * Renderiza um diff visual antes/depois quando o metadata contém
+ * chaves `before` e `after` (padrão usado pelas RPCs admin_*).
+ */
+function renderBeforeAfter(metadata: Record<string, unknown>) {
+  const before = metadata.before as Record<string, unknown> | undefined;
+  const after = metadata.after as Record<string, unknown> | undefined;
+
+  if (!before && !after) return null;
+
+  const keys = Array.from(
+    new Set([...(before ? Object.keys(before) : []), ...(after ? Object.keys(after) : [])]),
+  );
+  if (keys.length === 0) return null;
+
+  return (
+    <div className="space-y-2">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+        Mudanças
+      </p>
+      <div className="overflow-hidden rounded-lg border border-border/60">
+        <table className="w-full text-[11px]">
+          <thead className="bg-muted/60">
+            <tr>
+              <th className="px-2 py-1.5 text-left font-medium">Campo</th>
+              <th className="px-2 py-1.5 text-left font-medium">Antes</th>
+              <th className="px-2 py-1.5 text-left font-medium">Depois</th>
+            </tr>
+          </thead>
+          <tbody>
+            {keys.map((k) => {
+              const b = before?.[k];
+              const a = after?.[k];
+              const changed = JSON.stringify(b) !== JSON.stringify(a);
+              return (
+                <tr key={k} className={`border-t border-border/40 ${changed ? "bg-warning/5" : ""}`}>
+                  <td className="px-2 py-1.5 font-mono text-muted-foreground">{k}</td>
+                  <td className="px-2 py-1.5 font-mono text-destructive/80">{formatVal(b)}</td>
+                  <td className="px-2 py-1.5 font-mono text-success">{formatVal(a)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function formatVal(v: unknown): string {
+  if (v === null || v === undefined) return "—";
+  if (typeof v === "string") return v;
+  if (typeof v === "boolean") return v ? "sim" : "não";
+  if (typeof v === "number") return String(v);
+  return JSON.stringify(v);
+}
