@@ -48,6 +48,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   billingPeriodLabels,
   eventLabels,
+  formatPrice,
   planStatusLabels,
   subscriptionStatusLabels,
   subscriptionStatusTone,
@@ -466,6 +467,26 @@ function TenantsTab({
     }
   }
 
+  async function handleAssignPlan(tenant: TenantWithSub, planId: string, startTrial = true) {
+    try {
+      const { error } = await supabase.rpc("admin_assign_plan_to_tenant", {
+        _tenant_id: tenant.id,
+        _plan_id: planId,
+        _start_trial: startTrial,
+        _notes: "Atribuído via painel super admin",
+      });
+      if (error) throw error;
+      toast({ title: tenant.subscription ? "Plano alterado" : "Assinatura criada" });
+      await onReload();
+    } catch (err) {
+      toast({
+        title: "Erro ao atribuir plano",
+        description: String(err instanceof Error ? err.message : err),
+        variant: "destructive",
+      });
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -541,6 +562,21 @@ function TenantsTab({
                 ) : (
                   <div className="flex flex-wrap items-center gap-2">
                     <StatusBadge tone="neutral">Sem assinatura</StatusBadge>
+                    <Select onValueChange={(value) => void handleAssignPlan(tenant, value, true)}>
+                      <SelectTrigger className="h-8 w-[180px] text-xs">
+                        <SelectValue placeholder="Atribuir plano…" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {plans
+                          .filter((p) => p.status !== "archived")
+                          .map((plan) => (
+                            <SelectItem key={plan.id} value={plan.id}>
+                              {plan.name}
+                              {plan.trialDays > 0 ? ` · trial ${plan.trialDays}d` : ""}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
                     <Button size="sm" variant="outline" onClick={() => openEdit(tenant)}>
                       <Pencil className="mr-1.5 h-3.5 w-3.5" /> Editar
                     </Button>
@@ -563,6 +599,24 @@ function TenantsTab({
           {selectedTenant?.subscription ? (
             <div className="grid gap-6 overflow-y-auto pr-2 md:grid-cols-[1fr_1fr]">
               <div className="space-y-4">
+                <Field label="Plano atual">
+                  <Select
+                    value={selectedTenant.subscription.planId}
+                    onValueChange={(value) => void handleChangePlan(selectedTenant, value)}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {plans
+                        .filter((p) => p.status !== "archived")
+                        .map((plan) => (
+                          <SelectItem key={plan.id} value={plan.id}>
+                            {plan.name} · {formatPrice(plan.priceCents, plan.currency)}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+
                 <div className="grid gap-3">
                   <Label>Status</Label>
                   <div className="flex flex-wrap gap-2">
