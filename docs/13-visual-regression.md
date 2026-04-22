@@ -162,6 +162,28 @@ regressões que screenshots estáticos não pegam: state-leak entre rotas,
 banner sobrepondo nav, sheet com altura mal calculada em iPhone landscape,
 etc.
 
+### Cenário Agenda → Confirmações → Modal de ação
+
+O spec `e2e/visual/agenda-to-confirmation.spec.ts` cobre um fluxo
+operacional completo:
+
+1. **`/app/agenda`** → carrega a agenda e valida nav + safe-area.
+2. **Transição para `/app/confirmacoes`** via clique no BottomNav (com
+   fallback para `goto` se o link estiver indisponível).
+3. **Aguarda fila renderizar** (cards) ou EmptyState — nunca tela em branco.
+4. **Abre o modal de ação** clicando no primeiro item da fila
+   (`QueueItemCard` com `role="button"`).
+5. **Valida com modal aberto**:
+   - BottomNav segue presente (Radix Dialog é portal — não desmonta o shell).
+   - Sem overflow horizontal causado pelo overlay.
+   - O último elemento interativo do dialog **respeita
+     `safe-area-inset-bottom`** (botões de ação não ficam ocultos atrás da
+     home indicator do iPhone).
+6. **Fecha o modal** (botão close ou Escape) e revalida o layout original.
+
+O spec é tolerante a tenants sem dados na fila: se o EmptyState for
+detectado, valida o estado vazio e encerra sem falhar.
+
 ## Mascaramento de áreas voláteis
 
 Áreas que mudam entre runs (relógio, contadores) são mascaradas via:
