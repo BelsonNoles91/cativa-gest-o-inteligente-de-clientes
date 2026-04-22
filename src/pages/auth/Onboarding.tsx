@@ -88,9 +88,10 @@ export default function Onboarding() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<Role>("frontdesk");
 
-  useEffect(() => {
-    if (!authLoading && user && step === 0) setStep(1);
-  }, [authLoading, user, step]);
+  // Não avançamos automaticamente do Step 0 baseado em sessão. O Step 0 serve como
+  // ponto de entrada para criar conta; quem já tem conta usa o link "Já tenho conta"
+  // ou avança manualmente após o signup. Se o tenant já existir, o efeito abaixo
+  // redireciona direto para /app.
 
   useEffect(() => {
     if (!authLoading && !tenantLoading && currentTenant) {
