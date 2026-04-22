@@ -54,6 +54,7 @@ export function BottomNav() {
   return (
     <>
       <nav
+        data-bottom-nav
         aria-label="Navegação principal"
         className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/95 backdrop-blur-xl pb-safe pl-safe pr-safe md:hidden"
       >
