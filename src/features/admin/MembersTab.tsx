@@ -23,7 +23,9 @@ import {
   ShieldCheck,
   UserCircle2,
   UserCog,
+  UserPlus,
 } from "lucide-react";
+import { ProvisionUserDialog } from "./ProvisionUserDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
