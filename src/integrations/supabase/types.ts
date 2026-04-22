@@ -3673,6 +3673,34 @@ export type Database = {
         Args: { _tenant_id: string; _user_id: string }
         Returns: boolean
       }
+      start_default_trial: {
+        Args: { _tenant_id: string }
+        Returns: {
+          canceled_at: string | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string
+          discount_cents: number
+          discount_reason: string | null
+          id: string
+          notes: string | null
+          overdue_since: string | null
+          override_limits: Json
+          plan_id: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          suspended_at: string | null
+          tenant_id: string
+          trial_ends_at: string | null
+          trial_started_at: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tenant_subscriptions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       touch_portal_last_seen: { Args: { _link_id: string }; Returns: undefined }
     }
     Enums: {
