@@ -51,8 +51,6 @@ export default function Onboarding() {
   const { user, signUp, loading: authLoading } = useAuth();
   const {
     refresh,
-    currentTenant,
-    loading: tenantLoading,
     setCurrentTenantId,
     setCurrentUnitId,
   } = useTenant();
@@ -94,11 +92,8 @@ export default function Onboarding() {
   // ou avança manualmente após o signup. Se o tenant já existir, o efeito abaixo
   // redireciona direto para /app.
 
-  useEffect(() => {
-    if (!authLoading && !tenantLoading && currentTenant) {
-      navigate("/app", { replace: true });
-    }
-  }, [authLoading, tenantLoading, currentTenant, navigate]);
+  // Redirect para /app quando o tenant já existe é responsabilidade do
+  // <OnboardingGuard> (em src/features/auth/guards.tsx). Não duplicamos aqui.
 
   const steps = useMemo(
     () => [

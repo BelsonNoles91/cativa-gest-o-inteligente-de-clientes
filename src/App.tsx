@@ -8,7 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/features/theme/ThemeProvider";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { TenantProvider } from "@/features/tenant/TenantProvider";
-import { ProtectedRoute, RequireOnboarding, RoleGuard } from "@/features/auth/guards";
+import { ProtectedRoute, RequireOnboarding, RoleGuard, OnboardingGuard } from "@/features/auth/guards";
 import { appConfig } from "@/config/app";
 
 import { FeatureGate } from "@/features/billing/FeatureGate";
@@ -72,9 +72,17 @@ const App = () => (
                   <Route path="/auth/reset-password" element={<ResetPassword />} />
                   <Route path="/portal/acesso" element={<PortalAccess />} />
 
-                  {/* Onboarding — público (o componente cria a conta no step 0
-                      quando não há sessão e segue para os demais passos quando há) */}
-                  <Route path="/onboarding" element={<Onboarding />} />
+                  {/* Onboarding — público no Step 0 (signup); quando há sessão,
+                      o OnboardingGuard redireciona para /app caso o usuário já
+                      possua tenant/membership ativo (evita refazer o setup). */}
+                  <Route
+                    path="/onboarding"
+                    element={
+                      <OnboardingGuard>
+                        <Onboarding />
+                      </OnboardingGuard>
+                    }
+                  />
 
                   {/* Portal do cliente */}
                   <Route element={<ProtectedRoute />}>
