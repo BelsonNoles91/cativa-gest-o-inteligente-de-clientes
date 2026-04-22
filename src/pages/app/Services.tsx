@@ -13,6 +13,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
+import { PageActionCluster, PrimaryAction } from "@/components/shell/PageActionCluster";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -158,6 +159,7 @@ export default function ServicesPage() {
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
