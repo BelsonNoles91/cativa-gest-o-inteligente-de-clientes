@@ -115,8 +115,19 @@ export function BrandingSettings() {
         </div>
         <div className="px-5 pb-5 space-y-3">
           <div className="rounded-2xl p-5 text-white shadow-md" style={{ background: `linear-gradient(135deg, ${primary}, ${primary}dd)` }}>
-            <p className="text-xs opacity-80">Cativa</p>
-            <p className="mt-1 font-display text-xl">{currentTenant.name}</p>
+            <div className="flex items-center gap-3">
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt={`Logo ${currentTenant.name}`}
+                  className="h-10 w-10 rounded-lg bg-white/20 object-contain p-1"
+                />
+              ) : null}
+              <div className="min-w-0">
+                <p className="text-xs opacity-80">Cativa</p>
+                <p className="mt-0.5 font-display text-xl truncate">{currentTenant.name}</p>
+              </div>
+            </div>
             <button className="mt-4 rounded-lg px-3 py-1.5 text-xs font-medium" style={{ background: accent, color: "#fff" }}>
               Botão de ação
             </button>
