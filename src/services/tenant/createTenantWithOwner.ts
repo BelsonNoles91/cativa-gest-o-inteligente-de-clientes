@@ -45,6 +45,8 @@ async function uniqueSlug(base: string): Promise<string> {
 
 export async function createTenantWithOwner(input: CreateTenantInput): Promise<CreateTenantResult> {
   const slug = await uniqueSlug(input.name);
+  const tenantId = crypto.randomUUID();
+  const unitId = crypto.randomUUID();
 
   // Sanity check: a sessão atual precisa bater com o ownerUserId,
   // caso contrário a RLS de INSERT em "tenants" rejeita (created_by = auth.uid()).
@@ -60,9 +62,10 @@ export async function createTenantWithOwner(input: CreateTenantInput): Promise<C
   }
 
   // 1) tenant
-  const { data: tenant, error: tErr } = await supabase
+  const { error: tErr } = await supabase
     .from("tenants")
     .insert({
+      id: tenantId,
       name: input.name,
       slug,
       segment: input.segment,
@@ -70,17 +73,15 @@ export async function createTenantWithOwner(input: CreateTenantInput): Promise<C
       currency: input.currency ?? "BRL",
       created_by: sessionUserId,
       trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-    })
-    .select("id")
-    .single();
-  if (tErr || !tenant) {
+    });
+  if (tErr) {
     console.error("[createTenantWithOwner] insert tenants falhou", { tErr, sessionUserId });
     throw tErr ?? new Error("Falha ao criar estabelecimento");
   }
 
   // 2) membership owner (necessário antes das demais inserções por causa da RLS)
   const { error: mErr } = await supabase.from("tenant_memberships").insert({
-    tenant_id: tenant.id,
+    tenant_id: tenantId,
     user_id: input.ownerUserId,
     role: "owner",
     status: "active",
@@ -89,45 +90,44 @@ export async function createTenantWithOwner(input: CreateTenantInput): Promise<C
   if (mErr) throw mErr;
 
   // 3) unidade default
-  const { data: unit, error: uErr } = await supabase
+  const { error: uErr } = await supabase
     .from("units")
     .insert({
-      tenant_id: tenant.id,
+      id: unitId,
+      tenant_id: tenantId,
       name: input.unitName,
       is_default: true,
       phone: input.unitPhone ?? null,
-    })
-    .select("id")
-    .single();
-  if (uErr || !unit) throw uErr ?? new Error("Falha ao criar unidade");
+    });
+  if (uErr) throw uErr ?? new Error("Falha ao criar unidade");
 
   // 4) tenant_settings
   const { error: tsErr } = await supabase.from("tenant_settings").insert({
-    tenant_id: tenant.id,
+    tenant_id: tenantId,
     brand_primary: input.brandPrimary ?? null,
     brand_secondary: input.brandSecondary ?? null,
     brand_accent: input.brandAccent ?? null,
     whatsapp_phone: input.whatsappPhone ?? null,
-    default_unit_id: unit.id,
+    default_unit_id: unitId,
   });
   if (tsErr) throw tsErr;
 
   // 5) unit_settings
   const { error: usErr } = await supabase.from("unit_settings").insert({
-    unit_id: unit.id,
-    tenant_id: tenant.id,
+    unit_id: unitId,
+    tenant_id: tenantId,
   });
   if (usErr) throw usErr;
 
   // 6) audit log
   await supabase.from("audit_logs").insert({
-    tenant_id: tenant.id,
+    tenant_id: tenantId,
     actor_id: input.ownerUserId,
     action: "tenant.created",
     entity: "tenant",
-    entity_id: tenant.id,
+    entity_id: tenantId,
     metadata: { name: input.name, segment: input.segment },
   });
 
-  return { tenantId: tenant.id, unitId: unit.id, slug };
+  return { tenantId, unitId, slug };
 }

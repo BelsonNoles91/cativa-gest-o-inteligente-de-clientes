@@ -48,7 +48,13 @@ const INVITE_ROLES: Role[] = ROLES.filter((r) => r !== "super_admin" && r !== "c
 
 export default function Onboarding() {
   const { user, signUp, loading: authLoading } = useAuth();
-  const { refresh } = useTenant();
+  const {
+    refresh,
+    currentTenant,
+    loading: tenantLoading,
+    setCurrentTenantId,
+    setCurrentUnitId,
+  } = useTenant();
   const navigate = useNavigate();
 
   // step 0 (signup) só aparece se não estiver logado
@@ -84,6 +90,12 @@ export default function Onboarding() {
   useEffect(() => {
     if (!authLoading && user && step === 0) setStep(1);
   }, [authLoading, user, step]);
+
+  useEffect(() => {
+    if (!authLoading && !tenantLoading && currentTenant) {
+      navigate("/app", { replace: true });
+    }
+  }, [authLoading, tenantLoading, currentTenant, navigate]);
 
   const steps = useMemo(
     () => [
@@ -172,6 +184,8 @@ export default function Onboarding() {
         }
       }
 
+      setCurrentTenantId(result.tenantId);
+      setCurrentUnitId(result.unitId);
       await refresh();
       toast.success("Tudo pronto! Bem-vindo ao Cativa.");
       navigate("/app", { replace: true });
