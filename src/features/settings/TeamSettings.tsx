@@ -14,6 +14,8 @@ import {
   Plus,
   Briefcase,
   Trash2,
+  Copy,
+  XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,7 +50,7 @@ import {
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { ROLES, roleLabels, type Role } from "@/domain/roles";
-import { inviteMember } from "@/services/team/inviteMember";
+import { inviteMember, revokeInvitation } from "@/services/team/inviteMember";
 
 const INVITE_ROLES: Role[] = ROLES.filter((r) => r !== "super_admin" && r !== "client");
 
@@ -61,7 +63,11 @@ interface MemberRow {
 
 interface PendingInvite {
   id: string;
-  metadata: { invited_email?: string; role?: Role };
+  email: string;
+  role: Role;
+  status: string;
+  token: string;
+  expires_at: string;
   created_at: string;
 }
 
@@ -124,12 +130,11 @@ export function TeamSettings() {
         .select("user_id, role, status, profiles:profiles!inner(full_name, avatar_url)")
         .eq("tenant_id", currentTenant.id),
       supabase
-        .from("audit_logs")
-        .select("id, metadata, created_at")
+        .from("team_invitations")
+        .select("id, email, role, status, token, expires_at, created_at")
         .eq("tenant_id", currentTenant.id)
-        .eq("action", "team.invited")
-        .order("created_at", { ascending: false })
-        .limit(50),
+        .eq("status", "pending")
+        .order("created_at", { ascending: false }),
     ]);
     setMembers((m ?? []) as unknown as MemberRow[]);
     setPending((p ?? []) as unknown as PendingInvite[]);
@@ -165,14 +170,39 @@ export function TeamSettings() {
     if (!/.+@.+\..+/.test(e)) { toast.error("E-mail inválido"); return; }
     setSubmitting(true);
     try {
-      await inviteMember({ tenantId: currentTenant.id, email: e, role, inviterUserId: user.id });
-      toast.success("Convite registrado", { description: "Compartilhe o link de cadastro com a pessoa." });
+      const result = await inviteMember({ tenantId: currentTenant.id, email: e, role, inviterUserId: user.id });
+      try {
+        await navigator.clipboard.writeText(result.inviteUrl);
+        toast.success("Convite criado", { description: "Link copiado para a área de transferência." });
+      } catch {
+        toast.success("Convite criado", { description: "Compartilhe o link gerado com a pessoa." });
+      }
       setEmail("");
       await load();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Falha ao convidar");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const onCopyInviteLink = async (token: string) => {
+    const url = `${window.location.origin}/auth/aceite-convite?token=${token}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copiado");
+    } catch {
+      toast.error("Não foi possível copiar", { description: url });
+    }
+  };
+
+  const onRevokeInvite = async (id: string) => {
+    try {
+      await revokeInvitation(id);
+      toast.success("Convite revogado");
+      await load();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Falha ao revogar convite");
     }
   };
 
