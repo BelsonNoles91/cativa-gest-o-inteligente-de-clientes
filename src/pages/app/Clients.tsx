@@ -753,7 +753,7 @@ export default function ClientsPage() {
         }
       />
 
-      <div className="grid gap-4 xl:grid-cols-[380px_1fr]">
+      <div className="grid gap-4 lg:grid-cols-[320px_1fr] xl:grid-cols-[360px_1fr] 2xl:grid-cols-[400px_1fr]">
         <section className="space-y-4">
           <FiltersCard
             filters={filters}
