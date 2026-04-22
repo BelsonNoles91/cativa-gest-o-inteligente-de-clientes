@@ -4104,6 +4104,7 @@ export type Database = {
           slot_start: string
         }[]
       }
+      get_my_commission: { Args: { _professional_id: string }; Returns: number }
       has_any_tenant_role: {
         Args: {
           _roles: Database["public"]["Enums"]["app_role"][]
@@ -4154,6 +4155,25 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      list_team_professionals: {
+        Args: { _tenant_id: string }
+        Returns: {
+          bio: string
+          color: string
+          created_at: string
+          display_name: string
+          email: string
+          id: string
+          is_active: boolean
+          phone: string
+          role_title: string
+          specialty: string
+          tenant_id: string
+          unit_id: string
+          updated_at: string
+          user_id: string
+        }[]
       }
       revoke_team_invitation: {
         Args: { _invitation_id: string }

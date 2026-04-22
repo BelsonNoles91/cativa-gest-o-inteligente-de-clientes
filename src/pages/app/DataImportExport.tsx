@@ -470,12 +470,19 @@ function ExportPanel({ tenantId }: { tenantId: string }) {
   async function exportTeam(format: "csv" | "json") {
     setBusy("team-" + format);
     try {
-      const { data, error } = await supabase
+      // Owner/manager veem commission_pct; demais roles não. Tenta com, cai pra sem.
+      const withCommission = await supabase
         .from("professionals")
         .select("display_name, role_title, specialty, email, phone, commission_pct, is_active")
         .eq("tenant_id", tenantId)
         .order("display_name");
-      if (error) throw error;
+      const data = withCommission.error
+        ? (await supabase
+            .from("professionals")
+            .select("display_name, role_title, specialty, email, phone, is_active")
+            .eq("tenant_id", tenantId)
+            .order("display_name")).data
+        : withCommission.data;
 
       const professionals = (data ?? []).map((row) => ({
         displayName: row.display_name,
@@ -484,10 +491,10 @@ function ExportPanel({ tenantId }: { tenantId: string }) {
         email: (row as { email: string | null }).email ?? null,
         phone: (row as { phone: string | null }).phone ?? null,
         commissionPct:
-          (row as { commission_pct: number | string | null }).commission_pct === null ||
-          (row as { commission_pct: number | string | null }).commission_pct === undefined
+          (row as unknown as { commission_pct?: number | string | null }).commission_pct === null ||
+          (row as unknown as { commission_pct?: number | string | null }).commission_pct === undefined
             ? null
-            : Number((row as { commission_pct: number | string }).commission_pct),
+            : Number((row as unknown as { commission_pct: number | string }).commission_pct),
         isActive: row.is_active,
       }));
       const filename = `equipe_${dateStamp()}.${format}`;
