@@ -130,15 +130,24 @@ export async function importTeam(
   rows: Array<Record<string, unknown>>,
   ctx: { tenantId: string },
 ): Promise<ImportRunResult> {
-  // Importação básica de profissionais — schema atual da tabela `professionals`
-  // só guarda display_name + role_title. Contato/comissão/vínculo a auth.users
-  // são tratados depois no módulo de Equipe.
-  const payload = rows.map((r) => ({
-    tenant_id: ctx.tenantId,
-    display_name: String(r.displayName ?? "").trim(),
-    role_title: (r.roleTitle as string) || null,
-    is_active: true,
-  }));
+  // Importação de profissionais. O vínculo a auth.users (convite) continua
+  // sendo tratado pelo fluxo de convite — aqui apenas registramos a ficha.
+  const payload = rows.map((r) => {
+    const commission =
+      typeof r.commissionPct === "number" && Number.isFinite(r.commissionPct)
+        ? Math.max(0, Math.min(100, Number(r.commissionPct)))
+        : null;
+    return {
+      tenant_id: ctx.tenantId,
+      display_name: String(r.displayName ?? "").trim(),
+      role_title: (r.roleTitle as string) || null,
+      specialty: (r.specialty as string) || null,
+      email: (r.email as string) || null,
+      phone: (r.phone as string) || null,
+      commission_pct: commission,
+      is_active: r.isActive === false ? false : true,
+    };
+  });
   return insertChunked("professionals", payload);
 }
 

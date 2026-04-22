@@ -220,8 +220,8 @@ export const teamImportSchema: ImportSchema = {
   id: "team",
   label: "Equipe / Profissionais",
   description:
-    "Importe os profissionais que atendem. O schema atual usa apelido público + função. " +
-    "Vínculo a usuário, contatos e comissão são gerenciados depois pelo módulo de Equipe.",
+    "Importe os profissionais que atendem. Apelido público é obrigatório; e-mail, telefone, " +
+    "especialidade e comissão são opcionais e usados na ficha do profissional.",
   fields: [
     {
       key: "displayName",
@@ -231,8 +231,41 @@ export const teamImportSchema: ImportSchema = {
     },
     {
       key: "roleTitle",
-      label: "Função / Especialidade",
-      aliases: ["funcao", "cargo", "especialidade", "specialty", "role"],
+      label: "Função",
+      aliases: ["funcao", "cargo", "role"],
+    },
+    {
+      key: "specialty",
+      label: "Especialidade",
+      aliases: ["especialidade", "specialty", "area", "area_atuacao"],
+    },
+    {
+      key: "email",
+      label: "E-mail",
+      type: "email",
+      aliases: ["email", "e-mail", "mail"],
+    },
+    {
+      key: "phone",
+      label: "Telefone",
+      type: "phone",
+      aliases: ["telefone", "celular", "phone", "fone", "whatsapp"],
+    },
+    {
+      key: "commissionPct",
+      label: "Comissão (%)",
+      type: "number",
+      aliases: ["comissao", "commission", "commission_pct", "percentual"],
+      validate: (v) =>
+        v === null || (typeof v === "number" && v >= 0 && v <= 100)
+          ? null
+          : "Comissão deve estar entre 0 e 100.",
+    },
+    {
+      key: "isActive",
+      label: "Ativo",
+      type: "boolean",
+      aliases: ["ativo", "active", "habilitado"],
     },
   ],
 };
