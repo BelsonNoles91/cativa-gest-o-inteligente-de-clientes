@@ -146,6 +146,7 @@ export default function AgendaPage() {
   const [refreshToken, setRefreshToken] = useState(0);
 
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [appointments, setAppointments] = useState<HydratedAppointment[]>([]);
   const [timeOffBlocks, setTimeOffBlocks] = useState<TimeOffBlock[]>([]);
   const [recurringBlocks, setRecurringBlocks] = useState<RecurringBlock[]>([]);
@@ -226,7 +227,10 @@ export default function AgendaPage() {
           variant: "destructive",
         });
       } finally {
-        if (!ignore) setLoading(false);
+        if (!ignore) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     })();
     return () => {
@@ -309,7 +313,8 @@ export default function AgendaPage() {
     return Array.from(groups.entries()).sort(([a], [b]) => a.localeCompare(b));
   }, [appointments]);
 
-  async function refreshAgenda() {
+  async function refreshAgenda(manual = false) {
+    if (manual) setRefreshing(true);
     setRefreshToken((current) => current + 1);
   }
 

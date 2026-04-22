@@ -147,6 +147,7 @@ export default function PackagesPage() {
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
 
   const [services, setServices] = useState<Service[]>([]);
@@ -220,7 +221,10 @@ export default function PackagesPage() {
           variant: "destructive",
         });
       } finally {
-        if (!ignore) setLoading(false);
+        if (!ignore) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     })();
     return () => {
@@ -291,7 +295,8 @@ export default function PackagesPage() {
     })();
   }, [selectedProtocol, toast]);
 
-  async function refreshData() {
+  async function refreshData(manual = false) {
+    if (manual) setRefreshing(true);
     setRefreshToken((current) => current + 1);
   }
 
