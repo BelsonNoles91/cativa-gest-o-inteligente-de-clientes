@@ -20,6 +20,7 @@ export interface CreateTenantInput {
   brandSecondary?: string;
   brandAccent?: string;
   whatsappPhone?: string;
+  logoUrl?: string | null;
 }
 
 export interface CreateTenantResult {
@@ -107,6 +108,7 @@ export async function createTenantWithOwner(input: CreateTenantInput): Promise<C
     brand_primary: input.brandPrimary ?? null,
     brand_secondary: input.brandSecondary ?? null,
     brand_accent: input.brandAccent ?? null,
+    logo_url: input.logoUrl ?? null,
     whatsapp_phone: input.whatsappPhone ?? null,
     default_unit_id: unitId,
   });

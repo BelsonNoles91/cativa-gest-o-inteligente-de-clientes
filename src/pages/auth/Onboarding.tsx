@@ -14,7 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Building2, Sparkles, Rocket, ArrowRight, Check, Mail, Lock, User,
-  Palette, Loader2, UserPlus, Trash2, Phone,
+  Palette, Loader2, UserPlus, Trash2, Phone, ImagePlus, UploadCloud,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AuthLayout } from "@/components/shell/AuthLayout";
@@ -30,6 +30,7 @@ import { segmentLabels, type TenantSegment } from "@/domain/tenant";
 import { ROLES, roleLabels, type Role } from "@/domain/roles";
 import { createTenantWithOwner } from "@/services/tenant/createTenantWithOwner";
 import { inviteMember } from "@/services/team/inviteMember";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { SignOutAndRestart } from "@/components/auth/SignOutAndRestart";
 
@@ -81,6 +82,27 @@ export default function Onboarding() {
   const [brandPrimary, setBrandPrimary] = useState("#6E3B5D");
   const [brandSecondary, setBrandSecondary] = useState("#E9D7E2");
   const [brandAccent, setBrandAccent] = useState("#7FAE9B");
+  // Logo: o upload é diferido até a criação do tenant (RLS exige membership).
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+
+  const onPickLogo = (file: File | null) => {
+    if (!file) {
+      setLogoFile(null);
+      setLogoPreview(null);
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      toast.error("Selecione um arquivo de imagem.");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Imagem muito grande", { description: "Máximo de 2 MB." });
+      return;
+    }
+    setLogoFile(file);
+    setLogoPreview(URL.createObjectURL(file));
+  };
 
   // equipe
   const [invites, setInvites] = useState<InviteDraft[]>([]);
@@ -167,6 +189,34 @@ export default function Onboarding() {
         brandPrimary, brandSecondary, brandAccent,
         whatsappPhone: whatsappPhone.trim() || undefined,
       });
+
+      // Upload do logo (se houver) — só agora temos tenantId + membership ativa.
+      if (logoFile) {
+        try {
+          const ext = logoFile.name.split(".").pop()?.toLowerCase() || "png";
+          const path = `${result.tenantId}/logo-${Date.now()}.${ext}`;
+          const { error: upErr } = await supabase.storage
+            .from("tenant-logos")
+            .upload(path, logoFile, {
+              cacheControl: "3600",
+              upsert: true,
+              contentType: logoFile.type,
+            });
+          if (upErr) throw upErr;
+          const { data: pub } = supabase.storage
+            .from("tenant-logos")
+            .getPublicUrl(path);
+          await supabase
+            .from("tenant_settings")
+            .update({ logo_url: pub.publicUrl })
+            .eq("tenant_id", result.tenantId);
+        } catch (err) {
+          console.error("Falha ao enviar logo (workspace foi criado)", err);
+          toast.warning("Workspace criado, mas o logo não pôde ser enviado.", {
+            description: "Você pode tentar de novo em Configurações → Branding.",
+          });
+        }
+      }
 
       // convites (opcional)
       for (const inv of invites) {
@@ -376,6 +426,50 @@ export default function Onboarding() {
                 </div>
               </div>
             ))}
+          </div>
+
+          <div className="space-y-2">
+            <Label>Logo (opcional)</Label>
+            <div
+              className="flex items-center gap-3 rounded-xl border border-dashed border-border/70 p-3"
+              data-testid="onboarding-logo-uploader"
+            >
+              <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-xl bg-muted/40">
+                {logoPreview ? (
+                  <img src={logoPreview} alt="Pré-visualização do logo" className="h-full w-full object-contain" />
+                ) : (
+                  <ImagePlus className="h-5 w-5 text-muted-foreground" />
+                )}
+              </div>
+              <div className="flex-1 space-y-1.5">
+                <label
+                  htmlFor="onboarding-logo-input"
+                  className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-input bg-background px-3 text-sm font-medium hover:bg-accent"
+                >
+                  <UploadCloud className="h-4 w-4" />
+                  {logoFile ? "Trocar imagem" : "Escolher imagem"}
+                </label>
+                <input
+                  id="onboarding-logo-input"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                  className="sr-only"
+                  onChange={(e) => onPickLogo(e.target.files?.[0] ?? null)}
+                />
+                {logoFile && (
+                  <button
+                    type="button"
+                    onClick={() => onPickLogo(null)}
+                    className="ml-2 inline-flex items-center gap-1 text-xs text-destructive hover:underline"
+                  >
+                    <Trash2 className="h-3 w-3" /> Remover
+                  </button>
+                )}
+                <p className="text-[11px] text-muted-foreground">
+                  Enviaremos depois que o workspace for criado. PNG, JPG, SVG ou WebP. Máx 2 MB.
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">

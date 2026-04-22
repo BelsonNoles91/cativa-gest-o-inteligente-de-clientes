@@ -24,7 +24,7 @@ import {
 
 export function AppHeader() {
   const [searchOpen, setSearchOpen] = useState(false);
-  const { currentTenant, currentUnit } = useTenant();
+  const { currentTenant, currentUnit, currentLogoUrl } = useTenant();
 
   const initials = currentTenant
     ? currentTenant.name
@@ -40,6 +40,14 @@ export function AppHeader() {
       {/* Desktop */}
       <div className="hidden h-16 items-center gap-3 px-4 md:flex">
         <SidebarTrigger className="rounded-lg" />
+        {currentLogoUrl && (
+          <img
+            src={currentLogoUrl}
+            alt={currentTenant?.name ?? "Logo"}
+            className="h-9 w-9 rounded-lg object-contain bg-muted"
+            data-testid="tenant-logo-desktop"
+          />
+        )}
         <div className="ml-1 hidden lg:block">
           <TenantSwitcher />
         </div>
@@ -62,10 +70,19 @@ export function AppHeader() {
               size="icon"
               className="rounded-full tap-feedback shrink-0"
               aria-label="Trocar estabelecimento"
+              data-testid="tenant-badge-trigger"
             >
-              <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-soft text-primary text-[11px] font-semibold">
-                {initials}
-              </span>
+              {currentLogoUrl ? (
+                <img
+                  src={currentLogoUrl}
+                  alt={currentTenant?.name ?? "Logo"}
+                  className="h-8 w-8 rounded-lg object-contain bg-muted"
+                />
+              ) : (
+                <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-soft text-primary text-[11px] font-semibold">
+                  {initials}
+                </span>
+              )}
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-[88vw] max-w-sm p-0">
