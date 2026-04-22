@@ -24,7 +24,8 @@ export function UserMenu() {
     ?? user?.email?.[0]?.toUpperCase()
     ?? "C";
 
-  const role = isSuperAdmin && !currentRole ? "super_admin" : currentRole;
+  // Super admin sempre é exibido como tal, mesmo que tenha membership como owner.
+  const role = isSuperAdmin ? "super_admin" : currentRole;
 
   return (
     <DropdownMenu>

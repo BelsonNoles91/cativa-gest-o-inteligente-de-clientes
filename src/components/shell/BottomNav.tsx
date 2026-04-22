@@ -30,9 +30,11 @@ export function BottomNav() {
   const location = useLocation();
   const [moreOpen, setMoreOpen] = useState(false);
 
-  // Gestores enxergam módulos com featureKey mesmo sem assinatura ativa
-  // (com indicador de cadeado). FeatureGate cuida do redirecionamento ao /app/meu-plano.
-  const canPreviewLockedFeatures = currentRole === "owner" || currentRole === "manager";
+  // Gestores (owner/manager) e super_admin enxergam módulos com featureKey
+  // mesmo sem assinatura ativa (com indicador de cadeado). FeatureGate cuida
+  // do redirecionamento ao /app/meu-plano.
+  const canPreviewLockedFeatures =
+    currentRole === "owner" || currentRole === "manager" || currentRole === "super_admin";
 
   const allowedItems = navItems
     .filter(

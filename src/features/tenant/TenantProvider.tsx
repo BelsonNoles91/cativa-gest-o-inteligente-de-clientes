@@ -245,7 +245,12 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     const currentUnit = availableUnits.find((u) => u.id === effectiveUnitId) ?? null;
 
     const membershipRole = memberships.find((m) => m.tenant_id === effectiveTenantId)?.role ?? null;
-    const currentRole = membershipRole ?? (isSuperAdmin ? ("super_admin" as Role) : null);
+    // Super admin SEMPRE prevalece sobre o role de membership: mesmo que o usuário
+    // também seja owner/manager em algum tenant, o papel efetivo exibido e usado
+    // para autorização de UI é "super_admin" (privilégio mais alto e correto).
+    const currentRole: Role | null = isSuperAdmin
+      ? ("super_admin" as Role)
+      : membershipRole;
 
     const hasActiveTenant = fromMemberships.length > 0 || isSuperAdmin;
     const currentLogoUrl = effectiveTenantId ? logosByTenant[effectiveTenantId] ?? null : null;
