@@ -553,11 +553,31 @@ export default function AgendaPage() {
         }
       />
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <MetricCard label="Agendamentos" value={String(stats.total)} helper={view === "day" ? "No dia selecionado" : "Na semana"} />
-        <MetricCard label="Confirmados" value={String(stats.confirmed)} helper="Prontos para confirmação final" />
-        <MetricCard label="Chegaram / em atendimento" value={String(stats.arrived)} helper="Fluxo operacional em curso" />
-        <MetricCard label="Concluídos" value={String(stats.completed)} helper="Atendimentos finalizados" />
+      <div className="grid gap-3 sm:grid-cols-2 md:gap-4 xl:grid-cols-4">
+        <MetricCard
+          label="Agendamentos"
+          value={String(stats.total)}
+          helper={view === "day" ? "No dia selecionado" : "Na semana"}
+          icon={<CalendarDays className="h-5 w-5" />}
+        />
+        <MetricCard
+          label="Confirmados"
+          value={String(stats.confirmed)}
+          helper="Prontos para confirmação final"
+          icon={<CheckCircle2 className="h-5 w-5" />}
+        />
+        <MetricCard
+          label="Chegaram / em atendimento"
+          value={String(stats.arrived)}
+          helper="Fluxo operacional em curso"
+          icon={<Stethoscope className="h-5 w-5" />}
+        />
+        <MetricCard
+          label="Concluídos"
+          value={String(stats.completed)}
+          helper="Atendimentos finalizados"
+          icon={<Hourglass className="h-5 w-5" />}
+        />
       </div>
 
       <Card>
@@ -1086,13 +1106,37 @@ function AppointmentCard({
   );
 }
 
-function MetricCard({ label, value, helper }: { label: string; value: string; helper: string }) {
+function MetricCard({
+  label,
+  value,
+  helper,
+  icon,
+}: {
+  label: string;
+  value: string;
+  helper: string;
+  icon?: ReactNode;
+}) {
   return (
     <Card>
-      <CardContent className="pt-6">
-        <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
-        <p className="mt-2 font-display text-3xl font-semibold">{value}</p>
-        <p className="mt-1 text-sm text-muted-foreground">{helper}</p>
+      <CardContent className="flex items-center gap-4 p-4 md:p-5">
+        {icon ? (
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-gradient-soft text-primary">
+            {icon}
+          </div>
+        ) : null}
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <p
+            className="truncate text-[11px] font-medium uppercase tracking-wide text-muted-foreground"
+            title={label}
+          >
+            {label}
+          </p>
+          <p className="font-display text-2xl font-semibold leading-none md:text-3xl">{value}</p>
+          <p className="truncate text-xs text-muted-foreground" title={helper}>
+            {helper}
+          </p>
+        </div>
       </CardContent>
     </Card>
   );
