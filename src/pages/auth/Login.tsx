@@ -22,6 +22,12 @@ export default function Login() {
     const { error } = await signIn(email.trim(), password);
     setSubmitting(false);
     if (error) {
+      if (error.message.toLowerCase().includes("email not confirmed")) {
+        toast.error("Confirme seu e-mail antes de entrar", {
+          description: "Abra a mensagem enviada para sua caixa de entrada e clique no link de confirmação.",
+        });
+        return;
+      }
       toast.error("Não foi possível entrar", { description: error.message });
       return;
     }

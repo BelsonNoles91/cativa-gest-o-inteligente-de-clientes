@@ -11,7 +11,7 @@
  * Toda persistência usa o service createTenantWithOwner (regras fora da UI).
  */
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Building2, Sparkles, Rocket, ArrowRight, Check, Mail, Lock, User,
   Palette, Loader2, UserPlus, Trash2, Phone,
@@ -55,6 +55,7 @@ export default function Onboarding() {
   const initialStep = user ? 1 : 0;
   const [step, setStep] = useState(initialStep);
   const [submitting, setSubmitting] = useState(false);
+  const [pendingEmailConfirmation, setPendingEmailConfirmation] = useState(false);
 
   // signup
   const [fullName, setFullName] = useState("");
@@ -101,12 +102,19 @@ export default function Onboarding() {
       return;
     }
     setSubmitting(true);
-    const { error } = await signUp(email.trim(), password, fullName.trim());
+    const { error, requiresEmailConfirmation } = await signUp(email.trim(), password, fullName.trim());
     setSubmitting(false);
     if (error) {
       toast.error("Não foi possível criar a conta", { description: error.message });
       return;
     }
+
+    if (requiresEmailConfirmation) {
+      setPendingEmailConfirmation(true);
+      toast.success("Conta criada! Confirme seu e-mail para continuar.");
+      return;
+    }
+
     toast.success("Conta criada!");
     setStep(1);
   };
@@ -215,7 +223,11 @@ export default function Onboarding() {
       {step === 0 && (
         <form onSubmit={handleSignup} className="space-y-4 animate-fade-in">
           <h1 className="text-2xl font-semibold">Criar sua conta</h1>
-          <p className="text-sm text-muted-foreground">Comece em minutos. 14 dias grátis.</p>
+          <p className="text-sm text-muted-foreground">
+            {pendingEmailConfirmation
+              ? "Enviamos um link de confirmação. Abra seu e-mail e depois entre para continuar o setup."
+              : "Comece em minutos. 14 dias grátis."}
+          </p>
 
           <div className="space-y-2">
             <Label htmlFor="name">Seu nome</Label>
@@ -239,9 +251,21 @@ export default function Onboarding() {
             </div>
           </div>
 
-          <Button type="submit" disabled={submitting} className="h-11 w-full rounded-xl bg-gradient-brand">
+          <Button type="submit" disabled={submitting || pendingEmailConfirmation} className="h-11 w-full rounded-xl bg-gradient-brand">
             {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (<>Continuar <ArrowRight className="ml-2 h-4 w-4" /></>)}
           </Button>
+
+          {pendingEmailConfirmation && (
+            <div className="rounded-xl border border-border/70 bg-card px-4 py-3 text-left text-sm">
+              <p className="font-medium">Falta só confirmar seu e-mail.</p>
+              <p className="mt-1 text-muted-foreground">
+                Depois da confirmação, faça login para concluir a criação do workspace.
+              </p>
+              <Link to="/auth/login" className="mt-3 inline-flex text-sm font-medium text-primary hover:underline">
+                Ir para o login
+              </Link>
+            </div>
+          )}
         </form>
       )}
 
