@@ -604,9 +604,15 @@ export async function goOffline(page: Page): Promise<() => Promise<void>> {
     });
 
   // Aguarda o banner aparecer ATIVAMENTE (até 3s) em vez de sleep cego.
+  // Usa data-offline-state quando presente (testid estável); cai para regex de
+  // role=status caso seja uma versão antiga do shell.
   try {
     await page.waitForFunction(
       () => {
+        const stable = document.querySelector(
+          '[data-testid="offline-banner"][data-offline-state="offline"]',
+        );
+        if (stable) return true;
         const el = document.querySelector('[role="status"]');
         return el && /offline/i.test(el.textContent || "");
       },
@@ -638,6 +644,10 @@ export async function goOffline(page: Page): Promise<() => Promise<void>> {
     await page
       .waitForFunction(
         () => {
+          const stable = document.querySelector(
+            '[data-testid="offline-banner"][data-offline-state="offline"]',
+          );
+          if (stable) return false;
           const el = document.querySelector('[role="status"]');
           if (!el) return true;
           return !/offline/i.test(el.textContent || "");
