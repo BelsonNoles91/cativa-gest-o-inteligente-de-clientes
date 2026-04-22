@@ -120,37 +120,50 @@ export function exportServicesCsv(
 // -----------------------------------------------------------------------------
 // TEAM
 // -----------------------------------------------------------------------------
-// O schema atual da tabela `professionals` guarda apenas apelido público + função.
-// Contato, e-mail e comissão serão adicionados quando a tabela for estendida.
+// Inclui os contatos e comissão, alinhados com o importador (round-trip friendly).
 export interface TeamExportRow extends Record<string, unknown> {
   apelido_publico: string;
   funcao: string;
+  especialidade: string;
+  email: string;
+  telefone: string;
+  comissao: number | string;
   ativo: string;
 }
 
-const TEAM_HEADERS: Array<keyof TeamExportRow> = ["apelido_publico", "funcao", "ativo"];
+const TEAM_HEADERS: Array<keyof TeamExportRow> = [
+  "apelido_publico",
+  "funcao",
+  "especialidade",
+  "email",
+  "telefone",
+  "comissao",
+  "ativo",
+];
 
-export function buildTeamRows(
-  professionals: Array<{
-    displayName: string;
-    roleTitle: string | null;
-    isActive: boolean;
-  }>,
-): TeamExportRow[] {
+export interface TeamExportInput {
+  displayName: string;
+  roleTitle: string | null;
+  specialty?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  commissionPct?: number | null;
+  isActive: boolean;
+}
+
+export function buildTeamRows(professionals: TeamExportInput[]): TeamExportRow[] {
   return professionals.map((p) => ({
     apelido_publico: p.displayName,
     funcao: p.roleTitle ?? "",
+    especialidade: p.specialty ?? "",
+    email: p.email ?? "",
+    telefone: p.phone ?? "",
+    comissao: typeof p.commissionPct === "number" ? p.commissionPct : "",
     ativo: p.isActive ? "sim" : "não",
   }));
 }
 
-export function exportTeamCsv(
-  professionals: Array<{
-    displayName: string;
-    roleTitle: string | null;
-    isActive: boolean;
-  }>,
-): string {
+export function exportTeamCsv(professionals: TeamExportInput[]): string {
   return serializeCsv(buildTeamRows(professionals), TEAM_HEADERS, { bom: true, crlf: true });
 }
 

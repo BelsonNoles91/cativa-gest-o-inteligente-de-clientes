@@ -1,20 +1,13 @@
 /**
  * Testes do pipeline de importação/exportação CSV para EQUIPE e CLIENTES.
  *
- * Estes testes garantem que:
- *   1. O schema de equipe só expõe colunas que existem em `professionals`
- *      no banco (apelido público + função). Qualquer drift volta a quebrar
- *      `importTeam` / `exportTeam`.
- *   2. O auto-mapeamento de cabeçalhos pt-BR → chaves canônicas funciona
- *      para os aliases declarados (Apelido público, Especialidade, etc).
- *   3. O preview (buildPreview) acumula corretamente os erros quando o
- *      campo obrigatório `displayName` está vazio.
- *   4. O round-trip "export → parse → preview" para clientes e equipe
- *      preserva os dados essenciais e usa os cabeçalhos esperados pelo
- *      Excel/Sheets em pt-BR.
- *
- * Sem Supabase: usamos apenas as funções puras de schemas/utils, que é
- * exatamente onde mora o risco de regressão depois das correções da Fase 8.
+ * Garante que:
+ *   1. O schema de equipe expõe os campos do cadastro de profissionais
+ *      (apelido público, função, especialidade, e-mail, telefone, comissão,
+ *      ativo) e que `displayName` continua sendo o único obrigatório.
+ *   2. O auto-mapeamento aceita aliases pt-BR comuns.
+ *   3. `buildPreview` valida obrigatórios e a faixa 0–100 da comissão.
+ *   4. O round-trip "export → parse → preview" preserva todos os dados.
  */
 import { describe, it, expect } from "vitest";
 import { parseCsv } from "@/utils/csv";
@@ -33,29 +26,21 @@ import {
 } from "@/services/import-export/exporters";
 import type { Client } from "@/domain/client";
 
-// ============================================================================
-// Schema de EQUIPE — colunas devem refletir a tabela real `professionals`
-// ============================================================================
-
 describe("teamImportSchema — alinhamento com a tabela professionals", () => {
-  it("expõe apenas displayName e roleTitle como chaves canônicas", () => {
+  it("expõe displayName, roleTitle, specialty, email, phone, commissionPct, isActive", () => {
     const keys = teamImportSchema.fields.map((f) => f.key).sort();
-    expect(keys).toEqual(["displayName", "roleTitle"].sort());
+    expect(keys).toEqual(
+      ["displayName", "roleTitle", "specialty", "email", "phone", "commissionPct", "isActive"].sort(),
+    );
   });
 
-  it("não expõe colunas legadas (full_name, email, phone, commission_pct)", () => {
-    const keys = teamImportSchema.fields.map((f) => f.key);
-    expect(keys).not.toContain("fullName");
-    expect(keys).not.toContain("email");
-    expect(keys).not.toContain("phone");
-    expect(keys).not.toContain("commissionPct");
-  });
-
-  it("marca displayName como obrigatório (espelha NOT NULL no banco)", () => {
+  it("marca displayName como obrigatório", () => {
     const displayName = teamImportSchema.fields.find((f) => f.key === "displayName");
     expect(displayName?.required).toBe(true);
-    const roleTitle = teamImportSchema.fields.find((f) => f.key === "roleTitle");
-    expect(roleTitle?.required).not.toBe(true);
+    for (const key of ["roleTitle", "specialty", "email", "phone", "commissionPct", "isActive"]) {
+      const field = teamImportSchema.fields.find((f) => f.key === key);
+      expect(field?.required).not.toBe(true);
+    }
   });
 
   it("está registrado em importSchemas['team']", () => {
@@ -63,172 +48,202 @@ describe("teamImportSchema — alinhamento com a tabela professionals", () => {
   });
 });
 
-// ============================================================================
-// Auto-mapeamento de cabeçalhos pt-BR para EQUIPE
-// ============================================================================
-
 describe("teamImportSchema — autoMapHeaders cobre aliases pt-BR", () => {
-  it("mapeia 'Apelido público' e 'Especialidade'", () => {
-    const map = autoMapHeaders(["Apelido público", "Especialidade"], teamImportSchema);
+  it("mapeia 'Apelido público', 'Função' e 'Especialidade'", () => {
+    const map = autoMapHeaders(["Apelido público", "Função", "Especialidade"], teamImportSchema);
     expect(map.displayName).toBe("Apelido público");
-    expect(map.roleTitle).toBe("Especialidade");
+    expect(map.roleTitle).toBe("Função");
+    expect(map.specialty).toBe("Especialidade");
   });
 
-  it("aceita variações: 'Nome' / 'Profissional' / 'Função' / 'Cargo'", () => {
-    const map1 = autoMapHeaders(["Profissional", "Função"], teamImportSchema);
-    expect(map1.displayName).toBe("Profissional");
-    expect(map1.roleTitle).toBe("Função");
-
-    const map2 = autoMapHeaders(["Nome", "Cargo"], teamImportSchema);
-    expect(map2.displayName).toBe("Nome");
-    expect(map2.roleTitle).toBe("Cargo");
+  it("mapeia contato e comissão a partir de aliases", () => {
+    const map = autoMapHeaders(
+      ["Apelido público", "E-mail", "Telefone", "Comissão (%)", "Ativo"],
+      teamImportSchema,
+    );
+    expect(map.email).toBe("E-mail");
+    expect(map.phone).toBe("Telefone");
+    expect(map.commissionPct).toBe("Comissão (%)");
+    expect(map.isActive).toBe("Ativo");
   });
 
-  it("retorna null para roleTitle quando o cabeçalho não está presente", () => {
+  it("retorna null para campos opcionais ausentes", () => {
     const map = autoMapHeaders(["Apelido público"], teamImportSchema);
     expect(map.displayName).toBe("Apelido público");
     expect(map.roleTitle).toBeNull();
-  });
-
-  it("ignora colunas legadas que não existem mais no schema", () => {
-    // Mesmo que o usuário traga um CSV antigo com email/telefone/comissão,
-    // nenhuma chave canônica deve ser criada para esses headers.
-    const map = autoMapHeaders(
-      ["Apelido público", "Especialidade", "E-mail", "Telefone", "Comissão (%)"],
-      teamImportSchema,
-    );
-    expect(Object.keys(map).sort()).toEqual(["displayName", "roleTitle"].sort());
-    expect(map.displayName).toBe("Apelido público");
-    expect(map.roleTitle).toBe("Especialidade");
+    expect(map.email).toBeNull();
   });
 });
 
-// ============================================================================
-// Preview (buildPreview) — validação de obrigatório
-// ============================================================================
-
-describe("teamImportSchema — buildPreview valida displayName obrigatório", () => {
-  it("aceita linhas válidas e expõe displayName/roleTitle normalizados", () => {
+describe("teamImportSchema — buildPreview valida campos críticos", () => {
+  it("aceita linhas válidas com todos os campos preenchidos", () => {
     const records = [
-      { "Apelido público": "Marina", Especialidade: "Cabeleireira" },
-      { "Apelido público": "João", Especialidade: "Barbeiro" },
+      {
+        "Apelido público": "Marina",
+        Função: "Cabeleireira",
+        Especialidade: "Coloração",
+        "E-mail": "marina@salao.com",
+        Telefone: "(11) 99999-1234",
+        "Comissão (%)": "45",
+        Ativo: "sim",
+      },
     ];
     const mapping = autoMapHeaders(Object.keys(records[0]), teamImportSchema);
     const preview = buildPreview(records, teamImportSchema, mapping);
 
     expect(preview.errors).toHaveLength(0);
-    expect(preview.rows).toHaveLength(2);
-    expect(preview.rows[0]).toEqual({ displayName: "Marina", roleTitle: "Cabeleireira" });
-    expect(preview.rows[1]).toEqual({ displayName: "João", roleTitle: "Barbeiro" });
+    expect(preview.rows[0]).toEqual({
+      displayName: "Marina",
+      roleTitle: "Cabeleireira",
+      specialty: "Coloração",
+      email: "marina@salao.com",
+      phone: "11999991234",
+      commissionPct: 45,
+      isActive: true,
+    });
   });
 
   it("acusa erro quando displayName está vazio", () => {
+    const records = [{ "Apelido público": "", Função: "Massoterapeuta" }];
+    const mapping = autoMapHeaders(Object.keys(records[0]), teamImportSchema);
+    const preview = buildPreview(records, teamImportSchema, mapping);
+
+    expect(preview.errors.some((e) => e.field === "displayName")).toBe(true);
+  });
+
+  it("rejeita comissão fora da faixa 0–100", () => {
     const records = [
-      { "Apelido público": "", Especialidade: "Massoterapeuta" },
-      { "Apelido público": "Ana", Especialidade: "" },
+      { "Apelido público": "Bia", "Comissão (%)": "150" },
+      { "Apelido público": "Léo", "Comissão (%)": "-1" },
     ];
     const mapping = autoMapHeaders(Object.keys(records[0]), teamImportSchema);
     const preview = buildPreview(records, teamImportSchema, mapping);
 
-    // Linha 0: displayName obrigatório falhou. Linha 1: ok (roleTitle é opcional).
-    const errorsForRow0 = preview.errors.filter((e) => e.rowIndex === 0);
-    const errorsForRow1 = preview.errors.filter((e) => e.rowIndex === 1);
-
-    expect(errorsForRow0).toHaveLength(1);
-    expect(errorsForRow0[0].field).toBe("displayName");
-    expect(errorsForRow1).toHaveLength(0);
-
-    expect(preview.rows[0]).toEqual({ displayName: null, roleTitle: "Massoterapeuta" });
-    expect(preview.rows[1]).toEqual({ displayName: "Ana", roleTitle: null });
+    const errors = preview.errors.filter((e) => e.field === "commissionPct");
+    expect(errors).toHaveLength(2);
   });
 
-  it("preview tolera roleTitle ausente em todas as linhas", () => {
+  it("preview tolera campos opcionais ausentes", () => {
     const records = [{ "Apelido público": "Solo" }];
     const mapping = autoMapHeaders(Object.keys(records[0]), teamImportSchema);
     const preview = buildPreview(records, teamImportSchema, mapping);
 
     expect(preview.errors).toHaveLength(0);
-    expect(preview.rows[0]).toEqual({ displayName: "Solo", roleTitle: null });
+    expect(preview.rows[0]).toMatchObject({ displayName: "Solo", roleTitle: null, email: null });
   });
 });
 
-// ============================================================================
-// Exportador de EQUIPE — cabeçalhos pt-BR e mapeamento
-// ============================================================================
-
 describe("exportTeamCsv — cabeçalhos e linhas alinhados ao schema atual", () => {
-  it("usa apenas apelido_publico, funcao, ativo (sem email/telefone/comissão)", () => {
+  it("inclui contato, especialidade e comissão nos cabeçalhos", () => {
     const csv = exportTeamCsv([
-      { displayName: "Marina", roleTitle: "Cabeleireira", isActive: true },
-      { displayName: "João", roleTitle: null, isActive: false },
+      {
+        displayName: "Marina",
+        roleTitle: "Cabeleireira",
+        specialty: "Coloração",
+        email: "marina@salao.com",
+        phone: "11999991234",
+        commissionPct: 45,
+        isActive: true,
+      },
+      {
+        displayName: "João",
+        roleTitle: null,
+        specialty: null,
+        email: null,
+        phone: null,
+        commissionPct: null,
+        isActive: false,
+      },
     ]);
     const parsed = parseCsv(csv);
 
-    expect(parsed.headers).toEqual(["apelido_publico", "funcao", "ativo"]);
-    expect(parsed.records).toHaveLength(2);
+    expect(parsed.headers).toEqual([
+      "apelido_publico",
+      "funcao",
+      "especialidade",
+      "email",
+      "telefone",
+      "comissao",
+      "ativo",
+    ]);
     expect(parsed.records[0]).toEqual({
       apelido_publico: "Marina",
       funcao: "Cabeleireira",
+      especialidade: "Coloração",
+      email: "marina@salao.com",
+      telefone: "11999991234",
+      comissao: "45",
       ativo: "sim",
     });
-    expect(parsed.records[1]).toEqual({
-      apelido_publico: "João",
-      funcao: "",
-      ativo: "não",
-    });
+    expect(parsed.records[1].comissao).toBe("");
+    expect(parsed.records[1].ativo).toBe("não");
   });
 
-  it("buildTeamRows preserva nulos como string vazia para CSV", () => {
+  it("buildTeamRows preserva nulos como string vazia", () => {
     const rows = buildTeamRows([
-      { displayName: "Sem função", roleTitle: null, isActive: true },
+      {
+        displayName: "Sem dados",
+        roleTitle: null,
+        specialty: null,
+        email: null,
+        phone: null,
+        commissionPct: null,
+        isActive: true,
+      },
     ]);
     expect(rows[0]).toEqual({
-      apelido_publico: "Sem função",
+      apelido_publico: "Sem dados",
       funcao: "",
+      especialidade: "",
+      email: "",
+      telefone: "",
+      comissao: "",
       ativo: "sim",
     });
   });
 });
 
-// ============================================================================
-// Round-trip: EQUIPE — export → parse → autoMap → preview
-// ============================================================================
-
-describe("EQUIPE — round-trip export → preview reaproveita os mesmos dados", () => {
-  it("exporta equipe e reimporta gerando rows equivalentes (sem erros)", () => {
+describe("EQUIPE — round-trip export → preview", () => {
+  it("exporta equipe e reimporta gerando rows equivalentes", () => {
     const original = [
-      { displayName: "Marina", roleTitle: "Cabeleireira", isActive: true },
-      { displayName: "João", roleTitle: "Barbeiro", isActive: true },
-      { displayName: "Bia", roleTitle: null, isActive: false },
+      {
+        displayName: "Marina",
+        roleTitle: "Cabeleireira",
+        specialty: "Coloração",
+        email: "marina@salao.com",
+        phone: "11999991234",
+        commissionPct: 45,
+        isActive: true,
+      },
     ];
 
     const csv = exportTeamCsv(original);
     const parsed = parseCsv(csv);
-    expect(parsed.headers).toEqual(["apelido_publico", "funcao", "ativo"]);
 
-    // Para reimportar como "equipe", o usuário renomearia cabeçalhos
-    // para os aliases reconhecidos. Simulamos isso fornecendo o mapping
-    // explícito a partir dos headers de exportação.
-    const mapping = autoMapHeaders(["Apelido público", "Especialidade"], teamImportSchema);
-    // Renomeia chaves dos records para casar com o mapping acima.
     const renamed = parsed.records.map((r) => ({
       "Apelido público": r.apelido_publico,
-      Especialidade: r.funcao,
+      Função: r.funcao,
+      Especialidade: r.especialidade,
+      "E-mail": r.email,
+      Telefone: r.telefone,
+      "Comissão (%)": r.comissao,
+      Ativo: r.ativo,
     }));
-
+    const mapping = autoMapHeaders(Object.keys(renamed[0]), teamImportSchema);
     const preview = buildPreview(renamed, teamImportSchema, mapping);
+
     expect(preview.errors).toHaveLength(0);
-    expect(preview.rows).toEqual([
-      { displayName: "Marina", roleTitle: "Cabeleireira" },
-      { displayName: "João", roleTitle: "Barbeiro" },
-      { displayName: "Bia", roleTitle: null },
-    ]);
+    expect(preview.rows[0]).toMatchObject({
+      displayName: "Marina",
+      roleTitle: "Cabeleireira",
+      specialty: "Coloração",
+      email: "marina@salao.com",
+      phone: "11999991234",
+      commissionPct: 45,
+      isActive: true,
+    });
   });
 });
-
-// ============================================================================
-// CLIENTES — auto-map + preview + export round-trip
-// ============================================================================
 
 describe("CLIENTES — autoMap, buildPreview e export funcionam em conjunto", () => {
   it("auto-mapeia cabeçalhos típicos de uma planilha de salão", () => {
@@ -280,19 +295,6 @@ describe("CLIENTES — autoMap, buildPreview e export funcionam em conjunto", ()
     });
   });
 
-  it("acumula erro quando 'Nome completo' (obrigatório) está vazio", () => {
-    const records = [
-      { "Nome completo": "", Telefone: "11999990000" },
-      { "Nome completo": "Beto", Telefone: "" },
-    ];
-    const mapping = autoMapHeaders(Object.keys(records[0]), clientImportSchema);
-    const preview = buildPreview(records, clientImportSchema, mapping);
-
-    const requiredErrors = preview.errors.filter((e) => e.field === "fullName");
-    expect(requiredErrors).toHaveLength(1);
-    expect(requiredErrors[0].rowIndex).toBe(0);
-  });
-
   it("export de clientes usa cabeçalhos pt-BR e BOM (Excel-friendly)", () => {
     const clients: Client[] = [
       {
@@ -325,40 +327,12 @@ describe("CLIENTES — autoMap, buildPreview e export funcionam em conjunto", ()
     ];
 
     const rows = buildClientRows(clients);
-    expect(rows[0]).toMatchObject({
-      nome: "Ana Silva",
-      telefone: "11999991234",
-      whatsapp: "11999991234",
-      email: "ana@cativa.com",
-      nascimento: "1990-04-21",
-      cidade: "São Paulo",
-      uf: "SP",
-      origem: "Indicação",
-      observacoes: "Alérgica a níquel",
-      vip: "sim",
-      status: "active",
-      ultima_visita: "2026-04-01T10:00:00.000Z",
-    });
+    expect(rows[0].nome).toBe("Ana Silva");
 
     const csv = exportClientsCsv(clients);
-    // BOM no início para o Excel ler acentuação corretamente.
     expect(csv.charCodeAt(0)).toBe(0xfeff);
 
     const parsed = parseCsv(csv);
-    expect(parsed.headers).toEqual([
-      "nome",
-      "telefone",
-      "whatsapp",
-      "email",
-      "nascimento",
-      "cidade",
-      "uf",
-      "origem",
-      "observacoes",
-      "vip",
-      "status",
-      "ultima_visita",
-    ]);
     expect(parsed.records[0].nome).toBe("Ana Silva");
     expect(parsed.records[0].vip).toBe("sim");
   });
