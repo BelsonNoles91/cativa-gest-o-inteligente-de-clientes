@@ -184,6 +184,77 @@ operacional completo:
 O spec é tolerante a tenants sem dados na fila: se o EmptyState for
 detectado, valida o estado vazio e encerra sem falhar.
 
+## Relatório automático de falhas de safe-area
+
+Quando qualquer assert de safe-area / BottomNav falha, o helper
+`e2e/_helpers/safeAreaReport.ts` gera dois artefatos em
+`e2e/.artifacts/safe-area-failures/` (e os anexa ao HTML report do
+Playwright em `e2e/.report`):
+
+1. **`<timestamp>-<label>-<project>.png`** — screenshot anotado com:
+   - Box vermelha translúcida sobre cada elemento ofensor.
+   - Linhas tracejadas verdes nos limites resolvidos de
+     `env(safe-area-inset-top/right/bottom/left)`.
+   - Label sobre cada ofensor: `#1 BottomNav · bottom +12px`.
+   - Legenda no canto superior-direito com viewport, valores de safe-area
+     e contagem de ofensores.
+
+2. **`<timestamp>-<label>-<project>.json`** — relatório estruturado com:
+   - `viewport`, `safeArea` (px resolvidos), URL e nome do teste.
+   - `bottomNav.rect` + `bottomNav.bottomGap` (gap até o fim do viewport).
+   - `main.rect` + `main.paddingBottomPx` (padding-bottom computado).
+   - Lista de `offenders` com `rect`, `side`, `delta` e `hint`.
+
+### Asserts instrumentados
+
+Todos os asserts em `_helpers/visual.ts` chamam `captureFailureReport`
+**antes** de re-lançar a exceção:
+
+| Assert                                | Label do relatório                               |
+| ------------------------------------- | ------------------------------------------------ |
+| `assertBottomNavVisible`              | `bottom-nav-not-visible`, `bottom-nav-cut-off-top`, `bottom-nav-escapes-bottom` |
+| `assertMainHasBottomPadding`          | `main-missing-bottom-padding`                    |
+| `assertContentNotHiddenByBottomNav`   | `content-hidden-by-bottom-nav`                   |
+| `assertBottomNavItemsRespectSafeArea` | `bottom-nav-items-violate-safe-area`             |
+| `assertCriticalActionsAboveBottomNav` | `critical-actions-covered-by-nav`                |
+| `assertOfflineBannerLayout`           | `offline-banner-overlaps-nav`, `offline-banner-violates-safe-top` |
+
+### Como usar para acelerar correção
+
+```bash
+# Listar relatórios mais recentes
+ls -lt e2e/.artifacts/safe-area-failures/ | head
+
+# Abrir o screenshot anotado
+open e2e/.artifacts/safe-area-failures/<timestamp>-<label>.png
+
+# Ler o JSON para ver delta exato
+jq '.offenders' e2e/.artifacts/safe-area-failures/<timestamp>-<label>.json
+```
+
+O HTML report (`npx playwright show-report e2e/.report`) também exibe os
+artefatos anexados em cada teste falho — basta clicar no teste vermelho.
+
+### Adicionando relatórios em asserts customizados
+
+Para specs próprios, use o wrapper `withFailureReport`:
+
+```ts
+import { withFailureReport } from "../_helpers/safeAreaReport";
+
+await withFailureReport(
+  page,
+  "meu-assert-customizado",
+  async () => {
+    expect(algo).toBe(esperado);
+  },
+  () => ({
+    offenders: [{ label: "Botão X", rect, side: "bottom", delta: 8 }],
+    extra: { contexto: "abrindo o sheet de detalhes" },
+  }),
+);
+```
+
 ## Mascaramento de áreas voláteis
 
 Áreas que mudam entre runs (relógio, contadores) são mascaradas via:
