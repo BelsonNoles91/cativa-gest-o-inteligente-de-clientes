@@ -9,6 +9,11 @@
  *   não é coberto por nada (z-index correto, safe-area aplicada).
  */
 import { expect, type Page } from "@playwright/test";
+import {
+  captureFailureReport,
+  collectLayoutDiagnostics,
+  type Offender,
+} from "./safeAreaReport";
 
 /** CSS injetado para tornar screenshots determinísticos. */
 const SNAPSHOT_CSS = `
@@ -99,14 +104,53 @@ export async function assertBottomNavVisible(page: Page): Promise<void> {
   const vw = page.viewportSize()?.width ?? 0;
   if (vw >= 768) return; // BottomNav é md:hidden
   const nav = page.locator("[data-bottom-nav]");
-  await expect(nav).toBeVisible();
+  try {
+    await expect(nav).toBeVisible();
+  } catch (err) {
+    await captureFailureReport(page, "bottom-nav-not-visible", {
+      message: err instanceof Error ? err.message : String(err),
+      extra: { navCount: await nav.count() },
+    });
+    throw err;
+  }
   const box = await nav.boundingBox();
   expect(box, "BottomNav sem bounding box").not.toBeNull();
   const vh = page.viewportSize()?.height ?? 0;
   // Top do nav deve estar dentro do viewport (não cortado).
-  expect(box!.y).toBeLessThan(vh);
-  // Bottom do nav <= viewport height (não pode escapar pela parte de baixo).
-  expect(box!.y + box!.height).toBeLessThanOrEqual(vh + 1);
+  if (box!.y >= vh) {
+    const message = `BottomNav top (${box!.y}) está fora do viewport (vh=${vh}).`;
+    await captureFailureReport(page, "bottom-nav-cut-off-top", {
+      message,
+      offenders: [
+        {
+          label: "BottomNav",
+          rect: box!,
+          side: "bottom",
+          delta: box!.y - vh,
+          hint: "topo do nav abaixo do viewport",
+        },
+      ],
+    });
+    expect(box!.y, message).toBeLessThan(vh);
+  }
+  if (box!.y + box!.height > vh + 1) {
+    const message =
+      `BottomNav bottom (${box!.y + box!.height}) escapa pela parte ` +
+      `inferior do viewport (vh=${vh}).`;
+    await captureFailureReport(page, "bottom-nav-escapes-bottom", {
+      message,
+      offenders: [
+        {
+          label: "BottomNav",
+          rect: box!,
+          side: "bottom",
+          delta: box!.y + box!.height - vh,
+          hint: "fora do viewport",
+        },
+      ],
+    });
+    expect(box!.y + box!.height, message).toBeLessThanOrEqual(vh + 1);
+  }
 }
 
 /**
@@ -141,12 +185,31 @@ export async function assertMainHasBottomPadding(page: Page): Promise<void> {
 
   expect(result.found, "[data-app-main] não encontrado no DOM").toBe(true);
   // Margem de 4px para subpixel; o pb-bottom-nav já soma safe-area-inset-bottom.
-  expect(
-    result.paddingBottomPx,
-    `padding-bottom do main (${result.paddingBottomPx}px) deve ser >= altura ` +
+  if (result.found && result.paddingBottomPx < navBox!.height - 4) {
+    const message =
+      `padding-bottom do main (${result.paddingBottomPx}px) deve ser >= altura ` +
       `do BottomNav (${navBox!.height}px) para evitar que o conteúdo final ` +
-      `fique escondido atrás da nav fixa.`,
-  ).toBeGreaterThanOrEqual(navBox!.height - 4);
+      `fique escondido atrás da nav fixa.`;
+    await captureFailureReport(page, "main-missing-bottom-padding", {
+      message,
+      offenders: [
+        {
+          label: "[data-app-main]",
+          rect: { x: 0, y: navBox!.y - 4, width: navBox!.width, height: 4 },
+          side: "bottom",
+          delta: navBox!.height - result.paddingBottomPx,
+          hint: `pb=${result.paddingBottomPx}px < nav=${navBox!.height}px`,
+        },
+      ],
+      extra: {
+        paddingBottomPx: result.paddingBottomPx,
+        navHeight: navBox!.height,
+      },
+    });
+    expect(result.paddingBottomPx, message).toBeGreaterThanOrEqual(
+      navBox!.height - 4,
+    );
+  }
 }
 
 /**
@@ -251,13 +314,33 @@ export async function assertContentNotHiddenByBottomNav(
   expect(lastBottom, "Nenhum conteúdo encontrado em [data-app-main]").not.toBeNull();
   // O último conteúdo deve terminar acima (ou na mesma linha) do topo do nav.
   // Tolerância de 2px para subpixel rounding.
-  expect(
-    lastBottom!.bottom,
-    `Após scroll até o fim, o último conteúdo (<${lastBottom!.tag} ` +
-      `class="${lastBottom!.cls}">) tem bottom=${lastBottom!.bottom}px, ` +
+  if (lastBottom && lastBottom.bottom > navTop + 2) {
+    const message =
+      `Após scroll até o fim, o último conteúdo (<${lastBottom.tag} ` +
+      `class="${lastBottom.cls}">) tem bottom=${lastBottom.bottom}px, ` +
       `mas o BottomNav começa em y=${Math.round(navTop)}px — conteúdo ` +
-      `está sendo ocultado pela nav fixa. Verifique pb-bottom-nav no main.`,
-  ).toBeLessThanOrEqual(navTop + 2);
+      `está sendo ocultado pela nav fixa. Verifique pb-bottom-nav no main.`;
+    await captureFailureReport(page, "content-hidden-by-bottom-nav", {
+      message,
+      offenders: [
+        {
+          label: `<${lastBottom.tag}> ${lastBottom.cls.slice(0, 40)}`,
+          // Aproxima rect: largura total, altura mínima 4px na linha do bottom.
+          rect: {
+            x: 0,
+            y: Math.max(0, lastBottom.bottom - 4),
+            width: page.viewportSize()?.width ?? 0,
+            height: 4,
+          },
+          side: "covered-by-nav",
+          delta: lastBottom.bottom - navTop,
+          hint: `${lastBottom.bottom - navTop}px abaixo do nav`,
+        },
+      ],
+      extra: { navTop, lastBottom, scrollResult },
+    });
+    expect(lastBottom.bottom, message).toBeLessThanOrEqual(navTop + 2);
+  }
 }
 
 /**
@@ -365,11 +448,39 @@ export async function assertBottomNavItemsRespectSafeArea(
     result.totalItems,
     "BottomNav sem itens interativos (a/button)",
   ).toBeGreaterThan(0);
-  expect(
-    result.offenders,
-    `Itens do BottomNav sobrepostos à safe-area (vw=${vw}, vh=${vh}, ` +
-      `safe=${JSON.stringify(result.safe)}): ${JSON.stringify(result.offenders)}`,
-  ).toEqual([]);
+
+  if (result.found && result.offenders.length > 0) {
+    // Coleta rects dos itens ofensores para anotar visualmente.
+    const annotations: Offender[] = await page.evaluate((offendersArg) => {
+      const nav = document.querySelector(
+        "[data-bottom-nav]",
+      ) as HTMLElement | null;
+      if (!nav) return [];
+      const items = Array.from(nav.querySelectorAll<HTMLElement>("a, button"));
+      return offendersArg.map((o) => {
+        const el = items[o.idx];
+        const r = el?.getBoundingClientRect();
+        return {
+          label: `[nav#${o.idx}] ${o.label}`,
+          rect: r
+            ? { x: r.x, y: r.y, width: r.width, height: r.height }
+            : { x: 0, y: 0, width: 0, height: 0 },
+          side: o.side,
+          delta: o.delta,
+          hint: `excede +${Math.round(o.delta)}px`,
+        };
+      });
+    }, result.offenders);
+    const message =
+      `Itens do BottomNav sobrepostos à safe-area (vw=${vw}, vh=${vh}, ` +
+      `safe=${JSON.stringify(result.safe)}): ${JSON.stringify(result.offenders)}`;
+    await captureFailureReport(page, "bottom-nav-items-violate-safe-area", {
+      message,
+      offenders: annotations,
+      extra: { safe: result.safe, totalItems: result.totalItems },
+    });
+    expect(result.offenders, message).toEqual([]);
+  }
 }
 
 /**
@@ -431,13 +542,46 @@ export async function assertCriticalActionsAboveBottomNav(
     return out;
   }, navTop);
 
-  expect(
-    offenders,
-    `Ações críticas (data-critical-action) sobrepostas ao BottomNav ` +
+  if (offenders.length > 0) {
+    // Coleta rects dos ofensores para anotação visual.
+    const offenderRects = await page.evaluate(() => {
+      const els = Array.from(
+        document.querySelectorAll<HTMLElement>("[data-critical-action]"),
+      );
+      return els.map((el, i) => {
+        const r = el.getBoundingClientRect();
+        return {
+          idx: i,
+          rect: { x: r.x, y: r.y, width: r.width, height: r.height },
+          label:
+            el.getAttribute("aria-label") ||
+            el.textContent?.trim().slice(0, 40) ||
+            "(sem rótulo)",
+        };
+      });
+    });
+    const annotations: Offender[] = offenders.map((o) => {
+      const match = offenderRects.find((r) => r.label === o.label);
+      return {
+        label: `[critical] ${o.label}`,
+        rect: match?.rect ?? { x: 0, y: navTop, width: 100, height: 1 },
+        side: "covered-by-nav" as const,
+        delta: o.bottom - navTop,
+        hint: `position:${o.position}`,
+      };
+    });
+    const message =
+      `Ações críticas (data-critical-action) sobrepostas ao BottomNav ` +
       `(top=${Math.round(navTop)}px): ${JSON.stringify(offenders)}. ` +
       `Adicione bottom-[calc(4.25rem+env(safe-area-inset-bottom)+0.5rem)] ` +
-      `ou similar para empurrar a ação acima da nav.`,
-  ).toEqual([]);
+      `ou similar para empurrar a ação acima da nav.`;
+    await captureFailureReport(page, "critical-actions-covered-by-nav", {
+      message,
+      offenders: annotations,
+      extra: { navTop, offenders },
+    });
+    expect(offenders, message).toEqual([]);
+  }
 }
 
 /**
@@ -529,11 +673,28 @@ export async function assertOfflineBannerLayout(page: Page): Promise<void> {
     if (await nav.count()) {
       const navBox = await nav.boundingBox();
       if (navBox) {
-        expect(
-          bannerBox!.y + bannerBox!.height,
-          `OfflineBanner (bottom=${bannerBox!.y + bannerBox!.height}) está ` +
-            `sobre o BottomNav (top=${navBox.y}).`,
-        ).toBeLessThan(navBox.y);
+        try {
+          expect(
+            bannerBox!.y + bannerBox!.height,
+            `OfflineBanner (bottom=${bannerBox!.y + bannerBox!.height}) está ` +
+              `sobre o BottomNav (top=${navBox.y}).`,
+          ).toBeLessThan(navBox.y);
+        } catch (err) {
+          await captureFailureReport(page, "offline-banner-overlaps-nav", {
+            message: err instanceof Error ? err.message : String(err),
+            offenders: [
+              {
+                label: "OfflineBanner",
+                rect: bannerBox!,
+                side: "covered-by-nav",
+                delta: bannerBox!.y + bannerBox!.height - navBox.y,
+                hint: "banner cobre o BottomNav",
+              },
+            ],
+            extra: { bannerBox, navBox },
+          });
+          throw err;
+        }
       }
     }
   }
@@ -549,8 +710,25 @@ export async function assertOfflineBannerLayout(page: Page): Promise<void> {
     return v;
   });
   // Tolerância de 1px para subpixel.
-  expect(
-    bannerBox!.y,
-    `OfflineBanner top (${bannerBox!.y}) deve respeitar safe-area-inset-top (${safeTop}).`,
-  ).toBeGreaterThanOrEqual(Math.max(0, safeTop - 1));
+  try {
+    expect(
+      bannerBox!.y,
+      `OfflineBanner top (${bannerBox!.y}) deve respeitar safe-area-inset-top (${safeTop}).`,
+    ).toBeGreaterThanOrEqual(Math.max(0, safeTop - 1));
+  } catch (err) {
+    await captureFailureReport(page, "offline-banner-violates-safe-top", {
+      message: err instanceof Error ? err.message : String(err),
+      offenders: [
+        {
+          label: "OfflineBanner",
+          rect: bannerBox!,
+          side: "top",
+          delta: Math.max(0, safeTop - bannerBox!.y),
+          hint: `acima de safe-area-inset-top (${safeTop}px)`,
+        },
+      ],
+      extra: { bannerBox, safeTop },
+    });
+    throw err;
+  }
 }
