@@ -1,0 +1,1096 @@
+Atue como um time sênior de produto, UX, arquitetura SaaS e engenharia full-stack.
+
+Vamos construir um sistema chamado Cativa, um SaaS multi-tenant, mobile-first, para clínicas de estética, salões de beleza, barbearias, esmalterias, lash/brow, massagem, wellness e negócios correlatos.
+
+O sistema será desenvolvido no Lovable neste primeiro momento, porém com arquitetura pronta para escalar e migrar facilmente para outra plataforma, hospedagem externa ou VPS no futuro.
+
+========================
+CONTEXTO GERAL DO PRODUTO
+========================
+
+O objetivo do sistema é centralizar:
+- clientes
+- agendamentos
+- atendimentos
+- serviços
+- preços
+- pacotes
+- protocolos
+- memberships
+- confirmação de horários
+- histórico operacional
+- visão gerencial
+- retenção e recorrência
+
+O software deve aumentar:
+- retorno de clientes
+- rebooking/prebooking
+- ocupação da agenda
+- previsibilidade de receita futura
+- eficiência da recepção
+- valor percebido do software
+
+========================
+REGRAS FIXAS E INEGOCIÁVEIS
+========================
+
+- não usar API oficial nem não oficial do WhatsApp
+- todo fluxo de WhatsApp deve ser manual ou semiautomático
+- o sistema pode gerar texto, copiar mensagem, abrir conversa por link e registrar resultado, mas nunca enviar automaticamente via WhatsApp
+- não criar área fiscal
+- não criar emissão de nota fiscal, impostos, SPED, DRE, contabilidade ou qualquer módulo fiscal
+- o sistema deve ser totalmente personalizável pelo administrador do negócio
+- o super admin / gestor da aplicação deve ter nível ainda maior de personalização
+- o produto deve suportar planos mensais ou superiores, trials configuráveis, limites por plano e feature flags
+- a arquitetura não pode ficar presa ao Lovable
+- usar GitHub sync desde o início
+- usar Supabase no primeiro momento com Postgres, Auth e Storage
+- usar migrations versionadas
+- usar multi-tenant real desde o início
+- usar RLS e permissões por papéis
+- preparar o projeto para deploy externo e futura migração para VPS
+- interface em pt-BR
+- nomes técnicos, estrutura de código, tabelas e funções em inglês
+- design mobile-first de verdade
+- visual intuitivo, premium, limpo, informativo e rápido para a recepção
+
+========================
+PAPÉIS
+========================
+
+- super_admin
+- owner
+- manager
+- frontdesk
+- professional
+- client
+
+========================
+ARQUITETURA OBRIGATÓRIA
+========================
+
+- separar UI, components, pages, services, domain rules, repositories, utils e integrations
+- regras críticas não podem ficar apenas na interface
+- concentrar regras importantes em camadas reutilizáveis e portáveis
+- usar tenant_id em todas as entidades principais
+- suportar unit_id quando aplicável
+- criar base para exportação e importação em CSV e JSON
+- usar environment variables
+- manter estrutura pronta para documentação, backup, restore e deploy externo
+
+========================
+PRINCÍPIOS DE PRODUTO
+========================
+
+- o software deve aumentar retenção, rebooking, ocupação da agenda e previsibilidade
+- o software deve criar hábito de uso diário
+- o software deve gerar valor real e não aprisionamento técnico
+- o dono do negócio deve entender o valor do produto em poucos segundos
+- a recepção deve operar as tarefas críticas com poucos cliques
+- o mobile deve funcionar muito bem para operação diária
+
+========================
+BRANDING
+========================
+
+Marca: Cativa
+Tagline: Gestão que faz o cliente voltar
+
+Paleta:
+- primária: #6E3B5D
+- primária escura: #4B243D
+- secundária: #E9D7E2
+- fundo: #FAF7F9
+- acento: #7FAE9B
+- texto principal: #1F2933
+- sucesso: #2E8B57
+- alerta: #E9A23B
+- erro: #C94A4A
+
+========================
+ESTILO VISUAL
+========================
+
+- premium acessível
+- beleza + eficiência
+- acolhimento + inteligência
+- bordas suaves
+- sombras leves
+- ótimo contraste
+- UI leve e organizada
+- excelente uso em mobile
+- modo claro e escuro
+
+========================
+SEGMENTOS
+========================
+
+Criar o produto pensando em:
+- salão de beleza
+- clínica de estética
+- lash/brow
+- barbearia
+- esmalteria
+- massagem / wellness
+
+========================
+REGRA DE EXECUÇÃO POR ETAPAS
+========================
+
+Este projeto deve ser desenvolvido em etapas sequenciais e incrementais.
+
+Regras obrigatórias de execução:
+- trabalhar somente na etapa solicitada
+- não avançar para a próxima etapa por conta própria
+- preservar tudo que já funciona
+- não recomeçar o projeto do zero
+- fazer alterações incrementais
+- usar migrations incrementais
+- manter consistência entre UI, banco, permissões e regras de negócio
+- ao final de cada etapa, parar e entregar um relatório com:
+  1. telas criadas
+  2. componentes criados
+  3. tabelas e migrations criadas
+  4. regras de negócio implementadas
+  5. pendências da etapa
+  6. checklist rápido de validação manual
+
+========================
+ETAPA 1 — FUNDAÇÃO VISUAL E ESTRUTURA DO PROJETO
+========================
+
+Objetivo: criar a base visual, estrutural e navegacional do produto, sem ainda implementar todos os fluxos de negócio.
+
+Entregas desta etapa:
+1. Criar a identidade visual inicial da marca Cativa dentro do app
+2. Aplicar a paleta de cores, tipografia, espaçamentos, estados e tokens visuais
+3. Criar design system inicial com:
+- botões
+- inputs
+- selects
+- textareas
+- chips/tags
+- cards
+- tabelas responsivas
+- drawers
+- modais
+- toasts
+- tabs
+- badges de status
+- skeleton loaders
+- estados vazios
+- feedbacks de sucesso/erro
+
+4. Criar o app shell principal com:
+- navegação inferior no mobile
+- sidebar no desktop
+- header global
+- área de busca
+- perfil do usuário
+- troca de tenant/unidade preparada para o futuro
+- modo claro e escuro
+
+5. Criar rotas e páginas-base com layout inicial e placeholders bem estruturados para:
+- login
+- recuperação de senha
+- onboarding
+- dashboard
+- agenda
+- clientes
+- serviços
+- pacotes/protocolos
+- central de confirmação
+- lista de espera
+- analytics
+- configurações
+- super admin
+- portal do cliente
+- landing page pública
+- página pública de planos
+
+6. Organizar a estrutura do projeto de forma portável, clara e escalável
+Sugestão de organização:
+- app/pages
+- components
+- features
+- services
+- domain
+- repositories
+- hooks
+- integrations
+- utils
+- types
+- styles
+- config
+
+7. Preparar base para integração com Supabase, GitHub sync e env vars, sem ainda fechar todos os fluxos
+8. Criar um README inicial com:
+- visão do produto
+- stack
+- convenções
+- estrutura de pastas
+- observações sobre portabilidade
+
+Não fazer nesta etapa:
+- não implementar regras completas de CRM
+- não implementar agenda funcional completa
+- não implementar métricas ainda
+- não implementar billing ainda
+- não avançar sozinho para a próxima etapa
+
+Critérios de qualidade:
+- o app precisa parecer um SaaS premium real
+- o layout precisa funcionar muito bem no mobile
+- a navegação precisa estar clara
+- o visual precisa passar confiança, organização e sofisticação
+
+========================
+ETAPA 2 — AUTENTICAÇÃO, MULTI-TENANT E PERMISSÕES
+========================
+
+Objetivo: implementar autenticação, estrutura multi-tenant, onboarding inicial do negócio, unidades, equipe e permissões.
+
+Entregas desta etapa:
+1. Implementar autenticação com Supabase Auth:
+- login
+- logout
+- recuperação de senha
+- sessão protegida
+- rotas protegidas
+
+2. Implementar modelo multi-tenant real
+Criar as entidades principais com migrations:
+- tenants
+- units
+- profiles
+- tenant_memberships
+- roles
+- permissions
+- role_permissions
+- tenant_settings
+- unit_settings
+- staff_profiles ou professionals
+- audit_logs básico
+
+3. Implementar RLS desde já nas principais tabelas
+4. Implementar onboarding inicial do owner com wizard para:
+- nome do negócio
+- segmento
+- logo
+- cores básicas
+- fuso horário
+- moeda
+- primeira unidade
+- primeiros membros da equipe
+- informações básicas de operação
+
+5. Implementar papéis:
+- super_admin
+- owner
+- manager
+- frontdesk
+- professional
+- client
+
+6. Implementar controle de acesso por papel para as páginas já existentes
+7. Criar páginas de configurações iniciais do tenant:
+- dados do negócio
+- unidades
+- equipe
+- branding
+- preferências básicas
+
+8. Preparar convite ou cadastro de usuários da equipe, ainda que em versão inicial
+9. Garantir que tudo já esteja preparado para crescimento em várias unidades
+
+Regras importantes:
+- todo dado relevante precisa estar vinculado ao tenant
+- quando necessário, também à unidade
+- permissões devem ser pensadas para futura granularidade
+- nada pode depender de lógica só no front
+- manter tudo compatível com futura migração para deploy externo/VPS
+
+Não fazer nesta etapa:
+- não implementar CRM completo ainda
+- não implementar agenda completa ainda
+- não implementar métricas ainda
+- não criar billing provider agora
+
+Critérios de qualidade:
+- login e navegação protegida funcionando
+- owner consegue criar e estruturar o negócio
+- base multi-tenant sólida
+- permissões já preparadas para expansão
+
+========================
+ETAPA 3 — CRM DE CLIENTES
+========================
+
+Objetivo: construir um CRM forte e operacional para clientes, com visão completa do histórico e base para retenção.
+
+Entregas desta etapa:
+1. Criar módulo de clientes com lista, busca, filtros, cadastro, edição e visualização detalhada
+2. Criar migrations e estrutura de dados para:
+- clients
+- client_tags
+- client_tag_relations
+- client_notes
+- client_files
+- client_photos
+- client_timeline_events
+- custom_field_definitions
+- client_custom_field_values
+- consent_form_templates
+- consent_form_responses
+
+3. Cada cliente deve suportar:
+- nome
+- telefone
+- email
+- data de nascimento
+- origem
+- indicação/referral
+- observações
+- alergias
+- contraindicações
+- preferências
+- tags
+- status VIP
+- status de risco
+- status de reativação
+- campos customizados por tenant
+- dados de contato
+- última visita
+- próxima visita
+- profissional preferido
+- unidade preferida
+
+4. Criar timeline do cliente unificando:
+- notas internas
+- uploads
+- formulários
+- consentimentos
+- mudanças importantes
+- eventos manuais
+- base preparada para receber eventos de agendamento futuramente
+
+5. Criar upload de arquivos e fotos usando Storage
+6. Criar visualização de fotos de antes/depois em formato simples e profissional
+7. Criar indicador de completude do cadastro
+8. Criar filtros úteis:
+- aniversariantes
+- clientes VIP
+- clientes inativos
+- clientes com risco elevado
+- clientes por origem
+- clientes por profissional preferido
+- clientes por unidade
+
+9. Criar base de consentimentos e formulários digitais em versão inicial
+10. Garantir excelente experiência mobile para consulta rápida na recepção e pelo profissional
+
+Regras importantes:
+- os campos customizados devem ser configuráveis por tenant
+- o CRM precisa ser rápido e extremamente útil para operação
+- a timeline deve ser pensada como o centro da visão do cliente
+- a base deve ficar preparada para futuras automações sem depender do Lovable
+
+Não fazer nesta etapa:
+- não implementar agenda completa aqui
+- não avançar para portal do cliente ainda
+- não criar métricas finais ainda
+
+Critérios de qualidade:
+- recepção consegue encontrar um cliente em segundos
+- ficha do cliente transmite visão completa
+- CRM já agrega valor por si só
+- estrutura está preparada para retenção, reativação e histórico operacional
+
+========================
+ETAPA 4 — SERVIÇOS, PREÇOS, PACOTES, MEMBERSHIPS E PROTOCOLOS
+========================
+
+Objetivo: construir o catálogo operacional e comercial do negócio sem criar módulo fiscal.
+
+Entregas desta etapa:
+1. Criar módulo de catálogo com:
+- categorias
+- subcategorias
+- serviços
+- combos
+- pacotes
+- memberships
+- protocolos / séries de sessões
+
+2. Criar migrations e estrutura de dados para:
+- service_categories
+- services
+- service_prices
+- service_unit_prices
+- service_professional_prices
+- packages
+- package_items
+- memberships
+- protocols
+- protocol_sessions
+- client_package_balances
+- client_membership_balances
+- cancellation_policies
+
+3. Cada serviço deve suportar:
+- nome
+- descrição
+- categoria
+- duração padrão
+- buffer antes/depois
+- tempo de processamento opcional
+- antecedência mínima
+- antecedência máxima
+- preço base
+- preço por unidade
+- preço por profissional
+- recurso obrigatório
+- elegibilidade para pacote ou membership
+- janela ideal de retorno
+- política de cancelamento
+- instruções pré-atendimento
+- ativo/inativo
+
+4. Cada pacote/protocolo deve suportar:
+- quantidade de sessões
+- validade
+- regras de uso
+- consumo de sessões
+- janela recomendada entre sessões
+- elegibilidade por unidade/profissional
+- observações operacionais
+
+5. Criar telas de gestão para:
+- lista de serviços
+- cadastro e edição
+- categorias
+- pacotes
+- memberships
+- protocolos
+- visão de saldo por cliente preparada para uso futuro
+
+6. Criar presets iniciais por segmento:
+- salão
+- clínica de estética
+- lash/brow
+- barbearia
+- esmalteria
+- massagem / wellness
+
+Regras importantes:
+- não criar qualquer lógica fiscal
+- foco operacional, comercial e de retenção
+- protocolos precisam preparar bem o terreno para acompanhamento de tratamento
+- o catálogo deve permitir futura expansão para múltiplas unidades e equipes
+
+Não fazer nesta etapa:
+- não implementar ainda a agenda completa
+- não implementar portal do cliente ainda
+- não implementar billing do SaaS
+
+Critérios de qualidade:
+- o catálogo precisa ser elegante, simples e poderoso
+- deve atender negócios pequenos e operações multiunidade
+- deve ficar claro como o serviço impacta agenda e retenção
+
+========================
+ETAPA 5 — AGENDA E MOTOR DE AGENDAMENTO
+========================
+
+Objetivo: implementar o coração operacional do sistema: agenda, disponibilidade, agendamentos e status de atendimento.
+
+Entregas desta etapa:
+1. Criar o motor de agenda com visão:
+- diária
+- semanal
+- por profissional
+- por unidade
+- por recurso/sala quando aplicável
+
+2. Criar migrations e estrutura de dados para:
+- resources
+- professional_availability
+- unit_business_hours
+- time_off_blocks
+- recurring_blocks
+- appointments
+- appointment_items
+- appointment_logs
+- appointment_status_history
+- waitlist_entries
+
+3. Implementar fluxo interno de agendamento pela recepção
+4. Implementar:
+- criar agendamento
+- editar
+- reagendar
+- cancelar
+- marcar chegou
+- marcar em atendimento
+- concluir
+- marcar no-show
+- encaixe
+- bloqueios de agenda
+- indisponibilidades
+- recorrência básica
+
+5. Cada agendamento deve considerar:
+- cliente
+- unidade
+- profissional
+- serviço
+- duração
+- buffers
+- recurso obrigatório
+- política de cancelamento
+- observações
+- origem do agendamento
+- status
+
+6. Implementar status:
+- solicitado
+- pendente
+- confirmado
+- lembrado
+- chegou
+- em atendimento
+- concluído
+- cancelado
+- no-show
+
+7. Implementar algoritmo inicial de disponibilidade com base em:
+- horário da unidade
+- disponibilidade do profissional
+- bloqueios
+- duração do serviço
+- buffers
+- recurso/sala quando exigido
+
+8. Criar experiência de agenda muito eficiente no mobile
+9. Criar lista de espera básica já conectada à agenda
+
+Regras importantes:
+- a agenda precisa ser muito rápida para operação
+- o cálculo de disponibilidade não pode depender só de UI
+- pensar na agenda como base para portal do cliente e métricas futuras
+- deixar tudo preparado para rebooking, confirmação e lista de espera inteligente
+
+Não fazer nesta etapa:
+- não implementar ainda o portal completo do cliente
+- não implementar ainda dashboards finais
+- não avançar sozinho para a próxima etapa
+
+Critérios de qualidade:
+- recepção consegue operar a agenda com poucos cliques
+- agenda clara no mobile
+- agendamento e reagendamento confiáveis
+- estrutura pronta para suportar crescimento
+
+========================
+ETAPA 6 — CENTRAL DE CONFIRMAÇÃO SEM WHATSAPP API
+========================
+
+Objetivo: criar uma central operacional de confirmação de horários, totalmente sem WhatsApp API e com fluxo manual/semiassistido.
+
+Entregas desta etapa:
+1. Criar a Central de Confirmação com filas de trabalho para:
+- hoje
+- amanhã
+- próximos dias
+- alto risco
+- clientes premium / alto valor
+- reagendamento
+- recuperação de cancelamentos
+
+2. Criar migrations e estrutura de dados para:
+- message_templates
+- confirmation_rules
+- confirmation_queue
+- contact_attempts
+- call_logs
+- channel_preferences
+
+3. Implementar ações operacionais:
+- gerar texto pronto por template
+- copiar mensagem
+- abrir conversa por link no WhatsApp Web/App
+- registrar ligação
+- registrar tentativa de contato
+- registrar retorno/manual follow-up
+- disparar email apenas com ação humana explícita, se for implementado nesta etapa
+- registrar resultado da tentativa
+
+4. Criar status de tentativa:
+- pendente
+- enviado
+- confirmado
+- pediu reagendamento
+- cancelou
+- não respondeu
+- ligação feita
+- retorno agendado
+
+5. Criar templates configuráveis por:
+- tenant
+- unidade
+- serviço
+- etapa da jornada
+
+6. Criar regras simples de priorização da fila com base em:
+- data/hora do atendimento
+- histórico de no-show
+- falta de confirmação
+- valor potencial
+- cliente VIP
+- cliente em protocolo
+
+7. Criar trilha de auditoria operacional
+8. Criar experiência extremamente rápida para a recepção
+
+Regras importantes:
+- nunca enviar WhatsApp automaticamente
+- nunca usar API de WhatsApp
+- o sistema pode facilitar, nunca automatizar o envio
+- todas as tentativas devem ficar registradas
+- preparar a base para métricas futuras de confirmação e recuperação
+
+Não fazer nesta etapa:
+- não transformar isso em CRM de marketing
+- não criar automações obscuras e difíceis de portar
+- não avançar para dashboards completos ainda
+
+Critérios de qualidade:
+- recepção consegue confirmar horários com velocidade
+- a fila de trabalho faz sentido operacionalmente
+- histórico de tentativas fica claro
+- o produto gera valor sem depender de WhatsApp API
+
+========================
+ETAPA 7 — PORTAL DO CLIENTE
+========================
+
+Objetivo: criar o portal do cliente com autoatendimento, usando o motor de agenda já implementado.
+
+Entregas desta etapa:
+1. Criar acesso do tipo client com autenticação própria
+2. Permitir vincular um registro de client a um usuário autenticado
+3. Criar portal do cliente com:
+- login
+- cadastro
+- perfil
+- próximos horários
+- histórico
+- agendar
+- reagendar
+- cancelar dentro da política
+- confirmar horário
+- visualizar pacotes/protocolos/sessões
+- visualizar formulários pendentes
+- atualizar dados cadastrais
+- avaliar experiência após atendimento
+
+4. Criar fluxo de autoagendamento usando a mesma lógica de disponibilidade do sistema interno
+5. Criar tela de confirmação do horário
+6. Criar política de cancelamento visível ao cliente
+7. Criar área de preferências:
+- unidade preferida
+- profissional preferido
+- serviços mais recorrentes
+
+8. Criar experiência mobile-first excelente para o cliente final
+9. Preparar portal para futura publicação por tenant, com branding do negócio
+
+Regras importantes:
+- o portal deve respeitar políticas do tenant
+- o cliente só pode acessar seus próprios dados
+- a experiência deve ser simples e premium
+- o portal deve conversar com agenda, CRM e pacotes sem duplicar lógica
+
+Não fazer nesta etapa:
+- não criar automações indevidas
+- não avançar para dashboards finais sem eu pedir
+
+Critérios de qualidade:
+- cliente consegue resolver as principais ações sozinho
+- o portal reduz carga da recepção
+- a experiência transmite valor premium para o negócio
+
+========================
+ETAPA 8 — DASHBOARDS, MÉTRICAS, REGRAS DE NEGÓCIO E ÍNDICE CATIVA
+========================
+
+Objetivo: implementar a camada analítica e gerencial do produto, com métricas úteis, filtros, recomendações e uma métrica proprietária.
+
+Entregas desta etapa:
+1. Criar dashboards para:
+- executivo
+- operacional da recepção
+- retenção
+- rebooking
+- confirmações
+- no-show/cancelamento
+- ocupação
+- novos vs recorrentes
+- origem dos agendamentos
+- lista de espera
+- clientes inativos
+- pacotes/protocolos
+- por profissional
+- por unidade
+
+2. Todos os dashboards devem filtrar por:
+- período
+- unidade
+- profissional
+- serviço
+- origem
+
+3. Implementar as métricas principais:
+- taxa de retenção do negócio
+- taxa de retenção por profissional
+- conversão da 1a para a 2a visita
+- conversão da 2a para a 3a visita
+- taxa de rebooking/prebooking
+- taxa de confirmação
+- taxa de comparecimento
+- taxa de no-show
+- taxa de cancelamento
+- taxa de recuperação de no-show
+- taxa de ocupação da agenda
+- ticket médio
+- ticket médio por cliente
+- ticket médio por serviço
+- ticket médio por profissional
+- ticket médio por unidade
+- valor futuro agendado
+- receita futura em risco
+- frequência média de retorno
+- adesão à janela ideal de retorno
+- clientes novos vs recorrentes
+- origem dos agendamentos
+- tempo médio até confirmação
+- taxa de confirmação por canal
+- conversão da lista de espera
+- tempo médio para preencher cancelamentos
+- taxa de reativação de clientes inativos
+- taxa de conclusão de protocolos/pacotes
+- completude do cadastro do cliente
+- lealdade à marca
+- lealdade ao profissional
+
+4. Implementar fórmulas claras e configuráveis
+Use como padrão:
+- retenção do negócio = clientes elegíveis que retornaram dentro da janela / clientes elegíveis
+- retenção por profissional = clientes elegíveis do profissional que retornaram dentro da janela / clientes elegíveis do profissional
+- conversão 1a->2a = clientes de primeira visita que retornaram / clientes elegíveis de primeira visita
+- conversão 2a->3a = clientes de segunda visita que retornaram / clientes elegíveis de segunda visita
+- rebooking = atendimentos concluídos com próxima visita marcada / atendimentos concluídos elegíveis
+- confirmação = agendamentos confirmados / agendamentos elegíveis para confirmação
+- comparecimento = comparecimentos / agendamentos não cancelados no prazo
+- no-show = faltas / agendamentos não cancelados no prazo
+- cancelamento = cancelamentos / agendamentos marcados
+- recuperação de no-show = clientes com no-show que remarcaram na janela / clientes com no-show
+- ocupação = minutos reservados / minutos disponíveis
+- valor futuro agendado = soma dos agendamentos futuros
+- receita futura em risco = soma de agendamentos futuros de baixa confirmação ou alto risco
+- conversão de lista de espera = encaixes confirmados / oportunidades trabalhadas
+- adesão à janela ideal = retornos dentro da faixa ideal / retornos elegíveis
+- lealdade à marca = clientes que retornam ao negócio / clientes recorrentes
+- lealdade ao profissional = clientes que retornam ao mesmo profissional / clientes recorrentes
+
+5. Criar a métrica proprietária Índice Cativa
+- score de 0 a 100
+- exibir por negócio
+- exibir por unidade
+- exibir por profissional
+- exibir por coorte de clientes
+
+6. Fórmula inicial sugerida do Índice Cativa
+Normalizar todos os componentes em 0 a 100 e aplicar pesos:
+- retenção: 25
+- rebooking: 15
+- confirmação: 10
+- recuperação de no-show: 10
+- ocupação: 10
+- adesão à janela ideal: 10
+- completude do CRM: 10
+- valor futuro agendado: 10
+
+7. Exibir no Índice Cativa:
+- score atual
+- tendência
+- principais gargalos
+- principais oportunidades
+- recomendações acionáveis
+
+8. Criar bloco de Next Best Action com sugestões como:
+- baixa confirmação => mover para fila de contato
+- baixa conversão 1a->2a => foco em rebook de primeira visita
+- agenda com buracos => acionar lista de espera
+- cliente fora da janela ideal => mover para reativação
+- protocolo parado => alertar recepção
+- alto valor sem confirmação => priorizar contato humano
+
+9. Criar dashboards visualmente executivos, claros e rápidos
+
+Regras importantes:
+- métricas devem ser filtráveis
+- fórmulas devem ser documentadas
+- metas devem ser preparadas para futura configuração por super admin e owner
+- não usar lógica opaca ou impossível de portar
+
+Não fazer nesta etapa:
+- não criar billing provider
+- não criar área fiscal
+- não extrapolar para recursos fora do escopo
+
+Critérios de qualidade:
+- o dono do negócio precisa entender o valor do sistema rapidamente
+- dashboards precisam ser realmente úteis, não só bonitos
+- o Índice Cativa deve parecer um diferencial real do produto
+
+========================
+ETAPA 9 — SUPER ADMIN, PLANOS, TRIALS, LIMITES E FEATURE FLAGS
+========================
+
+Objetivo: criar a camada SaaS administrativa do produto, separada da operação do cliente final.
+
+Entregas desta etapa:
+1. Criar painel super_admin com gestão de:
+- tenants
+- planos
+- trials
+- limites
+- módulos
+- feature flags
+- estados da assinatura
+- templates padrão por segmento
+
+2. Criar migrations e estrutura de dados para:
+- plans
+- plan_features
+- tenant_subscriptions
+- trial_rules
+- usage_limits
+- feature_flags
+- segment_templates
+
+3. Cada plano deve suportar:
+- nome
+- descrição
+- valor
+- periodicidade
+- limites de unidades
+- limites de profissionais
+- limites de clientes ativos
+- limites de armazenamento
+- módulos habilitados
+- dias de trial
+- grace period
+- status
+
+4. Estados de assinatura:
+- trialing
+- active
+- overdue
+- suspended
+- canceled
+
+5. Permitir que o super admin configure:
+- planos mensais
+- trimestrais
+- semestrais
+- anuais
+- customizados
+- cupons ou descontos manuais
+- ativação/desativação de módulos
+- feature flags por tenant
+- templates iniciais por segmento
+
+6. Criar visão do owner para enxergar:
+- plano atual
+- limites
+- trial
+- consumo
+- disponibilidade de módulos
+
+7. Fazer tudo de forma desacoplada de provider de pagamento
+8. Preparar estrutura para futura integração com billing provider, mas sem amarrar a lógica a ele agora
+
+Regras importantes:
+- isso é billing do SaaS, não módulo fiscal do cliente
+- manter arquitetura portável
+- permitir override de plano por tenant
+- permitir customização do trial pelo gestor do produto
+
+Não fazer nesta etapa:
+- não criar integração rígida com plataforma de pagamento
+- não misturar billing SaaS com operação do salão/clínica
+- não avançar para próxima etapa sozinho
+
+Critérios de qualidade:
+- o super admin deve ter controle real do produto
+- o owner deve entender seu plano e limites
+- a base deve estar pronta para crescer como SaaS de verdade
+
+========================
+ETAPA 10 — IMPORTAÇÃO, EXPORTAÇÃO, PORTABILIDADE, SEEDS, SEGURANÇA E DOCUMENTAÇÃO
+========================
+
+Objetivo: preparar o produto para operação real, migração futura, onboarding e manutenção profissional.
+
+Entregas desta etapa:
+1. Criar importação por CSV com mapeamento de colunas e preview para:
+- clientes
+- serviços
+- equipe
+- pacotes/protocolos
+- agendamentos, se viável nesta etapa
+
+2. Criar exportação em CSV e JSON para:
+- clientes
+- serviços
+- agendamentos
+- métricas principais
+- configurações relevantes
+
+3. Criar seeds realistas para demonstração
+4. Criar .env.example
+5. Criar documentação mínima profissional com:
+- setup local
+- estrutura do projeto
+- env vars
+- migrations
+- RLS
+- backup/restore
+- export/import
+- deploy externo
+- considerações para VPS
+- pontos de acoplamento que devem permanecer abstraídos
+
+6. Preparar o projeto para portabilidade:
+- código organizado
+- migrations consistentes
+- storage com convenção portável
+- evitar dependências desnecessárias do Lovable
+- deixar clara a possibilidade de hospedagem fora do Lovable
+
+7. Criar testes básicos ou validações estruturadas para:
+- permissões
+- regras críticas de agendamento
+- regras de confirmação
+- cálculos principais das métricas
+
+8. Revisar segurança e privacidade:
+- RLS nas principais tabelas
+- segregação multi-tenant
+- auditoria básica
+- acesso mínimo necessário
+- exportação de dados
+- anonimização/desativação preparada quando necessário
+
+9. Revisar performance e experiência geral
+
+Regras importantes:
+- esta etapa deve preparar o produto para crescer
+- a documentação precisa ser clara
+- a portabilidade precisa ser tratada como requisito central
+
+Não fazer nesta etapa:
+- não reescrever o produto inteiro
+- não quebrar o que já funciona
+- não criar dependências proprietárias desnecessárias
+
+Critérios de qualidade:
+- o sistema precisa parecer um produto sério pronto para MVP robusto
+- a migração futura deve parecer viável
+- onboarding por importação deve reduzir fricção comercial
+
+========================
+ETAPA 11 — LANDING PAGE E PÁGINA PÚBLICA DE PLANOS
+========================
+
+Objetivo: criar a presença pública do produto para venda, demonstração e aquisição de clientes.
+
+Entregas desta etapa:
+1. Criar landing page pública da marca Cativa com posicionamento premium e corporativo
+2. Criar narrativa clara sobre:
+- problema do mercado
+- solução
+- diferenciais
+- módulos principais
+- valor para retenção
+- valor para rebooking
+- valor para redução de no-show
+- valor para gestão operacional
+- valor para crescimento do negócio
+
+3. Criar seções sugeridas:
+- hero principal
+- proposta de valor
+- dores do mercado
+- como funciona
+- módulos do sistema
+- diferencial do Índice Cativa
+- benefícios por perfil: owner, manager, frontdesk, professional
+- segmentos atendidos
+- prova de valor/ROI conceitual
+- CTA para trial ou demonstração
+
+4. Criar página pública de planos conectada à estrutura SaaS criada antes
+5. Manter consistência visual com a marca Cativa
+6. Garantir excelente experiência mobile
+7. Fazer a landing parecer produto SaaS premium real
+
+Regras importantes:
+- a comunicação precisa ser profissional, corporativa e clara
+- foco em valor percebido, retenção e eficiência operacional
+- sem promessas técnicas exageradas
+- sem termos fiscais
+
+Critérios de qualidade:
+- a landing precisa ser convincente
+- deve ajudar em vendas e apresentação institucional
+- deve reforçar diferenciação do produto no mercado
+
+========================
+CRITÉRIOS GERAIS DE QUALIDADE DO PROJETO
+========================
+
+Antes de considerar qualquer etapa pronta, valide sempre:
+- parece um SaaS real, escalável e multi-tenant
+- está pronto para crescer sem retrabalho estrutural
+- o mobile está excelente
+- a recepção consegue operar rápido
+- o dono do negócio entende o valor em poucos segundos
+- o software cria hábito diário de uso
+- o sistema aumenta retenção por valor percebido e rotina operacional, e não por aprisionamento técnico
+
+========================
+COMPORTAMENTO FINAL ESPERADO
+========================
+
+Você deve executar este projeto de forma incremental, obedecendo rigorosamente a etapa solicitada no momento.
+
+Nunca:
+- recomece o projeto do zero
+- avance sem autorização
+- destrua o que já funciona
+- concentre regra crítica só na interface
+- crie módulo fiscal
+- use API de WhatsApp
+- crie dependências que dificultem portabilidade
+
+Sempre:
+- preserve a base existente
+- use migrations incrementais
+- mantenha o projeto limpo, portável e escalável
+- entregue relatório ao final de cada etapa
+- trabalhe com mentalidade de produto premium, robusto e pronto para escalar
+
+Agora siga este documento como referência principal do projeto Cativa.
