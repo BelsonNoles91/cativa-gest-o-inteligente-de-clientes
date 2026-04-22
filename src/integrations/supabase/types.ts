@@ -2265,11 +2265,15 @@ export type Database = {
         Row: {
           bio: string | null
           color: string | null
+          commission_pct: number | null
           created_at: string
           display_name: string
+          email: string | null
           id: string
           is_active: boolean
+          phone: string | null
           role_title: string | null
+          specialty: string | null
           tenant_id: string
           unit_id: string | null
           updated_at: string
@@ -2278,11 +2282,15 @@ export type Database = {
         Insert: {
           bio?: string | null
           color?: string | null
+          commission_pct?: number | null
           created_at?: string
           display_name: string
+          email?: string | null
           id?: string
           is_active?: boolean
+          phone?: string | null
           role_title?: string | null
+          specialty?: string | null
           tenant_id: string
           unit_id?: string | null
           updated_at?: string
@@ -2291,11 +2299,15 @@ export type Database = {
         Update: {
           bio?: string | null
           color?: string | null
+          commission_pct?: number | null
           created_at?: string
           display_name?: string
+          email?: string | null
           id?: string
           is_active?: boolean
+          phone?: string | null
           role_title?: string | null
+          specialty?: string | null
           tenant_id?: string
           unit_id?: string | null
           updated_at?: string
