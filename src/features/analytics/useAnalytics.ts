@@ -341,6 +341,7 @@ export function useAnalytics() {
       crm,
       avgConfirmHours,
       waitlistConv,
+      waitlist,
       inactivePool,
       reactivation,
       packageCompletion,

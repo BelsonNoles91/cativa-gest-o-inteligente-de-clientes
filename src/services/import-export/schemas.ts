@@ -219,14 +219,21 @@ export const serviceImportSchema: ImportSchema = {
 export const teamImportSchema: ImportSchema = {
   id: "team",
   label: "Equipe / Profissionais",
-  description: "Importe os profissionais que atendem.",
+  description:
+    "Importe os profissionais que atendem. O schema atual usa apelido público + função. " +
+    "Vínculo a usuário, contatos e comissão são gerenciados depois pelo módulo de Equipe.",
   fields: [
-    { key: "fullName", label: "Nome completo", required: true, aliases: ["nome", "profissional"] },
-    { key: "email", label: "E-mail", type: "email", aliases: ["email", "e-mail"] },
-    { key: "phone", label: "Telefone", type: "phone", aliases: ["celular", "telefone"] },
-    { key: "displayName", label: "Apelido público", aliases: ["apelido", "nome_publico"] },
-    { key: "specialty", label: "Especialidade", aliases: ["especialidade", "specialty"] },
-    { key: "commissionPct", label: "Comissão (%)", type: "number", aliases: ["comissao", "commission"] },
+    {
+      key: "displayName",
+      label: "Apelido público",
+      required: true,
+      aliases: ["apelido", "nome_publico", "nome", "profissional", "nome_completo", "name", "full name"],
+    },
+    {
+      key: "roleTitle",
+      label: "Função / Especialidade",
+      aliases: ["funcao", "cargo", "especialidade", "specialty", "role"],
+    },
   ],
 };
 

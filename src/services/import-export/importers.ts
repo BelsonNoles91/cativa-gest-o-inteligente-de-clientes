@@ -130,15 +130,13 @@ export async function importTeam(
   rows: Array<Record<string, unknown>>,
   ctx: { tenantId: string },
 ): Promise<ImportRunResult> {
-  // Importação básica de profissionais — vinculação a auth.users é manual depois.
+  // Importação básica de profissionais — schema atual da tabela `professionals`
+  // só guarda display_name + role_title. Contato/comissão/vínculo a auth.users
+  // são tratados depois no módulo de Equipe.
   const payload = rows.map((r) => ({
     tenant_id: ctx.tenantId,
-    full_name: String(r.fullName ?? "").trim(),
-    display_name: (r.displayName as string) || null,
-    email: (r.email as string) || null,
-    phone: (r.phone as string) || null,
-    specialty: (r.specialty as string) || null,
-    commission_pct: r.commissionPct ? Number(r.commissionPct) : 0,
+    display_name: String(r.displayName ?? "").trim(),
+    role_title: (r.roleTitle as string) || null,
     is_active: true,
   }));
   return insertChunked("professionals", payload);
@@ -158,7 +156,7 @@ export async function importAppointments(
     unitsResponse,
   ] = await Promise.all([
     supabase.from("clients").select("id, full_name").eq("tenant_id", ctx.tenantId),
-    supabase.from("professionals").select("id, full_name, display_name").eq("tenant_id", ctx.tenantId),
+    supabase.from("professionals").select("id, display_name").eq("tenant_id", ctx.tenantId),
     supabase.from("services").select("id, name, duration_minutes").eq("tenant_id", ctx.tenantId),
     supabase
       .from("service_prices")
@@ -179,9 +177,7 @@ export async function importAppointments(
   const professionalByName = new Map<string, string>();
   (professionalsResponse.data ?? []).forEach((row) => {
     const displayName = normalizeText(row.display_name);
-    const fullName = normalizeText(row.full_name);
     if (displayName) professionalByName.set(displayName, row.id);
-    if (fullName && !professionalByName.has(fullName)) professionalByName.set(fullName, row.id);
   });
   const serviceByName = new Map(
     (servicesResponse.data ?? []).map((row) => [

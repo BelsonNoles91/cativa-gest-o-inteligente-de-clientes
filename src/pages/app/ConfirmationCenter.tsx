@@ -16,6 +16,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { EmptyState } from "@/components/feedback/EmptyState";
+import { Separator } from "@/components/ui/separator";
+import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { useConfirmationCenter } from "@/features/confirmation/useConfirmationCenter";
 import { QueueItemCard } from "@/features/confirmation/QueueItemCard";
 import { ConfirmationActionDialog } from "@/features/confirmation/ConfirmationActionDialog";
