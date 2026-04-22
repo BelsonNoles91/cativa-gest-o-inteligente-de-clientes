@@ -18,11 +18,18 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { axe, toHaveNoViolations } from "vitest-axe";
+import { axe } from "vitest-axe";
+import * as matchers from "vitest-axe/matchers";
 import { BottomNav } from "@/components/shell/BottomNav";
 import { OfflineBanner } from "@/components/shell/OfflineBanner";
 
-expect.extend({ toHaveNoViolations });
+expect.extend(matchers);
+
+declare module "vitest" {
+  interface Assertion<T = unknown> {
+    toHaveNoViolations(): T;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Mocks: TenantProvider e TenantBillingProvider
