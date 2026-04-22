@@ -116,7 +116,9 @@ export function PortalLayout() {
 
       {/* Conteúdo */}
       <main
-        data-app-main
+        data-app-main="true"
+        data-testid="app-main"
+        data-app-context="portal"
         className="mx-auto w-full max-w-3xl px-4 pb-28 pt-4"
       >
         <Outlet />
@@ -124,7 +126,10 @@ export function PortalLayout() {
 
       {/* Bottom nav */}
       <nav
-        data-bottom-nav
+        data-bottom-nav="true"
+        data-testid="bottom-nav"
+        data-app-context="portal"
+        aria-label="Navegação do portal"
         className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 backdrop-blur"
       >
         <div className="mx-auto grid max-w-3xl grid-cols-4">
@@ -133,6 +138,8 @@ export function PortalLayout() {
               key={to}
               to={to}
               end={end}
+              data-testid="bottom-nav-item"
+              data-route={to.replace(/^\/+/, "").replace(/\//g, "-") || "root"}
               className={({ isActive }) =>
                 cn(
                   "flex flex-col items-center gap-1 py-2.5 text-xs font-medium transition-colors",
