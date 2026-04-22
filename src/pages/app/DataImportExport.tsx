@@ -491,10 +491,10 @@ function ExportPanel({ tenantId }: { tenantId: string }) {
         email: (row as { email: string | null }).email ?? null,
         phone: (row as { phone: string | null }).phone ?? null,
         commissionPct:
-          (row as { commission_pct?: number | string | null }).commission_pct === null ||
-          (row as { commission_pct?: number | string | null }).commission_pct === undefined
+          (row as unknown as { commission_pct?: number | string | null }).commission_pct === null ||
+          (row as unknown as { commission_pct?: number | string | null }).commission_pct === undefined
             ? null
-            : Number((row as { commission_pct: number | string }).commission_pct),
+            : Number((row as unknown as { commission_pct: number | string }).commission_pct),
         isActive: row.is_active,
       }));
       const filename = `equipe_${dateStamp()}.${format}`;
