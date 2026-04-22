@@ -26,17 +26,38 @@ const SNAPSHOT_CSS = `
 `;
 
 export async function prepareForSnapshot(page: Page): Promise<void> {
-  await page.addStyleTag({ content: SNAPSHOT_CSS });
+  try {
+    await page.addStyleTag({ content: SNAPSHOT_CSS });
+  } catch (err) {
+    // addStyleTag pode falhar se a página estiver navegando.
+    // Tentamos novamente após um pequeno settle.
+    await page.waitForTimeout(100);
+    await page.addStyleTag({ content: SNAPSHOT_CSS }).catch(() => {
+      // eslint-disable-next-line no-console
+      console.warn("[visual] prepareForSnapshot: addStyleTag falhou 2x", err);
+    });
+  }
   // Desativa scrollbar overlay no WebKit/Chromium para não vazar diff.
-  await page.evaluate(() => {
-    document.documentElement.style.scrollbarWidth = "none";
-  });
-  // Aguarda fontes carregadas (Fraunces/Inter via Google Fonts).
-  await page.evaluate(async () => {
-    if (document.fonts && document.fonts.ready) {
-      await document.fonts.ready;
-    }
-  });
+  await page
+    .evaluate(() => {
+      document.documentElement.style.scrollbarWidth = "none";
+    })
+    .catch(() => {
+      /* contexto pode ter sido destruído por navegação concorrente */
+    });
+  // Aguarda fontes carregadas com TIMEOUT — sem isso, fontes que falham em
+  // carregar (CDN offline) travam o teste por 30s sem mensagem útil.
+  await page
+    .evaluate(async () => {
+      if (!document.fonts || !document.fonts.ready) return;
+      await Promise.race([
+        document.fonts.ready,
+        new Promise((resolve) => setTimeout(resolve, 3000)),
+      ]);
+    })
+    .catch(() => {
+      /* fontes não disponíveis no contexto atual — segue */
+    });
   // Pequeno settle para layout final (carga assíncrona de avatares etc).
   await page.waitForTimeout(250);
 }
@@ -156,7 +177,8 @@ export async function assertContentNotHiddenByBottomNav(
   const navTop = navBox!.y;
 
   // Scrolla tudo até o fim — janela e qualquer scroller interno conhecido.
-  await page.evaluate(async () => {
+  // Retorna info de quanto rolou para validar que de fato aconteceu.
+  const scrollResult = await page.evaluate(async () => {
     const scrollers: (HTMLElement | (Window & typeof globalThis))[] = [window];
     document.querySelectorAll<HTMLElement>("[data-app-main], main").forEach(
       (el) => {
@@ -164,6 +186,7 @@ export async function assertContentNotHiddenByBottomNav(
         if (el.scrollHeight > el.clientHeight + 1) scrollers.push(el);
       },
     );
+    const before = window.scrollY;
     for (const s of scrollers) {
       if (s === window) {
         window.scrollTo({ top: document.body.scrollHeight, behavior: "instant" as ScrollBehavior });
@@ -173,7 +196,29 @@ export async function assertContentNotHiddenByBottomNav(
     }
     // 2 RAFs para garantir layout final + repaint.
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r(null))));
+    return {
+      scrolledBy: window.scrollY - before,
+      finalScrollY: window.scrollY,
+      pageHeight: document.body.scrollHeight,
+      viewportH: window.innerHeight,
+    };
   });
+
+  // Sanidade: se a página é maior que o viewport mas não rolamos, algo
+  // bloqueou o scroll (overflow:hidden em ancestral, modal aberto etc).
+  // Logamos um aviso mas não falhamos — pode ser página realmente curta.
+  if (
+    scrollResult.pageHeight > scrollResult.viewportH + 50 &&
+    scrollResult.scrolledBy === 0 &&
+    scrollResult.finalScrollY === 0
+  ) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[visual] assertContentNotHiddenByBottomNav: scroll não teve efeito ` +
+        `(pageHeight=${scrollResult.pageHeight}, viewportH=${scrollResult.viewportH}). ` +
+        `Verifique se há modal aberto ou overflow:hidden bloqueando.`,
+    );
+  }
 
   // Encontra o último elemento renderizado dentro do main com área > 0.
   const lastBottom = await page.evaluate(() => {
@@ -397,24 +442,71 @@ export async function assertCriticalActionsAboveBottomNav(
 
 /**
  * Simula perda de conexão no contexto do browser e dispara o evento `offline`
- * que o hook useOnlineStatus escuta. Retorna uma função para restaurar.
+ * que o hook useOnlineStatus escuta. Aguarda o banner aparecer (até 3s) em
+ * vez de timeout fixo. Retorna uma função para restaurar.
  *
- * Usado em cenários de navegação para validar que o OfflineBanner aparece
- * sem quebrar safe-area / BottomNav.
+ * Em caso de falha (banner não aparece), loga aviso mas NÃO lança — o caller
+ * decide se isso é fatal via `assertOfflineBannerLayout`.
  */
 export async function goOffline(page: Page): Promise<() => Promise<void>> {
-  await page.context().setOffline(true);
-  await page.evaluate(() => {
-    window.dispatchEvent(new Event("offline"));
-  });
-  // Pequeno settle para o React renderizar o banner.
-  await page.waitForTimeout(150);
-  return async () => {
-    await page.context().setOffline(false);
-    await page.evaluate(() => {
-      window.dispatchEvent(new Event("online"));
+  try {
+    await page.context().setOffline(true);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn("[visual] goOffline: setOffline(true) falhou", err);
+  }
+  await page
+    .evaluate(() => {
+      window.dispatchEvent(new Event("offline"));
+    })
+    .catch(() => {
+      /* página pode estar navegando */
     });
-    await page.waitForTimeout(150);
+
+  // Aguarda o banner aparecer ATIVAMENTE (até 3s) em vez de sleep cego.
+  try {
+    await page.waitForFunction(
+      () => {
+        const el = document.querySelector('[role="status"]');
+        return el && /offline/i.test(el.textContent || "");
+      },
+      { timeout: 3000 },
+    );
+  } catch {
+    // eslint-disable-next-line no-console
+    console.warn(
+      "[visual] goOffline: OfflineBanner não apareceu em 3s — " +
+        "pode indicar regressão no useOnlineStatus ou render condicional.",
+    );
+  }
+
+  return async () => {
+    try {
+      await page.context().setOffline(false);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn("[visual] restore: setOffline(false) falhou", err);
+    }
+    await page
+      .evaluate(() => {
+        window.dispatchEvent(new Event("online"));
+      })
+      .catch(() => {
+        /* página pode estar fechando */
+      });
+    // Aguarda banner mudar para "Conexão restaurada" ou sumir.
+    await page
+      .waitForFunction(
+        () => {
+          const el = document.querySelector('[role="status"]');
+          if (!el) return true;
+          return !/offline/i.test(el.textContent || "");
+        },
+        { timeout: 3000 },
+      )
+      .catch(() => {
+        /* não-fatal */
+      });
   };
 }
 

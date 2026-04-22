@@ -1,34 +1,55 @@
 /**
- * Playwright global setup — login real via UI.
+ * Playwright global setup — login real via UI, com endurecimento de resiliência.
  *
- * Lê E2E_USER e E2E_PASS de .env.local (ou ambiente do CI), faz login na
- * página /auth/login e persiste o storageState em e2e/.auth/storageState.json.
- *
- * Esse arquivo é então reutilizado por todos os specs via `use.storageState`
- * em playwright.config.ts. Isso evita login a cada teste (rápido) e dá um
- * único ponto de falha quando credenciais expiram.
+ * Garante:
+ *  - Carregamento robusto de .env.local / .env (sem dep de require em ESM).
+ *  - Retry de login com backoff (rede lenta, hidratação atrasada).
+ *  - Selectors específicos para evitar colisão com "confirmar senha".
+ *  - Validação pós-login: storageState NÃO pode estar vazio se credenciais
+ *    foram fornecidas (fail-fast em vez de gerar baseline corrompida).
+ *  - Cleanup garantido do browser mesmo se filesystem falhar.
+ *  - Logs estruturados [playwright] em cada etapa para rastreabilidade.
  *
  * Pré-requisitos:
- *  - Usuário seed já existir no Supabase do projeto apontado por VITE_SUPABASE_URL.
- *  - Esse usuário deve ter pelo menos 1 tenant_membership ativo (para /app
- *    renderizar dashboard, agenda etc — caso contrário cai no /onboarding).
+ *  - Usuário seed no Supabase apontado por VITE_SUPABASE_URL.
+ *  - Esse usuário deve ter pelo menos 1 tenant_membership ativo.
  *  - .env.local com:
  *      E2E_USER=visual-test@cativa.local
  *      E2E_PASS=<senha>
  *
- * Se as variáveis estiverem ausentes, o setup grava um storageState VAZIO e
- * imprime um aviso — assim os specs de rotas públicas continuam rodando.
+ * Sem credenciais → grava storage vazio com aviso (specs públicos seguem).
  */
-import { chromium, type FullConfig } from "@playwright/test";
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { chromium, type FullConfig, type Browser } from "@playwright/test";
+import {
+  existsSync,
+  mkdirSync,
+  writeFileSync,
+  readFileSync,
+} from "node:fs";
 import { dirname, resolve } from "node:path";
 
-// Carrega .env.local se existir (sem dep extra: parse manual simples).
-function loadEnvFile(file: string) {
+const TAG = "[playwright:setup]";
+
+function log(msg: string) {
+  // eslint-disable-next-line no-console
+  console.log(`${TAG} ${msg}`);
+}
+
+function warn(msg: string, err?: unknown) {
+  // eslint-disable-next-line no-console
+  console.warn(
+    `${TAG} WARN ${msg}` +
+      (err instanceof Error ? ` :: ${err.message}` : ""),
+  );
+}
+
+/** Carrega arquivo .env de forma defensiva (sem dep de runtime). */
+function loadEnvFile(file: string): boolean {
   try {
-    const fs = require("node:fs") as typeof import("node:fs");
-    if (!fs.existsSync(file)) return;
-    const lines = fs.readFileSync(file, "utf8").split("\n");
+    if (!existsSync(file)) return false;
+    const content = readFileSync(file, "utf8");
+    const lines = content.split(/\r?\n/);
+    let count = 0;
     for (const raw of lines) {
       const line = raw.trim();
       if (!line || line.startsWith("#")) continue;
@@ -36,17 +57,121 @@ function loadEnvFile(file: string) {
       if (eq === -1) continue;
       const k = line.slice(0, eq).trim();
       let v = line.slice(eq + 1).trim();
+      if (!k) continue;
       if (
         (v.startsWith('"') && v.endsWith('"')) ||
         (v.startsWith("'") && v.endsWith("'"))
       ) {
         v = v.slice(1, -1);
       }
-      if (!(k in process.env)) process.env[k] = v;
+      if (!(k in process.env)) {
+        process.env[k] = v;
+        count++;
+      }
     }
-  } catch {
-    /* noop */
+    log(`carregadas ${count} vars de ${file}`);
+    return true;
+  } catch (err) {
+    warn(`falha ao ler ${file}`, err);
+    return false;
   }
+}
+
+/** Tenta login até `maxAttempts` vezes com backoff. */
+async function attemptLogin(
+  browser: Browser,
+  baseURL: string,
+  email: string,
+  password: string,
+  maxAttempts: number,
+): Promise<{ ok: true; storageStatePath: string } | { ok: false; reason: string }> {
+  let lastErr: unknown;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    log(`tentativa de login ${attempt}/${maxAttempts}`);
+    const ctx = await browser.newContext();
+    const page = await ctx.newPage();
+    try {
+      // Timeout explícito no goto — rede lenta não trava 30s.
+      await page.goto(`${baseURL}/auth/login`, {
+        waitUntil: "domcontentloaded",
+        timeout: 20_000,
+      });
+
+      // Aguarda formulário renderizar antes de preencher (hidratação React).
+      await page.waitForSelector('input[type="email"], input[name*="mail" i]', {
+        timeout: 10_000,
+      });
+
+      // Selectors específicos para email/senha — evita colisão com
+      // "confirmar senha" se ele existir na mesma página.
+      const emailInput = page
+        .locator('input[type="email"], input[name*="mail" i]')
+        .first();
+      const passwordInput = page
+        .locator('input[type="password"]')
+        .first();
+
+      await emailInput.fill(email);
+      await passwordInput.fill(password);
+
+      // Botão principal — preferimos role/name; fallback para submit.
+      const submitBtn = page
+        .getByRole("button", { name: /^(entrar|acessar|login|sign\s*in)$/i })
+        .first();
+      if (await submitBtn.count()) {
+        await submitBtn.click();
+      } else {
+        await page.locator('button[type="submit"]').first().click();
+      }
+
+      // Espera redirect para /app (sucesso) OU /onboarding (sucesso parcial).
+      // Erros de credencial → permanece em /auth/login com toast → timeout aqui.
+      await page.waitForURL(/\/(app|onboarding)/, { timeout: 30_000 });
+
+      const storagePath = resolve(
+        process.cwd(),
+        "e2e/.auth/storageState.json",
+      );
+      await ctx.storageState({ path: storagePath });
+
+      // Validação: storage NÃO pode estar vazio (cookies ou origins).
+      const stored = JSON.parse(readFileSync(storagePath, "utf8"));
+      const hasAuth =
+        (Array.isArray(stored.cookies) && stored.cookies.length > 0) ||
+        (Array.isArray(stored.origins) &&
+          stored.origins.some(
+            (o: { localStorage?: unknown[] }) =>
+              Array.isArray(o.localStorage) && o.localStorage.length > 0,
+          ));
+      if (!hasAuth) {
+        throw new Error(
+          "storageState gerado está vazio — login pode ter falhado silenciosamente.",
+        );
+      }
+
+      log(`login OK na tentativa ${attempt}, storageState salvo`);
+      await ctx.close();
+      return { ok: true, storageStatePath: storagePath };
+    } catch (err) {
+      lastErr = err;
+      warn(`tentativa ${attempt} falhou`, err);
+      // Tenta capturar URL atual para diagnóstico.
+      try {
+        const url = page.url();
+        warn(`  URL no momento da falha: ${url}`);
+      } catch {
+        /* page pode ter fechado */
+      }
+      await ctx.close().catch(() => {});
+      if (attempt < maxAttempts) {
+        const delay = 1000 * attempt;
+        log(`aguardando ${delay}ms antes de retry`);
+        await new Promise((r) => setTimeout(r, delay));
+      }
+    }
+  }
+  const reason = lastErr instanceof Error ? lastErr.message : String(lastErr);
+  return { ok: false, reason };
 }
 
 export default async function globalSetup(config: FullConfig) {
@@ -60,41 +185,54 @@ export default async function globalSetup(config: FullConfig) {
 
   const storagePath = resolve(process.cwd(), "e2e/.auth/storageState.json");
   const dir = dirname(storagePath);
-  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  try {
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  } catch (err) {
+    warn(`não consegui criar diretório ${dir}`, err);
+    throw err; // Sem dir não dá para escrever — falha imediata é melhor.
+  }
 
   const email = process.env.E2E_USER;
   const password = process.env.E2E_PASS;
 
   if (!email || !password) {
-    // Sem credenciais: grava storage vazio para não quebrar o config.
-    writeFileSync(
-      storagePath,
-      JSON.stringify({ cookies: [], origins: [] }, null, 2),
-    );
-    // eslint-disable-next-line no-console
-    console.warn(
-      "[playwright] E2E_USER/E2E_PASS ausentes — storageState vazio gravado.\n" +
+    try {
+      writeFileSync(
+        storagePath,
+        JSON.stringify({ cookies: [], origins: [] }, null, 2),
+      );
+    } catch (err) {
+      warn("não consegui gravar storageState vazio", err);
+    }
+    warn(
+      "E2E_USER/E2E_PASS ausentes — storageState vazio gravado.\n" +
         "             Specs autenticados (rotas /app) serão pulados/falharão.",
     );
     return;
   }
 
-  const browser = await chromium.launch();
+  let browser: Browser | undefined;
   try {
-    const ctx = await browser.newContext();
-    const page = await ctx.newPage();
-    await page.goto(`${baseURL}/auth/login`, { waitUntil: "domcontentloaded" });
-    await page.getByLabel(/e-?mail/i).fill(email);
-    await page.getByLabel(/senha/i).fill(password);
-    await page.getByRole("button", { name: /entrar|acessar/i }).click();
-
-    // Espera redirect para /app (ou /onboarding se sem tenant).
-    await page.waitForURL(/\/(app|onboarding)/, { timeout: 30_000 });
-
-    await ctx.storageState({ path: storagePath });
-    // eslint-disable-next-line no-console
-    console.log(`[playwright] storageState salvo em ${storagePath}`);
+    browser = await chromium.launch();
+    const result = await attemptLogin(browser, baseURL, email, password, 3);
+    if (!result.ok) {
+      // Grava storage vazio para não deixar arquivo de versão anterior
+      // mascarando a falha em runs subsequentes.
+      try {
+        writeFileSync(
+          storagePath,
+          JSON.stringify({ cookies: [], origins: [] }, null, 2),
+        );
+      } catch {
+        /* noop */
+      }
+      throw new Error(
+        `Login falhou após múltiplas tentativas: ${result.reason}.\n` +
+          `Verifique se ${email} existe no Supabase, se a senha está correta, ` +
+          `e se o app está rodando em ${baseURL}.`,
+      );
+    }
   } finally {
-    await browser.close();
+    await browser?.close().catch((err) => warn("browser.close falhou", err));
   }
 }

@@ -208,3 +208,65 @@ O config já é compatível com CI:
 Para ativar: salve como `.github/workflows/visual.yml` e adicione os secrets
 no GitHub. Recomendado rodar só em PRs que tocam `src/components/**` ou
 `src/pages/**` para reduzir custo de CI.
+
+## Resiliência e tratamento de erros
+
+A infraestrutura de E2E é endurecida para falhar de forma **rastreável,
+recuperável e sem ruído**:
+
+### Helpers de resiliência (`e2e/_helpers/resilience.ts`)
+
+- `withRetry(label, fn, { retries, baseDelayMs })` — backoff exponencial
+  para operações idempotentes flaky (animação, hidratação).
+- `waitFor(label, predicate, { timeoutMs, pollMs })` — polling determinístico
+  em vez de `waitForTimeout(N)` cego.
+- `navigateOrFallback(page, opts)` — tenta clique no link real; cai em
+  `goto(fallbackUrl)` se o link não estiver disponível ou navegação falhar.
+- `ensureOnline(context)` — usado em `afterEach` para garantir que offline
+  state nunca vaze entre testes.
+- `captureDebugInfo(page, label)` — snapshot URL/viewport/title/online,
+  incluído em mensagens de erro para diagnóstico.
+- `logStep(scenario, step)` / `logWarn` — logs prefixados `[e2e]` para
+  filtragem em CI.
+
+### Login resiliente (`global-setup.ts`)
+
+- 3 tentativas com backoff (1s, 2s) — absorve hidratação lenta do app.
+- Selectors específicos (`input[type="password"]`) — não colidem com
+  "confirmar senha" se houver na página.
+- **Validação pós-login**: o `storageState` precisa conter cookies OU
+  localStorage não-vazio. Se sair vazio, falha imediatamente em vez de
+  gerar baseline corrompida em runs subsequentes.
+- Carregador de `.env` sem `require()` — compatível com ESM puro.
+- Cleanup garantido do browser via `try/finally`.
+
+### Helpers de visual robustos
+
+- `prepareForSnapshot` aplica timeout de 3s em `document.fonts.ready` —
+  fontes que falham em carregar não travam o teste por 30s.
+- `assertContentNotHiddenByBottomNav` valida que o scroll de fato aconteceu
+  e loga aviso se a página é maior que o viewport mas não rolou (modal
+  aberto, `overflow:hidden` em ancestral).
+- `goOffline` aguarda o banner aparecer ATIVAMENTE (até 3s) em vez de
+  sleep fixo; loga aviso se não aparecer (potencial regressão no hook).
+
+### Spec de cenários defensivo
+
+- `afterEach` chama `ensureOnline` mesmo se o teste falhar.
+- `try/finally` ao redor do bloco offline garante `restore()` em caso de
+  assert quebrado — sem vazamento de estado para o próximo teste.
+- `waitForMain` substitui o pattern repetitivo `locator.waitFor` e inclui
+  `captureDebugInfo` na mensagem de erro (URL, online, viewport).
+
+### Convenção de logs
+
+Todos os logs seguem prefixos consistentes para filtragem em CI:
+
+```bash
+# Ver só o fluxo dos cenários
+npm run test:visual 2>&1 | grep '\[e2e\]'
+
+# Ver só warnings e falhas
+npm run test:visual 2>&1 | grep -E 'WARN'
+```
+
