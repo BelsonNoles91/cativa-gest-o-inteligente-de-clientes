@@ -203,11 +203,9 @@ export function ClientMembershipsTab({ tenants }: Props) {
         const monthlyFactor =
           r.billingCycle === "yearly"
             ? 1 / 12
-            : r.billingCycle === "biannual"
-              ? 1 / 6
-              : r.billingCycle === "quarterly"
-                ? 1 / 3
-                : 1;
+            : r.billingCycle === "quarterly"
+              ? 1 / 3
+              : 1;
         return acc + r.priceCents * monthlyFactor;
       }, 0);
     return { total, active, canceled, mrr: Math.round(mrr) };
