@@ -24,6 +24,7 @@ export interface PortalTenantBranding {
   tenantName: string;
   tenantSlug: string;
   segment: string;
+  logoUrl: string | null;
   unitName: string | null;
   unitPhone: string | null;
   unitAddress: string | null;

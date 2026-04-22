@@ -74,13 +74,23 @@ export function PortalLayout() {
       {/* Header */}
       <header className="sticky top-0 z-30 border-b border-border/60 bg-card/80 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
-          <div className="min-w-0">
-            <p className="truncate font-display text-lg font-semibold leading-tight">
-              {branding?.tenantName ?? "Meu portal"}
-            </p>
-            {branding?.unitName && (
-              <p className="truncate text-xs text-muted-foreground">{branding.unitName}</p>
+          <div className="flex min-w-0 items-center gap-3">
+            {branding?.logoUrl && (
+              <img
+                src={branding.logoUrl}
+                alt={branding.tenantName ?? "Logo"}
+                className="h-10 w-10 shrink-0 rounded-xl object-contain bg-muted"
+                data-testid="portal-tenant-logo"
+              />
             )}
+            <div className="min-w-0">
+              <p className="truncate font-display text-lg font-semibold leading-tight">
+                {branding?.tenantName ?? "Meu portal"}
+              </p>
+              {branding?.unitName && (
+                <p className="truncate text-xs text-muted-foreground">{branding.unitName}</p>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             {links.length > 1 && (
