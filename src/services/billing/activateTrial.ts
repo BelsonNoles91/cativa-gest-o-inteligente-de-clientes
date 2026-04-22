@@ -2,11 +2,13 @@
  * Ativa um trial padrão para o tenant.
  *
  * Estratégia:
- * - Procura o plano marcado como `is_default` (ou o primeiro `public` por `display_order`).
- * - Se já existir uma assinatura para o tenant, retorna ela (idempotente).
- * - Caso contrário, cria uma `tenant_subscription` com status `trialing`,
- *   `trial_started_at = now()` e `trial_ends_at = now() + plan.trial_days`.
- * - Registra um `subscription_event` `trial_started`.
+ * - Chama a RPC `start_default_trial(_tenant_id)` no banco. A função roda
+ *   como SECURITY DEFINER, valida o papel do usuário (owner/manager do
+ *   tenant ou super_admin) e cria a assinatura de forma idempotente,
+ *   contornando a RLS de INSERT que só permite super_admin.
+ * - Se já existir assinatura, a função retorna a assinatura existente
+ *   sem erros (idempotência server-side).
+ * - O cliente em seguida apenas resolve o objeto Plan correspondente.
  */
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -22,73 +24,67 @@ export interface ActivateTrialResult {
 }
 
 export async function activateDefaultTrial(tenantId: string): Promise<ActivateTrialResult> {
-  // 1. Idempotência — já existe assinatura?
+  if (!tenantId) {
+    throw new Error("Tenant inválido para ativar o trial.");
+  }
+
+  // 1. Detecta estado prévio (para sinalizar alreadyExisted ao toast).
   const existing = await getSubscriptionByTenant(tenantId);
-  const plans = await listPlans();
 
-  if (existing) {
-    const currentPlan = plans.find((p) => p.id === existing.planId);
-    if (!currentPlan) throw new Error("Plano da assinatura atual não encontrado.");
-    return { subscription: existing, plan: currentPlan, alreadyExisted: true };
-  }
-
-  // 2. Escolher plano default
-  const defaultPlan =
-    plans.find((p) => p.isDefault && p.status === "public") ??
-    plans.find((p) => p.status === "public") ??
-    plans[0];
-
-  if (!defaultPlan) {
-    throw new Error("Nenhum plano disponível para iniciar o trial.");
-  }
-
-  // 3. Calcular janela de trial
-  const now = new Date();
-  const trialEndsAt = new Date(now.getTime() + defaultPlan.trialDays * 86_400_000);
-
-  // 4. Criar assinatura
-  const { data, error } = await supabase
-    .from("tenant_subscriptions")
-    .insert({
-      tenant_id: tenantId,
-      plan_id: defaultPlan.id,
-      status: "trialing",
-      trial_started_at: now.toISOString(),
-      trial_ends_at: trialEndsAt.toISOString(),
-      current_period_start: now.toISOString(),
-      current_period_end: trialEndsAt.toISOString(),
-    })
-    .select("*")
-    .single();
-  if (error) throw error;
-
-  // 5. Registrar evento (best-effort — não falha se a tabela negar)
-  await supabase.from("subscription_events").insert({
-    tenant_id: tenantId,
-    subscription_id: data.id,
-    event_type: "trial_started",
-    to_status: "trialing",
-    to_plan_id: defaultPlan.id,
-    notes: `Trial padrão de ${defaultPlan.trialDays} dias iniciado pelo próprio tenant.`,
+  // 2. Chama RPC que respeita RLS via SECURITY DEFINER.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase as any).rpc("start_default_trial", {
+    _tenant_id: tenantId,
   });
 
+  if (error) {
+    // Mapeia mensagens de banco para textos amigáveis
+    const raw = error.message ?? "";
+    if (/Sem permissão/i.test(raw) || error.code === "42501") {
+      throw new Error("Você não tem permissão para ativar o trial neste tenant.");
+    }
+    if (/Nenhum plano disponível/i.test(raw)) {
+      throw new Error("Nenhum plano disponível foi configurado para iniciar o trial.");
+    }
+    throw new Error(raw || "Não foi possível ativar o trial.");
+  }
+
+  if (!data) {
+    throw new Error("Resposta vazia do servidor ao ativar o trial.");
+  }
+
+  // RPC retorna a linha de tenant_subscriptions
+  const row = data as Record<string, unknown>;
+
   const subscription: TenantSubscription = {
-    id: data.id as string,
-    tenantId: data.tenant_id as string,
-    planId: data.plan_id as string,
-    status: data.status as TenantSubscription["status"],
-    trialStartedAt: data.trial_started_at as string,
-    trialEndsAt: data.trial_ends_at as string,
-    currentPeriodStart: data.current_period_start as string,
-    currentPeriodEnd: (data.current_period_end as string) ?? null,
-    canceledAt: null,
-    suspendedAt: null,
-    overdueSince: null,
-    discountCents: 0,
-    discountReason: null,
-    overrideLimits: {},
-    notes: null,
+    id: row.id as string,
+    tenantId: row.tenant_id as string,
+    planId: row.plan_id as string,
+    status: row.status as TenantSubscription["status"],
+    trialStartedAt: (row.trial_started_at as string) ?? null,
+    trialEndsAt: (row.trial_ends_at as string) ?? null,
+    currentPeriodStart: row.current_period_start as string,
+    currentPeriodEnd: (row.current_period_end as string) ?? null,
+    canceledAt: (row.canceled_at as string) ?? null,
+    suspendedAt: (row.suspended_at as string) ?? null,
+    overdueSince: (row.overdue_since as string) ?? null,
+    discountCents: (row.discount_cents as number) ?? 0,
+    discountReason: (row.discount_reason as string) ?? null,
+    overrideLimits:
+      (row.override_limits as Record<string, number | null>) ?? {},
+    notes: (row.notes as string) ?? null,
   };
 
-  return { subscription, plan: defaultPlan, alreadyExisted: false };
+  // 3. Resolve o plano correspondente
+  const plans = await listPlans();
+  const plan = plans.find((p) => p.id === subscription.planId);
+  if (!plan) {
+    throw new Error("Plano da assinatura não encontrado após ativação.");
+  }
+
+  return {
+    subscription,
+    plan,
+    alreadyExisted: Boolean(existing),
+  };
 }
