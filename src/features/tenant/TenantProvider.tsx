@@ -39,6 +39,8 @@ interface TenantContextValue {
   availableTenants: TenantRow[];
   availableUnits: UnitRow[];
   currentRole: Role | null;
+  /** URL do logo do tenant atual (se configurado). */
+  currentLogoUrl: string | null;
   setCurrentTenantId: (id: string) => void;
   setCurrentUnitId: (id: string) => void;
   refresh: () => Promise<void>;
@@ -55,6 +57,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [memberships, setMemberships] = useState<MembershipRow[]>([]);
   const [units, setUnits] = useState<UnitRow[]>([]);
+  const [logosByTenant, setLogosByTenant] = useState<Record<string, string | null>>({});
   const [currentTenantId, setCurrentTenantIdState] = useState<string | null>(
     () => localStorage.getItem(LS_TENANT),
   );
@@ -123,14 +126,26 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     }
 
     if (tenantIds.length > 0) {
-      const { data: us } = await supabase
-        .from("units")
-        .select("id, tenant_id, name, is_default")
-        .in("tenant_id", tenantIds)
-        .order("is_default", { ascending: false });
+      const [{ data: us }, { data: settings }] = await Promise.all([
+        supabase
+          .from("units")
+          .select("id, tenant_id, name, is_default")
+          .in("tenant_id", tenantIds)
+          .order("is_default", { ascending: false }),
+        supabase
+          .from("tenant_settings")
+          .select("tenant_id, logo_url")
+          .in("tenant_id", tenantIds),
+      ]);
       setUnits((us ?? []) as UnitRow[]);
+      const map: Record<string, string | null> = {};
+      for (const s of settings ?? []) {
+        map[s.tenant_id as string] = (s.logo_url as string) ?? null;
+      }
+      setLogosByTenant(map);
     } else {
       setUnits([]);
+      setLogosByTenant({});
     }
     setVerified(true);
     setLoading(false);
