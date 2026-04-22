@@ -6,6 +6,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Plus, RefreshCcw, Sparkles, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
+import { PageActionCluster, PrimaryAction } from "@/components/shell/PageActionCluster";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
