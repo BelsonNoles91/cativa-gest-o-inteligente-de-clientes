@@ -135,39 +135,58 @@ export function ProvisionTestUsersCard() {
         </Button>
 
         {result && (
-          <div className="space-y-2 rounded-lg border bg-card p-3">
-            <p className="text-sm font-medium">
-              Tenant: {result.tenant.name} • Senha:{" "}
-              <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{result.password}</code>
-            </p>
-            <ul className="space-y-1.5">
+          <div className="space-y-3 rounded-xl border bg-card p-3 sm:p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3">
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Tenant</p>
+                <p className="truncate text-sm font-semibold">{result.tenant.name}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Senha</span>
+                <code className="rounded bg-muted px-2 py-1 text-xs font-mono">{result.password}</code>
+                <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => copy(result.password)}>
+                  <Copy className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+            <ul className="space-y-2">
               {result.accounts.map((acc) => (
                 <li
                   key={acc.role}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded border bg-background px-2.5 py-1.5 text-sm"
+                  className="rounded-lg border bg-background p-3 transition-colors hover:bg-muted/40"
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {acc.notes ? (
-                      <AlertTriangle className="h-4 w-4 text-destructive" />
+                      <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" />
                     ) : (
-                      <CheckCircle2 className="h-4 w-4 text-primary" />
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
                     )}
-                    <span className="font-medium">{ROLE_LABELS[acc.role] ?? acc.role}</span>
-                    <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{acc.email}</code>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-sm font-medium">{ROLE_LABELS[acc.role] ?? acc.role}</span>
+                    <span
+                      className={
+                        "rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide " +
+                        (acc.status === "created"
+                          ? "bg-primary/10 text-primary"
+                          : "bg-muted text-muted-foreground")
+                      }
+                    >
                       {acc.status === "created" ? "criado" : "atualizado"}
                     </span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="ml-auto h-7 px-2"
+                      onClick={() => copy(`${acc.email} / ${result.password}`)}
+                    >
+                      <Copy className="mr-1 h-3.5 w-3.5" />
+                      Copiar
+                    </Button>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => copy(`${acc.email} / ${result.password}`)}
-                  >
-                    <Copy className="mr-1 h-3.5 w-3.5" />
-                    Copiar
-                  </Button>
+                  <code className="mt-2 block w-full break-all rounded bg-muted px-2 py-1 text-xs font-mono">
+                    {acc.email}
+                  </code>
                   {acc.notes && (
-                    <p className="w-full text-xs text-destructive">{acc.notes}</p>
+                    <p className="mt-2 text-xs text-destructive">{acc.notes}</p>
                   )}
                 </li>
               ))}
