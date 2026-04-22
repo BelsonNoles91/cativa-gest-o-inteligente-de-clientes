@@ -31,6 +31,7 @@ import { ROLES, roleLabels, type Role } from "@/domain/roles";
 import { createTenantWithOwner } from "@/services/tenant/createTenantWithOwner";
 import { inviteMember } from "@/services/team/inviteMember";
 import { cn } from "@/lib/utils";
+import { SignOutAndRestart } from "@/components/auth/SignOutAndRestart";
 
 interface InviteDraft {
   email: string;
@@ -204,6 +205,11 @@ export default function Onboarding() {
   // ----- Render -----
   return (
     <AuthLayout>
+      {user && (
+        <div className="mb-4 flex justify-end">
+          <SignOutAndRestart />
+        </div>
+      )}
       {step !== 0 && (
         <div className="mb-8">
           <ol className="flex items-center gap-2">
