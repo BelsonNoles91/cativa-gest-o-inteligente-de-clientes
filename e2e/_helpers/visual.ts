@@ -26,17 +26,38 @@ const SNAPSHOT_CSS = `
 `;
 
 export async function prepareForSnapshot(page: Page): Promise<void> {
-  await page.addStyleTag({ content: SNAPSHOT_CSS });
+  try {
+    await page.addStyleTag({ content: SNAPSHOT_CSS });
+  } catch (err) {
+    // addStyleTag pode falhar se a página estiver navegando.
+    // Tentamos novamente após um pequeno settle.
+    await page.waitForTimeout(100);
+    await page.addStyleTag({ content: SNAPSHOT_CSS }).catch(() => {
+      // eslint-disable-next-line no-console
+      console.warn("[visual] prepareForSnapshot: addStyleTag falhou 2x", err);
+    });
+  }
   // Desativa scrollbar overlay no WebKit/Chromium para não vazar diff.
-  await page.evaluate(() => {
-    document.documentElement.style.scrollbarWidth = "none";
-  });
-  // Aguarda fontes carregadas (Fraunces/Inter via Google Fonts).
-  await page.evaluate(async () => {
-    if (document.fonts && document.fonts.ready) {
-      await document.fonts.ready;
-    }
-  });
+  await page
+    .evaluate(() => {
+      document.documentElement.style.scrollbarWidth = "none";
+    })
+    .catch(() => {
+      /* contexto pode ter sido destruído por navegação concorrente */
+    });
+  // Aguarda fontes carregadas com TIMEOUT — sem isso, fontes que falham em
+  // carregar (CDN offline) travam o teste por 30s sem mensagem útil.
+  await page
+    .evaluate(async () => {
+      if (!document.fonts || !document.fonts.ready) return;
+      await Promise.race([
+        document.fonts.ready,
+        new Promise((resolve) => setTimeout(resolve, 3000)),
+      ]);
+    })
+    .catch(() => {
+      /* fontes não disponíveis no contexto atual — segue */
+    });
   // Pequeno settle para layout final (carga assíncrona de avatares etc).
   await page.waitForTimeout(250);
 }
