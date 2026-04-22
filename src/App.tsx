@@ -72,10 +72,9 @@ const App = () => (
                   <Route path="/auth/reset-password" element={<ResetPassword />} />
                   <Route path="/portal/acesso" element={<PortalAccess />} />
 
-                  {/* Onboarding (requer sessão) */}
-                  <Route element={<ProtectedRoute />}>
-                    <Route path="/onboarding" element={<Onboarding />} />
-                  </Route>
+                  {/* Onboarding — público (o componente cria a conta no step 0
+                      quando não há sessão e segue para os demais passos quando há) */}
+                  <Route path="/onboarding" element={<Onboarding />} />
 
                   {/* Portal do cliente */}
                   <Route element={<ProtectedRoute />}>
