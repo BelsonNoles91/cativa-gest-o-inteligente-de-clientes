@@ -177,6 +177,47 @@ export function AuditLogsTab({
             </Select>
           </div>
         </div>
+        {/* Período */}
+        <div className="grid gap-2 sm:grid-cols-3">
+          <div>
+            <Label className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <CalendarRange className="h-3 w-3" /> Período
+            </Label>
+            <Select value={periodPreset} onValueChange={setPeriodPreset}>
+              <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todo o histórico</SelectItem>
+                <SelectItem value="1">Últimas 24h</SelectItem>
+                <SelectItem value="7">Últimos 7 dias</SelectItem>
+                <SelectItem value="30">Últimos 30 dias</SelectItem>
+                <SelectItem value="90">Últimos 90 dias</SelectItem>
+                <SelectItem value="custom">Período personalizado</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {periodPreset === "custom" && (
+            <>
+              <div>
+                <Label className="text-[11px] text-muted-foreground">De</Label>
+                <Input
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                  className="h-9"
+                />
+              </div>
+              <div>
+                <Label className="text-[11px] text-muted-foreground">Até</Label>
+                <Input
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                  className="h-9"
+                />
+              </div>
+            </>
+          )}
+        </div>
         <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
           <Filter className="h-3 w-3" />
           {filtered.length} {filtered.length === 1 ? "registro" : "registros"} exibido(s)
@@ -235,10 +276,16 @@ export function AuditLogsTab({
                   </span>
                 </button>
                 {isOpen && row.metadata && Object.keys(row.metadata).length > 0 && (
-                  <div className="border-t border-border/60 bg-muted/30 p-3 sm:p-4">
-                    <pre className="max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-background/80 p-3 text-[11px] leading-relaxed">
-                      {JSON.stringify(row.metadata, null, 2)}
-                    </pre>
+                  <div className="space-y-3 border-t border-border/60 bg-muted/30 p-3 sm:p-4">
+                    {renderBeforeAfter(row.metadata)}
+                    <details className="group">
+                      <summary className="cursor-pointer text-[11px] font-medium text-muted-foreground hover:text-foreground">
+                        Ver metadata completo (JSON)
+                      </summary>
+                      <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-background/80 p-3 text-[11px] leading-relaxed">
+                        {JSON.stringify(row.metadata, null, 2)}
+                      </pre>
+                    </details>
                   </div>
                 )}
               </li>
