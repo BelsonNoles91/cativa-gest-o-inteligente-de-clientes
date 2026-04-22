@@ -14,6 +14,8 @@ import {
   assertBottomNavVisible,
   assertMainHasBottomPadding,
   assertContentNotHiddenByBottomNav,
+  assertBottomNavItemsRespectSafeArea,
+  assertCriticalActionsAboveBottomNav,
 } from "../_helpers/visual";
 
 test.use({ storageState: { cookies: [], origins: [] } });
