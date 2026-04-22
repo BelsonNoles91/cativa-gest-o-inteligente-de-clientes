@@ -500,7 +500,7 @@ export default function WaitlistPage() {
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-3xl sm:w-full">
           <DialogHeader>
             <DialogTitle>{editing ? "Editar item da fila" : "Novo item da fila"}</DialogTitle>
             <DialogDescription>Registre preferência de janela, unidade, profissional e prioridade.</DialogDescription>
@@ -579,7 +579,7 @@ export default function WaitlistPage() {
       </Dialog>
 
       <Dialog open={scheduleDialogOpen} onOpenChange={setScheduleDialogOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-3xl sm:w-full">
           <DialogHeader>
             <DialogTitle>Converter fila em agendamento</DialogTitle>
             <DialogDescription>Use a mesma disponibilidade da agenda para encaixar o cliente.</DialogDescription>

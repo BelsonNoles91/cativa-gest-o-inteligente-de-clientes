@@ -42,7 +42,7 @@ export default function Billing() {
   const inGrace = isInGracePeriod(subscription, plan);
 
   return (
-    <>
+    <div className="space-y-4">
       <PageHeader
         title="Meu plano"
         description="Veja seu plano atual, limites, consumo e funcionalidades."
@@ -55,9 +55,9 @@ export default function Billing() {
       />
 
       {(subscription.status === "trialing" && trialLeft !== null && trialLeft <= 7) || inGrace ? (
-        <div className="mb-4 surface-card flex items-start gap-3 border border-warning/40 bg-warning/10 p-4">
+        <div className="surface-card flex items-start gap-3 border border-warning/40 bg-warning/10 p-4">
           <AlertTriangle className="h-4 w-4 shrink-0 text-warning-foreground" />
-          <div className="text-xs text-warning-foreground">
+          <div className="text-xs leading-relaxed text-warning-foreground">
             {inGrace
               ? `Sua assinatura está em período de tolerância. Regularize em até ${plan.gracePeriodDays} dias.`
               : `Seu trial termina em ${trialLeft} ${trialLeft === 1 ? "dia" : "dias"}.`}
@@ -167,7 +167,7 @@ export default function Billing() {
           </p>
         </aside>
       </div>
-    </>
+    </div>
   );
 }
 

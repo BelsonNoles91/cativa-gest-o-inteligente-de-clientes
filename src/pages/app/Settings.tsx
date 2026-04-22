@@ -33,8 +33,12 @@ export default function Settings() {
         <div className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
           <TabsList className="inline-flex w-auto rounded-xl bg-muted/60 p-1">
             {TABS.map((t) => (
-              <TabsTrigger key={t.v} value={t.v} className="gap-2 rounded-lg px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                <t.icon className="h-4 w-4" />
+              <TabsTrigger
+                key={t.v}
+                value={t.v}
+                className="gap-2 whitespace-nowrap rounded-lg px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              >
+                <t.icon className="h-4 w-4 shrink-0" />
                 <span className="text-sm">{t.label}</span>
               </TabsTrigger>
             ))}
