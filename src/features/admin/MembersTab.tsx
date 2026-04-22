@@ -189,8 +189,7 @@ export function MembersTab() {
     return { total, active, invited, suspended, supers };
   }, [rows]);
 
-  async function handleRoleChange(member: MemberRow, newRole: Role) {
-    if (newRole === member.role) return;
+  async function performRoleChange(member: MemberRow, newRole: Role) {
     setSaving(true);
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -213,8 +212,25 @@ export function MembersTab() {
     }
   }
 
-  async function handleStatusChange(member: MemberRow, newStatus: MembershipStatus) {
-    if (newStatus === member.status) return;
+  function handleRoleChange(member: MemberRow, newRole: Role) {
+    if (newRole === member.role) return;
+    // Confirmação extra ao rebaixar de owner ou alterar papel de um super admin
+    const isDemotingOwner = member.role === "owner" && newRole !== "owner";
+    if (isDemotingOwner || member.isSuperAdmin) {
+      setConfirm({
+        title: isDemotingOwner ? "Rebaixar owner?" : "Alterar papel de Super Admin?",
+        description: isDemotingOwner
+          ? `${member.fullName ?? member.email} deixará de ser owner deste tenant. A operação será bloqueada se for o último owner ativo.`
+          : `${member.fullName ?? member.email} é Super Admin global. A mudança de papel afeta apenas o vínculo com este tenant.`,
+        destructive: isDemotingOwner,
+        action: () => performRoleChange(member, newRole),
+      });
+      return;
+    }
+    void performRoleChange(member, newRole);
+  }
+
+  async function performStatusChange(member: MemberRow, newStatus: MembershipStatus) {
     setSaving(true);
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -237,15 +253,30 @@ export function MembersTab() {
     }
   }
 
-  async function handleToggleSuperAdmin(member: MemberRow, value: boolean) {
-    if (member.userId === user?.id && !value) {
+  function handleStatusChange(member: MemberRow, newStatus: MembershipStatus) {
+    if (newStatus === member.status) return;
+    // Bloqueio cliente-side anti auto-suspensão (o servidor também bloqueia)
+    if (member.userId === user?.id && member.status === "active" && newStatus !== "active") {
       toast({
         title: "Operação bloqueada",
-        description: "Você não pode remover seu próprio acesso de super admin.",
+        description: "Você não pode suspender ou desativar seu próprio acesso a este tenant.",
         variant: "destructive",
       });
       return;
     }
+    if (newStatus === "suspended") {
+      setConfirm({
+        title: "Suspender membro?",
+        description: `${member.fullName ?? member.email} perderá acesso ao tenant ${member.tenantName} até ser reativado. Será bloqueado pelo servidor se for o último owner ativo.`,
+        destructive: true,
+        action: () => performStatusChange(member, newStatus),
+      });
+      return;
+    }
+    void performStatusChange(member, newStatus);
+  }
+
+  async function performToggleSuperAdmin(member: MemberRow, value: boolean) {
     setSaving(true);
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -269,6 +300,25 @@ export function MembersTab() {
     } finally {
       setSaving(false);
     }
+  }
+
+  function handleToggleSuperAdmin(member: MemberRow, value: boolean) {
+    if (member.userId === user?.id && !value) {
+      toast({
+        title: "Operação bloqueada",
+        description: "Você não pode remover seu próprio acesso de super admin.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setConfirm({
+      title: value ? "Conceder Super Admin?" : "Revogar Super Admin?",
+      description: value
+        ? `${member.fullName ?? member.email} terá acesso TOTAL a todos os tenants e ao painel administrativo. Use com critério.`
+        : `${member.fullName ?? member.email} perderá acesso ao painel administrativo. Será bloqueado se for o último super admin do sistema.`,
+      destructive: !value,
+      action: () => performToggleSuperAdmin(member, value),
+    });
   }
 
   return (
