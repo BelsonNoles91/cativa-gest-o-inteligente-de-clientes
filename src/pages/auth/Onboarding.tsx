@@ -31,6 +31,7 @@ import { ROLES, roleLabels, type Role } from "@/domain/roles";
 import { createTenantWithOwner } from "@/services/tenant/createTenantWithOwner";
 import { inviteMember } from "@/services/team/inviteMember";
 import { cn } from "@/lib/utils";
+import { SignOutAndRestart } from "@/components/auth/SignOutAndRestart";
 
 interface InviteDraft {
   email: string;

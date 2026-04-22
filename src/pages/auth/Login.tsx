@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { SignOutAndRestart } from "@/components/auth/SignOutAndRestart";
 
 export default function Login() {
   const { signIn } = useAuth();
@@ -98,6 +99,10 @@ export default function Login() {
             Criar conta
           </Link>
         </p>
+
+        <div className="flex justify-center pt-2">
+          <SignOutAndRestart />
+        </div>
       </form>
     </AuthLayout>
   );
