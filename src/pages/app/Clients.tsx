@@ -1189,7 +1189,7 @@ export default function ClientsPage() {
                 </TabsContent>
 
                 <TabsContent value="consents" className="space-y-4">
-                  <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+                  <div className="grid gap-4 xl:grid-cols-2">
                     <Card>
                       <CardHeader>
                         <CardTitle>Templates de consentimento</CardTitle>
