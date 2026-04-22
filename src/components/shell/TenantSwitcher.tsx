@@ -1,8 +1,10 @@
 /**
  * TenantSwitcher — troca de estabelecimento e unidade.
- * Preparado para multi-tenant real. Hoje usa dados mockados do contexto.
+ *
+ * Super admin: lista todos os tenants do sistema (não apenas os próprios) e
+ * marca aqueles que exigem impersonação. Ao escolher, registra audit log.
  */
-import { Building2, Check, ChevronsUpDown } from "lucide-react";
+import { Building2, Check, ChevronsUpDown, ShieldCheck, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,9 +19,28 @@ import { segmentLabels } from "@/domain/tenant";
 import { cn } from "@/lib/utils";
 
 export function TenantSwitcher({ compact = false }: { compact?: boolean }) {
-  const { currentTenant, currentUnit, availableTenants, availableUnits, setCurrentTenantId, setCurrentUnitId } = useTenant();
+  const {
+    currentTenant,
+    currentUnit,
+    availableTenants,
+    availableUnits,
+    setCurrentTenantId,
+    setCurrentUnitId,
+    isSuperAdmin,
+    isImpersonating,
+    impersonateTenant,
+    endImpersonation,
+  } = useTenant();
 
   if (!currentTenant) return null;
+
+  function handleSelect(id: string) {
+    if (isSuperAdmin) {
+      void impersonateTenant(id, "switcher");
+    } else {
+      setCurrentTenantId(id);
+    }
+  }
 
   return (
     <DropdownMenu>
@@ -29,29 +50,53 @@ export function TenantSwitcher({ compact = false }: { compact?: boolean }) {
           className={cn(
             "h-11 justify-between gap-2 rounded-xl border-border/70 bg-card/60 px-3 text-left shadow-xs hover:bg-card",
             compact ? "w-full" : "min-w-[220px]",
+            isImpersonating && "border-warning/60 bg-warning/10",
           )}
         >
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-gradient-soft text-primary">
-            <Building2 className="h-4 w-4" />
+          <span
+            className={cn(
+              "grid h-8 w-8 shrink-0 place-items-center rounded-lg text-primary",
+              isImpersonating ? "bg-warning/20 text-warning" : "bg-gradient-soft",
+            )}
+          >
+            {isImpersonating ? <ShieldCheck className="h-4 w-4" /> : <Building2 className="h-4 w-4" />}
           </span>
           <span className="flex min-w-0 flex-1 flex-col">
             <span className="truncate text-sm font-medium leading-tight">{currentTenant.name}</span>
             <span className="truncate text-[11px] text-muted-foreground">
-              {currentUnit?.name ?? segmentLabels[currentTenant.segment]}
+              {isImpersonating
+                ? "Impersonando · super admin"
+                : currentUnit?.name ?? segmentLabels[currentTenant.segment]}
             </span>
           </span>
           <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-[260px]">
-        <DropdownMenuLabel>Estabelecimentos</DropdownMenuLabel>
+      <DropdownMenuContent align="start" className="max-h-[60vh] w-[280px] overflow-y-auto">
+        <DropdownMenuLabel>
+          {isSuperAdmin ? "Todos os estabelecimentos" : "Estabelecimentos"}
+        </DropdownMenuLabel>
         {availableTenants.map((t) => (
-          <DropdownMenuItem key={t.id} onSelect={() => setCurrentTenantId(t.id)} className="gap-2">
+          <DropdownMenuItem key={t.id} onSelect={() => handleSelect(t.id)} className="gap-2">
             <Building2 className="h-4 w-4 text-muted-foreground" />
-            <span className="flex-1 truncate">{t.name}</span>
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="truncate text-sm">{t.name}</span>
+              <span className="truncate text-[10px] text-muted-foreground">
+                {segmentLabels[t.segment]} · {t.slug}
+              </span>
+            </span>
             {t.id === currentTenant.id && <Check className="h-4 w-4 text-primary" />}
           </DropdownMenuItem>
         ))}
+        {isImpersonating && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => void endImpersonation()} className="gap-2 text-warning">
+              <X className="h-4 w-4" />
+              <span>Encerrar impersonação</span>
+            </DropdownMenuItem>
+          </>
+        )}
         {availableUnits.length > 1 && (
           <>
             <DropdownMenuSeparator />
