@@ -14,7 +14,6 @@ import {
   Plus,
   Briefcase,
   Trash2,
-  Copy,
   XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -199,15 +198,8 @@ export function TeamSettings() {
     }
   };
 
-  const onCopyInviteLink = async (token: string) => {
-    const url = `${window.location.origin}/auth/aceite-convite?token=${token}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success("Link copiado");
-    } catch {
-      toast.error("Não foi possível copiar", { description: url });
-    }
-  };
+  // Link de convite só é exibido na criação (token plaintext não é mais persistido).
+
 
   const onRevokeInvite = async (id: string) => {
     try {
