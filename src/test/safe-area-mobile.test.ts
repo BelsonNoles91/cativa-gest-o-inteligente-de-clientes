@@ -239,11 +239,14 @@ describe("Breakpoint matrix — invariantes por dispositivo", () => {
     expect(FILES.bottomNav).toMatch(/pr-safe/);
   });
 
-  it("iPhone SE (375×667) — bottom nav usa grid-cols-5 (4 atalhos + Mais)", () => {
-    expect(FILES.bottomNav).toMatch(/grid-cols-5/);
+  it("iPhone SE (375×667) — bottom nav usa grid-cols-4 (3 atalhos + Mais)", () => {
+    // Reduzido de 5 para 4 colunas para evitar (a) corte do botão "Mais" em
+    // viewports estreitos e (b) sobreposição com o badge fixo do Lovable
+    // no canto inferior direito.
+    expect(FILES.bottomNav).toMatch(/grid-cols-4/);
   });
 
-  it("Android 360×800 — text-[10.5px] mantém 5 rótulos visíveis sem corte", () => {
+  it("Android 360×800 — text-[10.5px] mantém rótulos visíveis sem corte", () => {
     expect(FILES.bottomNav).toMatch(/text-\[10\.5px\]/);
   });
 
