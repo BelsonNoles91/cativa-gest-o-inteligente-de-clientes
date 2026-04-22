@@ -29,6 +29,10 @@ interface MembershipRow {
 
 interface TenantContextValue {
   loading: boolean;
+  /** True quando já fizemos pelo menos uma checagem no servidor após auth pronto. */
+  verified: boolean;
+  /** Confirmação real do servidor: existe membership ativo OU é super_admin. */
+  hasActiveTenant: boolean;
   isSuperAdmin: boolean;
   currentTenant: TenantRow | null;
   currentUnit: UnitRow | null;
@@ -47,6 +51,7 @@ const LS_UNIT = "cativa.currentUnitId";
 export function TenantProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [verified, setVerified] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [memberships, setMemberships] = useState<MembershipRow[]>([]);
   const [units, setUnits] = useState<UnitRow[]>([]);
@@ -71,6 +76,16 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       setMemberships([]);
       setUnits([]);
       setIsSuperAdmin(false);
+      // Sem usuário: limpamos qualquer cache local que possa influenciar guards.
+      try {
+        localStorage.removeItem(LS_TENANT);
+        localStorage.removeItem(LS_UNIT);
+      } catch {
+        /* ignore */
+      }
+      setCurrentTenantIdState(null);
+      setCurrentUnitIdState(null);
+      setVerified(true);
       setLoading(false);
       return;
     }
@@ -85,11 +100,28 @@ export function TenantProvider({ children }: { children: ReactNode }) {
         .eq("status", "active"),
     ]);
 
-    setIsSuperAdmin(Boolean(profile?.is_super_admin));
+    const superAdmin = Boolean(profile?.is_super_admin);
+    setIsSuperAdmin(superAdmin);
     const list = (memb ?? []) as unknown as MembershipRow[];
     setMemberships(list);
 
     const tenantIds = list.map((m) => m.tenant_id);
+
+    // Sanity: se o tenant em cache local não existe mais entre os memberships
+    // ativos do servidor (e o usuário não é super_admin), limpamos o cache para
+    // que os guards não sejam enganados por estado obsoleto.
+    const cachedTenant = localStorage.getItem(LS_TENANT);
+    if (cachedTenant && !tenantIds.includes(cachedTenant) && !superAdmin) {
+      try {
+        localStorage.removeItem(LS_TENANT);
+        localStorage.removeItem(LS_UNIT);
+      } catch {
+        /* ignore */
+      }
+      setCurrentTenantIdState(null);
+      setCurrentUnitIdState(null);
+    }
+
     if (tenantIds.length > 0) {
       const { data: us } = await supabase
         .from("units")
@@ -100,6 +132,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     } else {
       setUnits([]);
     }
+    setVerified(true);
     setLoading(false);
   };
 
@@ -130,8 +163,15 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       memberships.find((m) => m.tenant_id === effectiveTenantId)?.role ??
       (isSuperAdmin ? ("super_admin" as Role) : null);
 
+    // hasActiveTenant é derivado SEMPRE da resposta do servidor (memberships
+    // ativos ou flag de super_admin), nunca do cache local. Assim, os guards
+    // tomam decisão sobre /onboarding vs /app com base na verdade do banco.
+    const hasActiveTenant = availableTenants.length > 0 || isSuperAdmin;
+
     return {
       loading,
+      verified,
+      hasActiveTenant,
       isSuperAdmin,
       currentTenant,
       currentUnit,
@@ -143,7 +183,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       refresh: load,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [memberships, units, currentTenantId, currentUnitId, isSuperAdmin, loading]);
+  }, [memberships, units, currentTenantId, currentUnitId, isSuperAdmin, loading, verified]);
 
   return <TenantContext.Provider value={value}>{children}</TenantContext.Provider>;
 }

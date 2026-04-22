@@ -38,36 +38,33 @@ export function ProtectedRoute({ children }: { children?: ReactNode }) {
 
 /**
  * RequireOnboarding — usado nas rotas /app/*.
- * Só libera quando o usuário possui pelo menos um membership ativo (ou é super_admin).
- * Caso contrário, manda para /onboarding.
+ * Só libera quando o servidor confirmou que o usuário possui pelo menos um
+ * membership ativo (ou é super_admin). Enquanto a verificação inicial não
+ * estiver concluída, mostra loader — assim evitamos decidir baseados em cache
+ * obsoleto de localStorage.
  */
 export function RequireOnboarding({ children }: { children?: ReactNode }) {
-  const { loading, currentTenant, availableTenants, isSuperAdmin } = useTenant();
-  if (loading) return <FullScreenLoader />;
-  const hasMembership = availableTenants.length > 0 || Boolean(currentTenant);
-  if (!hasMembership && !isSuperAdmin) return <Navigate to="/onboarding" replace />;
+  const { loading, verified, hasActiveTenant } = useTenant();
+  if (loading || !verified) return <FullScreenLoader />;
+  if (!hasActiveTenant) return <Navigate to="/onboarding" replace />;
   return <>{children ?? <Outlet />}</>;
 }
 
 /**
  * OnboardingGuard — usado na rota /onboarding.
- * Se o usuário JÁ tem tenant/membership ativo, redireciona para /app
- * (evita repetir o setup). Sem sessão, deixa passar (Step 0 trata signup).
+ * - Sem sessão: deixa passar (Step 0 trata signup).
+ * - Com sessão: aguarda a verificação no servidor; se já houver tenant/membership
+ *   ativo, redireciona para /app (evita refazer o setup); caso contrário, segue
+ *   no onboarding.
  */
 export function OnboardingGuard({ children }: { children?: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
-  const { loading: tenantLoading, availableTenants, isSuperAdmin } = useTenant();
+  const { loading: tenantLoading, verified, hasActiveTenant } = useTenant();
 
   if (authLoading) return <FullScreenLoader />;
-  // Sem sessão → Onboarding mostra Step 0 (signup).
   if (!user) return <>{children ?? <Outlet />}</>;
-  // Com sessão, esperamos o tenant carregar antes de decidir.
-  if (tenantLoading) return <FullScreenLoader />;
-  // Já tem workspace ativo → vai direto pro app.
-  if (availableTenants.length > 0 || isSuperAdmin) {
-    return <Navigate to="/app" replace />;
-  }
-  // Logado mas sem tenant → segue no onboarding.
+  if (tenantLoading || !verified) return <FullScreenLoader />;
+  if (hasActiveTenant) return <Navigate to="/app" replace />;
   return <>{children ?? <Outlet />}</>;
 }
 
