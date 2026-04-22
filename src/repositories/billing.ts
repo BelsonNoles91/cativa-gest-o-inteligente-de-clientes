@@ -661,7 +661,7 @@ export async function listTrialActivationLogs(opts: {
       tenantName: tenant?.name ?? null,
       tenantSlug: tenant?.slug ?? null,
       actorId: (r.actor_id as string) ?? null,
-      actorEmail: profile?.email ?? null,
+      actorEmail: null,
       actorName: profile?.name ?? null,
       status,
       reason: (meta.reason as TrialLogReason) ?? null,
