@@ -3,6 +3,7 @@
  * Mobile usa BottomNav. Sidebar colapsa em modo "icon".
  */
 import { useLocation } from "react-router-dom";
+import { Lock } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar,
@@ -43,6 +44,10 @@ export function AppSidebar() {
   const isActive = (to: string) =>
     to === "/app" ? location.pathname === "/app" : location.pathname.startsWith(to);
 
+  // Gestores (owner/manager) enxergam itens com featureKey mesmo sem assinatura/feature ativa,
+  // para que possam descobrir o que existe e serem direcionados ao upgrade pelo FeatureGate.
+  const canPreviewLockedFeatures = currentRole === "owner" || currentRole === "manager";
+
   return (
     <Sidebar collapsible="icon" className="border-r border-border/70">
       <SidebarHeader className="px-3 py-4">
@@ -55,7 +60,7 @@ export function AppSidebar() {
             (i) =>
               i.group === g &&
               canAccess(currentRole, i.roles) &&
-              (!i.featureKey || hasFeature(i.featureKey)),
+              (!i.featureKey || hasFeature(i.featureKey) || canPreviewLockedFeatures),
           );
           if (items.length === 0) return null;
           return (
@@ -65,9 +70,14 @@ export function AppSidebar() {
                 <SidebarMenu>
                   {items.map((item) => {
                     const active = isActive(item.to);
+                    const locked = Boolean(item.featureKey) && !hasFeature(item.featureKey!);
                     return (
                       <SidebarMenuItem key={item.to}>
-                        <SidebarMenuButton asChild tooltip={item.label} isActive={active}>
+                        <SidebarMenuButton
+                          asChild
+                          tooltip={locked ? `${item.label} · plano necessário` : item.label}
+                          isActive={active}
+                        >
                           <NavLink
                             to={item.to}
                             end={item.to === "/app"}
@@ -80,6 +90,12 @@ export function AppSidebar() {
                           >
                             <item.icon className="h-4 w-4 shrink-0" />
                             <span className="truncate">{item.label}</span>
+                            {locked && !collapsed && (
+                              <Lock
+                                aria-label="Recurso bloqueado pelo plano"
+                                className="ml-auto h-3 w-3 text-muted-foreground"
+                              />
+                            )}
                           </NavLink>
                         </SidebarMenuButton>
                       </SidebarMenuItem>

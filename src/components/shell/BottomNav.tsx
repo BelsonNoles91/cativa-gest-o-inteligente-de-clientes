@@ -6,7 +6,7 @@
  */
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { LayoutGrid, X } from "lucide-react";
+import { LayoutGrid, Lock, X } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { navItems } from "@/config/navigation";
 import { useTenant } from "@/features/tenant/TenantProvider";
@@ -28,10 +28,20 @@ export function BottomNav() {
   const location = useLocation();
   const [moreOpen, setMoreOpen] = useState(false);
 
-  const allowedItems = navItems.filter(
-    (i) =>
-      canAccess(currentRole, i.roles) && (!i.featureKey || hasFeature(i.featureKey)),
-  );
+  // Gestores enxergam módulos com featureKey mesmo sem assinatura ativa
+  // (com indicador de cadeado). FeatureGate cuida do redirecionamento ao /app/meu-plano.
+  const canPreviewLockedFeatures = currentRole === "owner" || currentRole === "manager";
+
+  const allowedItems = navItems
+    .filter(
+      (i) =>
+        canAccess(currentRole, i.roles) &&
+        (!i.featureKey || hasFeature(i.featureKey) || canPreviewLockedFeatures),
+    )
+    .map((i) => ({
+      ...i,
+      locked: Boolean(i.featureKey) && !hasFeature(i.featureKey!),
+    }));
   const primary = allowedItems.filter((i) => i.showInBottomNav).slice(0, 4);
   const secondary = allowedItems.filter(
     (i) => !primary.some((p) => p.to === i.to),
@@ -59,7 +69,15 @@ export function BottomNav() {
                 )}
                 activeClassName="text-primary"
               >
-                <item.icon className="h-5 w-5" />
+                <span className="relative">
+                  <item.icon className="h-5 w-5" />
+                  {item.locked && (
+                    <Lock
+                      aria-label="Recurso bloqueado pelo plano"
+                      className="absolute -right-1.5 -top-1 h-2.5 w-2.5 text-muted-foreground"
+                    />
+                  )}
+                </span>
                 <span className="max-w-full truncate px-0.5">{item.label}</span>
               </NavLink>
             </li>
@@ -115,11 +133,17 @@ export function BottomNav() {
                   >
                     <span
                       className={cn(
-                        "grid h-10 w-10 place-items-center rounded-xl bg-gradient-soft text-primary",
+                        "relative grid h-10 w-10 place-items-center rounded-xl bg-gradient-soft text-primary",
                         active && "bg-primary text-primary-foreground",
                       )}
                     >
                       <item.icon className="h-5 w-5" />
+                      {item.locked && (
+                        <Lock
+                          aria-label="Recurso bloqueado pelo plano"
+                          className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-background p-0.5 text-muted-foreground"
+                        />
+                      )}
                     </span>
                     <span className="text-center text-[11px] font-medium leading-tight">
                       {item.label}
