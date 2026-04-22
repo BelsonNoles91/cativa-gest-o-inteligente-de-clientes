@@ -129,9 +129,10 @@ export function TeamSettings() {
         .from("tenant_memberships")
         .select("user_id, role, status, profiles:profiles!inner(full_name, avatar_url)")
         .eq("tenant_id", currentTenant.id),
+      // token plaintext não é mais persistido — apenas o hash. Removemos a coluna.
       supabase
         .from("team_invitations")
-        .select("id, email, role, status, token, expires_at, created_at")
+        .select("id, email, role, status, expires_at, created_at")
         .eq("tenant_id", currentTenant.id)
         .eq("status", "pending")
         .order("created_at", { ascending: false }),
