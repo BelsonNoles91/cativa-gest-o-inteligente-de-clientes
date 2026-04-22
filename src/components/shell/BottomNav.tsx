@@ -25,7 +25,7 @@ import {
 
 export function BottomNav() {
   const { currentRole } = useTenant();
-  const { hasFeature } = useTenantBilling();
+  const { hasFeature, loading: billingLoading } = useTenantBilling();
   const navigate = useNavigate();
   const location = useLocation();
   const [moreOpen, setMoreOpen] = useState(false);
