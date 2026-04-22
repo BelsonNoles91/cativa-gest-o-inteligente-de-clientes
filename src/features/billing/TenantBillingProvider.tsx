@@ -39,6 +39,7 @@ interface TenantBillingContextValue {
     professionalsCount: number;
     activeClientsCount: number;
     appointmentsLast30d: number;
+    storageMb: number;
   };
   limits: ReturnType<typeof effectiveLimits> | null;
   hasFeature: (featureKey: string) => boolean;
@@ -62,6 +63,7 @@ export function TenantBillingProvider({ children }: { children: ReactNode }) {
     professionalsCount: 0,
     activeClientsCount: 0,
     appointmentsLast30d: 0,
+    storageMb: 0,
   });
 
   const load = useCallback(async () => {
@@ -78,6 +80,7 @@ export function TenantBillingProvider({ children }: { children: ReactNode }) {
         professionalsCount: 0,
         activeClientsCount: 0,
         appointmentsLast30d: 0,
+        storageMb: 0,
       });
       return;
     }
