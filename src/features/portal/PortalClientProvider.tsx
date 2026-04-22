@@ -23,6 +23,11 @@ import {
   touchPortalLink,
   type ClientProfile,
 } from "@/repositories/portal";
+import {
+  getSubscriptionByTenant,
+  listPlanFeatures,
+} from "@/repositories/billing";
+import { isBooleanFeatureEnabled } from "@/domain/billing";
 import type {
   ClientUserLink,
   PortalTenantBranding,
@@ -34,6 +39,8 @@ interface PortalContextValue {
   activeLink: ClientUserLink | null;
   branding: PortalTenantBranding | null;
   profile: ClientProfile | null;
+  /** Indica se o tenant ativo possui a feature `client_portal` no plano. */
+  portalEnabled: boolean;
   setActiveTenant: (tenantId: string) => void;
   refresh: () => Promise<void>;
 }
