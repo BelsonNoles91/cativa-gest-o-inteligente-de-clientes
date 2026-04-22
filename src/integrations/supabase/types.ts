@@ -3713,6 +3713,94 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_assign_plan_to_tenant: {
+        Args: {
+          _notes?: string
+          _plan_id: string
+          _start_trial?: boolean
+          _tenant_id: string
+        }
+        Returns: {
+          canceled_at: string | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string
+          discount_cents: number
+          discount_reason: string | null
+          id: string
+          notes: string | null
+          overdue_since: string | null
+          override_limits: Json
+          plan_id: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          suspended_at: string | null
+          tenant_id: string
+          trial_ends_at: string | null
+          trial_started_at: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tenant_subscriptions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_cancel_client_membership: {
+        Args: { _reason?: string; _subscription_id: string }
+        Returns: {
+          canceled_at: string | null
+          client_id: string
+          created_at: string
+          current_cycle_end: string | null
+          current_cycle_start: string
+          id: string
+          membership_id: string
+          notes: string | null
+          started_at: string
+          status: Database["public"]["Enums"]["client_subscription_status"]
+          tenant_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "client_membership_subscriptions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_get_tenant_membership_dashboard: {
+        Args: { _tenant_id: string }
+        Returns: Json
+      }
+      admin_grant_client_membership: {
+        Args: {
+          _client_id: string
+          _membership_id: string
+          _notes?: string
+          _tenant_id: string
+        }
+        Returns: {
+          canceled_at: string | null
+          client_id: string
+          created_at: string
+          current_cycle_end: string | null
+          current_cycle_start: string
+          id: string
+          membership_id: string
+          notes: string | null
+          started_at: string
+          status: Database["public"]["Enums"]["client_subscription_status"]
+          tenant_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "client_membership_subscriptions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_list_all_tenants: {
         Args: never
         Returns: {
@@ -3752,6 +3840,46 @@ export type Database = {
           tenant_name: string
         }[]
       }
+      admin_list_client_memberships: {
+        Args: { _tenant_id: string }
+        Returns: {
+          billing_cycle: Database["public"]["Enums"]["membership_billing_cycle"]
+          canceled_at: string
+          client_email: string
+          client_id: string
+          client_name: string
+          current_cycle_end: string
+          current_cycle_start: string
+          membership_id: string
+          membership_name: string
+          notes: string
+          price_cents: number
+          started_at: string
+          status: Database["public"]["Enums"]["client_subscription_status"]
+          subscription_id: string
+          tenant_id: string
+          total_sessions_total: number
+          total_sessions_used: number
+        }[]
+      }
+      admin_list_team_invitations: {
+        Args: { _tenant_id?: string }
+        Returns: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          inviter_name: string
+          message: string
+          role: Database["public"]["Enums"]["app_role"]
+          status: string
+          tenant_id: string
+          tenant_name: string
+          token: string
+          updated_at: string
+        }[]
+      }
       admin_list_tenant_memberships: {
         Args: never
         Returns: {
@@ -3779,6 +3907,61 @@ export type Database = {
       admin_log_impersonation_start: {
         Args: { _reason?: string; _tenant_id: string }
         Returns: string
+      }
+      admin_provision_team_invitation: {
+        Args: {
+          _email: string
+          _expires_in_days?: number
+          _message?: string
+          _role: Database["public"]["Enums"]["app_role"]
+          _tenant_id: string
+        }
+        Returns: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string | null
+          message: string | null
+          professional_id: string | null
+          revoked_at: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          status: Database["public"]["Enums"]["team_invitation_status"]
+          tenant_id: string
+          token: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "team_invitations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_reactivate_client_membership: {
+        Args: { _subscription_id: string }
+        Returns: {
+          canceled_at: string | null
+          client_id: string
+          created_at: string
+          current_cycle_end: string | null
+          current_cycle_start: string
+          id: string
+          membership_id: string
+          notes: string | null
+          started_at: string
+          status: Database["public"]["Enums"]["client_subscription_status"]
+          tenant_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "client_membership_subscriptions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       admin_set_super_admin: {
         Args: { p_is_super: boolean; p_user_id: string }
