@@ -25,6 +25,7 @@ import {
 import { PageHeader } from "@/components/shell/PageHeader";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import { useTenantBilling } from "@/features/billing/useTenantBilling";
 import { activateDefaultTrial } from "@/services/billing/activateTrial";
@@ -91,11 +92,7 @@ export default function Subscription() {
   };
 
   if (loading) {
-    return (
-      <div className="flex h-60 items-center justify-center" data-testid="subscription-loading">
-        <Loader2 className="h-5 w-5 animate-spin text-primary" />
-      </div>
-    );
+    return <SubscriptionSkeleton />;
   }
 
   return (
@@ -369,3 +366,63 @@ function formatDate(iso: string): string {
     year: "numeric",
   });
 }
+
+/**
+ * Skeleton estruturado da tela de Assinatura. Mantém a mesma silhueta
+ * do conteúdo real (header + summary + actions) para evitar layout shift
+ * quando os dados de billing terminam de carregar — crítico em mobile.
+ */
+function SubscriptionSkeleton() {
+  return (
+    <div className="space-y-4" data-testid="subscription-loading" aria-busy="true">
+      {/* PageHeader skeleton */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-2">
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-3.5 w-64 max-w-[70vw]" />
+        </div>
+        <Skeleton className="h-6 w-20 rounded-full" />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        {/* Summary card skeleton */}
+        <section className="surface-card space-y-5 p-5 lg:col-span-2">
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-2">
+              <Skeleton className="h-3 w-20" />
+              <Skeleton className="h-7 w-44" />
+              <Skeleton className="h-3.5 w-56 max-w-[60vw]" />
+            </div>
+            <div className="space-y-2 text-right">
+              <Skeleton className="ml-auto h-6 w-24" />
+              <Skeleton className="ml-auto h-3 w-16" />
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="space-y-2 rounded-lg bg-muted/40 px-3 py-2">
+                <Skeleton className="h-2.5 w-16" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+            ))}
+          </div>
+
+          <Skeleton className="h-16 w-full rounded-xl" />
+        </section>
+
+        {/* Actions card skeleton */}
+        <aside className="surface-card space-y-4 p-5">
+          <Skeleton className="h-5 w-20" />
+          <Skeleton className="h-10 w-full rounded-md" />
+          <div className="space-y-2">
+            <Skeleton className="h-3 w-full" />
+            <Skeleton className="h-3 w-5/6" />
+            <Skeleton className="h-3 w-4/6" />
+          </div>
+        </aside>
+      </div>
+    </div>
+  );
+}
+
