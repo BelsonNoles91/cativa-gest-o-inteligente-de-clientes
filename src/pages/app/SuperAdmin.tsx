@@ -633,6 +633,33 @@ function TenantsTab({
           )}
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!editingTenant} onOpenChange={(open) => !open && setEditingTenant(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar tenant</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-3">
+            <Field label="Nome">
+              <Input value={editForm.name} onChange={(e) => setEditForm((c) => ({ ...c, name: e.target.value }))} />
+            </Field>
+            <Field label="Slug">
+              <Input value={editForm.slug} onChange={(e) => setEditForm((c) => ({ ...c, slug: e.target.value }))} />
+            </Field>
+            <Field label="Segmento">
+              <Select value={editForm.segment} onValueChange={(v) => setEditForm((c) => ({ ...c, segment: v as TenantSegment }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {TENANT_SEGMENTS.map((s) => (
+                    <SelectItem key={s} value={s}>{segmentLabels[s]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+            <Button onClick={() => void saveEdit()}>Salvar alterações</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
