@@ -962,7 +962,7 @@ export default function ServicesPage() {
       )}
 
       <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
-        <DialogContent>
+        <DialogContent className="w-[calc(100vw-2rem)] sm:w-full">
           <DialogHeader>
             <DialogTitle>{editingCategory ? "Editar categoria" : "Nova categoria"}</DialogTitle>
             <DialogDescription>Use categorias para organizar o catálogo e facilitar filtros futuros.</DialogDescription>
@@ -1013,7 +1013,7 @@ export default function ServicesPage() {
       </Dialog>
 
       <Dialog open={policyDialogOpen} onOpenChange={setPolicyDialogOpen}>
-        <DialogContent>
+        <DialogContent className="w-[calc(100vw-2rem)] sm:w-full">
           <DialogHeader>
             <DialogTitle>{editingPolicy ? "Editar política" : "Nova política"}</DialogTitle>
             <DialogDescription>Essas regras orientam agenda, portal e cobrança em cancelamentos.</DialogDescription>

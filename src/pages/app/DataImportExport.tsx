@@ -95,7 +95,7 @@ export default function DataImportExport() {
   const tenantId = currentTenant?.id;
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-5xl space-y-6">
+    <div className="mx-auto w-full max-w-5xl space-y-6">
       <PageHeader
         title="Importar & Exportar"
         description="Migre dados de outras ferramentas e leve seus dados embora a qualquer momento."
@@ -356,12 +356,14 @@ function ImportPanel({ tenantId, userId }: { tenantId: string; userId: string })
               </Alert>
             )}
 
-            <ScrollArea className="max-h-72 rounded-md border">
-              <table className="w-full text-xs">
+            <div className="max-h-72 overflow-auto rounded-md border">
+              <table className="w-full min-w-[640px] text-xs">
                 <thead className="sticky top-0 bg-muted">
                   <tr>
                     {schema.fields.map((f) => (
-                      <th key={f.key} className="px-2 py-1 text-left">{f.label}</th>
+                      <th key={f.key} className="whitespace-nowrap px-2 py-1 text-left">
+                        {f.label}
+                      </th>
                     ))}
                   </tr>
                 </thead>
@@ -369,13 +371,15 @@ function ImportPanel({ tenantId, userId }: { tenantId: string; userId: string })
                   {preview.rows.map((r, i) => (
                     <tr key={i} className="border-t">
                       {schema.fields.map((f) => (
-                        <td key={f.key} className="px-2 py-1">{String(r[f.key] ?? "")}</td>
+                        <td key={f.key} className="whitespace-nowrap px-2 py-1">
+                          {String(r[f.key] ?? "")}
+                        </td>
                       ))}
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </ScrollArea>
+            </div>
 
             <Separator />
 
