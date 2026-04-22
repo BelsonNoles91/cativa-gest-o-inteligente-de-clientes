@@ -363,3 +363,63 @@ npm run test:visual 2>&1 | grep '\[e2e\]'
 npm run test:visual 2>&1 | grep -E 'WARN'
 ```
 
+
+## Convenção de seletores estáveis
+
+Para reduzir flaky tests e desacoplar os specs de detalhes visuais (texto, classes, estrutura DOM), o shell expõe atributos `data-*` padronizados. **Sempre prefira esses seletores nos novos specs** em vez de `text=`, classes Tailwind ou estrutura aninhada.
+
+### Marcadores de região (presença booleana)
+
+| Atributo | Onde | Uso em E2E |
+| --- | --- | --- |
+| `data-app-main="true"` | `<main>` em `AppLayout` e `PortalLayout` | `[data-app-main]` |
+| `data-bottom-nav="true"` | `<nav>` do BottomNav (app e portal) | `[data-bottom-nav]` |
+| `data-app-context="tenant" \| "portal"` | em main/nav | distinguir app vs portal |
+| `data-offline-banner="true"` + `data-offline-state="offline" \| "recovered"` | OfflineBanner | `[data-offline-banner][data-offline-state="offline"]` |
+| `data-sheet-content="true"` + `data-sheet-side="bottom" \| "right" \| ...` | SheetContent (Radix) | `[data-sheet-content][data-sheet-side="bottom"]` |
+| `data-sheet-overlay="true"` | SheetOverlay | bg overlay |
+
+### `data-testid` (alvo direto)
+
+| Testid | Componente |
+| --- | --- |
+| `app-main` | `<main>` do layout |
+| `bottom-nav` | `<nav>` do BottomNav |
+| `bottom-nav-item` (com `data-route="<slug>"` e `data-locked="true\|false"`) | itens primary do nav |
+| `bottom-nav-more` (com `data-state="open\|closed"`) | botão "Mais" |
+| `bottom-nav-sheet` | sheet aberto pelo "Mais" |
+| `bottom-nav-sheet-item` (com `data-route` e `data-active`) | módulos secundários no sheet |
+| `bottom-nav-sheet-close` | botão fechar do sheet |
+| `offline-banner` / `offline-banner-message` | banner offline |
+| `agenda-create-cta`, `clients-create-cta`, `services-create-cta`, `waitlist-create-cta`, `confirmation-generate-cta`, `confirmation-refresh`, `packages-refresh` | CTAs principais por página |
+
+### `data-critical-action`
+
+Marca botões/FABs cuja ocultação atrás do BottomNav é regressão crítica. O helper `assertCriticalActionsAboveBottomNav(page)` itera todos esses elementos e falha se algum estiver coberto pela nav fixa.
+
+```tsx
+<Button data-critical-action data-testid="agenda-create-cta" onClick={...}>
+  Criar agendamento
+</Button>
+```
+
+### `data-route` em vez de `href`
+
+A rota muda menos que o copy do botão, mas mais que o slug interno. Para localizar um item do nav inferior por destino:
+
+```ts
+// ✅ recomendado — resiste a mudança de copy E a alias de URL
+page.locator('[data-testid="bottom-nav-item"][data-route="app-clientes"]')
+
+// ⚠️ aceitável — quebra se o href mudar
+page.locator('[data-bottom-nav] a[href="/app/clientes"]')
+
+// ❌ frágil — quebra com i18n
+page.getByRole('link', { name: 'Clientes' })
+```
+
+O slug é gerado por `slugOf(to)` no `BottomNav`: barras viram `-` e a barra inicial é removida (`/app/clientes` → `app-clientes`, `/app` → `app`).
+
+### Compatibilidade
+
+Os specs atuais já usam selectors `OR` cobrindo o testid novo + o seletor antigo (ex.: `'[data-testid="bottom-nav-more"], [data-bottom-nav] button[aria-label="Mais opções"]'`). Isso permite migração gradual sem quebrar baseline.
