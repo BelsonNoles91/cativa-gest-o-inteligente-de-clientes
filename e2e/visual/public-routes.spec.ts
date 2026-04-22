@@ -12,6 +12,8 @@ import {
   prepareForSnapshot,
   assertNoHorizontalOverflow,
   assertBottomNavVisible,
+  assertMainHasBottomPadding,
+  assertContentNotHiddenByBottomNav,
 } from "../_helpers/visual";
 
 test.use({ storageState: { cookies: [], origins: [] } });
@@ -46,6 +48,10 @@ test.describe("rotas autenticadas", () => {
       // Asserções estruturais antes do diff de pixels.
       await assertNoHorizontalOverflow(page);
       await assertBottomNavVisible(page);
+      // Garante que o main reserva padding-bottom >= altura do BottomNav...
+      await assertMainHasBottomPadding(page);
+      // ...e que, ao rolar até o fim, nada de fato fica oculto atrás da nav.
+      await assertContentNotHiddenByBottomNav(page);
 
       await expect(page).toHaveScreenshot(`${name}.png`, {
         fullPage: true,
