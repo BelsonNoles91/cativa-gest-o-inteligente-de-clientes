@@ -598,6 +598,24 @@ function TenantsTab({
           {selectedTenant?.subscription ? (
             <div className="grid gap-6 overflow-y-auto pr-2 md:grid-cols-[1fr_1fr]">
               <div className="space-y-4">
+                <Field label="Plano atual">
+                  <Select
+                    value={selectedTenant.subscription.planId}
+                    onValueChange={(value) => void handleChangePlan(selectedTenant, value)}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {plans
+                        .filter((p) => p.status !== "archived")
+                        .map((plan) => (
+                          <SelectItem key={plan.id} value={plan.id}>
+                            {plan.name} · {formatPrice(plan.priceCents, plan.currency)}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+
                 <div className="grid gap-3">
                   <Label>Status</Label>
                   <div className="flex flex-wrap gap-2">
