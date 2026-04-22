@@ -36,10 +36,38 @@ export function ProtectedRoute({ children }: { children?: ReactNode }) {
   return <>{children ?? <Outlet />}</>;
 }
 
+/**
+ * RequireOnboarding — usado nas rotas /app/*.
+ * Só libera quando o usuário possui pelo menos um membership ativo (ou é super_admin).
+ * Caso contrário, manda para /onboarding.
+ */
 export function RequireOnboarding({ children }: { children?: ReactNode }) {
-  const { loading, currentTenant, isSuperAdmin } = useTenant();
+  const { loading, currentTenant, availableTenants, isSuperAdmin } = useTenant();
   if (loading) return <FullScreenLoader />;
-  if (!currentTenant && !isSuperAdmin) return <Navigate to="/onboarding" replace />;
+  const hasMembership = availableTenants.length > 0 || Boolean(currentTenant);
+  if (!hasMembership && !isSuperAdmin) return <Navigate to="/onboarding" replace />;
+  return <>{children ?? <Outlet />}</>;
+}
+
+/**
+ * OnboardingGuard — usado na rota /onboarding.
+ * Se o usuário JÁ tem tenant/membership ativo, redireciona para /app
+ * (evita repetir o setup). Sem sessão, deixa passar (Step 0 trata signup).
+ */
+export function OnboardingGuard({ children }: { children?: ReactNode }) {
+  const { user, loading: authLoading } = useAuth();
+  const { loading: tenantLoading, availableTenants, isSuperAdmin } = useTenant();
+
+  if (authLoading) return <FullScreenLoader />;
+  // Sem sessão → Onboarding mostra Step 0 (signup).
+  if (!user) return <>{children ?? <Outlet />}</>;
+  // Com sessão, esperamos o tenant carregar antes de decidir.
+  if (tenantLoading) return <FullScreenLoader />;
+  // Já tem workspace ativo → vai direto pro app.
+  if (availableTenants.length > 0 || isSuperAdmin) {
+    return <Navigate to="/app" replace />;
+  }
+  // Logado mas sem tenant → segue no onboarding.
   return <>{children ?? <Outlet />}</>;
 }
 
