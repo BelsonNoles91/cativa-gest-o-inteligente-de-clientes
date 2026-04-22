@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -12,7 +13,99 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
   },
-  plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+  plugins: [
+    react(),
+    mode === "development" && componentTagger(),
+    // ─────────────────────────────────────────────────────────────
+    // PWA / Service Worker (offline-first básico)
+    //
+    // ⚠️ devOptions.enabled = false: o SW NUNCA registra em dev /
+    // preview do Lovable (rodamos dentro de iframe — SW quebraria o
+    // hot-reload e cachearia builds antigos). O guard adicional em
+    // src/main.tsx desativa qualquer SW remanescente quando estamos
+    // em iframe / domínios *.lovableproject.com / id-preview--*.
+    //
+    // Estratégia de cache:
+    // - precache: HTML/JS/CSS/fontes/imagens do build
+    // - runtime "NetworkFirst" para chamadas Supabase REST (rápido
+    //   quando online, mostra última versão quando offline)
+    // - runtime "CacheFirst" para fontes/imagens externas
+    // - navigateFallback → /offline.html quando uma rota nova é
+    //   solicitada sem rede e sem cache
+    // ─────────────────────────────────────────────────────────────
+    VitePWA({
+      registerType: "autoUpdate",
+      injectRegister: null, // registramos manualmente em src/main.tsx
+      strategies: "generateSW",
+      // Reaproveita o manifest.webmanifest físico em /public ao invés de gerar outro
+      manifest: false,
+      includeAssets: [
+        "manifest.webmanifest",
+        "icon-192.png",
+        "icon-512.png",
+        "robots.txt",
+        "placeholder.svg",
+      ],
+      devOptions: {
+        enabled: false,
+      },
+      workbox: {
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: true,
+        // Permite servir index.html para qualquer rota SPA (offline)
+        navigateFallback: "/offline.html",
+        navigateFallbackDenylist: [
+          /^\/~oauth/,
+          /^\/api\//,
+          /\/auth\/v1\//,
+          /\/rest\/v1\//,
+          /\/realtime\/v1\//,
+          /\/storage\/v1\//,
+        ],
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff2}"],
+        runtimeCaching: [
+          // Supabase REST/Auth → NetworkFirst com timeout curto
+          {
+            urlPattern: ({ url }) =>
+              url.hostname.endsWith(".supabase.co") &&
+              (url.pathname.startsWith("/rest/") ||
+                url.pathname.startsWith("/auth/") ||
+                url.pathname.startsWith("/storage/")),
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "supabase-api",
+              networkTimeoutSeconds: 4,
+              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          // Imagens
+          {
+            urlPattern: ({ request }) => request.destination === "image",
+            handler: "CacheFirst",
+            options: {
+              cacheName: "images",
+              expiration: { maxEntries: 80, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          // Google Fonts (caso usados)
+          {
+            urlPattern: ({ url }) =>
+              url.origin === "https://fonts.googleapis.com" ||
+              url.origin === "https://fonts.gstatic.com",
+            handler: "CacheFirst",
+            options: {
+              cacheName: "google-fonts",
+              expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
+      },
+    }),
+  ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
