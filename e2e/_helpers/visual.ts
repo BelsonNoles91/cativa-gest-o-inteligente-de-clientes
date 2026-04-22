@@ -177,7 +177,8 @@ export async function assertContentNotHiddenByBottomNav(
   const navTop = navBox!.y;
 
   // Scrolla tudo até o fim — janela e qualquer scroller interno conhecido.
-  await page.evaluate(async () => {
+  // Retorna info de quanto rolou para validar que de fato aconteceu.
+  const scrollResult = await page.evaluate(async () => {
     const scrollers: (HTMLElement | (Window & typeof globalThis))[] = [window];
     document.querySelectorAll<HTMLElement>("[data-app-main], main").forEach(
       (el) => {
@@ -185,6 +186,7 @@ export async function assertContentNotHiddenByBottomNav(
         if (el.scrollHeight > el.clientHeight + 1) scrollers.push(el);
       },
     );
+    const before = window.scrollY;
     for (const s of scrollers) {
       if (s === window) {
         window.scrollTo({ top: document.body.scrollHeight, behavior: "instant" as ScrollBehavior });
@@ -194,7 +196,29 @@ export async function assertContentNotHiddenByBottomNav(
     }
     // 2 RAFs para garantir layout final + repaint.
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r(null))));
+    return {
+      scrolledBy: window.scrollY - before,
+      finalScrollY: window.scrollY,
+      pageHeight: document.body.scrollHeight,
+      viewportH: window.innerHeight,
+    };
   });
+
+  // Sanidade: se a página é maior que o viewport mas não rolamos, algo
+  // bloqueou o scroll (overflow:hidden em ancestral, modal aberto etc).
+  // Logamos um aviso mas não falhamos — pode ser página realmente curta.
+  if (
+    scrollResult.pageHeight > scrollResult.viewportH + 50 &&
+    scrollResult.scrolledBy === 0 &&
+    scrollResult.finalScrollY === 0
+  ) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[visual] assertContentNotHiddenByBottomNav: scroll não teve efeito ` +
+        `(pageHeight=${scrollResult.pageHeight}, viewportH=${scrollResult.viewportH}). ` +
+        `Verifique se há modal aberto ou overflow:hidden bloqueando.`,
+    );
+  }
 
   // Encontra o último elemento renderizado dentro do main com área > 0.
   const lastBottom = await page.evaluate(() => {
