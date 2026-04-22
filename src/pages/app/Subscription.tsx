@@ -25,6 +25,7 @@ import {
 import { PageHeader } from "@/components/shell/PageHeader";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import { useTenantBilling } from "@/features/billing/useTenantBilling";
 import { activateDefaultTrial } from "@/services/billing/activateTrial";
