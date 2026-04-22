@@ -8,12 +8,14 @@ import {
   Package,
   Pencil,
   Plus,
+  ScrollText,
   Search,
   ShieldCheck,
   SlidersHorizontal,
   Trash2,
 } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
+import { TrialLogsTab } from "@/features/admin/TrialLogsTab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
