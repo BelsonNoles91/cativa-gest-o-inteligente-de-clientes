@@ -879,7 +879,7 @@ export default function ClientsPage() {
                 </TabsList>
 
                 <TabsContent value="summary" className="space-y-4">
-                  <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
+                  <div className="grid gap-4 xl:grid-cols-[1.3fr_1fr]">
                     <Card>
                       <CardHeader>
                         <CardTitle>Dados principais</CardTitle>
