@@ -127,6 +127,12 @@ export function MembersTab() {
   const [editing, setEditing] = useState<MemberRow | null>(null);
   const [saving, setSaving] = useState(false);
   const [provisionOpen, setProvisionOpen] = useState(false);
+  const [confirm, setConfirm] = useState<{
+    title: string;
+    description: string;
+    action: () => Promise<void> | void;
+    destructive?: boolean;
+  } | null>(null);
 
   async function reload() {
     setLoading(true);
