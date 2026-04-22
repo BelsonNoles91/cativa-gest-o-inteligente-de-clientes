@@ -1311,9 +1311,9 @@ function FiltersCard({
             className="pl-9"
           />
         </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 [&>*]:min-w-0">
           <Select value={filters.status} onValueChange={(value) => setFilters((prev) => ({ ...prev, status: value as ClientStatus | "all" }))}>
-            <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectTrigger className="w-full"><SelectValue placeholder="Status" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os status</SelectItem>
               <SelectItem value="active">Ativo</SelectItem>
@@ -1322,7 +1322,7 @@ function FiltersCard({
             </SelectContent>
           </Select>
           <Select value={filters.birthdayMonth} onValueChange={(value) => setFilters((prev) => ({ ...prev, birthdayMonth: value }))}>
-            <SelectTrigger><SelectValue placeholder="Aniversariantes" /></SelectTrigger>
+            <SelectTrigger className="w-full"><SelectValue placeholder="Aniversariantes" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os meses</SelectItem>
               {Array.from({ length: 12 }).map((_, i) => (
@@ -1331,7 +1331,7 @@ function FiltersCard({
             </SelectContent>
           </Select>
           <Select value={filters.preferredUnitId} onValueChange={(value) => setFilters((prev) => ({ ...prev, preferredUnitId: value }))}>
-            <SelectTrigger><SelectValue placeholder="Unidade preferida" /></SelectTrigger>
+            <SelectTrigger className="w-full"><SelectValue placeholder="Unidade preferida" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas as unidades</SelectItem>
               {units.map((unit) => (
@@ -1340,7 +1340,7 @@ function FiltersCard({
             </SelectContent>
           </Select>
           <Select value={filters.preferredProfessionalId} onValueChange={(value) => setFilters((prev) => ({ ...prev, preferredProfessionalId: value }))}>
-            <SelectTrigger><SelectValue placeholder="Profissional preferido" /></SelectTrigger>
+            <SelectTrigger className="w-full"><SelectValue placeholder="Profissional preferido" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os profissionais</SelectItem>
               {professionals.map((professional) => (
@@ -1349,7 +1349,7 @@ function FiltersCard({
             </SelectContent>
           </Select>
           <Select value={filters.origin} onValueChange={(value) => setFilters((prev) => ({ ...prev, origin: value }))}>
-            <SelectTrigger><SelectValue placeholder="Origem" /></SelectTrigger>
+            <SelectTrigger className="w-full sm:col-span-2 lg:col-span-1 xl:col-span-2"><SelectValue placeholder="Origem" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas as origens</SelectItem>
               {origins.map((origin) => (
@@ -1413,7 +1413,7 @@ function ClientHero({
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex w-full flex-wrap items-center gap-3 lg:w-auto">
             <div className="rounded-2xl border border-border/70 bg-card px-4 py-3">
               <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Completude</p>
               <div className="mt-1 flex items-end gap-1">
@@ -1421,7 +1421,7 @@ function ClientHero({
                 <span className="pb-1 text-sm text-muted-foreground">/100</span>
               </div>
             </div>
-            <Button variant="outline" className="rounded-xl" onClick={onEdit}>
+            <Button variant="outline" className="ml-auto rounded-xl lg:ml-0" onClick={onEdit}>
               <Pencil className="mr-2 h-4 w-4" /> Editar ficha
             </Button>
           </div>
