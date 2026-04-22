@@ -316,8 +316,25 @@ export function MembersTab() {
           >
             {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCcw className="h-3.5 w-3.5" />}
           </Button>
+          <Button
+            size="sm"
+            className="h-9"
+            onClick={() => setProvisionOpen(true)}
+            data-testid="members-provision"
+          >
+            <UserPlus className="mr-1.5 h-3.5 w-3.5" />
+            Provisionar
+          </Button>
         </div>
       </div>
+
+      <ProvisionUserDialog
+        open={provisionOpen}
+        onOpenChange={setProvisionOpen}
+        tenants={tenants}
+        defaultTenantId={tenantFilter !== "all" ? tenantFilter : null}
+        onCreated={() => void reload()}
+      />
 
       {/* Resumo */}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
