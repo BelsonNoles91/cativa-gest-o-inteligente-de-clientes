@@ -231,11 +231,12 @@ export default function SuperAdmin() {
         </div>
       ) : (
         <Tabs defaultValue="tenants" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4 sm:grid-cols-8">
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-9">
             <TabsTrigger value="tenants"><Building2 className="mr-1.5 h-3.5 w-3.5" />Tenants</TabsTrigger>
             <TabsTrigger value="members" data-testid="tab-members"><Users className="mr-1.5 h-3.5 w-3.5" />Membros</TabsTrigger>
             <TabsTrigger value="client-memberships" data-testid="tab-client-memberships"><Package className="mr-1.5 h-3.5 w-3.5" />Memberships</TabsTrigger>
             <TabsTrigger value="plans"><Package className="mr-1.5 h-3.5 w-3.5" />Planos</TabsTrigger>
+            <TabsTrigger value="console" data-testid="tab-console"><SlidersHorizontal className="mr-1.5 h-3.5 w-3.5" />Console</TabsTrigger>
             <TabsTrigger value="flags"><Flag className="mr-1.5 h-3.5 w-3.5" />Flags</TabsTrigger>
             <TabsTrigger value="templates"><FileStack className="mr-1.5 h-3.5 w-3.5" />Templates</TabsTrigger>
             <TabsTrigger value="audit" data-testid="tab-audit"><ScrollText className="mr-1.5 h-3.5 w-3.5" />Auditoria</TabsTrigger>
@@ -256,6 +257,10 @@ export default function SuperAdmin() {
 
           <TabsContent value="plans">
             <PlansTab plans={plans} features={features} onReload={reload} />
+          </TabsContent>
+
+          <TabsContent value="console">
+            <FeatureFlagsConsole />
           </TabsContent>
 
           <TabsContent value="flags">
