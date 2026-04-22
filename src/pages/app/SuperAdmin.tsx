@@ -530,10 +530,24 @@ function TenantsTab({
                       <Button size="sm" variant="outline" onClick={() => openTenantDialog(tenant)}>
                         <SlidersHorizontal className="mr-1.5 h-3.5 w-3.5" /> Ajustes
                       </Button>
+                      <Button size="sm" variant="outline" onClick={() => openEdit(tenant)}>
+                        <Pencil className="mr-1.5 h-3.5 w-3.5" /> Editar
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => void handleImpersonate(tenant)}>
+                        <LogIn className="mr-1.5 h-3.5 w-3.5" /> Entrar
+                      </Button>
                     </div>
                   </>
                 ) : (
-                  <StatusBadge tone="neutral">Sem assinatura</StatusBadge>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <StatusBadge tone="neutral">Sem assinatura</StatusBadge>
+                    <Button size="sm" variant="outline" onClick={() => openEdit(tenant)}>
+                      <Pencil className="mr-1.5 h-3.5 w-3.5" /> Editar
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => void handleImpersonate(tenant)}>
+                      <LogIn className="mr-1.5 h-3.5 w-3.5" /> Entrar
+                    </Button>
+                  </div>
                 )}
               </li>
             ))}
