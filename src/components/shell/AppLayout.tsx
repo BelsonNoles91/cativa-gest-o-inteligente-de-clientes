@@ -21,7 +21,7 @@ export function AppLayout() {
 
           <SidebarInset className="flex min-w-0 flex-1 flex-col">
             <AppHeader />
-            <main className="flex-1 px-4 pb-24 pt-4 md:px-8 md:pb-10 md:pt-6">
+            <main className="flex-1 px-4 pt-4 pb-bottom-nav md:px-8 md:pb-10 md:pt-6">
               <div className="mx-auto w-full max-w-7xl animate-fade-in">
                 <Outlet />
               </div>
