@@ -22,6 +22,7 @@ import { MembersTab } from "@/features/admin/MembersTab";
 import { ClientMembershipsTab } from "@/features/admin/ClientMembershipsTab";
 import { AuditLogsTab } from "@/features/admin/AuditLogsTab";
 import { FeatureFlagsConsole } from "@/features/admin/FeatureFlagsConsole";
+import { SensitiveAuditAlerts } from "@/features/admin/SensitiveAuditAlerts";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -194,6 +195,12 @@ export default function SuperAdmin() {
   const [features, setFeatures] = useState<PlanFeature[]>([]);
   const [flags, setFlags] = useState<FeatureFlag[]>([]);
   const [templates, setTemplates] = useState<SegmentTemplate[]>([]);
+  const [activeTab, setActiveTab] = useState<string>("tenants");
+
+  const tenantNames = useMemo(
+    () => Object.fromEntries(tenants.map((t) => [t.id, t.name])),
+    [tenants],
+  );
 
   async function reload() {
     setLoading(true);
@@ -222,7 +229,12 @@ export default function SuperAdmin() {
         title="Super Admin"
         description="Gestão SaaS de tenants, planos, limites, feature flags e templates por segmento."
         icon={<ShieldCheck className="h-5 w-5" />}
-        actions={<StatusBadge tone="brand">{tenants.length} tenants</StatusBadge>}
+        actions={
+          <div className="flex items-center gap-2">
+            <SensitiveAuditAlerts onNavigate={setActiveTab} tenantNames={tenantNames} />
+            <StatusBadge tone="brand">{tenants.length} tenants</StatusBadge>
+          </div>
+        }
       />
 
       {loading ? (
@@ -230,7 +242,7 @@ export default function SuperAdmin() {
           <Loader2 className="h-5 w-5 animate-spin text-primary" />
         </div>
       ) : (
-        <Tabs defaultValue="tenants" className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className="grid w-full grid-cols-3 sm:grid-cols-9">
             <TabsTrigger value="tenants"><Building2 className="mr-1.5 h-3.5 w-3.5" />Tenants</TabsTrigger>
             <TabsTrigger value="members" data-testid="tab-members"><Users className="mr-1.5 h-3.5 w-3.5" />Membros</TabsTrigger>
