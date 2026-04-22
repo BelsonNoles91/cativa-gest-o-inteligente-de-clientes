@@ -54,6 +54,10 @@ test.describe("rotas autenticadas", () => {
       await assertMainHasBottomPadding(page);
       // ...e que, ao rolar até o fim, nada de fato fica oculto atrás da nav.
       await assertContentNotHiddenByBottomNav(page);
+      // Itens do nav respeitam safe-area (notch landscape, home indicator).
+      await assertBottomNavItemsRespectSafeArea(page);
+      // Ações críticas marcadas com data-critical-action ficam acima do nav.
+      await assertCriticalActionsAboveBottomNav(page);
 
       await expect(page).toHaveScreenshot(`${name}.png`, {
         fullPage: true,
