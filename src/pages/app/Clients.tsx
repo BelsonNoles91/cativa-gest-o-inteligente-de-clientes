@@ -1049,7 +1049,7 @@ export default function ClientsPage() {
                 </TabsContent>
 
                 <TabsContent value="media" className="space-y-4">
-                  <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="grid gap-4 xl:grid-cols-2">
                     <Card>
                       <CardHeader>
                         <CardTitle>Arquivos</CardTitle>
