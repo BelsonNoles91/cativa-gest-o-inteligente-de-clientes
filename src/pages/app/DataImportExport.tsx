@@ -468,18 +468,14 @@ function ExportPanel({ tenantId }: { tenantId: string }) {
     try {
       const { data, error } = await supabase
         .from("professionals")
-        .select("full_name, display_name, email, phone, specialty, commission_pct, is_active")
+        .select("display_name, role_title, is_active")
         .eq("tenant_id", tenantId)
         .order("display_name");
       if (error) throw error;
 
       const professionals = (data ?? []).map((row) => ({
-        fullName: row.full_name,
         displayName: row.display_name,
-        email: row.email,
-        phone: row.phone,
-        specialty: row.specialty,
-        commissionPct: row.commission_pct ?? 0,
+        roleTitle: row.role_title,
         isActive: row.is_active,
       }));
       const filename = `equipe_${dateStamp()}.${format}`;

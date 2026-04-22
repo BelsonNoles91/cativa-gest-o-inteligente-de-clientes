@@ -120,56 +120,34 @@ export function exportServicesCsv(
 // -----------------------------------------------------------------------------
 // TEAM
 // -----------------------------------------------------------------------------
+// O schema atual da tabela `professionals` guarda apenas apelido público + função.
+// Contato, e-mail e comissão serão adicionados quando a tabela for estendida.
 export interface TeamExportRow extends Record<string, unknown> {
-  nome_completo: string;
   apelido_publico: string;
-  email: string;
-  telefone: string;
-  especialidade: string;
-  comissao_pct: number;
+  funcao: string;
   ativo: string;
 }
 
-const TEAM_HEADERS: Array<keyof TeamExportRow> = [
-  "nome_completo",
-  "apelido_publico",
-  "email",
-  "telefone",
-  "especialidade",
-  "comissao_pct",
-  "ativo",
-];
+const TEAM_HEADERS: Array<keyof TeamExportRow> = ["apelido_publico", "funcao", "ativo"];
 
 export function buildTeamRows(
   professionals: Array<{
-    fullName: string;
-    displayName: string | null;
-    email: string | null;
-    phone: string | null;
-    specialty: string | null;
-    commissionPct: number;
+    displayName: string;
+    roleTitle: string | null;
     isActive: boolean;
   }>,
 ): TeamExportRow[] {
   return professionals.map((p) => ({
-    nome_completo: p.fullName,
-    apelido_publico: p.displayName ?? "",
-    email: p.email ?? "",
-    telefone: p.phone ?? "",
-    especialidade: p.specialty ?? "",
-    comissao_pct: p.commissionPct,
+    apelido_publico: p.displayName,
+    funcao: p.roleTitle ?? "",
     ativo: p.isActive ? "sim" : "não",
   }));
 }
 
 export function exportTeamCsv(
   professionals: Array<{
-    fullName: string;
-    displayName: string | null;
-    email: string | null;
-    phone: string | null;
-    specialty: string | null;
-    commissionPct: number;
+    displayName: string;
+    roleTitle: string | null;
     isActive: boolean;
   }>,
 ): string {

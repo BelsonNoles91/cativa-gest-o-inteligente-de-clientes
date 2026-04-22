@@ -21,6 +21,9 @@ import type {
   ServicePrice,
 } from "@/domain/catalog";
 
+// Re-export para conveniência das páginas que importam tipos a partir do repositório.
+export type { Service } from "@/domain/catalog";
+
 export interface ServiceUnitPriceOverride {
   id: string;
   serviceId: string;

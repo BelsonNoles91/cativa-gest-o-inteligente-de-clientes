@@ -18,6 +18,9 @@ import type {
   ConsentResponse,
 } from "@/domain/client";
 
+// Re-export para conveniência das páginas que importam tipos a partir do repositório.
+export type { Client } from "@/domain/client";
+
 // -----------------------------------------------------------------------------
 // Mappers DB → domínio
 // -----------------------------------------------------------------------------
