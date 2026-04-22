@@ -13,6 +13,7 @@ import { TenantSwitcher } from "@/components/shell/TenantSwitcher";
 import { GlobalSearch } from "@/components/shell/GlobalSearch";
 import { ThemeToggle } from "@/components/shell/ThemeToggle";
 import { UserMenu } from "@/components/shell/UserMenu";
+import { useTenant } from "@/features/tenant/TenantProvider";
 import {
   Sheet,
   SheetContent,
