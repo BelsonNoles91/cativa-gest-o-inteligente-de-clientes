@@ -1778,6 +1778,29 @@ function monthLabel(index: number) {
   return new Date(2026, index, 1).toLocaleDateString("pt-BR", { month: "long" });
 }
 
+function FilterSelectTooltip({
+  fieldLabel,
+  valueLabel,
+  className,
+  children,
+}: {
+  fieldLabel: string;
+  valueLabel: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Tooltip delayDuration={250}>
+      <TooltipTrigger asChild>
+        <div className={className}>{children}</div>
+      </TooltipTrigger>
+      <TooltipContent side="top" align="start" className="max-w-xs">
+        <span className="font-medium">{fieldLabel}:</span> {valueLabel}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 function timelineIcon(type: TimelineEvent["eventType"]) {
   switch (type) {
     case "note": return <StickyNote className="h-4 w-4" />;
