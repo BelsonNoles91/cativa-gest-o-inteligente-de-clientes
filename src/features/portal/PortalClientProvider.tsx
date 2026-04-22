@@ -23,6 +23,11 @@ import {
   touchPortalLink,
   type ClientProfile,
 } from "@/repositories/portal";
+import {
+  getSubscriptionByTenant,
+  listPlanFeatures,
+} from "@/repositories/billing";
+import { isBooleanFeatureEnabled } from "@/domain/billing";
 import type {
   ClientUserLink,
   PortalTenantBranding,
@@ -34,6 +39,8 @@ interface PortalContextValue {
   activeLink: ClientUserLink | null;
   branding: PortalTenantBranding | null;
   profile: ClientProfile | null;
+  /** Indica se o tenant ativo possui a feature `client_portal` no plano. */
+  portalEnabled: boolean;
   setActiveTenant: (tenantId: string) => void;
   refresh: () => Promise<void>;
 }
@@ -47,6 +54,7 @@ export function PortalClientProvider({ children }: { children: ReactNode }) {
   const [links, setLinks] = useState<ClientUserLink[]>([]);
   const [profile, setProfile] = useState<ClientProfile | null>(null);
   const [branding, setBranding] = useState<PortalTenantBranding | null>(null);
+  const [portalEnabled, setPortalEnabled] = useState(true);
   const [activeTenantId, setActiveTenantIdState] = useState<string | null>(
     () => localStorage.getItem(LS_PORTAL_TENANT),
   );
@@ -61,6 +69,7 @@ export function PortalClientProvider({ children }: { children: ReactNode }) {
       setLinks([]);
       setProfile(null);
       setBranding(null);
+      setPortalEnabled(true);
       setLoading(false);
       return;
     }
@@ -84,9 +93,26 @@ export function PortalClientProvider({ children }: { children: ReactNode }) {
         setProfile(prof);
         const b = await getPortalBranding(effective.tenantId, prof?.preferredUnitId ?? null);
         setBranding(b);
+
+        // Verifica se o plano do tenant ativo libera o portal do cliente.
+        try {
+          const sub = await getSubscriptionByTenant(effective.tenantId);
+          if (!sub) {
+            setPortalEnabled(false);
+          } else {
+            const features = await listPlanFeatures([sub.planId]);
+            const portalFeature = features.find((f) => f.featureKey === "client_portal");
+            setPortalEnabled(isBooleanFeatureEnabled(portalFeature?.value));
+          }
+        } catch {
+          // Em caso de erro de leitura, não bloqueia o cliente — falha aberto
+          // para evitar lockout caso a tabela de billing fique indisponível.
+          setPortalEnabled(true);
+        }
       } else {
         setProfile(null);
         setBranding(null);
+        setPortalEnabled(true);
       }
     } finally {
       setLoading(false);
@@ -106,10 +132,11 @@ export function PortalClientProvider({ children }: { children: ReactNode }) {
       activeLink,
       branding,
       profile,
+      portalEnabled,
       setActiveTenant,
       refresh: load,
     };
-  }, [loading, links, activeTenantId, branding, profile, setActiveTenant, load]);
+  }, [loading, links, activeTenantId, branding, profile, portalEnabled, setActiveTenant, load]);
 
   return <PortalContext.Provider value={value}>{children}</PortalContext.Provider>;
 }

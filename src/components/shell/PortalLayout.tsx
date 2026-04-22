@@ -30,7 +30,7 @@ const NAV_ITEMS = [
 ];
 
 export function PortalLayout() {
-  const { loading, activeLink, branding, links, setActiveTenant } = usePortalClient();
+  const { loading, activeLink, branding, links, setActiveTenant, portalEnabled } = usePortalClient();
   const { signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -53,6 +53,35 @@ export function PortalLayout() {
           <p className="text-sm text-muted-foreground">
             Não encontramos seu cadastro vinculado a nenhum estabelecimento.
             Peça à recepção do seu salão/clínica para liberar seu acesso ao portal.
+          </p>
+          <Button
+            variant="outline"
+            onClick={async () => {
+              await signOut();
+              navigate("/auth/login", { replace: true });
+            }}
+          >
+            <LogOut className="mr-1.5 h-4 w-4" /> Sair
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!portalEnabled) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-gradient-soft p-6">
+        <div className="max-w-md space-y-4 rounded-2xl border bg-card p-6 text-center shadow-md">
+          <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-primary/10 text-primary">
+            <AlertCircle className="h-6 w-6" />
+          </div>
+          <h2 className="font-display text-xl font-semibold">
+            Portal indisponível neste momento
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {branding?.tenantName ?? "Este estabelecimento"} ainda não habilitou o portal
+            do cliente no plano atual. Entre em contato com a recepção para reagendar
+            ou pedir informações.
           </p>
           <Button
             variant="outline"

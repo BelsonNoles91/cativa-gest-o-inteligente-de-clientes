@@ -469,19 +469,39 @@ export async function latestUsage(tenantId: string): Promise<UsageSnapshot | nul
  * Calcula uso atual do tenant em tempo real (sem snapshot pronto).
  * Usado quando ainda não há snapshot para mostrar algo verdadeiro.
  */
-export async function calculateLiveUsage(tenantId: string): Promise<Pick<UsageSnapshot, "unitsCount" | "professionalsCount" | "activeClientsCount" | "appointmentsLast30d">> {
+export async function calculateLiveUsage(
+  tenantId: string,
+): Promise<
+  Pick<
+    UsageSnapshot,
+    "unitsCount" | "professionalsCount" | "activeClientsCount" | "appointmentsLast30d" | "storageMb"
+  >
+> {
   const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
-  const [u, p, c, a] = await Promise.all([
+  const [u, p, c, a, files, photos] = await Promise.all([
     supabase.from("units").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
     supabase.from("professionals").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).eq("is_active", true),
     supabase.from("clients").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).eq("status", "active"),
     supabase.from("appointments").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).gte("starts_at", since),
+    // Soma do tamanho dos anexos de clientes (size_bytes pode ser null para registros antigos).
+    supabase.from("client_files").select("size_bytes").eq("tenant_id", tenantId),
+    // Para fotos não temos size persistido; estimamos 350 KB por foto como média de upload mobile.
+    supabase.from("client_photos").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
   ]);
+
+  const filesBytes = (files.data ?? []).reduce(
+    (sum, row) => sum + (typeof row.size_bytes === "number" ? row.size_bytes : 0),
+    0,
+  );
+  const photosBytesEstimate = (photos.count ?? 0) * 350 * 1024;
+  const storageMb = Math.round(((filesBytes + photosBytesEstimate) / (1024 * 1024)) * 100) / 100;
+
   return {
     unitsCount: u.count ?? 0,
     professionalsCount: p.count ?? 0,
     activeClientsCount: c.count ?? 0,
     appointmentsLast30d: a.count ?? 0,
+    storageMb,
   };
 }
 
