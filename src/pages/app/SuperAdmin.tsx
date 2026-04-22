@@ -19,6 +19,7 @@ import {
 import { PageHeader } from "@/components/shell/PageHeader";
 import { TrialLogsTab } from "@/features/admin/TrialLogsTab";
 import { MembersTab } from "@/features/admin/MembersTab";
+import { ClientMembershipsTab } from "@/features/admin/ClientMembershipsTab";
 import { AuditLogsTab } from "@/features/admin/AuditLogsTab";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import { supabase } from "@/integrations/supabase/client";
