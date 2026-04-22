@@ -26,11 +26,32 @@ import { listAppointmentsHydrated, type HydratedAppointment } from "@/repositori
 import type { Client } from "@/domain/client";
 import type { Service } from "@/domain/catalog";
 
-export function GlobalSearch({ className }: { className?: string }) {
+interface GlobalSearchProps {
+  className?: string;
+  /** Controle externo de abertura (para acionar via botão no header mobile, etc.). */
+  controlledOpen?: boolean;
+  onControlledOpenChange?: (open: boolean) => void;
+  /** Quando true, esconde o input "trigger" e renderiza apenas o CommandDialog. */
+  hideTrigger?: boolean;
+}
+
+export function GlobalSearch({
+  className,
+  controlledOpen,
+  onControlledOpenChange,
+  hideTrigger = false,
+}: GlobalSearchProps) {
   const navigate = useNavigate();
   const { currentTenant } = useTenant();
 
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = (next: boolean) => {
+    if (isControlled) onControlledOpenChange?.(next);
+    else setInternalOpen(next);
+  };
+
   const [loading, setLoading] = useState(false);
   const [clients, setClients] = useState<Client[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -40,13 +61,14 @@ export function GlobalSearch({ className }: { className?: string }) {
     function onKeyDown(event: KeyboardEvent) {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
-        setOpen((current) => !current);
+        setOpen(!open);
       }
     }
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, isControlled]);
 
   useEffect(() => {
     if (!open || !currentTenant) return;
@@ -110,26 +132,28 @@ export function GlobalSearch({ className }: { className?: string }) {
 
   return (
     <>
-      <div className={cn("relative w-full", className)}>
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <button
-          type="button"
-          aria-label="Abrir busca global"
-          onClick={() => setOpen(true)}
-          className="w-full text-left"
-        >
-          <Input
-            type="search"
-            readOnly
-            placeholder="Buscar clientes, agendamentos, serviços…"
-            aria-label="Busca global"
-            className="h-11 cursor-pointer rounded-xl border-border/70 bg-card/60 pl-9 shadow-xs focus-visible:bg-card"
-          />
-        </button>
-        <kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 select-none items-center gap-1 rounded border border-border/70 bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline-flex">
-          ⌘K
-        </kbd>
-      </div>
+      {!hideTrigger && (
+        <div className={cn("relative w-full", className)}>
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <button
+            type="button"
+            aria-label="Abrir busca global"
+            onClick={() => setOpen(true)}
+            className="w-full text-left"
+          >
+            <Input
+              type="search"
+              readOnly
+              placeholder="Buscar clientes, agendamentos, serviços…"
+              aria-label="Busca global"
+              className="h-11 cursor-pointer rounded-xl border-border/70 bg-card/60 pl-9 shadow-xs focus-visible:bg-card"
+            />
+          </button>
+          <kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 select-none items-center gap-1 rounded border border-border/70 bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline-flex">
+            ⌘K
+          </kbd>
+        </div>
+      )}
 
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput placeholder="Buscar em clientes, agenda e serviços..." />
