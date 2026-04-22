@@ -3769,6 +3769,11 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_delete_feature_flag: {
+        Args: { _flag_id: string }
+        Returns: undefined
+      }
+      admin_feature_flag_impact: { Args: { _flag_key: string }; Returns: Json }
       admin_get_tenant_membership_dashboard: {
         Args: { _tenant_id: string }
         Returns: Json
@@ -3907,6 +3912,7 @@ export type Database = {
         Args: { _reason?: string; _tenant_id: string }
         Returns: string
       }
+      admin_plan_limit_impact: { Args: { _plan_id: string }; Returns: Json }
       admin_provision_team_invitation: {
         Args: {
           _email: string
@@ -3966,6 +3972,10 @@ export type Database = {
         Args: { p_is_super: boolean; p_user_id: string }
         Returns: undefined
       }
+      admin_toggle_feature_flag: {
+        Args: { _enabled: boolean; _flag_id: string }
+        Returns: undefined
+      }
       admin_update_membership_role: {
         Args: {
           p_membership_id: string
@@ -4002,6 +4012,20 @@ export type Database = {
             Args: { p_membership_id: string; p_new_status: string }
             Returns: undefined
           }
+      admin_update_plan_limits: {
+        Args: {
+          _max_active_clients?: number
+          _max_professionals?: number
+          _max_storage_mb?: number
+          _max_units?: number
+          _plan_id: string
+        }
+        Returns: undefined
+      }
+      admin_update_subscription_overrides: {
+        Args: { _override_limits: Json; _subscription_id: string }
+        Returns: undefined
+      }
       admin_update_tenant: {
         Args: {
           _name?: string
@@ -4029,6 +4053,17 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      admin_upsert_feature_flag: {
+        Args: {
+          _description?: string
+          _flag_key: string
+          _label: string
+          _tenant_id?: string
+          _value: Json
+          _value_type?: Database["public"]["Enums"]["feature_flag_value_type"]
+        }
+        Returns: string
       }
       calculate_queue_priority: {
         Args: {
