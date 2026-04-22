@@ -6,7 +6,7 @@
  * UX: lista densa em cards, expansível para ver metadata em JSON.
  */
 import { useEffect, useMemo, useState } from "react";
-import { Filter, Loader2, RefreshCcw, ScrollText, Search } from "lucide-react";
+import { CalendarRange, Filter, Loader2, RefreshCcw, ScrollText, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -60,16 +60,35 @@ export function AuditLogsTab({
   const [search, setSearch] = useState("");
   const [limit, setLimit] = useState<string>("200");
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [periodPreset, setPeriodPreset] = useState<string>("all");
+  const [fromDate, setFromDate] = useState<string>("");
+  const [toDate, setToDate] = useState<string>("");
+
+  function resolveRange(): { from: string | null; to: string | null } {
+    if (periodPreset === "custom") {
+      return {
+        from: fromDate ? new Date(fromDate + "T00:00:00").toISOString() : null,
+        to: toDate ? new Date(toDate + "T23:59:59").toISOString() : null,
+      };
+    }
+    if (periodPreset === "all") return { from: null, to: null };
+    const days = parseInt(periodPreset, 10);
+    if (!Number.isFinite(days)) return { from: null, to: null };
+    const from = new Date();
+    from.setDate(from.getDate() - days);
+    return { from: from.toISOString(), to: null };
+  }
 
   async function load() {
     setLoading(true);
     try {
+      const range = resolveRange();
       const { data, error } = await supabase.rpc("admin_list_audit_logs", {
         _tenant_id: tenantFilter === "all" ? null : tenantFilter,
         _actor_id: null,
         _action_prefix: actionFilter === "all" ? null : actionFilter,
-        _from: null,
-        _to: null,
+        _from: range.from,
+        _to: range.to,
         _limit: Math.max(1, Math.min(parseInt(limit, 10) || 200, 1000)),
       });
       if (error) throw error;
@@ -88,7 +107,7 @@ export function AuditLogsTab({
   useEffect(() => {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tenantFilter, actionFilter, limit]);
+  }, [tenantFilter, actionFilter, limit, periodPreset, fromDate, toDate]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return rows;
@@ -158,6 +177,47 @@ export function AuditLogsTab({
             </Select>
           </div>
         </div>
+        {/* Período */}
+        <div className="grid gap-2 sm:grid-cols-3">
+          <div>
+            <Label className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <CalendarRange className="h-3 w-3" /> Período
+            </Label>
+            <Select value={periodPreset} onValueChange={setPeriodPreset}>
+              <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todo o histórico</SelectItem>
+                <SelectItem value="1">Últimas 24h</SelectItem>
+                <SelectItem value="7">Últimos 7 dias</SelectItem>
+                <SelectItem value="30">Últimos 30 dias</SelectItem>
+                <SelectItem value="90">Últimos 90 dias</SelectItem>
+                <SelectItem value="custom">Período personalizado</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {periodPreset === "custom" && (
+            <>
+              <div>
+                <Label className="text-[11px] text-muted-foreground">De</Label>
+                <Input
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                  className="h-9"
+                />
+              </div>
+              <div>
+                <Label className="text-[11px] text-muted-foreground">Até</Label>
+                <Input
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                  className="h-9"
+                />
+              </div>
+            </>
+          )}
+        </div>
         <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
           <Filter className="h-3 w-3" />
           {filtered.length} {filtered.length === 1 ? "registro" : "registros"} exibido(s)
@@ -216,10 +276,16 @@ export function AuditLogsTab({
                   </span>
                 </button>
                 {isOpen && row.metadata && Object.keys(row.metadata).length > 0 && (
-                  <div className="border-t border-border/60 bg-muted/30 p-3 sm:p-4">
-                    <pre className="max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-background/80 p-3 text-[11px] leading-relaxed">
-                      {JSON.stringify(row.metadata, null, 2)}
-                    </pre>
+                  <div className="space-y-3 border-t border-border/60 bg-muted/30 p-3 sm:p-4">
+                    {renderBeforeAfter(row.metadata)}
+                    <details className="group">
+                      <summary className="cursor-pointer text-[11px] font-medium text-muted-foreground hover:text-foreground">
+                        Ver metadata completo (JSON)
+                      </summary>
+                      <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-background/80 p-3 text-[11px] leading-relaxed">
+                        {JSON.stringify(row.metadata, null, 2)}
+                      </pre>
+                    </details>
                   </div>
                 )}
               </li>
@@ -252,4 +318,61 @@ function formatDateTime(iso: string) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+/**
+ * Renderiza um diff visual antes/depois quando o metadata contém
+ * chaves `before` e `after` (padrão usado pelas RPCs admin_*).
+ */
+function renderBeforeAfter(metadata: Record<string, unknown>) {
+  const before = metadata.before as Record<string, unknown> | undefined;
+  const after = metadata.after as Record<string, unknown> | undefined;
+
+  if (!before && !after) return null;
+
+  const keys = Array.from(
+    new Set([...(before ? Object.keys(before) : []), ...(after ? Object.keys(after) : [])]),
+  );
+  if (keys.length === 0) return null;
+
+  return (
+    <div className="space-y-2">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+        Mudanças
+      </p>
+      <div className="overflow-hidden rounded-lg border border-border/60">
+        <table className="w-full text-[11px]">
+          <thead className="bg-muted/60">
+            <tr>
+              <th className="px-2 py-1.5 text-left font-medium">Campo</th>
+              <th className="px-2 py-1.5 text-left font-medium">Antes</th>
+              <th className="px-2 py-1.5 text-left font-medium">Depois</th>
+            </tr>
+          </thead>
+          <tbody>
+            {keys.map((k) => {
+              const b = before?.[k];
+              const a = after?.[k];
+              const changed = JSON.stringify(b) !== JSON.stringify(a);
+              return (
+                <tr key={k} className={`border-t border-border/40 ${changed ? "bg-warning/5" : ""}`}>
+                  <td className="px-2 py-1.5 font-mono text-muted-foreground">{k}</td>
+                  <td className="px-2 py-1.5 font-mono text-destructive/80">{formatVal(b)}</td>
+                  <td className="px-2 py-1.5 font-mono text-success">{formatVal(a)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function formatVal(v: unknown): string {
+  if (v === null || v === undefined) return "—";
+  if (typeof v === "string") return v;
+  if (typeof v === "boolean") return v ? "sim" : "não";
+  if (typeof v === "number") return String(v);
+  return JSON.stringify(v);
 }
