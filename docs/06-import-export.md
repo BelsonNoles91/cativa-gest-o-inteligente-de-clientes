@@ -8,7 +8,9 @@ Suporta:
 
 - **Clientes** — base de CRM (nome, telefone, e-mail, nascimento, cidade, …).
 - **Serviços** — catálogo com duração e preço.
-- **Equipe** — profissionais (vinculação a auth.user é manual depois).
+- **Equipe** — profissionais com apelido, função, **especialidade, e-mail,
+  telefone, comissão (%) e flag de ativo**. O vínculo a `auth.users` (login)
+  continua sendo feito pelo fluxo de convite em Configurações → Equipe.
 - **Pacotes & Protocolos**.
 - **Agendamentos** — via nomes de cliente/profissional/serviço; a unidade pode vir vazia
   quando o tenant tiver apenas uma unidade ativa.
