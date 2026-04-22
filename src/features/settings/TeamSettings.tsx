@@ -411,7 +411,7 @@ export function TeamSettings() {
                       {commission !== null ? ` · Comissão ${commission}%` : ""}
                     </p>
                   </div>
-                  <StatusBadge tone={p.is_active ? "success" : "muted"} dot={false}>
+                  <StatusBadge tone={p.is_active ? "success" : "neutral"} dot={false}>
                     {p.is_active ? "Ativo" : "Inativo"}
                   </StatusBadge>
                   <div className="flex items-center gap-1">
