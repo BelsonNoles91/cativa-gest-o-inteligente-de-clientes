@@ -149,7 +149,7 @@ export function ProvisionTestUsersCard() {
                     {acc.notes ? (
                       <AlertTriangle className="h-4 w-4 text-destructive" />
                     ) : (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      <CheckCircle2 className="h-4 w-4 text-primary" />
                     )}
                     <span className="font-medium">{ROLE_LABELS[acc.role] ?? acc.role}</span>
                     <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{acc.email}</code>
