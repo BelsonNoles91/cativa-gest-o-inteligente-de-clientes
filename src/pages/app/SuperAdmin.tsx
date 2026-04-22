@@ -48,6 +48,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   billingPeriodLabels,
   eventLabels,
+  formatPrice,
   planStatusLabels,
   subscriptionStatusLabels,
   subscriptionStatusTone,
