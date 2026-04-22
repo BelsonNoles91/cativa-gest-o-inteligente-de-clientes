@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { usePortalClient } from "@/features/portal/PortalClientProvider";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { OfflineBanner } from "@/components/shell/OfflineBanner";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -68,6 +69,7 @@ export function PortalLayout() {
 
   return (
     <div className="min-h-screen bg-gradient-soft">
+      <OfflineBanner />
       {/* Header */}
       <header className="sticky top-0 z-30 border-b border-border/60 bg-card/80 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
