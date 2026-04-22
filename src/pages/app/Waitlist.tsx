@@ -422,7 +422,7 @@ export default function WaitlistPage() {
           icon={<Hourglass className="h-6 w-6" />}
           title="Nenhum item nesta fila"
           description="Crie um novo registro para capturar encaixes e oportunidades."
-          action={<Button onClick={openCreateDialog}><Plus className="mr-2 h-4 w-4" />Novo item</Button>}
+          action={<Button data-critical-action data-testid="waitlist-create-cta" onClick={openCreateDialog}><Plus className="mr-2 h-4 w-4" />Novo item</Button>}
         />
       ) : (
         <div className="space-y-3">

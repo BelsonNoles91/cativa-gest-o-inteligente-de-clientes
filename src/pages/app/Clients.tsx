@@ -718,6 +718,8 @@ export default function ClientsPage() {
             <Dialog open={openCreate} onOpenChange={setOpenCreate}>
               <DialogTrigger asChild>
                 <Button
+                  data-critical-action
+                  data-testid="clients-create-cta"
                   className="rounded-xl bg-gradient-brand"
                   disabled={
                     limits?.maxActiveClients !== null &&

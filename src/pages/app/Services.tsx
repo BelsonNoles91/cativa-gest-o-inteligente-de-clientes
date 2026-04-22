@@ -710,7 +710,7 @@ export default function ServicesPage() {
                     icon={<Scissors className="h-6 w-6" />}
                     title="Nenhum serviço selecionado"
                     description="Crie um novo serviço ou selecione um item da lista para editar."
-                    action={<Button onClick={startNewService}><Plus className="mr-2 h-4 w-4" />Novo serviço</Button>}
+                    action={<Button data-critical-action data-testid="services-create-cta" onClick={startNewService}><Plus className="mr-2 h-4 w-4" />Novo serviço</Button>}
                   />
                 </CardContent>
               </Card>

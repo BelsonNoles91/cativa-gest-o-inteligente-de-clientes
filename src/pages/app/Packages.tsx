@@ -433,7 +433,7 @@ export default function PackagesPage() {
         description="Monte ofertas recorrentes, combos terapêuticos e jornadas clínicas usando o mesmo catálogo de serviços."
         icon={<PackageOpen className="h-5 w-5" />}
         actions={
-          <Button variant="outline" onClick={() => void refreshData()}>
+          <Button data-testid="packages-refresh" variant="outline" onClick={() => void refreshData()}>
             <RefreshCcw className="mr-2 h-4 w-4" /> Atualizar
           </Button>
         }

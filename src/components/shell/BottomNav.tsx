@@ -51,10 +51,24 @@ export function BottomNav() {
     i.to === "/app" ? location.pathname === "/app" : location.pathname.startsWith(i.to),
   );
 
+  /**
+   * Convenção de testids (estável para E2E):
+   *   [data-bottom-nav="true"]                     → container do nav
+   *   [data-testid="bottom-nav"]                   → idem (alias semântico)
+   *   [data-testid="bottom-nav-item"][data-route]  → cada item primary
+   *   [data-testid="bottom-nav-more"]              → botão "Mais"
+   *   [data-testid="bottom-nav-sheet"]             → Sheet aberto
+   *   [data-testid="bottom-nav-sheet-item"][data-route]
+   * O atributo data-route guarda a rota de destino (slug estável)
+   * mesmo que o label visível seja traduzido/alterado.
+   */
+  const slugOf = (to: string) => to.replace(/^\/+/, "").replace(/\//g, "-") || "root";
+
   return (
     <>
       <nav
-        data-bottom-nav
+        data-bottom-nav="true"
+        data-testid="bottom-nav"
         aria-label="Navegação principal"
         className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/95 backdrop-blur-xl pb-safe pl-safe pr-safe md:hidden"
       >
@@ -64,6 +78,9 @@ export function BottomNav() {
               <NavLink
                 to={item.to}
                 end={item.to === "/app"}
+                data-testid="bottom-nav-item"
+                data-route={slugOf(item.to)}
+                data-locked={item.locked ? "true" : "false"}
                 className={cn(
                   "flex flex-col items-center justify-center gap-0.5 rounded-lg py-2 text-[10.5px] font-medium tap-feedback",
                   "text-muted-foreground transition-colors min-h-touch",
@@ -88,6 +105,8 @@ export function BottomNav() {
               <button
                 type="button"
                 onClick={() => setMoreOpen(true)}
+                data-testid="bottom-nav-more"
+                data-state={moreOpen ? "open" : "closed"}
                 className={cn(
                   "flex w-full flex-col items-center justify-center gap-0.5 rounded-lg py-2 text-[10.5px] font-medium tap-feedback transition-colors min-h-touch",
                   moreActive ? "text-primary" : "text-muted-foreground",
@@ -107,11 +126,15 @@ export function BottomNav() {
       <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
         <SheetContent
           side="bottom"
+          data-testid="bottom-nav-sheet"
           className="rounded-t-3xl border-t border-border/70 p-0 max-h-[85vh]"
         >
           <SheetHeader className="flex-row items-center justify-between border-b border-border/60 px-5 py-4">
             <SheetTitle className="text-left">Todos os módulos</SheetTitle>
-            <SheetClose className="rounded-full p-2 text-muted-foreground tap-feedback">
+            <SheetClose
+              data-testid="bottom-nav-sheet-close"
+              className="rounded-full p-2 text-muted-foreground tap-feedback"
+            >
               <X className="h-4 w-4" />
             </SheetClose>
           </SheetHeader>
@@ -129,6 +152,10 @@ export function BottomNav() {
                       setMoreOpen(false);
                       navigate(item.to);
                     }}
+                    data-testid="bottom-nav-sheet-item"
+                    data-route={slugOf(item.to)}
+                    data-locked={item.locked ? "true" : "false"}
+                    data-active={active ? "true" : "false"}
                     className={cn(
                       "surface-card flex aspect-square flex-col items-center justify-center gap-2 p-3 tap-feedback transition-colors",
                       active && "border-primary/50 bg-primary-soft/40",

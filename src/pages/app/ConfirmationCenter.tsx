@@ -291,6 +291,7 @@ export default function ConfirmationCenter() {
         actions={
           <div className="flex gap-2">
             <Button
+              data-testid="confirmation-refresh"
               variant="outline"
               onClick={() => center.refresh()}
               disabled={center.loading}
@@ -298,6 +299,8 @@ export default function ConfirmationCenter() {
               <RefreshCcw className="mr-1.5 h-4 w-4" /> Atualizar
             </Button>
             <Button
+              data-critical-action
+              data-testid="confirmation-generate-cta"
               onClick={() => center.generate()}
               disabled={center.generating}
             >

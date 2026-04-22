@@ -29,16 +29,25 @@ export function OfflineBanner() {
 
   if (online && !showRecovered) return null;
 
+  // Estado expoosto para E2E:
+  //   data-offline-banner="true"  → presença do banner
+  //   data-offline-state="offline" | "recovered" → permite asserts específicos
+  const state: "offline" | "recovered" = online ? "recovered" : "offline";
+
   return (
     <div
       role="status"
       aria-live="polite"
+      data-offline-banner="true"
+      data-offline-state={state}
+      data-testid="offline-banner"
       className={cn(
         "fixed inset-x-0 z-50 flex justify-center px-3 pointer-events-none",
         "top-[calc(env(safe-area-inset-top)+8px)]",
       )}
     >
       <div
+        data-testid="offline-banner-message"
         className={cn(
           "pointer-events-auto inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium shadow-lg backdrop-blur transition-all",
           online

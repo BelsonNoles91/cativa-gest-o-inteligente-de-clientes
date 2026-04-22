@@ -604,9 +604,15 @@ export async function goOffline(page: Page): Promise<() => Promise<void>> {
     });
 
   // Aguarda o banner aparecer ATIVAMENTE (até 3s) em vez de sleep cego.
+  // Usa data-offline-state quando presente (testid estável); cai para regex de
+  // role=status caso seja uma versão antiga do shell.
   try {
     await page.waitForFunction(
       () => {
+        const stable = document.querySelector(
+          '[data-testid="offline-banner"][data-offline-state="offline"]',
+        );
+        if (stable) return true;
         const el = document.querySelector('[role="status"]');
         return el && /offline/i.test(el.textContent || "");
       },
@@ -638,6 +644,10 @@ export async function goOffline(page: Page): Promise<() => Promise<void>> {
     await page
       .waitForFunction(
         () => {
+          const stable = document.querySelector(
+            '[data-testid="offline-banner"][data-offline-state="offline"]',
+          );
+          if (stable) return false;
           const el = document.querySelector('[role="status"]');
           if (!el) return true;
           return !/offline/i.test(el.textContent || "");
@@ -657,7 +667,13 @@ export async function goOffline(page: Page): Promise<() => Promise<void>> {
  *  - Tem role=status para acessibilidade.
  */
 export async function assertOfflineBannerLayout(page: Page): Promise<void> {
-  const banner = page.locator('[role="status"]', { hasText: /offline/i }).first();
+  // Preferimos o data-testid estável; mantemos fallback por role+texto para
+  // compatibilidade com versões antigas do shell.
+  const banner = page
+    .locator(
+      '[data-testid="offline-banner"][data-offline-state="offline"], [role="status"]:has-text("offline")',
+    )
+    .first();
   await expect(banner).toBeVisible();
   const bannerBox = await banner.boundingBox();
   expect(bannerBox, "OfflineBanner sem bounding box").not.toBeNull();
