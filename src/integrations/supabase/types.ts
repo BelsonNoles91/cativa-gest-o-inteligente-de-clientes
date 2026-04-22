@@ -4056,29 +4056,12 @@ export type Database = {
           _tenant_id: string
         }
         Returns: {
-          accepted_at: string | null
-          accepted_by: string | null
-          created_at: string
           email: string
           expires_at: string
           id: string
-          invited_by: string | null
-          message: string | null
-          professional_id: string | null
-          revoked_at: string | null
           role: Database["public"]["Enums"]["app_role"]
-          status: Database["public"]["Enums"]["team_invitation_status"]
-          tenant_id: string
           token: string
-          token_hash: string
-          updated_at: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "team_invitations"
-          isOneToOne: true
-          isSetofReturn: false
-        }
+        }[]
       }
       admin_reactivate_client_membership: {
         Args: { _subscription_id: string }
