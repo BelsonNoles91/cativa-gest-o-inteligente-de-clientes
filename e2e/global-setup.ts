@@ -19,10 +19,9 @@
  * Se as variáveis estiverem ausentes, o setup grava um storageState VAZIO e
  * imprime um aviso — assim os specs de rotas públicas continuam rodando.
  */
-import { chromium, request, type FullConfig } from "@playwright/test";
+import { chromium, type FullConfig } from "@playwright/test";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { config as loadEnv } from "node:process";
 
 // Carrega .env.local se existir (sem dep extra: parse manual simples).
 function loadEnvFile(file: string) {
