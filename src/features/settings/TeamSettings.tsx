@@ -377,18 +377,9 @@ export function TeamSettings() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => onCopyInviteLink(i.token)}
-                          aria-label="Copiar link"
-                          title="Copiar link de aceite"
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
                           onClick={() => onRevokeInvite(i.id)}
                           aria-label="Revogar convite"
-                          title="Revogar convite"
+                          title="Revogar convite (gere um novo para reenviar o link)"
                         >
                           <XCircle className="h-4 w-4 text-destructive" />
                         </Button>
