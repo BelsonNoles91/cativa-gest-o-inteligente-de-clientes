@@ -69,9 +69,14 @@ export function AppSidebar() {
                 <SidebarMenu>
                   {items.map((item) => {
                     const active = isActive(item.to);
+                    const locked = Boolean(item.featureKey) && !hasFeature(item.featureKey!);
                     return (
                       <SidebarMenuItem key={item.to}>
-                        <SidebarMenuButton asChild tooltip={item.label} isActive={active}>
+                        <SidebarMenuButton
+                          asChild
+                          tooltip={locked ? `${item.label} · plano necessário` : item.label}
+                          isActive={active}
+                        >
                           <NavLink
                             to={item.to}
                             end={item.to === "/app"}
@@ -84,6 +89,12 @@ export function AppSidebar() {
                           >
                             <item.icon className="h-4 w-4 shrink-0" />
                             <span className="truncate">{item.label}</span>
+                            {locked && !collapsed && (
+                              <Lock
+                                aria-label="Recurso bloqueado pelo plano"
+                                className="ml-auto h-3 w-3 text-muted-foreground"
+                              />
+                            )}
                           </NavLink>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
