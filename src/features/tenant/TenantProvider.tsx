@@ -29,6 +29,10 @@ interface MembershipRow {
 
 interface TenantContextValue {
   loading: boolean;
+  /** True quando já fizemos pelo menos uma checagem no servidor após auth pronto. */
+  verified: boolean;
+  /** Confirmação real do servidor: existe membership ativo OU é super_admin. */
+  hasActiveTenant: boolean;
   isSuperAdmin: boolean;
   currentTenant: TenantRow | null;
   currentUnit: UnitRow | null;
