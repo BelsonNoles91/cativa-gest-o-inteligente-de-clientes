@@ -63,7 +63,21 @@ export function BrandingSettings() {
   };
 
   if (!currentTenant) return null;
-  if (loading) return <div className="flex h-40 items-center justify-center"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>;
+  if (billingLoading || loading) {
+    return (
+      <div className="flex h-40 items-center justify-center">
+        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+      </div>
+    );
+  }
+  if (!hasFeature("custom_branding")) {
+    return (
+      <PlanLockedNotice
+        title="Branding personalizado disponível em planos superiores"
+        description="Faça upgrade para personalizar cores, logo e identidade visual do seu portal e mensagens."
+      />
+    );
+  }
 
   return (
     <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
