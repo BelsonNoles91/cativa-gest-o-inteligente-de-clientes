@@ -57,9 +57,10 @@ export default function Onboarding() {
   } = useTenant();
   const navigate = useNavigate();
 
-  // step 0 (signup) só aparece se não estiver logado
-  const initialStep = user ? 1 : 0;
-  const [step, setStep] = useState(initialStep);
+  // Step 0 sempre aparece quando o usuário ainda não tem tenant/membership completo,
+  // mesmo que já exista uma sessão ativa (preview, navegador antigo, etc.).
+  // Só pulamos o Step 0 quando o avanço for explícito (após signup ou login bem-sucedido).
+  const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [pendingEmailConfirmation, setPendingEmailConfirmation] = useState(false);
 
