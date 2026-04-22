@@ -282,9 +282,12 @@ function TenantsTab({
   onReload: () => Promise<void>;
 }) {
   const { toast } = useToast();
+  const { impersonateTenant, refresh: refreshTenantContext } = useTenant();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedTenant, setSelectedTenant] = useState<TenantWithSub | null>(null);
+  const [editingTenant, setEditingTenant] = useState<TenantWithSub | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", slug: "", segment: "salao" as TenantSegment });
   const [events, setEvents] = useState<SubscriptionEvent[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(false);
   const [overrideForm, setOverrideForm] = useState({
@@ -295,6 +298,46 @@ function TenantsTab({
     discountCents: "0",
     discountReason: "",
   });
+
+  function openEdit(tenant: TenantWithSub) {
+    setEditingTenant(tenant);
+    setEditForm({ name: tenant.name, slug: tenant.slug, segment: tenant.segment });
+  }
+
+  async function saveEdit() {
+    if (!editingTenant) return;
+    try {
+      const { error } = await supabase.rpc("admin_update_tenant", {
+        _tenant_id: editingTenant.id,
+        _name: editForm.name.trim() || null,
+        _slug: editForm.slug.trim() || null,
+        _segment: editForm.segment,
+      });
+      if (error) throw error;
+      toast({ title: "Tenant atualizado" });
+      setEditingTenant(null);
+      await Promise.all([onReload(), refreshTenantContext()]);
+    } catch (err) {
+      toast({
+        title: "Erro ao atualizar tenant",
+        description: String(err instanceof Error ? err.message : err),
+        variant: "destructive",
+      });
+    }
+  }
+
+  async function handleImpersonate(tenant: TenantWithSub) {
+    try {
+      await impersonateTenant(tenant.id, "switcher-tenants-tab");
+      toast({ title: `Impersonando ${tenant.name}`, description: "Acesso registrado em audit logs." });
+    } catch (err) {
+      toast({
+        title: "Erro ao impersonar",
+        description: String(err instanceof Error ? err.message : err),
+        variant: "destructive",
+      });
+    }
+  }
 
   const filtered = useMemo(
     () =>
