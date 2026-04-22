@@ -79,34 +79,45 @@ export function BottomNav() {
         className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/95 backdrop-blur-xl pb-safe pl-safe pr-safe md:hidden"
       >
         <ul className="grid grid-cols-4 px-1 pt-1">
-          {primary.map((item) => (
-            <li key={item.to}>
-              <NavLink
-                to={item.to}
-                end={item.to === "/app"}
-                data-testid="bottom-nav-item"
-                data-route={slugOf(item.to)}
-                data-locked={item.locked ? "true" : "false"}
-                className={cn(
-                  "flex flex-col items-center justify-center gap-0.5 rounded-lg py-2 text-[10.5px] font-medium tap-feedback",
-                  "text-muted-foreground transition-colors min-h-touch",
-                )}
-                activeClassName="text-primary"
-              >
-                <span className="relative">
-                  <item.icon className="h-5 w-5" />
-                  {item.locked && (
-                    <Lock
-                      aria-label="Recurso bloqueado pelo plano"
-                      className="absolute -right-1.5 -top-1 h-2.5 w-2.5 text-muted-foreground"
-                    />
-                  )}
-                </span>
-                <span className="max-w-full truncate px-0.5">{item.label}</span>
-              </NavLink>
-            </li>
-          ))}
-          {secondary.length > 0 && (
+          {/* Skeletons enquanto billing carrega: evita "pulo" do nav
+              quando itens com featureKey são incluídos/removidos. */}
+          {billingLoading && primary.length === 0
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <li key={`skeleton-${i}`} data-testid="bottom-nav-skeleton">
+                  <div className="flex flex-col items-center justify-center gap-1 py-2 min-h-touch">
+                    <Skeleton className="h-5 w-5 rounded-md" />
+                    <Skeleton className="h-2.5 w-10" />
+                  </div>
+                </li>
+              ))
+            : primary.map((item) => (
+                <li key={item.to}>
+                  <NavLink
+                    to={item.to}
+                    end={item.to === "/app"}
+                    data-testid="bottom-nav-item"
+                    data-route={slugOf(item.to)}
+                    data-locked={item.locked ? "true" : "false"}
+                    className={cn(
+                      "flex flex-col items-center justify-center gap-0.5 rounded-lg py-2 text-[10.5px] font-medium tap-feedback",
+                      "text-muted-foreground transition-colors min-h-touch",
+                    )}
+                    activeClassName="text-primary"
+                  >
+                    <span className="relative">
+                      <item.icon className="h-5 w-5" />
+                      {item.locked && (
+                        <Lock
+                          aria-label="Recurso bloqueado pelo plano"
+                          className="absolute -right-1.5 -top-1 h-2.5 w-2.5 text-muted-foreground"
+                        />
+                      )}
+                    </span>
+                    <span className="max-w-full truncate px-0.5">{item.label}</span>
+                  </NavLink>
+                </li>
+              ))}
+          {!billingLoading && secondary.length > 0 && (
             <li>
               <button
                 type="button"
