@@ -184,29 +184,38 @@ export async function ensureClientUserLink(input: {
     clientId = (byEmail?.id as string) ?? null;
   }
 
-  // 3) criar cliente se não houver — só funcionará se RLS permitir.
-  //    O cliente do portal NÃO consegue criar registros em `clients`
-  //    (apenas equipe/owner). Para o caminho self-service,
-  //    a equipe deve ter pré-cadastrado o cliente. Caso não exista,
-  //    devolvemos um erro claro.
+  // 3) NÃO criamos cliente nem vínculo a partir do client. Esse caminho
+  //    self-service é vulnerável (qualquer um pode reivindicar qualquer
+  //    cliente). A criação fica restrita à equipe (RLS), e o auto-vínculo
+  //    legítimo é feito pela RPC `claim_portal_links_for_current_user`,
+  //    que valida o e-mail do JWT contra clients.email server-side.
   if (!clientId) {
     throw new Error(
       "Não encontramos seu cadastro neste estabelecimento. Peça à recepção para criar seu acesso.",
     );
   }
 
-  // 4) criar vínculo (RLS permite o próprio user criar)
+  // 4) Tenta reivindicar via RPC segura. Se o e-mail do JWT bater com algum
+  //    cliente do tenant, a RPC cria o vínculo. Senão, devolve 0 e pedimos
+  //    que a recepção crie o acesso manualmente.
+  const claimed = await claimPortalLinksForCurrentUser();
+  if (!claimed) {
+    throw new Error(
+      "Seu e-mail ainda não está vinculado a um cadastro. Peça à recepção para confirmar seu acesso.",
+    );
+  }
+
+  // 5) Recarrega o vínculo recém-criado para devolver ao chamador.
   const { data: link, error: linkErr } = await supabase
     .from("client_users")
-    .insert({
-      user_id: input.userId,
-      tenant_id: input.tenantId,
-      client_id: clientId,
-      status: "active",
-    })
     .select("id, tenant_id, client_id, user_id, status, linked_at")
-    .single();
+    .eq("user_id", input.userId)
+    .eq("tenant_id", input.tenantId)
+    .maybeSingle();
   if (linkErr) throw linkErr;
+  if (!link) {
+    throw new Error("Vínculo não encontrado após reivindicação. Tente novamente.");
+  }
   return {
     id: link.id as string,
     tenantId: link.tenant_id as string,
