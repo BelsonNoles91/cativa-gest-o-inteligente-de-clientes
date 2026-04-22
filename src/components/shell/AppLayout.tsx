@@ -8,12 +8,14 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/shell/AppSidebar";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { BottomNav } from "@/components/shell/BottomNav";
+import { OfflineBanner } from "@/components/shell/OfflineBanner";
 import { TenantBillingProvider } from "@/features/billing/TenantBillingProvider";
 
 export function AppLayout() {
   return (
     <TenantBillingProvider>
       <SidebarProvider>
+        <OfflineBanner />
         <div className="flex min-h-screen w-full bg-background">
           <div className="hidden md:block">
             <AppSidebar />
