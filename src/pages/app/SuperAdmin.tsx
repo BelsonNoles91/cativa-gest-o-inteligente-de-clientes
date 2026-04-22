@@ -230,9 +230,10 @@ export default function SuperAdmin() {
         </div>
       ) : (
         <Tabs defaultValue="tenants" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-7">
+          <TabsList className="grid w-full grid-cols-4 sm:grid-cols-8">
             <TabsTrigger value="tenants"><Building2 className="mr-1.5 h-3.5 w-3.5" />Tenants</TabsTrigger>
             <TabsTrigger value="members" data-testid="tab-members"><Users className="mr-1.5 h-3.5 w-3.5" />Membros</TabsTrigger>
+            <TabsTrigger value="client-memberships" data-testid="tab-client-memberships"><Package className="mr-1.5 h-3.5 w-3.5" />Memberships</TabsTrigger>
             <TabsTrigger value="plans"><Package className="mr-1.5 h-3.5 w-3.5" />Planos</TabsTrigger>
             <TabsTrigger value="flags"><Flag className="mr-1.5 h-3.5 w-3.5" />Flags</TabsTrigger>
             <TabsTrigger value="templates"><FileStack className="mr-1.5 h-3.5 w-3.5" />Templates</TabsTrigger>
@@ -246,6 +247,10 @@ export default function SuperAdmin() {
 
           <TabsContent value="members">
             <MembersTab />
+          </TabsContent>
+
+          <TabsContent value="client-memberships">
+            <ClientMembershipsTab tenants={tenants.map((t) => ({ id: t.id, name: t.name }))} />
           </TabsContent>
 
           <TabsContent value="plans">
