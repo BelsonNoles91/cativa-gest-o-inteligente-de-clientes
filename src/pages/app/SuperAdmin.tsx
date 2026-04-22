@@ -13,9 +13,11 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   Trash2,
+  Users,
 } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { TrialLogsTab } from "@/features/admin/TrialLogsTab";
+import { MembersTab } from "@/features/admin/MembersTab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -223,8 +225,9 @@ export default function SuperAdmin() {
         </div>
       ) : (
         <Tabs defaultValue="tenants" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5">
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6">
             <TabsTrigger value="tenants"><Building2 className="mr-1.5 h-3.5 w-3.5" />Tenants</TabsTrigger>
+            <TabsTrigger value="members" data-testid="tab-members"><Users className="mr-1.5 h-3.5 w-3.5" />Membros</TabsTrigger>
             <TabsTrigger value="plans"><Package className="mr-1.5 h-3.5 w-3.5" />Planos</TabsTrigger>
             <TabsTrigger value="flags"><Flag className="mr-1.5 h-3.5 w-3.5" />Flags</TabsTrigger>
             <TabsTrigger value="templates"><FileStack className="mr-1.5 h-3.5 w-3.5" />Templates</TabsTrigger>
@@ -233,6 +236,10 @@ export default function SuperAdmin() {
 
           <TabsContent value="tenants">
             <TenantsTab tenants={tenants} plans={plans} onReload={reload} />
+          </TabsContent>
+
+          <TabsContent value="members">
+            <MembersTab />
           </TabsContent>
 
           <TabsContent value="plans">
