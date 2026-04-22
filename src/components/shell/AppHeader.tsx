@@ -40,6 +40,14 @@ export function AppHeader() {
       {/* Desktop */}
       <div className="hidden h-16 items-center gap-3 px-4 md:flex">
         <SidebarTrigger className="rounded-lg" />
+        {currentLogoUrl && (
+          <img
+            src={currentLogoUrl}
+            alt={currentTenant?.name ?? "Logo"}
+            className="h-9 w-9 rounded-lg object-contain bg-muted"
+            data-testid="tenant-logo-desktop"
+          />
+        )}
         <div className="ml-1 hidden lg:block">
           <TenantSwitcher />
         </div>
