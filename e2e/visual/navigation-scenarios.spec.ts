@@ -88,7 +88,9 @@ test.describe("cenários de navegação — safe-area + BottomNav", () => {
     logStep(scenario, "2.navegar para /app/clientes");
     await navigateOrFallback(page, {
       label: "nav-clientes",
-      clickSelector: '[data-bottom-nav] a[href="/app/clientes"]',
+      // Preferimos data-route (testid estável) ao href absoluto.
+      clickSelector:
+        '[data-testid="bottom-nav-item"][data-route="app-clientes"], [data-bottom-nav] a[href="/app/clientes"]',
       fallbackUrl: "/app/clientes",
       expectedUrlRegex: /\/app\/clientes/,
       timeoutMs: MAIN_TIMEOUT,
@@ -138,7 +140,8 @@ test.describe("cenários de navegação — safe-area + BottomNav", () => {
     logStep(scenario, "6.volta para /app");
     await navigateOrFallback(page, {
       label: "nav-home",
-      clickSelector: '[data-bottom-nav] a[href="/app"]',
+      clickSelector:
+        '[data-testid="bottom-nav-item"][data-route="app"], [data-bottom-nav] a[href="/app"]',
       fallbackUrl: "/app",
       expectedUrlRegex: /\/app\/?$/,
       timeoutMs: MAIN_TIMEOUT,
@@ -164,7 +167,9 @@ test.describe("cenários de navegação — safe-area + BottomNav", () => {
     await prepareForSnapshot(page);
 
     const moreButton = page
-      .locator('[data-bottom-nav] button[aria-label="Mais opções"]')
+      .locator(
+        '[data-testid="bottom-nav-more"], [data-bottom-nav] button[aria-label="Mais opções"]',
+      )
       .first();
     test.skip(
       (await moreButton.count()) === 0,
@@ -182,7 +187,9 @@ test.describe("cenários de navegação — safe-area + BottomNav", () => {
       );
     }
 
-    const sheet = page.locator('[role="dialog"]').first();
+    const sheet = page
+      .locator('[data-testid="bottom-nav-sheet"], [role="dialog"]')
+      .first();
     try {
       await expect(sheet).toBeVisible({ timeout: 3000 });
     } catch (err) {

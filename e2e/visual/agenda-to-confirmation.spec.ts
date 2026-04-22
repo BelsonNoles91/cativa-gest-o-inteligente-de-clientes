@@ -198,7 +198,8 @@ test.describe("cenário: Agenda → Confirmações → modal de ação", () => {
     logStep(scenario, "2.navegar para /app/confirmacoes");
     await navigateOrFallback(page, {
       label: "nav-confirmacoes",
-      clickSelector: '[data-bottom-nav] a[href="/app/confirmacoes"]',
+      clickSelector:
+        '[data-testid="bottom-nav-item"][data-route="app-confirmacoes"], [data-bottom-nav] a[href="/app/confirmacoes"]',
       fallbackUrl: "/app/confirmacoes",
       expectedUrlRegex: /\/app\/confirmacoes/,
       timeoutMs: MAIN_TIMEOUT,
