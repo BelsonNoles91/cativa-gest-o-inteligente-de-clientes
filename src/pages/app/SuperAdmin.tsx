@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { TrialLogsTab } from "@/features/admin/TrialLogsTab";
+import { MembersTab } from "@/features/admin/MembersTab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
