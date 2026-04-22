@@ -561,6 +561,21 @@ function TenantsTab({
                 ) : (
                   <div className="flex flex-wrap items-center gap-2">
                     <StatusBadge tone="neutral">Sem assinatura</StatusBadge>
+                    <Select onValueChange={(value) => void handleAssignPlan(tenant, value, true)}>
+                      <SelectTrigger className="h-8 w-[180px] text-xs">
+                        <SelectValue placeholder="Atribuir plano…" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {plans
+                          .filter((p) => p.status !== "archived")
+                          .map((plan) => (
+                            <SelectItem key={plan.id} value={plan.id}>
+                              {plan.name}
+                              {plan.trialDays > 0 ? ` · trial ${plan.trialDays}d` : ""}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
                     <Button size="sm" variant="outline" onClick={() => openEdit(tenant)}>
                       <Pencil className="mr-1.5 h-3.5 w-3.5" /> Editar
                     </Button>
