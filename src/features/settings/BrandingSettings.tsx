@@ -1,11 +1,14 @@
 /**
  * BrandingSettings — cores, logo (upload) e WhatsApp do negócio.
+ * Bloqueado para planos sem a feature `custom_branding`.
  */
 import { useEffect, useState } from "react";
 import { Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenant } from "@/features/tenant/TenantProvider";
+import { useTenantBilling } from "@/features/billing/useTenantBilling";
+import { PlanLockedNotice } from "@/features/billing/PlanLockedNotice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +16,7 @@ import { LogoUploader } from "@/components/brand/LogoUploader";
 
 export function BrandingSettings() {
   const { currentTenant } = useTenant();
+  const { loading: billingLoading, hasFeature } = useTenantBilling();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
