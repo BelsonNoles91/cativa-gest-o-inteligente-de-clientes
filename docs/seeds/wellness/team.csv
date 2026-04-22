@@ -1,4 +1,4 @@
-Apelido público;Função / Especialidade
-Ana Clara;Massagem relaxante
-Pedro;Liberação miofascial
-Clara;Aromaterapia e spa
+Apelido público;Função;Especialidade;E-mail;Telefone;Comissão (%);Ativo
+Ana Clara;Massoterapeuta;Massagem relaxante;ana@wellness.demo;11977770001;40;sim
+Pedro;Fisioterapeuta;Liberação miofascial;pedro@wellness.demo;11977770002;45;sim
+Clara;Aromaterapeuta;Aromaterapia e spa;clara@wellness.demo;11977770003;35;sim

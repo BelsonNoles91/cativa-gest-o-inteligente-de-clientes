@@ -1,4 +1,4 @@
-Apelido público;Função / Especialidade
-Dra. Luiza;Estética facial
-Fer Alves;Estética corporal
-Renata;Massoterapia
+Apelido público;Função;Especialidade;E-mail;Telefone;Comissão (%);Ativo
+Dra. Luiza;Esteticista;Estética facial;luiza@estetica.demo;11988880001;50;sim
+Fer Alves;Esteticista;Estética corporal;fer@estetica.demo;11988880002;45;sim
+Renata;Massoterapeuta;Massoterapia;renata@estetica.demo;11988880003;40;sim
