@@ -421,49 +421,67 @@ export function MembersTab() {
           description="Ajuste os filtros ou aguarde novos convites serem aceitos."
         />
       ) : (
-        <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-          {filtered.map((member) => (
-            <li key={member.membershipId}>
-              <button
-                type="button"
-                onClick={() => setEditing(member)}
-                className="surface-card group flex w-full flex-col gap-2 p-3 text-left transition hover:border-primary/40 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/40"
-                data-testid="member-card"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-soft text-primary">
-                    {member.isSuperAdmin ? <Crown className="h-4 w-4" /> : <UserCircle2 className="h-5 w-5" />}
+        <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {filtered.map((member) => {
+            const displayName = member.fullName ?? member.invitedEmail ?? member.email ?? "Sem nome";
+            const displayEmail = member.email ?? member.invitedEmail ?? "—";
+            return (
+              <li key={member.membershipId}>
+                <button
+                  type="button"
+                  onClick={() => setEditing(member)}
+                  className="surface-card group relative flex h-full w-full flex-col gap-3 overflow-hidden p-3.5 text-left transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  data-testid="member-card"
+                >
+                  {/* Linha 1: avatar + identidade + status */}
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={
+                        "grid h-10 w-10 shrink-0 place-items-center rounded-xl text-primary transition-transform group-hover:scale-105 " +
+                        (member.isSuperAdmin
+                          ? "bg-warning/15 text-warning"
+                          : "bg-gradient-soft")
+                      }
+                    >
+                      {member.isSuperAdmin ? (
+                        <Crown className="h-4 w-4" />
+                      ) : (
+                        <UserCircle2 className="h-5 w-5" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1 space-y-0.5">
+                      <p className="truncate text-sm font-semibold leading-tight">
+                        {displayName}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {displayEmail}
+                      </p>
+                    </div>
+                    <StatusBadge tone={STATUS_TONES[member.status]}>
+                      {STATUS_LABELS[member.status]}
+                    </StatusBadge>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">
-                      {member.fullName ?? member.invitedEmail ?? member.email ?? "Sem nome"}
-                    </p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {member.email ?? member.invitedEmail ?? "—"}
-                    </p>
-                  </div>
-                  <StatusBadge tone={STATUS_TONES[member.status]}>
-                    {STATUS_LABELS[member.status]}
-                  </StatusBadge>
-                </div>
-                <div className="flex flex-wrap items-center gap-1.5 text-xs">
-                  <span className="inline-flex items-center gap-1 rounded-md bg-muted/60 px-2 py-0.5 text-muted-foreground">
-                    <Building2 className="h-3 w-3" />
-                    <span className="max-w-[12rem] truncate">{member.tenantName}</span>
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 font-medium text-primary">
-                    <UserCog className="h-3 w-3" />
-                    {roleLabels[member.role]}
-                  </span>
-                  {member.isSuperAdmin && (
-                    <span className="inline-flex items-center gap-1 rounded-md bg-warning/15 px-2 py-0.5 font-medium text-warning">
-                      <Crown className="h-3 w-3" /> Super Admin
+
+                  {/* Linha 2: tenant + papel (separados por divider sutil) */}
+                  <div className="flex flex-wrap items-center gap-1.5 border-t border-border/60 pt-2.5 text-xs">
+                    <span className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-md bg-muted/60 px-2 py-0.5 text-muted-foreground">
+                      <Building2 className="h-3 w-3 shrink-0" />
+                      <span className="truncate">{member.tenantName}</span>
                     </span>
-                  )}
-                </div>
-              </button>
-            </li>
-          ))}
+                    <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 font-medium text-primary">
+                      <UserCog className="h-3 w-3" />
+                      {roleLabels[member.role]}
+                    </span>
+                    {member.isSuperAdmin && (
+                      <span className="inline-flex items-center gap-1 rounded-md bg-warning/15 px-2 py-0.5 font-medium text-warning">
+                        <Crown className="h-3 w-3" /> Super Admin
+                      </span>
+                    )}
+                  </div>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
 
