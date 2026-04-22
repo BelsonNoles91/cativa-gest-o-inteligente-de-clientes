@@ -620,24 +620,30 @@ export async function listTrialActivationLogs(opts: {
     new Set(rows.map((r) => r.actor_id).filter((v): v is string => Boolean(v))),
   );
 
-  const [tenantsRes, profilesRes] = await Promise.all([
-    tenantIds.length > 0
-      ? supabase.from("tenants").select("id, name, slug").in("id", tenantIds)
-      : Promise.resolve({ data: [] as Array<{ id: string; name: string; slug: string }>, error: null }),
-    actorIds.length > 0
-      ? supabase.from("profiles").select("id, full_name, email").in("id", actorIds)
-      : Promise.resolve({ data: [] as Array<{ id: string; full_name: string | null; email: string | null }>, error: null }),
-  ]);
+  const tenantMap = new Map<string, { name: string; slug: string }>();
+  if (tenantIds.length > 0) {
+    const { data: tenantsData } = await supabase
+      .from("tenants")
+      .select("id, name, slug")
+      .in("id", tenantIds);
+    for (const t of tenantsData ?? []) {
+      tenantMap.set(t.id as string, { name: t.name as string, slug: t.slug as string });
+    }
+  }
 
-  const tenantMap = new Map(
-    (tenantsRes.data ?? []).map((t) => [t.id, { name: t.name, slug: t.slug }]),
-  );
-  const profileMap = new Map(
-    (profilesRes.data ?? []).map((p) => [
-      p.id,
-      { name: p.full_name ?? null, email: p.email ?? null },
-    ]),
-  );
+  const profileMap = new Map<string, { name: string | null; email: string | null }>();
+  if (actorIds.length > 0) {
+    const { data: profilesData } = await supabase
+      .from("profiles")
+      .select("id, full_name, email")
+      .in("id", actorIds);
+    for (const p of profilesData ?? []) {
+      profileMap.set(p.id as string, {
+        name: (p.full_name as string) ?? null,
+        email: (p.email as string) ?? null,
+      });
+    }
+  }
 
   return rows.map<TrialActivationLog>((r) => {
     const meta = (r.metadata ?? {}) as Record<string, unknown>;
