@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   Trash2,
+  Users,
 } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { TrialLogsTab } from "@/features/admin/TrialLogsTab";
