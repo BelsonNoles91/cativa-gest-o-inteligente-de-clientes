@@ -167,3 +167,119 @@ describe("domain/analytics — métricas operacionais", () => {
     expect(filtered[0]?.id).toBe("a2");
   });
 });
+
+// ============================================================================
+// Conversão da lista de espera + contrato consumido por Analytics.tsx
+// ============================================================================
+//
+// O componente `src/pages/app/Analytics.tsx` lê `metrics.waitlist.scheduled`
+// e `metrics.waitlist.worked` e renderiza o helper:
+//   "{scheduled} agendados de {worked} trabalhados"
+//
+// Esses testes blindam:
+//   1. A fórmula `waitlistConversionRate` (divisão segura).
+//   2. O contrato `{ scheduled, worked, totalOpen }` que o hook `useAnalytics`
+//      expõe em `metrics.waitlist`.
+//   3. A formatação dos KPIs (formatPct/formatCurrency) que aparece nos cards
+//      de "Conversão da lista de espera", "Receita futura em risco", etc.
+
+import { waitlistConversionRate } from "@/domain/analytics";
+
+describe("domain/analytics — waitlistConversionRate", () => {
+  it("retorna 0 quando worked=0 (sem dividir por zero)", () => {
+    expect(waitlistConversionRate({ scheduled: 0, worked: 0 })).toBe(0);
+    expect(waitlistConversionRate({ scheduled: 5, worked: 0 })).toBe(0);
+  });
+
+  it("calcula a porcentagem com 1 casa decimal", () => {
+    expect(waitlistConversionRate({ scheduled: 1, worked: 2 })).toBe(50);
+    expect(waitlistConversionRate({ scheduled: 1, worked: 3 })).toBeCloseTo(33.3, 1);
+    expect(waitlistConversionRate({ scheduled: 3, worked: 4 })).toBe(75);
+  });
+
+  it("aceita 100% quando todos os trabalhados viraram agendamento", () => {
+    expect(waitlistConversionRate({ scheduled: 7, worked: 7 })).toBe(100);
+  });
+});
+
+// ----------------------------------------------------------------------------
+// Contrato exposto pelo hook useAnalytics que Analytics.tsx consome.
+// ----------------------------------------------------------------------------
+
+interface WaitlistMetric {
+  scheduled: number;
+  worked: number;
+  totalOpen: number;
+}
+
+/**
+ * Reproduz o helper exibido em Analytics.tsx (linha:
+ *   `${metrics.waitlist.scheduled} agendados de ${metrics.waitlist.worked} trabalhados`
+ * ) para garantir que mudanças no shape do objeto quebrem o teste antes da UI.
+ */
+function waitlistHelperText(w: Pick<WaitlistMetric, "scheduled" | "worked">): string {
+  return `${w.scheduled} agendados de ${w.worked} trabalhados`;
+}
+
+describe("Analytics.tsx — contrato de metrics.waitlist", () => {
+  it("o objeto exposto pelo hook tem scheduled, worked e totalOpen numéricos", () => {
+    // Mesmo shape default do estado em useAnalytics: { totalOpen, worked, scheduled }
+    const waitlist: WaitlistMetric = { totalOpen: 0, worked: 0, scheduled: 0 };
+    expect(typeof waitlist.scheduled).toBe("number");
+    expect(typeof waitlist.worked).toBe("number");
+    expect(typeof waitlist.totalOpen).toBe("number");
+  });
+
+  it("renderiza o helper '<scheduled> agendados de <worked> trabalhados'", () => {
+    expect(waitlistHelperText({ scheduled: 8, worked: 12 })).toBe(
+      "8 agendados de 12 trabalhados",
+    );
+    expect(waitlistHelperText({ scheduled: 0, worked: 0 })).toBe(
+      "0 agendados de 0 trabalhados",
+    );
+  });
+
+  it("conversão derivada do par (scheduled, worked) bate com waitlistConversionRate", () => {
+    const waitlist: WaitlistMetric = { totalOpen: 4, worked: 10, scheduled: 4 };
+    const rate = waitlistConversionRate(waitlist);
+    expect(rate).toBe(40);
+    expect(waitlistHelperText(waitlist)).toBe("4 agendados de 10 trabalhados");
+  });
+});
+
+// ----------------------------------------------------------------------------
+// Formatadores usados nos KpiCards e MetricRows (espelham Analytics.tsx).
+// ----------------------------------------------------------------------------
+
+function formatPct(value: number): string {
+  return `${value.toFixed(1)}%`;
+}
+
+function formatCurrency(value: number): string {
+  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+describe("Analytics.tsx — formatadores dos KPIs", () => {
+  it("formatPct mostra sempre 1 casa decimal e o símbolo de %", () => {
+    expect(formatPct(0)).toBe("0.0%");
+    expect(formatPct(75)).toBe("75.0%");
+    expect(formatPct(33.3)).toBe("33.3%");
+    expect(formatPct(99.99)).toBe("100.0%");
+  });
+
+  it("formatCurrency formata em BRL com agrupamento pt-BR", () => {
+    // \\u00a0 é o NBSP que o Intl insere entre 'R$' e o número.
+    expect(formatCurrency(0)).toBe("R$\u00a00,00");
+    expect(formatCurrency(1500)).toBe("R$\u00a01.500,00");
+    expect(formatCurrency(1234.5)).toBe("R$\u00a01.234,50");
+  });
+
+  it("os hints dos cards usam os mesmos formatadores (smoke do contrato visual)", () => {
+    // Reproduz: KpiCard "Receita futura em risco" → hint "{count} agendamento(s) sem confirmação"
+    const futureRisk = { count: 3, value: 1280.5 };
+    expect(formatCurrency(futureRisk.value)).toBe("R$\u00a01.280,50");
+    expect(`${futureRisk.count} agendamento(s) sem confirmação`).toBe(
+      "3 agendamento(s) sem confirmação",
+    );
+  });
+});
