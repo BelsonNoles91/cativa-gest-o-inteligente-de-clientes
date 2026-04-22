@@ -23,6 +23,7 @@ import { useTenant } from "@/features/tenant/TenantProvider";
 import { useTenantBilling } from "@/features/billing/useTenantBilling";
 import { canAccess } from "@/domain/roles";
 import { subscriptionStatusLabels } from "@/domain/billing";
+import { NoSubscriptionBanner } from "@/features/billing/NoSubscriptionBanner";
 import { cn } from "@/lib/utils";
 
 const groupLabels: Record<string, string> = {
@@ -93,14 +94,22 @@ export function AppSidebar() {
 
       <SidebarFooter className="px-3 py-3">
         {!collapsed && (
-          <div className="rounded-xl border border-border/70 bg-gradient-soft p-3">
-            <p className="text-xs font-medium text-primary">
-              {loading ? "Carregando plano…" : plan?.name ?? "Sem plano"}
-            </p>
-            <p className="mt-0.5 text-[11px] text-muted-foreground">
-              {subscription ? subscriptionStatusLabels[subscription.status] : "Sem assinatura"}
-            </p>
-          </div>
+          <>
+            {!loading && !subscription ? (
+              <NoSubscriptionBanner variant="sidebar" />
+            ) : (
+              <div className="rounded-xl border border-border/70 bg-gradient-soft p-3">
+                <p className="text-xs font-medium text-primary">
+                  {loading ? "Carregando plano…" : plan?.name ?? "Sem plano"}
+                </p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  {subscription
+                    ? subscriptionStatusLabels[subscription.status]
+                    : "Sem assinatura"}
+                </p>
+              </div>
+            )}
+          </>
         )}
       </SidebarFooter>
     </Sidebar>

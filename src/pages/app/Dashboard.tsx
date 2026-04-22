@@ -23,6 +23,7 @@ import { listAppointmentsHydrated, type HydratedAppointment } from "@/repositori
 import { countQueueByStage } from "@/repositories/confirmation";
 import { fetchAvailability } from "@/repositories/analytics";
 import { supabase } from "@/integrations/supabase/client";
+import { NoSubscriptionBanner } from "@/features/billing/NoSubscriptionBanner";
 
 type DashboardSnapshot = {
   appointmentsToday: number;
@@ -179,6 +180,8 @@ export default function Dashboard() {
           </>
         }
       />
+
+      <NoSubscriptionBanner variant="panel" className="mb-4 md:mb-6" />
 
       {loading ? (
         <div className="flex h-60 items-center justify-center">
