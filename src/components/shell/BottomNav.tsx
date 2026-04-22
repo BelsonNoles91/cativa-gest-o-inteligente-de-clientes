@@ -6,13 +6,15 @@
  */
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { LayoutGrid, Lock, X } from "lucide-react";
+import { LayoutGrid, Lock, PackageOpen, X } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { navItems } from "@/config/navigation";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import { useTenantBilling } from "@/features/billing/useTenantBilling";
 import { canAccess } from "@/domain/roles";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/feedback/EmptyState";
 import {
   Sheet,
   SheetContent,
