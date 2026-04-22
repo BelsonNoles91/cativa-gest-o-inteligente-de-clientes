@@ -243,7 +243,10 @@ export default function ServicesPage() {
           variant: "destructive",
         });
       } finally {
-        if (!ignore) setLoading(false);
+        if (!ignore) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     })();
     return () => {
