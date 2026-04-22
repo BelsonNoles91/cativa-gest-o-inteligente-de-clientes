@@ -1,5 +1,5 @@
 /**
- * BrandingSettings — cores, logo URL e WhatsApp do negócio.
+ * BrandingSettings — cores, logo (upload) e WhatsApp do negócio.
  */
 import { useEffect, useState } from "react";
 import { Loader2, Save } from "lucide-react";
@@ -9,6 +9,7 @@ import { useTenant } from "@/features/tenant/TenantProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LogoUploader } from "@/components/brand/LogoUploader";
 
 export function BrandingSettings() {
   const { currentTenant } = useTenant();
@@ -80,8 +81,18 @@ export function BrandingSettings() {
         </div>
 
         <div className="space-y-2">
-          <Label>URL do logo (opcional)</Label>
-          <Input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://…" className="h-11 rounded-xl" />
+          <Label>Logo do estabelecimento</Label>
+          <LogoUploader
+            folder={currentTenant.id}
+            value={logoUrl || null}
+            onChange={async (url) => {
+              setLogoUrl(url ?? "");
+              // persiste imediatamente para refletir em Header/Portal sem precisar clicar em Salvar.
+              await supabase
+                .from("tenant_settings")
+                .upsert({ tenant_id: currentTenant.id, logo_url: url ?? null });
+            }}
+          />
         </div>
 
         <div className="space-y-2">
