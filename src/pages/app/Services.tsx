@@ -508,25 +508,50 @@ export default function ServicesPage() {
         description="Gerencie categorias, regras operacionais, políticas de cancelamento e preços por unidade ou profissional."
         icon={<Sparkles className="h-5 w-5" />}
         actions={
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={() => void refreshCatalog()}>
-              <RefreshCcw className="mr-2 h-4 w-4" /> Atualizar
-            </Button>
-            <Button variant="outline" onClick={() => {
-              setEditingCategory(null);
-              setCategoryForm(EMPTY_CATEGORY_FORM);
-              setCategoryDialogOpen(true);
-            }}>
-              <Tags className="mr-2 h-4 w-4" /> Categoria
-            </Button>
-            <Button variant="outline" onClick={() => {
-              setEditingPolicy(null);
-              setPolicyForm(EMPTY_POLICY_FORM);
-              setPolicyDialogOpen(true);
-            }}>
-              <ShieldBan className="mr-2 h-4 w-4" /> Política
-            </Button>
-            <Button onClick={startNewService}>
+          <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+            <div className="inline-flex items-center rounded-xl border border-border/70 bg-background/60 p-1 shadow-sm backdrop-blur">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-1.5 rounded-lg px-2.5 text-xs font-medium"
+                onClick={() => void refreshCatalog()}
+                title="Atualizar catálogo"
+              >
+                <RefreshCcw className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Atualizar</span>
+              </Button>
+              <Separator orientation="vertical" className="mx-0.5 h-5" />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-1.5 rounded-lg px-2.5 text-xs font-medium"
+                onClick={() => {
+                  setEditingCategory(null);
+                  setCategoryForm(EMPTY_CATEGORY_FORM);
+                  setCategoryDialogOpen(true);
+                }}
+                title="Nova categoria"
+              >
+                <Tags className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Categoria</span>
+              </Button>
+              <Separator orientation="vertical" className="mx-0.5 h-5" />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-1.5 rounded-lg px-2.5 text-xs font-medium"
+                onClick={() => {
+                  setEditingPolicy(null);
+                  setPolicyForm(EMPTY_POLICY_FORM);
+                  setPolicyDialogOpen(true);
+                }}
+                title="Nova política"
+              >
+                <ShieldBan className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Política</span>
+              </Button>
+            </div>
+            <Button onClick={startNewService} className="h-9 rounded-xl shadow-sm">
               <Plus className="mr-2 h-4 w-4" /> Novo serviço
             </Button>
           </div>
