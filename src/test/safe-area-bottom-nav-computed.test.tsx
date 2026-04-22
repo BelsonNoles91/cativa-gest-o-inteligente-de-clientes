@@ -86,18 +86,18 @@ describe("BottomNav — padding computado vs. esperado", () => {
     renderNav();
     const nav = screen.getByRole("navigation", { name: /navegação principal/i });
     // jsdom não resolve max()/calc() com env() (sempre retorna 0). Validamos
-    // a regra CSS aplicada: a classe .pb-safe está casada e a declaração
-    // contém o fallback de 0.5rem. Os valores reais por dispositivo são
-    // cobertos pelo Playwright (assertMainHasBottomPadding).
-    const sheet = Array.from(document.styleSheets)
+    // a regra CSS aplicada via cssText: a classe .pb-safe está casada e a
+    // declaração contém o fallback de 0.5rem. Os valores reais por dispositivo
+    // são cobertos pelo Playwright (assertMainHasBottomPadding).
+    const rule = Array.from(document.styleSheets)
       .flatMap((s) => {
         try { return Array.from(s.cssRules) } catch { return [] }
       })
       .find((r): r is CSSStyleRule =>
         r instanceof CSSStyleRule && r.selectorText === ".pb-safe",
       );
-    expect(sheet, ".pb-safe não encontrada na stylesheet").toBeTruthy();
-    expect(sheet!.style.paddingBottom).toMatch(
+    expect(rule, ".pb-safe não encontrada na stylesheet").toBeTruthy();
+    expect(rule!.cssText).toMatch(
       /max\(\s*env\(safe-area-inset-bottom\)\s*,\s*0\.5rem\s*\)/,
     );
     // E garante que o nav está usando .pb-safe (regra do JSX).
@@ -148,18 +148,18 @@ describe("Sincronia CSS ↔ JSX — alerta se classes safe-area mudam", () => {
   });
 
   it("CSS .pb-bottom-nav deve permanecer alinhado a calc(4.25rem + env(safe-area-inset-bottom))", () => {
-    // jsdom não resolve calc(rem + env(...)) — validamos a declaração crua.
+    // jsdom não resolve calc(rem + env(...)) — validamos a declaração crua via cssText.
     injectSafeAreaCss();
-    const sheet = Array.from(document.styleSheets)
+    const rule = Array.from(document.styleSheets)
       .flatMap((s) => {
         try { return Array.from(s.cssRules) } catch { return [] }
       })
       .find((r): r is CSSStyleRule =>
         r instanceof CSSStyleRule && r.selectorText === ".pb-bottom-nav",
       );
-    expect(sheet, ".pb-bottom-nav não encontrada").toBeTruthy();
+    expect(rule, ".pb-bottom-nav não encontrada").toBeTruthy();
     expect(
-      sheet!.style.paddingBottom,
+      rule!.cssText,
       "Declaração de .pb-bottom-nav mudou. Se intencional, atualize este " +
         "teste E assertMainHasBottomPadding em e2e/_helpers/visual.ts.",
     ).toMatch(
