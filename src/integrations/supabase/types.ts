@@ -305,6 +305,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "appointments_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "appointments_resource_id_fkey"
             columns: ["resource_id"]
             isOneToOne: false
@@ -1025,6 +1032,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "client_reviews_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "client_reviews_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
@@ -1319,6 +1333,13 @@ export type Database = {
             columns: ["preferred_professional_id"]
             isOneToOne: false
             referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clients_preferred_professional_id_fkey"
+            columns: ["preferred_professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
             referencedColumns: ["id"]
           },
           {
@@ -2246,6 +2267,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "professional_availability_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "professional_availability_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
@@ -2514,6 +2542,13 @@ export type Database = {
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_blocks_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
             referencedColumns: ["id"]
           },
           {
@@ -2799,6 +2834,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "service_professional_prices_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "service_professional_prices_service_id_fkey"
             columns: ["service_id"]
             isOneToOne: false
@@ -3062,6 +3104,7 @@ export type Database = {
           status: Database["public"]["Enums"]["team_invitation_status"]
           tenant_id: string
           token: string
+          token_hash: string
           updated_at: string
         }
         Insert: {
@@ -3079,6 +3122,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["team_invitation_status"]
           tenant_id: string
           token?: string
+          token_hash: string
           updated_at?: string
         }
         Update: {
@@ -3096,6 +3140,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["team_invitation_status"]
           tenant_id?: string
           token?: string
+          token_hash?: string
           updated_at?: string
         }
         Relationships: [
@@ -3104,6 +3149,13 @@ export type Database = {
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_invitations_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
             referencedColumns: ["id"]
           },
           {
@@ -3384,6 +3436,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "time_off_blocks_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "time_off_blocks_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
@@ -3658,6 +3717,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "waitlist_entries_preferred_professional_id_fkey"
+            columns: ["preferred_professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "waitlist_entries_preferred_unit_id_fkey"
             columns: ["preferred_unit_id"]
             isOneToOne: false
@@ -3689,7 +3755,75 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      professionals_public: {
+        Row: {
+          bio: string | null
+          color: string | null
+          commission_pct_hidden: number | null
+          created_at: string | null
+          display_name: string | null
+          email: string | null
+          id: string | null
+          is_active: boolean | null
+          phone: string | null
+          role_title: string | null
+          specialty: string | null
+          tenant_id: string | null
+          unit_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          bio?: string | null
+          color?: string | null
+          commission_pct_hidden?: never
+          created_at?: string | null
+          display_name?: string | null
+          email?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          phone?: string | null
+          role_title?: string | null
+          specialty?: string | null
+          tenant_id?: string | null
+          unit_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          bio?: string | null
+          color?: string | null
+          commission_pct_hidden?: never
+          created_at?: string | null
+          display_name?: string | null
+          email?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          phone?: string | null
+          role_title?: string | null
+          specialty?: string | null
+          tenant_id?: string | null
+          unit_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professionals_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professionals_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       accept_team_invitation: {
@@ -3936,6 +4070,7 @@ export type Database = {
           status: Database["public"]["Enums"]["team_invitation_status"]
           tenant_id: string
           token: string
+          token_hash: string
           updated_at: string
         }
         SetofOptions: {
@@ -4086,6 +4221,20 @@ export type Database = {
       }
       count_active_owners: { Args: { _tenant_id: string }; Returns: number }
       count_active_super_admins: { Args: never; Returns: number }
+      create_team_invitation: {
+        Args: {
+          _email: string
+          _expires_in_days?: number
+          _message?: string
+          _role: Database["public"]["Enums"]["app_role"]
+          _tenant_id: string
+        }
+        Returns: {
+          expires_at: string
+          id: string
+          token: string
+        }[]
+      }
       effective_subscription_limits: {
         Args: { _tenant_id: string }
         Returns: Json
@@ -4147,6 +4296,7 @@ export type Database = {
           status: Database["public"]["Enums"]["team_invitation_status"]
           tenant_id: string
           token: string
+          token_hash: string
           updated_at: string
         }[]
         SetofOptions: {
@@ -4155,6 +4305,14 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      list_professionals_with_commission: {
+        Args: { _tenant_id: string }
+        Returns: {
+          commission_pct: number
+          display_name: string
+          id: string
+        }[]
       }
       list_team_professionals: {
         Args: { _tenant_id: string }
@@ -4175,6 +4333,18 @@ export type Database = {
           user_id: string
         }[]
       }
+      lookup_team_invitation: {
+        Args: { _token: string }
+        Returns: {
+          email: string
+          expires_at: string
+          id: string
+          message: string
+          role: Database["public"]["Enums"]["app_role"]
+          status: Database["public"]["Enums"]["team_invitation_status"]
+          tenant_id: string
+        }[]
+      }
       revoke_team_invitation: {
         Args: { _invitation_id: string }
         Returns: {
@@ -4192,6 +4362,7 @@ export type Database = {
           status: Database["public"]["Enums"]["team_invitation_status"]
           tenant_id: string
           token: string
+          token_hash: string
           updated_at: string
         }
         SetofOptions: {
@@ -4228,6 +4399,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      tenant_storage_bytes_used: {
+        Args: { _tenant_id: string }
+        Returns: number
       }
       touch_portal_last_seen: { Args: { _link_id: string }; Returns: undefined }
     }
