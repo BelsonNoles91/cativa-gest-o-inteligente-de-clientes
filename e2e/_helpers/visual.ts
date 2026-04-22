@@ -394,3 +394,71 @@ export async function assertCriticalActionsAboveBottomNav(
       `ou similar para empurrar a ação acima da nav.`,
   ).toEqual([]);
 }
+
+/**
+ * Simula perda de conexão no contexto do browser e dispara o evento `offline`
+ * que o hook useOnlineStatus escuta. Retorna uma função para restaurar.
+ *
+ * Usado em cenários de navegação para validar que o OfflineBanner aparece
+ * sem quebrar safe-area / BottomNav.
+ */
+export async function goOffline(page: Page): Promise<() => Promise<void>> {
+  await page.context().setOffline(true);
+  await page.evaluate(() => {
+    window.dispatchEvent(new Event("offline"));
+  });
+  // Pequeno settle para o React renderizar o banner.
+  await page.waitForTimeout(150);
+  return async () => {
+    await page.context().setOffline(false);
+    await page.evaluate(() => {
+      window.dispatchEvent(new Event("online"));
+    });
+    await page.waitForTimeout(150);
+  };
+}
+
+/**
+ * Confirma que o OfflineBanner está visível (em estado offline) e:
+ *  - Não cobre nenhum item interativo do BottomNav.
+ *  - Respeita a safe-area superior (env(safe-area-inset-top)).
+ *  - Tem role=status para acessibilidade.
+ */
+export async function assertOfflineBannerLayout(page: Page): Promise<void> {
+  const banner = page.locator('[role="status"]', { hasText: /offline/i }).first();
+  await expect(banner).toBeVisible();
+  const bannerBox = await banner.boundingBox();
+  expect(bannerBox, "OfflineBanner sem bounding box").not.toBeNull();
+
+  // Banner no topo, não no rodapé — não pode sobrepor o BottomNav.
+  const vw = page.viewportSize()?.width ?? 0;
+  if (vw < 768) {
+    const nav = page.locator("[data-bottom-nav]").first();
+    if (await nav.count()) {
+      const navBox = await nav.boundingBox();
+      if (navBox) {
+        expect(
+          bannerBox!.y + bannerBox!.height,
+          `OfflineBanner (bottom=${bannerBox!.y + bannerBox!.height}) está ` +
+            `sobre o BottomNav (top=${navBox.y}).`,
+        ).toBeLessThan(navBox.y);
+      }
+    }
+  }
+
+  // Safe-area top: o banner não deve estar colado em y=0 quando há notch.
+  const safeTop = await page.evaluate(() => {
+    const probe = document.createElement("div");
+    probe.style.cssText =
+      "position:fixed;top:0;left:0;height:0;width:0;padding-top:env(safe-area-inset-top,0px);visibility:hidden";
+    document.body.appendChild(probe);
+    const v = parseFloat(getComputedStyle(probe).paddingTop) || 0;
+    probe.remove();
+    return v;
+  });
+  // Tolerância de 1px para subpixel.
+  expect(
+    bannerBox!.y,
+    `OfflineBanner top (${bannerBox!.y}) deve respeitar safe-area-inset-top (${safeTop}).`,
+  ).toBeGreaterThanOrEqual(Math.max(0, safeTop - 1));
+}

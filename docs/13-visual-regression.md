@@ -138,6 +138,30 @@ Antes de comparar pixels, cada teste valida:
 Se essas asserções falham, o diff visual nem chega a rodar — você recebe um
 erro com a tag/classe do elemento problemático.
 
+## Cenários de navegação multi-página
+
+Além dos snapshots por rota isolada, o spec
+`e2e/visual/navigation-scenarios.spec.ts` exercita **fluxos reais de usuário**
+para garantir que `safe-area` e `BottomNav` permanecem corretos ao **mudar de
+estado** (não só ao montar a página do zero):
+
+1. **Home (`/app`)** → entra, valida nav + safe-area.
+2. **Navega via clique no BottomNav** para `/app/clientes` (lista longa).
+3. **Scroll até o fim** → reafirma que o conteúdo não fica oculto.
+4. **Ativa offline** (via `context.setOffline(true)` + evento `offline`) →
+   valida que o `OfflineBanner` aparece **acima do conteúdo**, respeita
+   `safe-area-inset-top` e **não cobre o BottomNav**.
+5. **Restaura conexão** → layout volta ao normal.
+6. **Volta para Home** via clique no nav → safe-area e ações críticas
+   continuam íntegras.
+7. **Abre o sheet "Mais"** → valida que o último item clicável respeita
+   `pb-safe` (não fica embaixo do home indicator).
+
+Roda apenas em viewports `< 768px` (onde o BottomNav existe) e captura
+regressões que screenshots estáticos não pegam: state-leak entre rotas,
+banner sobrepondo nav, sheet com altura mal calculada em iPhone landscape,
+etc.
+
 ## Mascaramento de áreas voláteis
 
 Áreas que mudam entre runs (relógio, contadores) são mascaradas via:
