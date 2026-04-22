@@ -214,3 +214,183 @@ export async function assertContentNotHiddenByBottomNav(
       `está sendo ocultado pela nav fixa. Verifique pb-bottom-nav no main.`,
   ).toBeLessThanOrEqual(navTop + 2);
 }
+
+/**
+ * Garante que cada item interativo do BottomNav (links/botões) respeita a
+ * safe-area horizontal/inferior do dispositivo. Em iPhones landscape o notch
+ * fica à esquerda → `safe-area-inset-left` deve empurrar o primeiro item;
+ * em portrait o home indicator → `safe-area-inset-bottom` deve empurrar a
+ * base do nav para cima.
+ *
+ * Para cada item:
+ *   - `rect.left  >= safeLeft   - tol` (não sobreposto ao notch esquerdo)
+ *   - `rect.right <= vw - safeRight + tol` (não sobreposto ao notch direito)
+ *   - `rect.bottom <= vh - safeBottom + tol` (não sob o home indicator)
+ *
+ * Lê `env(safe-area-inset-*)` via um probe DOM para obter os valores reais
+ * resolvidos pelo browser.
+ *
+ * Só roda em viewports onde o BottomNav existe (< 768px).
+ */
+export async function assertBottomNavItemsRespectSafeArea(
+  page: Page,
+): Promise<void> {
+  const vw = page.viewportSize()?.width ?? 0;
+  const vh = page.viewportSize()?.height ?? 0;
+  if (vw >= 768) return;
+
+  await expect(page.locator("[data-bottom-nav]")).toBeVisible();
+
+  const result = await page.evaluate(() => {
+    // Probe que resolve env(safe-area-inset-*) → px reais do dispositivo.
+    const probe = document.createElement("div");
+    probe.style.cssText = [
+      "position:fixed",
+      "top:0",
+      "left:0",
+      "width:0",
+      "height:0",
+      "padding-top:env(safe-area-inset-top, 0px)",
+      "padding-right:env(safe-area-inset-right, 0px)",
+      "padding-bottom:env(safe-area-inset-bottom, 0px)",
+      "padding-left:env(safe-area-inset-left, 0px)",
+      "pointer-events:none",
+      "visibility:hidden",
+    ].join(";");
+    document.body.appendChild(probe);
+    const cs = getComputedStyle(probe);
+    const safe = {
+      top: parseFloat(cs.paddingTop) || 0,
+      right: parseFloat(cs.paddingRight) || 0,
+      bottom: parseFloat(cs.paddingBottom) || 0,
+      left: parseFloat(cs.paddingLeft) || 0,
+    };
+    probe.remove();
+
+    const nav = document.querySelector(
+      "[data-bottom-nav]",
+    ) as HTMLElement | null;
+    if (!nav) return { found: false as const, safe };
+
+    // Itens interativos: links + botões dentro do nav.
+    const items = Array.from(
+      nav.querySelectorAll<HTMLElement>("a, button"),
+    );
+    const offenders: {
+      idx: number;
+      label: string;
+      side: "left" | "right" | "bottom";
+      delta: number;
+    }[] = [];
+
+    items.forEach((el, idx) => {
+      const r = el.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) return;
+      const label =
+        el.getAttribute("aria-label") ||
+        el.textContent?.trim().slice(0, 30) ||
+        el.tagName.toLowerCase();
+      const tol = 1;
+      if (r.left < safe.left - tol) {
+        offenders.push({ idx, label, side: "left", delta: safe.left - r.left });
+      }
+      if (r.right > window.innerWidth - safe.right + tol) {
+        offenders.push({
+          idx,
+          label,
+          side: "right",
+          delta: r.right - (window.innerWidth - safe.right),
+        });
+      }
+      if (r.bottom > window.innerHeight - safe.bottom + tol) {
+        offenders.push({
+          idx,
+          label,
+          side: "bottom",
+          delta: r.bottom - (window.innerHeight - safe.bottom),
+        });
+      }
+    });
+
+    return { found: true as const, safe, offenders, totalItems: items.length };
+  });
+
+  expect(result.found, "BottomNav não encontrado no DOM").toBe(true);
+  expect(
+    result.totalItems,
+    "BottomNav sem itens interativos (a/button)",
+  ).toBeGreaterThan(0);
+  expect(
+    result.offenders,
+    `Itens do BottomNav sobrepostos à safe-area (vw=${vw}, vh=${vh}, ` +
+      `safe=${JSON.stringify(result.safe)}): ${JSON.stringify(result.offenders)}`,
+  ).toEqual([]);
+}
+
+/**
+ * Garante que ações críticas marcadas com `[data-critical-action]` (FABs,
+ * botões "Salvar" sticky, CTA principal de uma página) não ficam ocultos
+ * atrás do BottomNav.
+ *
+ * Convenção: marque elementos críticos com `data-critical-action` no JSX:
+ *   <Button data-critical-action onClick={...}>Salvar</Button>
+ *
+ * Regra: bottom do elemento <= top do BottomNav (tol 2px). Se o elemento
+ * for `position: fixed/sticky`, ainda assim deve estar visível e acima do
+ * nav.
+ *
+ * Se nenhum elemento marcado existir na página, o teste passa silenciosamente
+ * — ele só dispara quando há algo a verificar.
+ *
+ * Só roda em viewports onde o BottomNav existe (< 768px).
+ */
+export async function assertCriticalActionsAboveBottomNav(
+  page: Page,
+): Promise<void> {
+  const vw = page.viewportSize()?.width ?? 0;
+  if (vw >= 768) return;
+
+  const nav = page.locator("[data-bottom-nav]").first();
+  await expect(nav).toBeVisible();
+  const navBox = await nav.boundingBox();
+  if (!navBox) return;
+  const navTop = navBox.y;
+
+  const offenders = await page.evaluate((navTopArg: number) => {
+    const els = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-critical-action]"),
+    );
+    const out: {
+      tag: string;
+      label: string;
+      bottom: number;
+      position: string;
+    }[] = [];
+    for (const el of els) {
+      const r = el.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) continue;
+      const cs = getComputedStyle(el);
+      if (cs.visibility === "hidden" || cs.display === "none") continue;
+      if (r.bottom > navTopArg + 2) {
+        out.push({
+          tag: el.tagName.toLowerCase(),
+          label:
+            el.getAttribute("aria-label") ||
+            el.textContent?.trim().slice(0, 40) ||
+            "(sem rótulo)",
+          bottom: Math.round(r.bottom),
+          position: cs.position,
+        });
+      }
+    }
+    return out;
+  }, navTop);
+
+  expect(
+    offenders,
+    `Ações críticas (data-critical-action) sobrepostas ao BottomNav ` +
+      `(top=${Math.round(navTop)}px): ${JSON.stringify(offenders)}. ` +
+      `Adicione bottom-[calc(4.25rem+env(safe-area-inset-bottom)+0.5rem)] ` +
+      `ou similar para empurrar a ação acima da nav.`,
+  ).toEqual([]);
+}

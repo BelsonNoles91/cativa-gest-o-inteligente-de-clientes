@@ -119,6 +119,21 @@ Antes de comparar pixels, cada teste valida:
   e garante que o último elemento renderizado (não-fixed/sticky) tem `bottom`
   acima do top do BottomNav. Captura casos sutis onde um elemento sticky ou
   uma seção nova ultrapassa o padding reservado.
+- **Itens do BottomNav respeitam safe-area**: para cada `<a>`/`<button>` do
+  nav, valida que `rect.left >= safe-inset-left`, `rect.right <= vw -
+  safe-inset-right` e `rect.bottom <= vh - safe-inset-bottom`. Pega
+  sobreposição com notch lateral (iPhone landscape) e home indicator.
+- **Ações críticas acima do BottomNav**: qualquer elemento com atributo
+  `data-critical-action` (FABs, "Salvar" sticky, CTA principal) deve ter
+  `bottom <= top do nav`. Convenção: marque o JSX com
+  `<Button data-critical-action>...</Button>` e o teste alerta se o botão
+  for ocultado pela nav.
+
+> **Complementar (Vitest)**: `src/test/safe-area-bottom-nav-computed.test.tsx`
+> renderiza o `BottomNav` em jsdom e lê `getComputedStyle` do nó real,
+> garantindo que `pb-safe`, `pl-safe`, `pr-safe` e `pb-bottom-nav` continuam
+> resolvendo para os valores esperados (e que `min-h-touch >= 44px` em todos
+> os itens). Roda em <100ms a cada commit, antes mesmo do Playwright.
 
 Se essas asserções falham, o diff visual nem chega a rodar — você recebe um
 erro com a tag/classe do elemento problemático.
