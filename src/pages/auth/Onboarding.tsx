@@ -205,6 +205,11 @@ export default function Onboarding() {
   // ----- Render -----
   return (
     <AuthLayout>
+      {user && (
+        <div className="mb-4 flex justify-end">
+          <SignOutAndRestart />
+        </div>
+      )}
       {step !== 0 && (
         <div className="mb-8">
           <ol className="flex items-center gap-2">
