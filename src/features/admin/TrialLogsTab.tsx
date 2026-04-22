@@ -51,7 +51,7 @@ const STATUS_LABELS: Record<TrialLogStatus, string> = {
 const STATUS_TONES: Record<TrialLogStatus, StatusTone> = {
   success: "success",
   already_existed: "neutral",
-  failure: "destructive",
+  failure: "danger",
 };
 
 const REASON_LABELS: Record<NonNullable<TrialLogReason>, string> = {
