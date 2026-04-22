@@ -22,6 +22,7 @@ const Pricing = lazy(() => import("./pages/public/Pricing"));
 const Login = lazy(() => import("./pages/auth/Login"));
 const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
+const AcceptInvite = lazy(() => import("./pages/auth/AcceptInvite"));
 const Onboarding = lazy(() => import("./pages/auth/Onboarding"));
 const Dashboard = lazy(() => import("./pages/app/Dashboard"));
 const Settings = lazy(() => import("./pages/app/Settings"));
@@ -72,6 +73,7 @@ const App = () => (
                   <Route path="/auth/login" element={<Login />} />
                   <Route path="/auth/recuperar" element={<ForgotPassword />} />
                   <Route path="/auth/reset-password" element={<ResetPassword />} />
+                  <Route path="/auth/aceite-convite" element={<AcceptInvite />} />
                   <Route path="/portal/acesso" element={<PortalAccess />} />
 
                   {/* Onboarding — público no Step 0 (signup); quando há sessão,
