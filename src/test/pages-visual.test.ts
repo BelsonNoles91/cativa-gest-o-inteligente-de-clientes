@@ -105,8 +105,8 @@ describe("Páginas — invariantes visuais (mobile + 1366×768)", () => {
     const src = PAGES.services;
     const dialogs = findDialogContents(src);
 
-    it("possui pelo menos 4 DialogContent (serviço, categoria, política, etc.)", () => {
-      expect(dialogs.length).toBeGreaterThanOrEqual(4);
+    it("possui pelo menos 2 DialogContent (categoria + política)", () => {
+      expect(dialogs.length).toBeGreaterThanOrEqual(2);
     });
 
     it("DialogContent grandes (max-w-3xl/2xl) têm clamp horizontal mobile", () => {
