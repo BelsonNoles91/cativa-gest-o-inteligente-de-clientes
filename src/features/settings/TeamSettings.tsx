@@ -14,7 +14,6 @@ import {
   Plus,
   Briefcase,
   Trash2,
-  Copy,
   XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -66,7 +65,6 @@ interface PendingInvite {
   email: string;
   role: Role;
   status: string;
-  token: string;
   expires_at: string;
   created_at: string;
 }
@@ -129,9 +127,10 @@ export function TeamSettings() {
         .from("tenant_memberships")
         .select("user_id, role, status, profiles:profiles!inner(full_name, avatar_url)")
         .eq("tenant_id", currentTenant.id),
+      // token plaintext não é mais persistido — apenas o hash. Removemos a coluna.
       supabase
         .from("team_invitations")
-        .select("id, email, role, status, token, expires_at, created_at")
+        .select("id, email, role, status, expires_at, created_at")
         .eq("tenant_id", currentTenant.id)
         .eq("status", "pending")
         .order("created_at", { ascending: false }),
@@ -199,15 +198,8 @@ export function TeamSettings() {
     }
   };
 
-  const onCopyInviteLink = async (token: string) => {
-    const url = `${window.location.origin}/auth/aceite-convite?token=${token}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success("Link copiado");
-    } catch {
-      toast.error("Não foi possível copiar", { description: url });
-    }
-  };
+  // Link de convite só é exibido na criação (token plaintext não é mais persistido).
+
 
   const onRevokeInvite = async (id: string) => {
     try {
@@ -376,18 +368,9 @@ export function TeamSettings() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => onCopyInviteLink(i.token)}
-                          aria-label="Copiar link"
-                          title="Copiar link de aceite"
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
                           onClick={() => onRevokeInvite(i.id)}
                           aria-label="Revogar convite"
-                          title="Revogar convite"
+                          title="Revogar convite (gere um novo para reenviar o link)"
                         >
                           <XCircle className="h-4 w-4 text-destructive" />
                         </Button>

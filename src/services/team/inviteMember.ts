@@ -46,22 +46,15 @@ export async function inviteMember(input: InviteMemberInput): Promise<InviteMemb
     throw new Error("Papel inválido para convite de equipe.");
   }
 
-  const expiresAt = new Date(
-    Date.now() + (input.expiresInDays ?? 14) * 24 * 60 * 60 * 1000,
-  ).toISOString();
-
-  const { data, error } = await supabase
-    .from("team_invitations")
-    .insert({
-      tenant_id: input.tenantId,
-      email,
-      role: input.role as AppRole,
-      invited_by: input.inviterUserId,
-      message: input.message ?? null,
-      expires_at: expiresAt,
-    })
-    .select("id, token, expires_at")
-    .single();
+  // Usa RPC SECURITY DEFINER que cria o convite com token hasheado e
+  // devolve o plaintext APENAS UMA VEZ. Auditoria interna automática.
+  const { data, error } = await supabase.rpc("create_team_invitation", {
+    _tenant_id: input.tenantId,
+    _email: email,
+    _role: input.role as AppRole,
+    _message: input.message ?? null,
+    _expires_in_days: input.expiresInDays ?? 14,
+  });
 
   if (error) {
     if (error.code === "23505") {
@@ -70,25 +63,16 @@ export async function inviteMember(input: InviteMemberInput): Promise<InviteMemb
     throw error;
   }
 
-  // Auditoria informativa (não bloqueante)
-  try {
-    await supabase.from("audit_logs").insert({
-      tenant_id: input.tenantId,
-      actor_id: input.inviterUserId,
-      action: "team.invitation_created",
-      entity: "team_invitation",
-      entity_id: data.id,
-      metadata: { invited_email: email, role: input.role },
-    });
-  } catch {
-    // ignore — RLS/connection issues não devem invalidar o convite criado
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row?.token) {
+    throw new Error("Falha ao gerar token do convite.");
   }
 
   return {
-    id: data.id,
-    token: data.token,
-    inviteUrl: buildInviteUrl(data.token),
-    expiresAt: data.expires_at,
+    id: row.id,
+    token: row.token,
+    inviteUrl: buildInviteUrl(row.token),
+    expiresAt: row.expires_at,
   };
 }
 

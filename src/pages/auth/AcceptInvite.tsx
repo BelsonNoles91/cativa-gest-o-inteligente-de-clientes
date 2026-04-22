@@ -57,12 +57,10 @@ export default function AcceptInvite() {
     if (authLoading) return;
 
     (async () => {
-      // Busca por token. RLS permite o convidado (e-mail bate) ou gestor do tenant.
-      const { data, error: err } = await supabase
-        .from("team_invitations")
-        .select("id, tenant_id, email, role, status, expires_at, message")
-        .eq("token", token)
-        .maybeSingle();
+      // Lookup via RPC SECURITY DEFINER: hash internamente e valida e-mail do JWT.
+      const { data: rows, error: err } = await supabase.rpc("lookup_team_invitation", {
+        _token: token,
+      });
 
       if (!active) return;
 
@@ -71,6 +69,7 @@ export default function AcceptInvite() {
         setLoading(false);
         return;
       }
+      const data = Array.isArray(rows) ? rows[0] : null;
       if (!data) {
         setError(
           user
