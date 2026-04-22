@@ -3713,6 +3713,92 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_list_tenant_memberships: {
+        Args: never
+        Returns: {
+          accepted_at: string
+          created_at: string
+          invited_at: string
+          invited_email: string
+          membership_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          status: Database["public"]["Enums"]["membership_status"]
+          tenant_id: string
+          tenant_name: string
+          tenant_slug: string
+          updated_at: string
+          user_email: string
+          user_full_name: string
+          user_id: string
+          user_is_super_admin: boolean
+        }[]
+      }
+      admin_set_super_admin: {
+        Args: { p_is_super: boolean; p_user_id: string }
+        Returns: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          is_super_admin: boolean
+          phone: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_update_membership_role: {
+        Args: {
+          p_membership_id: string
+          p_new_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: {
+          accepted_at: string | null
+          created_at: string
+          id: string
+          invited_at: string | null
+          invited_email: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          status: Database["public"]["Enums"]["membership_status"]
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tenant_memberships"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_update_membership_status: {
+        Args: {
+          p_membership_id: string
+          p_new_status: Database["public"]["Enums"]["membership_status"]
+        }
+        Returns: {
+          accepted_at: string | null
+          created_at: string
+          id: string
+          invited_at: string | null
+          invited_email: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          status: Database["public"]["Enums"]["membership_status"]
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tenant_memberships"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       calculate_queue_priority: {
         Args: {
           _appointment_id: string
