@@ -190,6 +190,34 @@ export default function Onboarding() {
         whatsappPhone: whatsappPhone.trim() || undefined,
       });
 
+      // Upload do logo (se houver) — só agora temos tenantId + membership ativa.
+      if (logoFile) {
+        try {
+          const ext = logoFile.name.split(".").pop()?.toLowerCase() || "png";
+          const path = `${result.tenantId}/logo-${Date.now()}.${ext}`;
+          const { error: upErr } = await supabase.storage
+            .from("tenant-logos")
+            .upload(path, logoFile, {
+              cacheControl: "3600",
+              upsert: true,
+              contentType: logoFile.type,
+            });
+          if (upErr) throw upErr;
+          const { data: pub } = supabase.storage
+            .from("tenant-logos")
+            .getPublicUrl(path);
+          await supabase
+            .from("tenant_settings")
+            .update({ logo_url: pub.publicUrl })
+            .eq("tenant_id", result.tenantId);
+        } catch (err) {
+          console.error("Falha ao enviar logo (workspace foi criado)", err);
+          toast.warning("Workspace criado, mas o logo não pôde ser enviado.", {
+            description: "Você pode tentar de novo em Configurações → Branding.",
+          });
+        }
+      }
+
       // convites (opcional)
       for (const inv of invites) {
         try {
