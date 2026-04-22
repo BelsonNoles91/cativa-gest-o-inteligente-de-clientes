@@ -51,8 +51,6 @@ export default function Onboarding() {
   const { user, signUp, loading: authLoading } = useAuth();
   const {
     refresh,
-    currentTenant,
-    loading: tenantLoading,
     setCurrentTenantId,
     setCurrentUnitId,
   } = useTenant();
