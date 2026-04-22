@@ -753,7 +753,7 @@ export default function ClientsPage() {
         }
       />
 
-      <div className="grid gap-4 xl:grid-cols-[380px_1fr]">
+      <div className="grid gap-4 lg:grid-cols-[320px_1fr] xl:grid-cols-[360px_1fr] 2xl:grid-cols-[400px_1fr]">
         <section className="space-y-4">
           <FiltersCard
             filters={filters}
@@ -879,7 +879,7 @@ export default function ClientsPage() {
                 </TabsList>
 
                 <TabsContent value="summary" className="space-y-4">
-                  <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
+                  <div className="grid gap-4 xl:grid-cols-[1.3fr_1fr]">
                     <Card>
                       <CardHeader>
                         <CardTitle>Dados principais</CardTitle>
@@ -1049,7 +1049,7 @@ export default function ClientsPage() {
                 </TabsContent>
 
                 <TabsContent value="media" className="space-y-4">
-                  <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="grid gap-4 xl:grid-cols-2">
                     <Card>
                       <CardHeader>
                         <CardTitle>Arquivos</CardTitle>
@@ -1189,7 +1189,7 @@ export default function ClientsPage() {
                 </TabsContent>
 
                 <TabsContent value="consents" className="space-y-4">
-                  <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+                  <div className="grid gap-4 xl:grid-cols-2">
                     <Card>
                       <CardHeader>
                         <CardTitle>Templates de consentimento</CardTitle>
@@ -1311,7 +1311,7 @@ function FiltersCard({
             className="pl-9"
           />
         </div>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
           <Select value={filters.status} onValueChange={(value) => setFilters((prev) => ({ ...prev, status: value as ClientStatus | "all" }))}>
             <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
             <SelectContent>
@@ -1514,7 +1514,7 @@ function ClientForm({
       <Field label="Observações">
         <Textarea value={form.notes} onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))} rows={4} />
       </Field>
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <Field label="Preferências">
           <Textarea value={form.preferences} onChange={(e) => setForm((prev) => ({ ...prev, preferences: e.target.value }))} rows={4} />
         </Field>
