@@ -73,6 +73,8 @@ import {
 import { listProfessionalsLite, type ProfessionalLite } from "@/repositories/scheduling";
 import { computeCompleteness, clientStatusLabels, riskLevelLabels, type Client, type ClientRiskLevel, type ClientStatus, type ClientFile, type ClientNote, type ClientPhoto, type ClientTag, type ConsentResponse, type ConsentTemplate, type CustomFieldDefinition, type TimelineEvent } from "@/domain/client";
 import { canAccess } from "@/domain/roles";
+import { QuickFiltersBar } from "@/features/clients/QuickFiltersBar";
+import { supabase } from "@/integrations/supabase/client";
 
 type FiltersState = {
   search: string;
