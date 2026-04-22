@@ -82,15 +82,26 @@ describe("BottomNav — padding computado vs. esperado", () => {
     expect(nav.className).toMatch(/\bpr-safe\b/);
   });
 
-  it("padding-bottom resolve para o fallback de pb-safe (8px) quando env=0", () => {
+  it("padding-bottom declarado usa max(env(safe-area-inset-bottom), 0.5rem)", () => {
     renderNav();
     const nav = screen.getByRole("navigation", { name: /navegação principal/i });
-    const pb = parseFloat(getComputedStyle(nav).paddingBottom || "0");
-    // pb-safe = max(env(safe-area-inset-bottom)=0, 0.5rem) → 8px em jsdom.
-    expect(pb, `padding-bottom esperado ≥ 8px (fallback de pb-safe), recebeu ${pb}px`)
-      .toBeGreaterThanOrEqual(8);
-    // Sanity: não deve ser absurdamente alto (pegaria classe errada).
-    expect(pb, `padding-bottom suspeito (>200px): ${pb}px`).toBeLessThan(200);
+    // jsdom não resolve max()/calc() com env() (sempre retorna 0). Validamos
+    // a regra CSS aplicada: a classe .pb-safe está casada e a declaração
+    // contém o fallback de 0.5rem. Os valores reais por dispositivo são
+    // cobertos pelo Playwright (assertMainHasBottomPadding).
+    const sheet = Array.from(document.styleSheets)
+      .flatMap((s) => {
+        try { return Array.from(s.cssRules) } catch { return [] }
+      })
+      .find((r): r is CSSStyleRule =>
+        r instanceof CSSStyleRule && r.selectorText === ".pb-safe",
+      );
+    expect(sheet, ".pb-safe não encontrada na stylesheet").toBeTruthy();
+    expect(sheet!.style.paddingBottom).toMatch(
+      /max\(\s*env\(safe-area-inset-bottom\)\s*,\s*0\.5rem\s*\)/,
+    );
+    // E garante que o nav está usando .pb-safe (regra do JSX).
+    expect(nav.classList.contains("pb-safe")).toBe(true);
   });
 
   it("itens primários têm min-height >= 44px (alvo de toque Apple HIG)", () => {
@@ -134,20 +145,23 @@ describe("Sincronia CSS ↔ JSX — alerta se classes safe-area mudam", () => {
     ).toBe(0);
   });
 
-  it("CSS .pb-bottom-nav deve permanecer alinhado a 4.25rem + env(safe-area-inset-bottom)", () => {
-    // Reinjeta CSS e cria um <main class="pb-bottom-nav"> de teste para
-    // validar o cálculo. Em jsdom: 4.25rem (=68px com root 16px) + 0 = 68px.
+  it("CSS .pb-bottom-nav deve permanecer alinhado a calc(4.25rem + env(safe-area-inset-bottom))", () => {
+    // jsdom não resolve calc(rem + env(...)) — validamos a declaração crua.
     injectSafeAreaCss();
-    const main = document.createElement("main");
-    main.className = "pb-bottom-nav";
-    document.body.appendChild(main);
-    const pb = parseFloat(getComputedStyle(main).paddingBottom || "0");
+    const sheet = Array.from(document.styleSheets)
+      .flatMap((s) => {
+        try { return Array.from(s.cssRules) } catch { return [] }
+      })
+      .find((r): r is CSSStyleRule =>
+        r instanceof CSSStyleRule && r.selectorText === ".pb-bottom-nav",
+      );
+    expect(sheet, ".pb-bottom-nav não encontrada").toBeTruthy();
     expect(
-      pb,
-      `padding-bottom de .pb-bottom-nav esperado = 68px (4.25rem). Recebeu ${pb}px. ` +
-        `Se mudou intencionalmente, atualize este teste E o assert ` +
-        `assertMainHasBottomPadding em e2e/_helpers/visual.ts.`,
-    ).toBe(68);
-    main.remove();
+      sheet!.style.paddingBottom,
+      "Declaração de .pb-bottom-nav mudou. Se intencional, atualize este " +
+        "teste E assertMainHasBottomPadding em e2e/_helpers/visual.ts.",
+    ).toMatch(
+      /calc\(\s*4\.25rem\s*\+\s*env\(safe-area-inset-bottom\)\s*\)/,
+    );
   });
 });
