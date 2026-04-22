@@ -6,7 +6,7 @@
  * UX: lista densa em cards, expansível para ver metadata em JSON.
  */
 import { useEffect, useMemo, useState } from "react";
-import { Filter, Loader2, RefreshCcw, ScrollText, Search } from "lucide-react";
+import { CalendarRange, Filter, Loader2, RefreshCcw, ScrollText, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -60,16 +60,35 @@ export function AuditLogsTab({
   const [search, setSearch] = useState("");
   const [limit, setLimit] = useState<string>("200");
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [periodPreset, setPeriodPreset] = useState<string>("all");
+  const [fromDate, setFromDate] = useState<string>("");
+  const [toDate, setToDate] = useState<string>("");
+
+  function resolveRange(): { from: string | null; to: string | null } {
+    if (periodPreset === "custom") {
+      return {
+        from: fromDate ? new Date(fromDate + "T00:00:00").toISOString() : null,
+        to: toDate ? new Date(toDate + "T23:59:59").toISOString() : null,
+      };
+    }
+    if (periodPreset === "all") return { from: null, to: null };
+    const days = parseInt(periodPreset, 10);
+    if (!Number.isFinite(days)) return { from: null, to: null };
+    const from = new Date();
+    from.setDate(from.getDate() - days);
+    return { from: from.toISOString(), to: null };
+  }
 
   async function load() {
     setLoading(true);
     try {
+      const range = resolveRange();
       const { data, error } = await supabase.rpc("admin_list_audit_logs", {
         _tenant_id: tenantFilter === "all" ? null : tenantFilter,
         _actor_id: null,
         _action_prefix: actionFilter === "all" ? null : actionFilter,
-        _from: null,
-        _to: null,
+        _from: range.from,
+        _to: range.to,
         _limit: Math.max(1, Math.min(parseInt(limit, 10) || 200, 1000)),
       });
       if (error) throw error;
@@ -88,7 +107,7 @@ export function AuditLogsTab({
   useEffect(() => {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tenantFilter, actionFilter, limit]);
+  }, [tenantFilter, actionFilter, limit, periodPreset, fromDate, toDate]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return rows;
