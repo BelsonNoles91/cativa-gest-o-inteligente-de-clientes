@@ -51,6 +51,7 @@ const LS_UNIT = "cativa.currentUnitId";
 export function TenantProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [verified, setVerified] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [memberships, setMemberships] = useState<MembershipRow[]>([]);
   const [units, setUnits] = useState<UnitRow[]>([]);
@@ -75,6 +76,16 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       setMemberships([]);
       setUnits([]);
       setIsSuperAdmin(false);
+      // Sem usuário: limpamos qualquer cache local que possa influenciar guards.
+      try {
+        localStorage.removeItem(LS_TENANT);
+        localStorage.removeItem(LS_UNIT);
+      } catch {
+        /* ignore */
+      }
+      setCurrentTenantIdState(null);
+      setCurrentUnitIdState(null);
+      setVerified(true);
       setLoading(false);
       return;
     }
@@ -89,11 +100,28 @@ export function TenantProvider({ children }: { children: ReactNode }) {
         .eq("status", "active"),
     ]);
 
-    setIsSuperAdmin(Boolean(profile?.is_super_admin));
+    const superAdmin = Boolean(profile?.is_super_admin);
+    setIsSuperAdmin(superAdmin);
     const list = (memb ?? []) as unknown as MembershipRow[];
     setMemberships(list);
 
     const tenantIds = list.map((m) => m.tenant_id);
+
+    // Sanity: se o tenant em cache local não existe mais entre os memberships
+    // ativos do servidor (e o usuário não é super_admin), limpamos o cache para
+    // que os guards não sejam enganados por estado obsoleto.
+    const cachedTenant = localStorage.getItem(LS_TENANT);
+    if (cachedTenant && !tenantIds.includes(cachedTenant) && !superAdmin) {
+      try {
+        localStorage.removeItem(LS_TENANT);
+        localStorage.removeItem(LS_UNIT);
+      } catch {
+        /* ignore */
+      }
+      setCurrentTenantIdState(null);
+      setCurrentUnitIdState(null);
+    }
+
     if (tenantIds.length > 0) {
       const { data: us } = await supabase
         .from("units")
@@ -104,6 +132,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     } else {
       setUnits([]);
     }
+    setVerified(true);
     setLoading(false);
   };
 
