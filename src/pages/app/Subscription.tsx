@@ -92,11 +92,7 @@ export default function Subscription() {
   };
 
   if (loading) {
-    return (
-      <div className="flex h-60 items-center justify-center" data-testid="subscription-loading">
-        <Loader2 className="h-5 w-5 animate-spin text-primary" />
-      </div>
-    );
+    return <SubscriptionSkeleton />;
   }
 
   return (
