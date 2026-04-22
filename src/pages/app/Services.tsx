@@ -293,7 +293,8 @@ export default function ServicesPage() {
     };
   }, [selectedService, toast]);
 
-  async function refreshCatalog() {
+  async function refreshCatalog(manual = false) {
+    if (manual) setRefreshing(true);
     setRefreshToken((current) => current + 1);
   }
 
