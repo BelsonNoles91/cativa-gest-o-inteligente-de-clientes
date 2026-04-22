@@ -24,3 +24,4 @@ contém a visão de produto.
 12. [Rastreabilidade do prompt original](./12-rastreabilidade-prompt.md)
 13. [Visual Regression (Playwright)](./13-visual-regression.md)
 14. [Checklist operacional pré-lançamento](./14-checklist-pre-lancamento.md)
+15. [Pendências executáveis pelo Lovable](./15-pendencias-execucao-lovable.md)
