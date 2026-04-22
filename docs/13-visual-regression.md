@@ -112,6 +112,13 @@ Antes de comparar pixels, cada teste valida:
 - **BottomNav visível e dentro do viewport**: top do `[data-bottom-nav]` está
   acima do bottom da tela e o nav inteiro cabe. Captura safe-area calculada
   errado que empurra o nav para fora.
+- **Main reserva padding-bottom suficiente**: padding-bottom computado de
+  `[data-app-main]` é `>=` altura do BottomNav. Captura regressões em que
+  removem `pb-bottom-nav` ou trocam por padding insuficiente.
+- **Conteúdo não oculto após scroll até o fim**: rola a página para o bottom
+  e garante que o último elemento renderizado (não-fixed/sticky) tem `bottom`
+  acima do top do BottomNav. Captura casos sutis onde um elemento sticky ou
+  uma seção nova ultrapassa o padding reservado.
 
 Se essas asserções falham, o diff visual nem chega a rodar — você recebe um
 erro com a tag/classe do elemento problemático.
