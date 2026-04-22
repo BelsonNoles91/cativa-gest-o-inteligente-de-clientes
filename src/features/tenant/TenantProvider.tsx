@@ -183,6 +183,8 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     // tomam decisão sobre /onboarding vs /app com base na verdade do banco.
     const hasActiveTenant = availableTenants.length > 0 || isSuperAdmin;
 
+    const currentLogoUrl = effectiveTenantId ? logosByTenant[effectiveTenantId] ?? null : null;
+
     return {
       loading,
       verified,
@@ -193,12 +195,13 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       availableTenants,
       availableUnits,
       currentRole,
+      currentLogoUrl,
       setCurrentTenantId,
       setCurrentUnitId,
       refresh: load,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [memberships, units, currentTenantId, currentUnitId, isSuperAdmin, loading, verified]);
+  }, [memberships, units, logosByTenant, currentTenantId, currentUnitId, isSuperAdmin, loading, verified]);
 
   return <TenantContext.Provider value={value}>{children}</TenantContext.Provider>;
 }
