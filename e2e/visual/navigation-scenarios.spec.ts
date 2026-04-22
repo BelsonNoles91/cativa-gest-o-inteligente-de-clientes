@@ -5,6 +5,13 @@
  * íntegros ao atravessar fluxos reais do usuário, e não apenas em snapshots
  * isolados de cada rota.
  *
+ * Endurecimento de resiliência aplicado:
+ *  - Navegação com fallback (link → goto direto se link falhar).
+ *  - afterEach garante restore de online state (evita vazamento entre testes).
+ *  - Timeouts explícitos em waitForURL e waitFor de elementos.
+ *  - Captura de debug-info quando assert principal falha.
+ *  - Logs estruturados [e2e] para rastreabilidade em CI.
+ *
  * Fluxo coberto:
  *   1. Home (/app)                  — entrada, valida BottomNav + safe-area
  *   2. Navega para tela longa       — /app/clientes (lista com scroll)
@@ -13,10 +20,6 @@
  *   5. Restaura conexão             — layout volta ao normal
  *   6. Volta para Home              — safe-area e nav permanecem corretos
  *   7. Abre o menu "Mais"           — sheet não quebra safe-area inferior
- *
- * Roda apenas em viewports mobile (< 768px) — em desktop/tablet o BottomNav
- * é `md:hidden` e o cenário não se aplica. Os asserts relevantes pulam
- * automaticamente nesses casos.
  */
 import { test, expect } from "@playwright/test";
 import {
@@ -30,19 +33,49 @@ import {
   goOffline,
   assertOfflineBannerLayout,
 } from "../_helpers/visual";
+import {
+  logStep,
+  navigateOrFallback,
+  ensureOnline,
+  captureDebugInfo,
+} from "../_helpers/resilience";
 
-test.describe("cenários de navegação — safe-area + BottomNav", () => {
-  test("Home → tela longa com scroll → offline → volta", async ({ page }, testInfo) => {
-    const vw = page.viewportSize()?.width ?? 0;
-    // Em desktop/tablet o BottomNav é md:hidden — cenário não se aplica.
-    test.skip(vw >= 768, "BottomNav só existe em viewports < 768px");
+const MAIN_TIMEOUT = 15_000;
 
-    // ---- 1. Home ----
-    await page.goto("/app");
+/** Aguarda o `<main>` aparecer com timeout explícito + erro útil. */
+async function waitForMain(page: import("@playwright/test").Page, route: string) {
+  try {
     await page
       .locator("[data-app-main]")
       .first()
-      .waitFor({ state: "visible", timeout: 15_000 });
+      .waitFor({ state: "visible", timeout: MAIN_TIMEOUT });
+  } catch (err) {
+    const debug = await captureDebugInfo(page, `waitForMain(${route})`);
+    throw new Error(
+      `[data-app-main] não apareceu em ${MAIN_TIMEOUT}ms na rota ${route}.\n` +
+        `Debug: ${JSON.stringify(debug)}\n` +
+        `Causa provável: redirect para /auth/login (sessão expirou) ou ` +
+        `erro de render no shell. Verifique o storageState e console do app.\n` +
+        `Original: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+}
+
+test.describe("cenários de navegação — safe-area + BottomNav", () => {
+  // Garante que estado offline NUNCA vaza para o próximo teste.
+  test.afterEach(async ({ context }) => {
+    await ensureOnline(context);
+  });
+
+  test("Home → tela longa com scroll → offline → volta", async ({ page }, testInfo) => {
+    const vw = page.viewportSize()?.width ?? 0;
+    test.skip(vw >= 768, "BottomNav só existe em viewports < 768px");
+    const scenario = testInfo.title;
+
+    // ---- 1. Home ----
+    logStep(scenario, "1.goto /app");
+    await page.goto("/app", { waitUntil: "domcontentloaded", timeout: MAIN_TIMEOUT });
+    await waitForMain(page, "/app");
     await prepareForSnapshot(page);
 
     await assertNoHorizontalOverflow(page);
@@ -52,73 +85,65 @@ test.describe("cenários de navegação — safe-area + BottomNav", () => {
     await assertCriticalActionsAboveBottomNav(page);
 
     // ---- 2. Navega para tela longa (clientes) ----
-    // Usa o link do BottomNav (item primário) para simular gesto real.
-    const clientesLink = page
-      .locator('[data-bottom-nav] a[href="/app/clientes"]')
-      .first();
-    if (await clientesLink.count()) {
-      await clientesLink.click();
-    } else {
-      // Fallback: navegação direta caso o item não esteja no nav primário.
-      await page.goto("/app/clientes");
-    }
-    await page.waitForURL(/\/app\/clientes/);
-    await page
-      .locator("[data-app-main]")
-      .first()
-      .waitFor({ state: "visible", timeout: 15_000 });
+    logStep(scenario, "2.navegar para /app/clientes");
+    await navigateOrFallback(page, {
+      label: "nav-clientes",
+      clickSelector: '[data-bottom-nav] a[href="/app/clientes"]',
+      fallbackUrl: "/app/clientes",
+      expectedUrlRegex: /\/app\/clientes/,
+      timeoutMs: MAIN_TIMEOUT,
+    });
+    await waitForMain(page, "/app/clientes");
     await prepareForSnapshot(page);
 
-    // Estrutura íntegra após navegação.
     await assertNoHorizontalOverflow(page);
     await assertBottomNavVisible(page);
     await assertMainHasBottomPadding(page);
     await assertBottomNavItemsRespectSafeArea(page);
 
     // ---- 3. Scroll até o fim ----
+    logStep(scenario, "3.scroll até o fim");
     await assertContentNotHiddenByBottomNav(page);
-    // Reafirma após scroll — nav não pode ter sumido por bug de transform.
     await assertBottomNavVisible(page);
     await assertCriticalActionsAboveBottomNav(page);
 
     // ---- 4. Ativa offline ----
+    logStep(scenario, "4.offline");
     const restore = await goOffline(page);
-    await assertOfflineBannerLayout(page);
-    // Banner não pode quebrar nada do que já validamos.
-    await assertNoHorizontalOverflow(page);
-    await assertBottomNavVisible(page);
-    await assertBottomNavItemsRespectSafeArea(page);
-    await assertCriticalActionsAboveBottomNav(page);
+    try {
+      await assertOfflineBannerLayout(page);
+      await assertNoHorizontalOverflow(page);
+      await assertBottomNavVisible(page);
+      await assertBottomNavItemsRespectSafeArea(page);
+      await assertCriticalActionsAboveBottomNav(page);
 
-    // Snapshot do estado offline em tela longa (apenas no perfil principal
-    // para não inflar a baseline em todos os 5 dispositivos).
-    if (testInfo.project.name === "iphone-14-portrait") {
-      await expect(page).toHaveScreenshot("scenario-clientes-offline.png", {
-        fullPage: false,
-        mask: [page.locator("[data-volatile]"), page.locator("time")],
-      });
+      // Snapshot do estado offline em tela longa (apenas no perfil principal
+      // para não inflar a baseline em todos os 5 dispositivos).
+      if (testInfo.project.name === "iphone-14-portrait") {
+        await expect(page).toHaveScreenshot("scenario-clientes-offline.png", {
+          fullPage: false,
+          mask: [page.locator("[data-volatile]"), page.locator("time")],
+        });
+      }
+    } finally {
+      // Restaura SEMPRE — mesmo se asserts falharem — para não vazar estado.
+      logStep(scenario, "5.restore online");
+      await restore();
     }
 
-    // ---- 5. Restaura conexão ----
-    await restore();
-    // Após reconectar, layout volta ao normal (banner some ou vira "restaurada").
     await assertBottomNavVisible(page);
     await assertNoHorizontalOverflow(page);
 
     // ---- 6. Volta para Home ----
-    const homeLink = page
-      .locator('[data-bottom-nav] a[href="/app"]')
-      .first();
-    if (await homeLink.count()) {
-      await homeLink.click();
-    } else {
-      await page.goto("/app");
-    }
-    await page.waitForURL(/\/app\/?$/);
-    await page
-      .locator("[data-app-main]")
-      .first()
-      .waitFor({ state: "visible", timeout: 15_000 });
+    logStep(scenario, "6.volta para /app");
+    await navigateOrFallback(page, {
+      label: "nav-home",
+      clickSelector: '[data-bottom-nav] a[href="/app"]',
+      fallbackUrl: "/app",
+      expectedUrlRegex: /\/app\/?$/,
+      timeoutMs: MAIN_TIMEOUT,
+    });
+    await waitForMain(page, "/app");
     await prepareForSnapshot(page);
 
     await assertNoHorizontalOverflow(page);
@@ -128,33 +153,47 @@ test.describe("cenários de navegação — safe-area + BottomNav", () => {
     await assertCriticalActionsAboveBottomNav(page);
   });
 
-  test('Abrir menu "Mais" não quebra safe-area inferior', async ({ page }) => {
+  test('Abrir menu "Mais" não quebra safe-area inferior', async ({ page }, testInfo) => {
     const vw = page.viewportSize()?.width ?? 0;
     test.skip(vw >= 768, "BottomNav só existe em viewports < 768px");
+    const scenario = testInfo.title;
 
-    await page.goto("/app");
-    await page
-      .locator("[data-app-main]")
-      .first()
-      .waitFor({ state: "visible", timeout: 15_000 });
+    logStep(scenario, "goto /app");
+    await page.goto("/app", { waitUntil: "domcontentloaded", timeout: MAIN_TIMEOUT });
+    await waitForMain(page, "/app");
     await prepareForSnapshot(page);
 
     const moreButton = page
       .locator('[data-bottom-nav] button[aria-label="Mais opções"]')
       .first();
-    // Pode não existir se todos os módulos couberem nos 4 primeiros slots.
     test.skip(
       (await moreButton.count()) === 0,
       'Item "Mais" não presente — todos os módulos cabem no nav primário.',
     );
 
-    await moreButton.click();
-    // O Sheet renderiza com role="dialog".
+    logStep(scenario, "abrir sheet 'Mais'");
+    try {
+      await moreButton.click({ timeout: 3000 });
+    } catch (err) {
+      const debug = await captureDebugInfo(page, "click 'Mais'");
+      throw new Error(
+        `Não consegui clicar em 'Mais opções'. Debug: ${JSON.stringify(debug)}\n` +
+          `Original: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+
     const sheet = page.locator('[role="dialog"]').first();
-    await expect(sheet).toBeVisible();
+    try {
+      await expect(sheet).toBeVisible({ timeout: 3000 });
+    } catch (err) {
+      throw new Error(
+        `Sheet do menu 'Mais' não abriu em 3s. Pode indicar regressão no ` +
+          `componente Sheet/Radix.\n` +
+          `Original: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
     await prepareForSnapshot(page);
 
-    // Sheet não pode causar overflow horizontal.
     await assertNoHorizontalOverflow(page);
 
     // O conteúdo do sheet deve respeitar a safe-area inferior (pb-safe).
@@ -171,14 +210,15 @@ test.describe("cenários de navegação — safe-area + BottomNav", () => {
         '[role="dialog"]',
       ) as HTMLElement | null;
       if (!dialog) return { found: false as const };
-      // Procura o último filho clicável e mede o gap até o bottom da viewport.
       const buttons = Array.from(
         dialog.querySelectorAll<HTMLElement>("a, button"),
       ).filter((el) => {
         const r = el.getBoundingClientRect();
         return r.width > 0 && r.height > 0;
       });
-      if (buttons.length === 0) return { found: true as const, safeBottom, lastBottom: null };
+      if (buttons.length === 0) {
+        return { found: true as const, safeBottom, lastBottom: null, viewportH: window.innerHeight };
+      }
       const lastBottom = Math.max(
         ...buttons.map((b) => b.getBoundingClientRect().bottom),
       );
@@ -194,8 +234,6 @@ test.describe("cenários de navegação — safe-area + BottomNav", () => {
       true,
     );
     if (result.found && result.lastBottom !== null) {
-      // O último botão clicável deve estar acima da safe-area-inset-bottom
-      // (com tolerância de 2px para subpixel).
       const limit = result.viewportH - result.safeBottom + 2;
       expect(
         result.lastBottom,
