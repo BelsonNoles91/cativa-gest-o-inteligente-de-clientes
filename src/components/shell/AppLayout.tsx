@@ -9,6 +9,7 @@ import { AppSidebar } from "@/components/shell/AppSidebar";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { BottomNav } from "@/components/shell/BottomNav";
 import { OfflineBanner } from "@/components/shell/OfflineBanner";
+import { SafeAreaDebugOverlay } from "@/components/debug/SafeAreaDebugOverlay";
 import { TenantBillingProvider } from "@/features/billing/TenantBillingProvider";
 
 export function AppLayout() {
@@ -23,7 +24,10 @@ export function AppLayout() {
 
           <SidebarInset className="flex min-w-0 flex-1 flex-col">
             <AppHeader />
-            <main className="flex-1 px-4 pt-4 pb-bottom-nav md:px-8 md:pb-10 md:pt-6">
+            <main
+              data-app-main
+              className="flex-1 px-4 pt-4 pb-bottom-nav md:px-8 md:pb-10 md:pt-6"
+            >
               <div className="mx-auto w-full max-w-7xl animate-fade-in">
                 <Outlet />
               </div>
@@ -31,6 +35,7 @@ export function AppLayout() {
             <BottomNav />
           </SidebarInset>
         </div>
+        <SafeAreaDebugOverlay />
       </SidebarProvider>
     </TenantBillingProvider>
   );
