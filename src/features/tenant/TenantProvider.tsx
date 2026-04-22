@@ -163,8 +163,15 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       memberships.find((m) => m.tenant_id === effectiveTenantId)?.role ??
       (isSuperAdmin ? ("super_admin" as Role) : null);
 
+    // hasActiveTenant é derivado SEMPRE da resposta do servidor (memberships
+    // ativos ou flag de super_admin), nunca do cache local. Assim, os guards
+    // tomam decisão sobre /onboarding vs /app com base na verdade do banco.
+    const hasActiveTenant = availableTenants.length > 0 || isSuperAdmin;
+
     return {
       loading,
+      verified,
+      hasActiveTenant,
       isSuperAdmin,
       currentTenant,
       currentUnit,
@@ -176,7 +183,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       refresh: load,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [memberships, units, currentTenantId, currentUnitId, isSuperAdmin, loading]);
+  }, [memberships, units, currentTenantId, currentUnitId, isSuperAdmin, loading, verified]);
 
   return <TenantContext.Provider value={value}>{children}</TenantContext.Provider>;
 }
