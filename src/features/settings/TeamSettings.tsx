@@ -144,16 +144,29 @@ export function TeamSettings() {
   const loadProfessionals = async () => {
     if (!currentTenant) return;
     setProLoading(true);
-    const { data, error } = await supabase
+    // Tenta com commission_pct (owner/manager). Se falhar por GRANT, refaz sem.
+    const withCommission = await supabase
       .from("professionals")
       .select("id, display_name, role_title, specialty, email, phone, commission_pct, is_active")
       .eq("tenant_id", currentTenant.id)
       .order("display_name");
-    if (error) {
-      toast.error("Não foi possível carregar profissionais", { description: error.message });
+    if (!withCommission.error) {
+      setProfessionals((withCommission.data ?? []) as unknown as ProfessionalRow[]);
+      setProLoading(false);
+      return;
+    }
+    const fallback = await supabase
+      .from("professionals")
+      .select("id, display_name, role_title, specialty, email, phone, is_active")
+      .eq("tenant_id", currentTenant.id)
+      .order("display_name");
+    if (fallback.error) {
+      toast.error("Não foi possível carregar profissionais", { description: fallback.error.message });
       setProfessionals([]);
     } else {
-      setProfessionals((data ?? []) as unknown as ProfessionalRow[]);
+      setProfessionals(
+        (fallback.data ?? []).map((r) => ({ ...r, commission_pct: null })) as unknown as ProfessionalRow[],
+      );
     }
     setProLoading(false);
   };
