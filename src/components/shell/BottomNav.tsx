@@ -42,7 +42,11 @@ export function BottomNav() {
       ...i,
       locked: Boolean(i.featureKey) && !hasFeature(i.featureKey!),
     }));
-  const primary = allowedItems.filter((i) => i.showInBottomNav).slice(0, 4);
+  // Mantemos no máximo 3 atalhos diretos no nav inferior + botão "Mais",
+  // totalizando 4 colunas. Isso evita corte do último ícone em telas
+  // estreitas e deixa folga para o badge do Lovable no canto inferior
+  // direito (~64px) sem sobrepor itens de navegação.
+  const primary = allowedItems.filter((i) => i.showInBottomNav).slice(0, 3);
   const secondary = allowedItems.filter(
     (i) => !primary.some((p) => p.to === i.to),
   );
@@ -72,7 +76,7 @@ export function BottomNav() {
         aria-label="Navegação principal"
         className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/95 backdrop-blur-xl pb-safe pl-safe pr-safe md:hidden"
       >
-        <ul className="grid grid-cols-5 px-1 pt-1">
+        <ul className="grid grid-cols-4 px-1 pt-1">
           {primary.map((item) => (
             <li key={item.to}>
               <NavLink
