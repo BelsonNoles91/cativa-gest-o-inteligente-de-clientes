@@ -610,7 +610,7 @@ export default function AgendaPage() {
               icon={<CalendarDays className="h-6 w-6" />}
               title="Nenhum agendamento encontrado"
               description="Ajuste filtros ou crie um novo horário para preencher a agenda."
-              action={<Button onClick={openCreateDialog}><Plus className="mr-2 h-4 w-4" />Criar agendamento</Button>}
+              action={<Button data-critical-action data-testid="agenda-create-cta" onClick={openCreateDialog}><Plus className="mr-2 h-4 w-4" />Criar agendamento</Button>}
             />
           ) : view === "day" ? (
             <div className="space-y-3">
