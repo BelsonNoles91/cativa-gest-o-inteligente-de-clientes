@@ -9,6 +9,12 @@
  * - Se já existir assinatura, a função retorna a assinatura existente
  *   sem erros (idempotência server-side).
  * - O cliente em seguida apenas resolve o objeto Plan correspondente.
+ *
+ * Observabilidade:
+ * - Toda tentativa (sucesso, falha por RLS, falha por plano ausente,
+ *   falha desconhecida) é registrada em `audit_logs` com action
+ *   prefixada por `trial.activation.*`. Isso alimenta o painel
+ *   SuperAdmin → Logs de trial.
  */
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -21,6 +27,52 @@ export interface ActivateTrialResult {
   subscription: TenantSubscription;
   plan: Plan;
   alreadyExisted: boolean;
+}
+
+export type TrialActivationFailureReason =
+  | "rls_denied"
+  | "no_plan"
+  | "unauthenticated"
+  | "unknown";
+
+/**
+ * Categoriza um erro vindo da RPC para análise posterior no painel.
+ * Mantém categorias estáveis para que o admin possa filtrar/ordenar.
+ */
+function classifyError(rawMessage: string, code?: string | null): TrialActivationFailureReason {
+  if (/não autenticado|unauthenticated/i.test(rawMessage)) return "unauthenticated";
+  if (code === "42501" || /permiss|policy|RLS|denied/i.test(rawMessage)) return "rls_denied";
+  if (code === "P0002" || /Nenhum plano|no plan/i.test(rawMessage)) return "no_plan";
+  return "unknown";
+}
+
+/**
+ * Registra a tentativa em audit_logs. Falhas de log são silenciosas
+ * (não devem mascarar a verdadeira causa para o usuário final).
+ */
+async function logAttempt(input: {
+  tenantId: string;
+  action:
+    | "trial.activation.success"
+    | "trial.activation.already_existed"
+    | "trial.activation.failure";
+  metadata: Record<string, unknown>;
+}) {
+  try {
+    const { data: userData } = await supabase.auth.getUser();
+    await supabase.from("audit_logs").insert([
+      {
+        tenant_id: input.tenantId,
+        actor_id: userData?.user?.id ?? null,
+        action: input.action,
+        entity: "tenant_subscriptions",
+        entity_id: input.tenantId,
+        metadata: input.metadata as never,
+      },
+    ]);
+  } catch {
+    // Silencioso. O foco aqui é não interferir no fluxo principal.
+  }
 }
 
 export async function activateDefaultTrial(tenantId: string): Promise<ActivateTrialResult> {
@@ -38,18 +90,57 @@ export async function activateDefaultTrial(tenantId: string): Promise<ActivateTr
   });
 
   if (error) {
-    // Mapeia mensagens de banco para textos amigáveis
     const raw = error.message ?? "";
-    if (/Sem permissão/i.test(raw) || error.code === "42501") {
+    const reason = classifyError(raw, error.code);
+
+    // Log estruturado para o painel
+    await logAttempt({
+      tenantId,
+      action: "trial.activation.failure",
+      metadata: {
+        reason,
+        rls_violation: reason === "rls_denied",
+        rpc: "start_default_trial",
+        error_code: error.code ?? null,
+        error_message: raw,
+        had_previous_subscription: Boolean(existing),
+        client: "web",
+        recommended_action:
+          reason === "rls_denied"
+            ? "Verifique se o usuário tem papel owner/manager neste tenant ou é super_admin."
+            : reason === "no_plan"
+              ? "Configure um plano com is_default=true e status=public."
+              : reason === "unauthenticated"
+                ? "Reautentique o usuário e tente novamente."
+                : "Investigue o erro original em error_message.",
+      },
+    });
+
+    // Mapeia mensagens de banco para textos amigáveis
+    if (reason === "rls_denied") {
       throw new Error("Você não tem permissão para ativar o trial neste tenant.");
     }
-    if (/Nenhum plano disponível/i.test(raw)) {
+    if (reason === "no_plan") {
       throw new Error("Nenhum plano disponível foi configurado para iniciar o trial.");
+    }
+    if (reason === "unauthenticated") {
+      throw new Error("Sessão expirada. Faça login novamente para ativar o trial.");
     }
     throw new Error(raw || "Não foi possível ativar o trial.");
   }
 
   if (!data) {
+    await logAttempt({
+      tenantId,
+      action: "trial.activation.failure",
+      metadata: {
+        reason: "unknown" as TrialActivationFailureReason,
+        rpc: "start_default_trial",
+        error_message: "Resposta vazia da RPC",
+        recommended_action:
+          "Verifique se a função start_default_trial existe e está retornando a linha esperada.",
+      },
+    });
     throw new Error("Resposta vazia do servidor ao ativar o trial.");
   }
 
@@ -79,8 +170,34 @@ export async function activateDefaultTrial(tenantId: string): Promise<ActivateTr
   const plans = await listPlans();
   const plan = plans.find((p) => p.id === subscription.planId);
   if (!plan) {
+    await logAttempt({
+      tenantId,
+      action: "trial.activation.failure",
+      metadata: {
+        reason: "unknown" as TrialActivationFailureReason,
+        rpc: "start_default_trial",
+        error_message: "Plano da assinatura não encontrado após ativação.",
+        plan_id: subscription.planId,
+        recommended_action:
+          "Garanta que o plano referenciado pela assinatura exista e tenha status visível.",
+      },
+    });
     throw new Error("Plano da assinatura não encontrado após ativação.");
   }
+
+  await logAttempt({
+    tenantId,
+    action: existing
+      ? "trial.activation.already_existed"
+      : "trial.activation.success",
+    metadata: {
+      subscription_id: subscription.id,
+      plan_id: plan.id,
+      plan_code: plan.code,
+      status: subscription.status,
+      trial_ends_at: subscription.trialEndsAt,
+    },
+  });
 
   return {
     subscription,
