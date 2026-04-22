@@ -216,7 +216,7 @@ export default function AcceptInvite() {
         )}
 
         {accepted ? (
-          <div className="flex items-center gap-2 rounded-xl bg-emerald-500/10 p-3 text-sm text-emerald-700 dark:text-emerald-300">
+          <div className="flex items-center gap-2 rounded-xl bg-primary/10 p-3 text-sm text-primary">
             <CheckCircle2 className="h-4 w-4" /> Convite aceito! Redirecionando…
           </div>
         ) : blocked ? (
