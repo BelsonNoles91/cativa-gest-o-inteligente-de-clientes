@@ -16,6 +16,7 @@ import {
   Hourglass,
 } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
+import { PageActionCluster, PrimaryAction } from "@/components/shell/PageActionCluster";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -146,6 +147,7 @@ export default function AgendaPage() {
   const [refreshToken, setRefreshToken] = useState(0);
 
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [appointments, setAppointments] = useState<HydratedAppointment[]>([]);
   const [timeOffBlocks, setTimeOffBlocks] = useState<TimeOffBlock[]>([]);
   const [recurringBlocks, setRecurringBlocks] = useState<RecurringBlock[]>([]);
@@ -226,7 +228,10 @@ export default function AgendaPage() {
           variant: "destructive",
         });
       } finally {
-        if (!ignore) setLoading(false);
+        if (!ignore) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     })();
     return () => {
@@ -309,7 +314,8 @@ export default function AgendaPage() {
     return Array.from(groups.entries()).sort(([a], [b]) => a.localeCompare(b));
   }, [appointments]);
 
-  async function refreshAgenda() {
+  async function refreshAgenda(manual = false) {
+    if (manual) setRefreshing(true);
     setRefreshToken((current) => current + 1);
   }
 
@@ -542,14 +548,23 @@ export default function AgendaPage() {
         description="Visão diária e semanal com criação, remarcação e controle de status em poucos toques."
         icon={<CalendarDays className="h-5 w-5" />}
         actions={
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={() => void refreshAgenda()}>
-              <RefreshCcw className="mr-2 h-4 w-4" /> Atualizar
-            </Button>
-            <Button onClick={openCreateDialog}>
-              <Plus className="mr-2 h-4 w-4" /> Novo agendamento
-            </Button>
-          </div>
+          <PageActionCluster
+            secondary={[
+              {
+                key: "refresh",
+                label: "Atualizar",
+                icon: RefreshCcw,
+                tooltip: refreshing ? "Atualizando agenda…" : "Recarregar agenda",
+                loading: refreshing,
+                onClick: () => void refreshAgenda(true),
+              },
+            ]}
+            primary={
+              <PrimaryAction onClick={openCreateDialog}>
+                <Plus className="mr-2 h-4 w-4" /> Novo agendamento
+              </PrimaryAction>
+            }
+          />
         }
       />
 

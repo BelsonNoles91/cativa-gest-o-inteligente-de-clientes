@@ -11,6 +11,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
+import { PageActionCluster } from "@/components/shell/PageActionCluster";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -146,6 +147,7 @@ export default function PackagesPage() {
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
 
   const [services, setServices] = useState<Service[]>([]);
@@ -219,7 +221,10 @@ export default function PackagesPage() {
           variant: "destructive",
         });
       } finally {
-        if (!ignore) setLoading(false);
+        if (!ignore) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     })();
     return () => {
@@ -290,7 +295,8 @@ export default function PackagesPage() {
     })();
   }, [selectedProtocol, toast]);
 
-  async function refreshData() {
+  async function refreshData(manual = false) {
+    if (manual) setRefreshing(true);
     setRefreshToken((current) => current + 1);
   }
 
@@ -433,9 +439,18 @@ export default function PackagesPage() {
         description="Monte ofertas recorrentes, combos terapêuticos e jornadas clínicas usando o mesmo catálogo de serviços."
         icon={<PackageOpen className="h-5 w-5" />}
         actions={
-          <Button data-testid="packages-refresh" variant="outline" onClick={() => void refreshData()}>
-            <RefreshCcw className="mr-2 h-4 w-4" /> Atualizar
-          </Button>
+          <PageActionCluster
+            secondary={[
+              {
+                key: "refresh",
+                label: "Atualizar",
+                icon: RefreshCcw,
+                tooltip: refreshing ? "Atualizando…" : "Recarregar dados",
+                loading: refreshing,
+                onClick: () => void refreshData(true),
+              },
+            ]}
+          />
         }
       />
 
