@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { usePortalClient } from "@/features/portal/PortalClientProvider";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { OfflineBanner } from "@/components/shell/OfflineBanner";
+import { SafeAreaDebugOverlay } from "@/components/debug/SafeAreaDebugOverlay";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -114,12 +115,18 @@ export function PortalLayout() {
       </header>
 
       {/* Conteúdo */}
-      <main className="mx-auto w-full max-w-3xl px-4 pb-28 pt-4">
+      <main
+        data-app-main
+        className="mx-auto w-full max-w-3xl px-4 pb-28 pt-4"
+      >
         <Outlet />
       </main>
 
       {/* Bottom nav */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 backdrop-blur">
+      <nav
+        data-bottom-nav
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 backdrop-blur"
+      >
         <div className="mx-auto grid max-w-3xl grid-cols-4">
           {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
             <NavLink
