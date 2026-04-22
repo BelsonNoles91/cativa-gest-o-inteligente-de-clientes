@@ -100,7 +100,7 @@ describe("KpiCard — testes visuais por breakpoint", () => {
         expect(badge.className).toMatch(/destructive/);
       });
 
-      it("ícone mantém tamanho fixo (h-4 w-4) sem encolher", () => {
+      it("ícone mantém tamanho fixo (modo padrão h-4 w-4 / modo compacto h-3.5 w-3.5)", () => {
         const { container } = render(
           <div style={{ width: bp.width }}>
             <KpiCard label="Clientes ativos" value="1.284" icon={Sparkles} tone="brand" />
@@ -109,13 +109,28 @@ describe("KpiCard — testes visuais por breakpoint", () => {
 
         const svg = container.querySelector("svg");
         expect(svg).not.toBeNull();
-        expect(svg!.getAttribute("class") ?? "").toMatch(/h-4/);
-        expect(svg!.getAttribute("class") ?? "").toMatch(/w-4/);
+        const svgClass = svg!.getAttribute("class") ?? "";
+        // Em alturas <800 o KpiCard ativa modo compacto (h-3.5). Caso contrário, h-4.
+        const compact = bp.height < 800;
+        if (compact) {
+          expect(svgClass).toMatch(/h-3\.5/);
+          expect(svgClass).toMatch(/w-3\.5/);
+        } else {
+          expect(svgClass).toMatch(/h-4/);
+          expect(svgClass).toMatch(/w-4/);
+        }
 
-        // wrapper do ícone deve manter dimensões fixas
+        // wrapper do ícone deve manter dimensões fixas (h-9 padrão / h-7 compacto)
         const iconWrapper = svg!.parentElement!;
-        expect(iconWrapper.className).toMatch(/h-9/);
-        expect(iconWrapper.className).toMatch(/w-9/);
+        if (compact) {
+          expect(iconWrapper.className).toMatch(/h-7/);
+          expect(iconWrapper.className).toMatch(/w-7/);
+        } else {
+          expect(iconWrapper.className).toMatch(/h-9/);
+          expect(iconWrapper.className).toMatch(/w-9/);
+        }
+        // Em qualquer modo o wrapper precisa ter shrink-0 para não encolher
+        expect(iconWrapper.className).toMatch(/shrink-0/);
       });
 
       it("layout flex topo: ícone à esquerda, badge à direita (justify-between)", () => {
