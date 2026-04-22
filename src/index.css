@@ -136,6 +136,19 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* Elementos interativos: remove o delay de 300ms do double-tap-to-zoom
+     em mobile, dando resposta mais "nativa" ao toque. */
+  button,
+  a,
+  [role="button"],
+  [role="tab"],
+  [role="menuitem"],
+  input[type="button"],
+  input[type="submit"],
+  label[for] {
+    touch-action: manipulation;
+  }
+
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -193,6 +206,13 @@
   /* Altura do bottom nav + safe inset (usado para deixar espaço no main) */
   .pb-bottom-nav {
     padding-bottom: calc(4.25rem + env(safe-area-inset-bottom));
+  }
+  /* Alvo de toque mínimo (Apple HIG: 44pt; Material: 48dp) */
+  .min-h-touch {
+    min-height: 44px;
+  }
+  .min-w-touch {
+    min-width: 44px;
   }
 
   /* Scrollbar discreta — visual mais nativo */
