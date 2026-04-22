@@ -55,7 +55,7 @@ export function BottomNav() {
     <>
       <nav
         aria-label="Navegação principal"
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/95 backdrop-blur-xl pb-safe md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/95 backdrop-blur-xl pb-safe pl-safe pr-safe md:hidden"
       >
         <ul className="grid grid-cols-5 px-1 pt-1">
           {primary.map((item) => (
@@ -65,7 +65,7 @@ export function BottomNav() {
                 end={item.to === "/app"}
                 className={cn(
                   "flex flex-col items-center justify-center gap-0.5 rounded-lg py-2 text-[10.5px] font-medium tap-feedback",
-                  "text-muted-foreground transition-colors min-h-[52px]",
+                  "text-muted-foreground transition-colors min-h-touch",
                 )}
                 activeClassName="text-primary"
               >
@@ -88,10 +88,12 @@ export function BottomNav() {
                 type="button"
                 onClick={() => setMoreOpen(true)}
                 className={cn(
-                  "flex w-full flex-col items-center justify-center gap-0.5 rounded-lg py-2 text-[10.5px] font-medium tap-feedback transition-colors min-h-[52px]",
+                  "flex w-full flex-col items-center justify-center gap-0.5 rounded-lg py-2 text-[10.5px] font-medium tap-feedback transition-colors min-h-touch",
                   moreActive ? "text-primary" : "text-muted-foreground",
                 )}
                 aria-label="Mais opções"
+                aria-haspopup="dialog"
+                aria-expanded={moreOpen}
               >
                 <LayoutGrid className="h-5 w-5" />
                 <span>Mais</span>
