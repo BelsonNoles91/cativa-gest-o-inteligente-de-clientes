@@ -14,7 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Building2, Sparkles, Rocket, ArrowRight, Check, Mail, Lock, User,
-  Palette, Loader2, UserPlus, Trash2, Phone,
+  Palette, Loader2, UserPlus, Trash2, Phone, ImagePlus, UploadCloud,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AuthLayout } from "@/components/shell/AuthLayout";
@@ -30,6 +30,7 @@ import { segmentLabels, type TenantSegment } from "@/domain/tenant";
 import { ROLES, roleLabels, type Role } from "@/domain/roles";
 import { createTenantWithOwner } from "@/services/tenant/createTenantWithOwner";
 import { inviteMember } from "@/services/team/inviteMember";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { SignOutAndRestart } from "@/components/auth/SignOutAndRestart";
 
@@ -81,6 +82,27 @@ export default function Onboarding() {
   const [brandPrimary, setBrandPrimary] = useState("#6E3B5D");
   const [brandSecondary, setBrandSecondary] = useState("#E9D7E2");
   const [brandAccent, setBrandAccent] = useState("#7FAE9B");
+  // Logo: o upload é diferido até a criação do tenant (RLS exige membership).
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+
+  const onPickLogo = (file: File | null) => {
+    if (!file) {
+      setLogoFile(null);
+      setLogoPreview(null);
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      toast.error("Selecione um arquivo de imagem.");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Imagem muito grande", { description: "Máximo de 2 MB." });
+      return;
+    }
+    setLogoFile(file);
+    setLogoPreview(URL.createObjectURL(file));
+  };
 
   // equipe
   const [invites, setInvites] = useState<InviteDraft[]>([]);
