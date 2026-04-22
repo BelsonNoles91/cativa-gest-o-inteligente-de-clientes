@@ -1514,7 +1514,7 @@ function ClientForm({
       <Field label="Observações">
         <Textarea value={form.notes} onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))} rows={4} />
       </Field>
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <Field label="Preferências">
           <Textarea value={form.preferences} onChange={(e) => setForm((prev) => ({ ...prev, preferences: e.target.value }))} rows={4} />
         </Field>
