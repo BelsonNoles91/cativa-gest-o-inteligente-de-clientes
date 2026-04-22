@@ -3713,6 +3713,45 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_list_all_tenants: {
+        Args: never
+        Returns: {
+          client_count: number
+          created_at: string
+          id: string
+          member_count: number
+          name: string
+          plan_name: string
+          segment: Database["public"]["Enums"]["tenant_segment"]
+          slug: string
+          subscription_status: Database["public"]["Enums"]["subscription_status"]
+          unit_count: number
+          updated_at: string
+        }[]
+      }
+      admin_list_audit_logs: {
+        Args: {
+          _action_prefix?: string
+          _actor_id?: string
+          _from?: string
+          _limit?: number
+          _tenant_id?: string
+          _to?: string
+        }
+        Returns: {
+          action: string
+          actor_email: string
+          actor_id: string
+          actor_name: string
+          created_at: string
+          entity: string
+          entity_id: string
+          id: string
+          metadata: Json
+          tenant_id: string
+          tenant_name: string
+        }[]
+      }
       admin_list_tenant_memberships: {
         Args: never
         Returns: {
@@ -3732,6 +3771,14 @@ export type Database = {
           user_id: string
           user_is_super_admin: boolean
         }[]
+      }
+      admin_log_impersonation_end: {
+        Args: { _tenant_id: string }
+        Returns: undefined
+      }
+      admin_log_impersonation_start: {
+        Args: { _reason?: string; _tenant_id: string }
+        Returns: string
       }
       admin_set_super_admin: {
         Args: { p_is_super: boolean; p_user_id: string }
@@ -3795,6 +3842,34 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "tenant_memberships"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_update_tenant: {
+        Args: {
+          _name?: string
+          _segment?: Database["public"]["Enums"]["tenant_segment"]
+          _slug?: string
+          _tenant_id: string
+        }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          currency: string
+          id: string
+          locale: string
+          name: string
+          segment: Database["public"]["Enums"]["tenant_segment"]
+          slug: string
+          status: Database["public"]["Enums"]["tenant_status"]
+          timezone: string
+          trial_ends_at: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tenants"
           isOneToOne: true
           isSetofReturn: false
         }
