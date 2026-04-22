@@ -120,8 +120,9 @@ describe("BottomNav — visível só em mobile, com safe-area completa", () => {
     for (const link of links) {
       expect(link, "NavLink sem min-h-touch").toMatch(/min-h-touch/);
     }
-    // Botão "Mais" — captura o <button ...> inteiro (do '<button' até o '>' de abertura)
-    const moreBtn = src.match(/<button\b[^>]*aria-label="Mais opções"[^>]*>/);
+    // Botão "Mais" — captura o <button ...> inteiro (do '<button' até o '>' de abertura,
+    // tolerando atributos em múltiplas linhas)
+    const moreBtn = src.match(/<button\b[\s\S]*?aria-label="Mais opções"[\s\S]*?>/);
     expect(moreBtn, "Botão Mais não encontrado").toBeTruthy();
     expect(moreBtn![0]).toMatch(/min-h-touch/);
   });
