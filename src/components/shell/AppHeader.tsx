@@ -1,9 +1,9 @@
 /**
  * AppHeader — header global do app.
  *
- * Desktop (md+): linha única com sidebar trigger, tenant, busca expandida, ações.
- * Mobile     : linha única compacta (logo + tenant + ícone busca + perfil).
- *               A busca abre num overlay/CommandDialog ao tocar no ícone.
+ * Desktop (md+): linha única com sidebar trigger, tenant, busca, ações.
+ * Mobile     : linha única compacta (avatar tenant + nome + busca + perfil).
+ *               A busca abre num CommandDialog ao tocar no ícone.
  */
 import { useState } from "react";
 import { Bell, Search } from "lucide-react";
@@ -24,6 +24,16 @@ import {
 
 export function AppHeader() {
   const [searchOpen, setSearchOpen] = useState(false);
+  const { currentTenant, currentUnit } = useTenant();
+
+  const initials = currentTenant
+    ? currentTenant.name
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((p) => p[0]?.toUpperCase() ?? "")
+        .join("") || "·"
+    : "·";
 
   return (
     <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur-xl pt-safe">
@@ -43,7 +53,7 @@ export function AppHeader() {
         <UserMenu />
       </div>
 
-      {/* Mobile — uma linha apenas, máximo de espaço pro conteúdo */}
+      {/* Mobile — uma linha apenas */}
       <div className="flex h-14 items-center gap-2 px-3 md:hidden">
         <Sheet>
           <SheetTrigger asChild>
@@ -54,7 +64,7 @@ export function AppHeader() {
               aria-label="Trocar estabelecimento"
             >
               <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-soft text-primary text-[11px] font-semibold">
-                <CurrentTenantInitials />
+                {initials}
               </span>
             </Button>
           </SheetTrigger>
@@ -68,7 +78,20 @@ export function AppHeader() {
           </SheetContent>
         </Sheet>
 
-        <CurrentTenantHeader />
+        <div className="min-w-0 flex-1">
+          {currentTenant && (
+            <>
+              <p className="truncate text-sm font-semibold leading-tight">
+                {currentTenant.name}
+              </p>
+              {currentUnit && (
+                <p className="truncate text-[11px] leading-tight text-muted-foreground">
+                  {currentUnit.name}
+                </p>
+              )}
+            </>
+          )}
+        </div>
 
         <Button
           variant="ghost"
@@ -90,7 +113,7 @@ export function AppHeader() {
         <UserMenu />
       </div>
 
-      {/* Sheet/Dialog de busca controlado pelo botão mobile */}
+      {/* CommandDialog de busca controlado pelo botão mobile */}
       <GlobalSearch
         controlledOpen={searchOpen}
         onControlledOpenChange={setSearchOpen}
@@ -98,34 +121,4 @@ export function AppHeader() {
       />
     </header>
   );
-}
-
-function CurrentTenantHeader() {
-  // Lazy import para evitar ciclo
-  const { useTenant } = require("@/features/tenant/TenantProvider") as typeof import("@/features/tenant/TenantProvider");
-  const { currentTenant, currentUnit } = useTenant();
-  if (!currentTenant) return <div className="min-w-0 flex-1" />;
-  return (
-    <div className="min-w-0 flex-1">
-      <p className="truncate text-sm font-semibold leading-tight">{currentTenant.name}</p>
-      {currentUnit && (
-        <p className="truncate text-[11px] leading-tight text-muted-foreground">
-          {currentUnit.name}
-        </p>
-      )}
-    </div>
-  );
-}
-
-function CurrentTenantInitials() {
-  const { useTenant } = require("@/features/tenant/TenantProvider") as typeof import("@/features/tenant/TenantProvider");
-  const { currentTenant } = useTenant();
-  if (!currentTenant) return <span>·</span>;
-  const initials = currentTenant.name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? "")
-    .join("");
-  return <span>{initials || "·"}</span>;
 }
