@@ -1,4 +1,4 @@
-Apelido público;Função / Especialidade
-Diego;Fade e barba
-Braga;Corte clássico
-JV;Acabamentos e pigmentação
+Apelido público;Função;Especialidade;E-mail;Telefone;Comissão (%);Ativo
+Diego;Barbeiro sênior;Fade e barba;diego@barbearia.demo;11999990001;45;sim
+Braga;Barbeiro;Corte clássico;braga@barbearia.demo;11999990002;40;sim
+JV;Barbeiro;Acabamentos e pigmentação;jv@barbearia.demo;11999990003;35;sim
