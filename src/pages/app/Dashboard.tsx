@@ -191,17 +191,32 @@ export default function Dashboard() {
         <>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
             {kpis.map((kpi) => (
-              <div key={kpi.label} className="surface-card p-4 md:p-5">
-                <div className="flex items-center justify-between">
-                  <div className="grid h-9 w-9 place-items-center rounded-lg bg-gradient-soft text-primary">
+              <div key={kpi.label} className="surface-card flex flex-col gap-3 p-4 md:p-5">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gradient-soft text-primary">
                     <kpi.icon className="h-4 w-4" />
                   </div>
-                  <StatusBadge tone={kpi.tone} dot={false} className="text-[10px]">
-                    {kpi.delta}
+                  <p
+                    className="min-w-0 truncate text-xs font-medium text-muted-foreground"
+                    title={kpi.label}
+                  >
+                    {kpi.label}
+                  </p>
+                </div>
+                <div className="flex items-end justify-between gap-2">
+                  <p className="font-display text-2xl font-semibold leading-none md:text-3xl">
+                    {kpi.value}
+                  </p>
+                  <StatusBadge
+                    tone={kpi.tone}
+                    dot
+                    className="shrink-0 px-1.5 py-0.5 text-[10px] font-normal"
+                  >
+                    <span className="max-w-[8rem] truncate" title={kpi.delta}>
+                      {kpi.delta}
+                    </span>
                   </StatusBadge>
                 </div>
-                <p className="mt-3 text-xs text-muted-foreground">{kpi.label}</p>
-                <p className="font-display text-2xl font-semibold">{kpi.value}</p>
               </div>
             ))}
           </div>
