@@ -783,6 +783,24 @@ export default function ClientsPage() {
         }
       />
 
+      <QuickFiltersBar
+        filters={filters}
+        setFilters={setFilters}
+        ownProfessionalId={ownProfessional?.id ?? null}
+        ownProfessionalName={ownProfessional?.name ?? null}
+        onClear={() =>
+          setFilters((prev) => ({
+            ...prev,
+            vipOnly: false,
+            inactiveOnly: false,
+            highRiskOnly: false,
+            needsReactivationOnly: false,
+            birthdayMonth: "all",
+            preferredProfessionalId: "all",
+          }))
+        }
+      />
+
       <div className="grid gap-4 lg:grid-cols-[320px_1fr] xl:grid-cols-[360px_1fr] 2xl:grid-cols-[400px_1fr]">
         <section className="space-y-4">
           <FiltersCard
