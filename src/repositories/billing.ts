@@ -631,16 +631,15 @@ export async function listTrialActivationLogs(opts: {
     }
   }
 
-  const profileMap = new Map<string, { name: string | null; email: string | null }>();
+  const profileMap = new Map<string, { name: string | null }>();
   if (actorIds.length > 0) {
     const { data: profilesData } = await supabase
       .from("profiles")
-      .select("id, full_name, email")
+      .select("id, full_name")
       .in("id", actorIds);
     for (const p of profilesData ?? []) {
       profileMap.set(p.id as string, {
         name: (p.full_name as string) ?? null,
-        email: (p.email as string) ?? null,
       });
     }
   }
