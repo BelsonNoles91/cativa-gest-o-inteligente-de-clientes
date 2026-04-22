@@ -3621,6 +3621,7 @@ export type Database = {
         }
         Returns: number
       }
+      claim_portal_links_for_current_user: { Args: never; Returns: number }
       client_owns_appointment: {
         Args: { _appointment_id: string; _user_id: string }
         Returns: boolean
@@ -3672,6 +3673,7 @@ export type Database = {
         Args: { _tenant_id: string; _user_id: string }
         Returns: boolean
       }
+      touch_portal_last_seen: { Args: { _link_id: string }; Returns: undefined }
     }
     Enums: {
       app_role:
