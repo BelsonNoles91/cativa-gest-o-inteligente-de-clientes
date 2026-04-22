@@ -442,24 +442,71 @@ export async function assertCriticalActionsAboveBottomNav(
 
 /**
  * Simula perda de conexão no contexto do browser e dispara o evento `offline`
- * que o hook useOnlineStatus escuta. Retorna uma função para restaurar.
+ * que o hook useOnlineStatus escuta. Aguarda o banner aparecer (até 3s) em
+ * vez de timeout fixo. Retorna uma função para restaurar.
  *
- * Usado em cenários de navegação para validar que o OfflineBanner aparece
- * sem quebrar safe-area / BottomNav.
+ * Em caso de falha (banner não aparece), loga aviso mas NÃO lança — o caller
+ * decide se isso é fatal via `assertOfflineBannerLayout`.
  */
 export async function goOffline(page: Page): Promise<() => Promise<void>> {
-  await page.context().setOffline(true);
-  await page.evaluate(() => {
-    window.dispatchEvent(new Event("offline"));
-  });
-  // Pequeno settle para o React renderizar o banner.
-  await page.waitForTimeout(150);
-  return async () => {
-    await page.context().setOffline(false);
-    await page.evaluate(() => {
-      window.dispatchEvent(new Event("online"));
+  try {
+    await page.context().setOffline(true);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn("[visual] goOffline: setOffline(true) falhou", err);
+  }
+  await page
+    .evaluate(() => {
+      window.dispatchEvent(new Event("offline"));
+    })
+    .catch(() => {
+      /* página pode estar navegando */
     });
-    await page.waitForTimeout(150);
+
+  // Aguarda o banner aparecer ATIVAMENTE (até 3s) em vez de sleep cego.
+  try {
+    await page.waitForFunction(
+      () => {
+        const el = document.querySelector('[role="status"]');
+        return el && /offline/i.test(el.textContent || "");
+      },
+      { timeout: 3000 },
+    );
+  } catch {
+    // eslint-disable-next-line no-console
+    console.warn(
+      "[visual] goOffline: OfflineBanner não apareceu em 3s — " +
+        "pode indicar regressão no useOnlineStatus ou render condicional.",
+    );
+  }
+
+  return async () => {
+    try {
+      await page.context().setOffline(false);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn("[visual] restore: setOffline(false) falhou", err);
+    }
+    await page
+      .evaluate(() => {
+        window.dispatchEvent(new Event("online"));
+      })
+      .catch(() => {
+        /* página pode estar fechando */
+      });
+    // Aguarda banner mudar para "Conexão restaurada" ou sumir.
+    await page
+      .waitForFunction(
+        () => {
+          const el = document.querySelector('[role="status"]');
+          if (!el) return true;
+          return !/offline/i.test(el.textContent || "");
+        },
+        { timeout: 3000 },
+      )
+      .catch(() => {
+        /* não-fatal */
+      });
   };
 }
 
