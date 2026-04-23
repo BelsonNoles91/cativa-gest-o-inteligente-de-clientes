@@ -13,11 +13,33 @@ import { appConfig } from "@/config/app";
 
 import { FeatureGate } from "@/features/billing/FeatureGate";
 import { DebugConsole } from "@/components/debug/DebugConsole";
+import Index from "./pages/Index";
 
 const queryClient = new QueryClient();
 
-const Index = lazy(() => import("./pages/Index"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+/**
+ * Wrap dynamic imports so that, if a lazy chunk fails to load (typical
+ * after a deploy/HMR where the previous chunk hash no longer exists),
+ * we force a single hard reload instead of crashing into a blank screen.
+ */
+function lazyWithReload<T extends { default: React.ComponentType<any> }>(
+  factory: () => Promise<T>,
+) {
+  return lazy(() =>
+    factory().catch((error) => {
+      const key = "__lovable_chunk_reload__";
+      if (typeof window !== "undefined" && !sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, "1");
+        window.location.reload();
+        // Return a never-resolving promise while the page reloads.
+        return new Promise<T>(() => {});
+      }
+      throw error;
+    }),
+  );
+}
+
+const NotFound = lazyWithReload(() => import("./pages/NotFound"));
 const Pricing = lazy(() => import("./pages/public/Pricing"));
 const Login = lazy(() => import("./pages/auth/Login"));
 const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
