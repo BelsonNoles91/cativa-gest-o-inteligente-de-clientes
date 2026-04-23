@@ -596,40 +596,44 @@ export default function AgendaPage() {
       </div>
 
       <Card>
-        <CardContent className="flex flex-col gap-4 pt-6 lg:flex-row lg:items-center lg:justify-between">
-          <Tabs value={view} onValueChange={(value) => setView(value as ViewMode)}>
-            <TabsList>
-              <TabsTrigger value="day">Dia</TabsTrigger>
-              <TabsTrigger value="week">Semana</TabsTrigger>
-            </TabsList>
-          </Tabs>
+        <CardContent className="pt-6">
+          <div className="grid gap-3 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-end lg:gap-4">
+            <Field label="Visualização">
+              <Tabs value={view} onValueChange={(value) => setView(value as ViewMode)}>
+                <TabsList className="h-10 w-full sm:w-auto">
+                  <TabsTrigger value="day" className="px-4">Dia</TabsTrigger>
+                  <TabsTrigger value="week" className="px-4">Semana</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </Field>
 
-          <div className="grid gap-3 sm:grid-cols-3">
-            <Field label="Data base">
-              <Input type="date" value={selectedDate} onChange={(event) => setSelectedDate(event.target.value)} />
-            </Field>
-            <Field label="Unidade">
-              <Select value={unitFilter} onValueChange={setUnitFilter}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as unidades</SelectItem>
-                  {availableUnits.map((unit) => (
-                    <SelectItem key={unit.id} value={unit.id}>{unit.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-            <Field label="Profissional">
-              <Select value={professionalFilter} onValueChange={setProfessionalFilter}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os profissionais</SelectItem>
-                  {professionals.map((professional) => (
-                    <SelectItem key={professional.id} value={professional.id}>{professional.displayName}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Field label="Data base">
+                <Input type="date" value={selectedDate} onChange={(event) => setSelectedDate(event.target.value)} />
+              </Field>
+              <Field label="Unidade">
+                <Select value={unitFilter} onValueChange={setUnitFilter}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas as unidades</SelectItem>
+                    {availableUnits.map((unit) => (
+                      <SelectItem key={unit.id} value={unit.id}>{unit.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field label="Profissional">
+                <Select value={professionalFilter} onValueChange={setProfessionalFilter}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os profissionais</SelectItem>
+                    {professionals.map((professional) => (
+                      <SelectItem key={professional.id} value={professional.id}>{professional.displayName}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+            </div>
           </div>
         </CardContent>
       </Card>
