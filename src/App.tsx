@@ -22,7 +22,7 @@ const queryClient = new QueryClient();
  * after a deploy/HMR where the previous chunk hash no longer exists),
  * we force a single hard reload instead of crashing into a blank screen.
  */
-function lazyWithReload<T extends { default: React.ComponentType<any> }>(
+function lazyWithReload<T extends { default: ComponentType<any> }>(
   factory: () => Promise<T>,
 ) {
   return lazy(() =>
