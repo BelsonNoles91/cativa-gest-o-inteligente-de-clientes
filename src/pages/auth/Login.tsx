@@ -96,6 +96,15 @@ export default function Login() {
           {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Entrar"}
         </Button>
 
+        <div className="text-center">
+          <Link
+            to="/auth/recuperar"
+            className="text-xs font-medium text-muted-foreground hover:text-primary hover:underline"
+          >
+            Esqueci minha senha
+          </Link>
+        </div>
+
         <div className="space-y-3">
           <p className="text-center text-sm text-muted-foreground">
             Novo por aqui?{" "}
