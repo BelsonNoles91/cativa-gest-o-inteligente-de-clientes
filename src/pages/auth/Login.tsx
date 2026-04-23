@@ -40,68 +40,92 @@ export default function Login() {
 
   return (
     <AuthLayout>
-      <div className="space-y-1.5">
-        <h1 className="text-2xl font-semibold">Bem-vindo de volta</h1>
-        <p className="text-sm text-muted-foreground">Acesse sua conta Cativa para continuar.</p>
-      </div>
+      <header className="space-y-2">
+        <h1 className="font-display text-3xl font-semibold tracking-tight">Bem-vindo de volta</h1>
+        <p className="text-sm text-muted-foreground">
+          Acesse sua conta Cativa para continuar.
+        </p>
+      </header>
 
-      <form className="mt-8 space-y-4" onSubmit={onSubmit}>
-        <div className="space-y-2">
-          <Label htmlFor="email">E-mail</Label>
-          <div className="relative">
-            <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              id="email"
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="voce@negocio.com"
-              className="h-11 rounded-xl pl-9"
-            />
+      <form className="mt-8 space-y-5" onSubmit={onSubmit}>
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              E-mail
+            </Label>
+            <div className="relative">
+              <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="email"
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="voce@negocio.com"
+                className="h-11 rounded-xl pl-10"
+              />
+            </div>
           </div>
-        </div>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password">Senha</Label>
-            <Link to="/auth/recuperar" className="text-xs font-medium text-primary hover:underline">
-              Esqueci minha senha
-            </Link>
-          </div>
-          <div className="relative">
-            <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              id="password"
-              type="password"
-              required
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="h-11 rounded-xl pl-9"
-            />
+          <div className="space-y-1.5">
+            <div className="flex items-baseline justify-between">
+              <Label htmlFor="password" className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Senha
+              </Label>
+              <Link
+                to="/auth/recuperar"
+                className="text-xs font-medium text-primary hover:underline"
+              >
+                Esqueci minha senha
+              </Link>
+            </div>
+            <div className="relative">
+              <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="password"
+                type="password"
+                required
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="h-11 rounded-xl pl-10"
+              />
+            </div>
           </div>
         </div>
 
         <Button
           type="submit"
           disabled={submitting}
-          className="h-11 w-full rounded-xl bg-gradient-brand text-primary-foreground shadow-md hover:opacity-95"
+          className="h-11 w-full rounded-xl bg-gradient-brand text-primary-foreground shadow-md transition hover:opacity-95"
         >
           {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Entrar"}
         </Button>
 
-        <p className="text-center text-sm text-muted-foreground">
-          Novo por aqui?{" "}
-          <Link to="/onboarding" className="font-medium text-primary hover:underline">
-            Criar conta
-          </Link>
-        </p>
+        <div className="space-y-3">
+          <p className="text-center text-sm text-muted-foreground">
+            Novo por aqui?{" "}
+            <Link to="/onboarding" className="font-medium text-primary hover:underline">
+              Criar conta
+            </Link>
+          </p>
 
-        <div className="flex justify-center pt-2">
-          <SignOutAndRestart />
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center" aria-hidden="true">
+              <span className="w-full border-t border-border/60" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-background px-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                ou
+              </span>
+            </div>
+          </div>
+
+          <div className="flex justify-center">
+            <SignOutAndRestart />
+          </div>
         </div>
       </form>
     </AuthLayout>
