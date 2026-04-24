@@ -34,6 +34,23 @@ artefatos do repositório. O objetivo é permitir auditoria rápida de aderênci
 | 10. Import/export, seeds, docs e segurança | `src/pages/app/DataImportExport.tsx`, `docs/05-backup-restore.md`, `docs/06-import-export.md`, `docs/11-seeds-demo.md` |
 | 11. Landing e planos públicos | `src/pages/public/Landing.tsx`, `src/pages/public/Pricing.tsx` |
 
+## Status formal por bloco
+
+| Bloco do prompt | Status | Observação |
+| --- | --- | --- |
+| Regras fixas e arquitetura | Implementado | Multi-tenant, RLS, portabilidade, Supabase, WhatsApp manual e ausência de módulo fiscal estão refletidos no código e nas migrations. |
+| 1. Fundação visual e estrutural | Implementado | Shell, rotas, layout e base visual estão consolidados. |
+| 2. Auth, onboarding, permissões e tenant | Implementado com adaptação | Fluxo entregue; diferença principal é a modelagem de papéis via `app_role` + permissões, não uma tabela `roles` literal. |
+| 3. CRM | Implementado | CRM amplo com ficha, timeline, anexos, fotos, consentimentos e custom fields. |
+| 4. Catálogo | Implementado | Serviços, preços, pacotes, memberships e protocolos cobertos. |
+| 5. Agenda | Implementado | Agenda, waitlist, bloqueios, disponibilidade e visão por recurso/sala presentes. |
+| 6. Central de confirmação | Implementado | Aderente ao modelo manual de confirmação definido no prompt. |
+| 7. Portal do cliente | Implementado | Fluxos centrais de acesso, agenda, reagendamento, cancelamento e perfil já existem. |
+| 8. Analytics e Índice Cativa | Implementado com adaptação | Entregue e reorganizado por contexto; ainda sem uma camada mais profunda de coorte/funil dedicada. |
+| 9. Billing SaaS e super admin | Implementado com adaptação | A lógica existe, mas a modelagem não replica literalmente estruturas como `trial_rules` e `usage_limits`. |
+| 10. Import/export, seeds, docs e segurança | Implementado com validação externa pendente | Cobertura forte em código/docs; falta fechar validação integrada com ambiente real. |
+| 11. Landing e planos públicos | Implementado | Frente pública madura e aderente ao escopo. |
+
 ## Fechamentos finais da Fase 9
 
 | Fechamento | Evidência principal |
@@ -42,6 +59,19 @@ artefatos do repositório. O objetivo é permitir auditoria rápida de aderênci
 | Busca global funcional com `⌘K` | `src/components/shell/GlobalSearch.tsx` |
 | Rotas principais com lazy loading / code-splitting | `src/App.tsx` |
 | Navegação por contexto em busca global (`search`/`date`) | `src/pages/app/Clients.tsx`, `src/pages/app/Services.tsx`, `src/pages/app/Agenda.tsx` |
+
+## Atualizações verificadas em 23/04/2026
+
+| Fechamento | Evidência principal |
+| --- | --- |
+| Workspace volta a fechar `test` e `build` | `package-lock.json`, validação local com `npm test` e `npm run build` |
+| Convite real de equipe com aceite por token e enforcement de `max_professionals` | `src/services/team/inviteMember.ts`, `src/pages/auth/AcceptInvite.tsx`, migration `20260422224034_*.sql` |
+| Storage com leitura real no app e hard-limit no banco | `src/repositories/billing.ts`, `src/pages/app/Billing.tsx`, migration `20260422224034_*.sql` |
+| CRM bloqueia upload acima do plano antes do envio | `src/pages/app/Clients.tsx` |
+| Agenda com visão explícita por recurso/sala | `src/pages/app/Agenda.tsx` |
+| Analytics separado por contexto executivo, operacional e retenção | `src/pages/app/Analytics.tsx` |
+| Diálogos e sheets críticos com descrição acessível | `src/components/shell/BottomNav.tsx`, `src/features/settings/UnitsSettings.tsx`, `src/pages/app/Clients.tsx`, `src/pages/app/SuperAdmin.tsx` |
+| Suite local sem warnings remanescentes de `MemoryRouter` nos testes críticos | `src/test/a11y-bottom-nav-offline-banner.test.tsx`, `src/test/safe-area-bottom-nav-computed.test.tsx` |
 
 ## Validação sugerida
 
@@ -52,3 +82,13 @@ artefatos do repositório. O objetivo é permitir auditoria rápida de aderênci
 5. Acesso do cliente ao portal.
 6. Leitura de analytics, billing e super admin.
 7. Exportação e reimportação de dados.
+
+## Validação executada nesta máquina
+
+| Tipo | Resultado | Observação |
+| --- | --- | --- |
+| `npm test` | OK | 321 testes passaram. |
+| `npm run build` | OK | Build e geração PWA concluídos. |
+| Testes críticos de navegação/acessibilidade | OK | `BottomNav` e `OfflineBanner` passam sem warnings técnicos remanescentes da suíte local. |
+| Playwright público (`/auth/login`) | OK | Baseline pública gerada e execução local estabilizada na configuração do Playwright. |
+| Playwright autenticado (`/app/*`) | Bloqueado por ambiente | `E2E_USER` e `E2E_PASS` não estão configurados no workspace atual. |

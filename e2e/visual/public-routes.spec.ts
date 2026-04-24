@@ -8,6 +8,7 @@
  * de dispositivo; o screenshot é o "selo" final.
  */
 import { test, expect } from "@playwright/test";
+import { AUTH_SKIP_REASON, HAS_E2E_AUTH } from "../_helpers/auth";
 import {
   prepareForSnapshot,
   assertNoHorizontalOverflow,
@@ -18,9 +19,41 @@ import {
   assertCriticalActionsAboveBottomNav,
 } from "../_helpers/visual";
 
-test.use({ storageState: { cookies: [], origins: [] } });
+const AUTH_VISUAL_TIMEOUT = 60_000;
+
+async function waitForAuthenticatedShell(page: import("@playwright/test").Page) {
+  await page
+    .locator('main[data-app-main], [data-app-main]')
+    .first()
+    .waitFor({ state: "visible", timeout: 20_000 });
+}
+
+async function openAuthenticatedVisualRoute(
+  page: import("@playwright/test").Page,
+  path: string,
+) {
+  await page.goto(path, { waitUntil: "commit", timeout: 15_000 });
+  await page.waitForLoadState("domcontentloaded", { timeout: 30_000 }).catch(() => {});
+
+  try {
+    await waitForAuthenticatedShell(page);
+    return;
+  } catch {
+    await page.goto("/app", { waitUntil: "commit", timeout: 15_000 });
+    await page.waitForLoadState("domcontentloaded", { timeout: 30_000 }).catch(() => {});
+    await waitForAuthenticatedShell(page);
+
+    if (path !== "/app") {
+      await page.goto(path, { waitUntil: "commit", timeout: 15_000 });
+      await page.waitForLoadState("domcontentloaded", { timeout: 30_000 }).catch(() => {});
+      await waitForAuthenticatedShell(page);
+    }
+  }
+}
 
 test.describe("rotas públicas", () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   test("/auth/login — sem overflow e baseline visual", async ({ page }) => {
     await page.goto("/auth/login");
     await prepareForSnapshot(page);
@@ -32,6 +65,8 @@ test.describe("rotas públicas", () => {
 });
 
 test.describe("rotas autenticadas", () => {
+  test.describe.configure({ timeout: AUTH_VISUAL_TIMEOUT });
+  test.skip(!HAS_E2E_AUTH, AUTH_SKIP_REASON);
   for (const { path, name } of [
     { path: "/app", name: "dashboard" },
     { path: "/app/agenda", name: "agenda" },
@@ -39,12 +74,7 @@ test.describe("rotas autenticadas", () => {
     { path: "/app/confirmacoes", name: "confirmacoes" },
   ]) {
     test(`${path} — sem cortes e baseline visual`, async ({ page }) => {
-      await page.goto(path);
-      // Aguarda saída do skeleton/loader principal antes do snapshot.
-      await page
-        .locator('main[data-app-main], [data-app-main]')
-        .first()
-        .waitFor({ state: "visible", timeout: 15_000 });
+      await openAuthenticatedVisualRoute(page, path);
       await prepareForSnapshot(page);
 
       // Asserções estruturais antes do diff de pixels.

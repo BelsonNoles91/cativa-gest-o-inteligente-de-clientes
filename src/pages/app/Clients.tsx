@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { EmptyState } from "@/components/feedback/EmptyState";
@@ -73,8 +73,10 @@ import {
 import { listProfessionalsLite, type ProfessionalLite } from "@/repositories/scheduling";
 import { computeCompleteness, clientStatusLabels, riskLevelLabels, type Client, type ClientRiskLevel, type ClientStatus, type ClientFile, type ClientNote, type ClientPhoto, type ClientTag, type ConsentResponse, type ConsentTemplate, type CustomFieldDefinition, type TimelineEvent } from "@/domain/client";
 import { canAccess } from "@/domain/roles";
+import { isUsageBlocked } from "@/domain/billing";
 import { QuickFiltersBar } from "@/features/clients/QuickFiltersBar";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 type FiltersState = {
   search: string;
@@ -141,7 +143,7 @@ type CustomValuesMap = Record<string, unknown>;
 export default function ClientsPage() {
   const [searchParams] = useSearchParams();
   const { currentTenant, availableUnits, currentRole } = useTenant();
-  const { limits, usage } = useTenantBilling();
+  const { limits, usage, refresh: refreshBilling } = useTenantBilling();
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -570,6 +572,15 @@ export default function ClientsPage() {
   async function handleFileUpload(file: File | null) {
     if (!currentTenant || !selectedClient) return;
     if (!file) return;
+    const projectedStorageMb = usage.storageMb + (file.size / (1024 * 1024));
+    if (isUsageBlocked(projectedStorageMb, limits?.maxStorageMb ?? null)) {
+      toast({
+        title: "Limite de armazenamento atingido",
+        description: "O upload ultrapassa o armazenamento disponível no plano atual.",
+        variant: "destructive",
+      });
+      return;
+    }
     setUploadingFile(true);
     try {
       await uploadClientFile({
@@ -581,6 +592,7 @@ export default function ClientsPage() {
       });
       setFileDescription("");
       toast({ title: "Arquivo enviado" });
+      await refreshBilling();
       await refreshSelectedClient();
     } catch (error) {
       toast({
@@ -596,6 +608,15 @@ export default function ClientsPage() {
   async function handlePhotoUpload(file: File | null) {
     if (!currentTenant || !selectedClient) return;
     if (!file) return;
+    const projectedStorageMb = usage.storageMb + (file.size / (1024 * 1024));
+    if (isUsageBlocked(projectedStorageMb, limits?.maxStorageMb ?? null)) {
+      toast({
+        title: "Limite de armazenamento atingido",
+        description: "A foto excede o armazenamento disponível no plano atual.",
+        variant: "destructive",
+      });
+      return;
+    }
     setUploadingPhoto(true);
     try {
       await uploadClientPhoto({
@@ -611,6 +632,7 @@ export default function ClientsPage() {
       setPhotoTakenAt("");
       setPhotoType("general");
       toast({ title: "Foto enviada" });
+      await refreshBilling();
       await refreshSelectedClient();
     } catch (error) {
       toast({
@@ -627,6 +649,7 @@ export default function ClientsPage() {
     try {
       await deleteFile(file.id, file.storagePath);
       toast({ title: "Arquivo removido" });
+      await refreshBilling();
       await refreshSelectedClient();
     } catch (error) {
       toast({
@@ -641,6 +664,7 @@ export default function ClientsPage() {
     try {
       await deletePhoto(photo.id, photo.storagePath);
       toast({ title: "Foto removida" });
+      await refreshBilling();
       await refreshSelectedClient();
     } catch (error) {
       toast({
@@ -765,6 +789,9 @@ export default function ClientsPage() {
               <DialogContent className="max-h-[90vh] overflow-hidden sm:max-w-2xl">
                 <DialogHeader>
                   <DialogTitle>Novo cliente</DialogTitle>
+                  <DialogDescription>
+                    Preencha os dados principais do cliente para iniciar o relacionamento no CRM.
+                  </DialogDescription>
                 </DialogHeader>
                 <ScrollArea className="max-h-[72vh] pr-4">
                   <ClientForm
@@ -801,8 +828,8 @@ export default function ClientsPage() {
         }
       />
 
-      <div className="grid gap-4 lg:grid-cols-[320px_1fr] xl:grid-cols-[360px_1fr] 2xl:grid-cols-[400px_1fr]">
-        <section className="space-y-4">
+      <div className="grid min-w-0 gap-4 lg:grid-cols-[320px_1fr] xl:grid-cols-[360px_1fr] 2xl:grid-cols-[400px_1fr]">
+        <section className="min-w-0 space-y-4">
           <FiltersCard
             filters={filters}
             setFilters={setFilters}
@@ -811,20 +838,20 @@ export default function ClientsPage() {
             origins={originOptions}
           />
 
-          <Card className="overflow-hidden">
-            <CardHeader className="pb-3">
+          <Card className="min-w-0 w-full max-w-full overflow-hidden">
+            <CardHeader className="min-w-0 px-4 pb-3 sm:px-6">
               <CardTitle className="text-base">Base de clientes</CardTitle>
               <CardDescription>Busca rápida para recepção e consulta operacional.</CardDescription>
             </CardHeader>
-            <CardContent className="px-0 pb-0">
+            <CardContent className="min-w-0 px-0 pb-0">
               {loadingList ? (
-                <div className="space-y-3 px-6 pb-6">
+                <div className="space-y-3 px-4 pb-4 sm:px-6 sm:pb-6">
                   {Array.from({ length: 6 }).map((_, i) => (
                     <Skeleton key={i} className="h-16 w-full" />
                   ))}
                 </div>
               ) : clients.length === 0 ? (
-                <div className="px-6 pb-6">
+                <div className="px-4 pb-4 sm:px-6 sm:pb-6">
                   <EmptyState
                     icon={<Users className="h-6 w-6" />}
                     title="Nenhum cliente encontrado"
@@ -832,14 +859,14 @@ export default function ClientsPage() {
                   />
                 </div>
               ) : (
-                <ScrollArea className="h-[calc(100vh-20rem)]">
+                <ScrollArea className="h-[calc(100vh-20rem)] w-full">
                   <ul className="divide-y divide-border/60">
                     {clients.map((client) => (
                       <li key={client.id}>
                         <button
                           type="button"
                           onClick={() => setSelectedId(client.id)}
-                          className={`flex w-full items-center gap-3 px-6 py-4 text-left transition hover:bg-muted/40 ${selectedId === client.id ? "bg-muted/60" : ""}`}
+                          className={`flex w-full items-center gap-3 px-4 py-4 text-left transition hover:bg-muted/40 sm:px-6 ${selectedId === client.id ? "bg-muted/60" : ""}`}
                         >
                           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-soft text-primary">
                             <UserRound className="h-4 w-4" />
@@ -873,7 +900,7 @@ export default function ClientsPage() {
           </Card>
         </section>
 
-        <section>
+        <section className="min-w-0">
           {!selectedId ? (
             <EmptyState
               icon={<Users className="h-6 w-6" />}
@@ -889,7 +916,7 @@ export default function ClientsPage() {
               </div>
             </Card>
           ) : (
-            <div className="space-y-4">
+            <div className="min-w-0 space-y-4">
               <ClientHero
                 client={selectedClient}
                 tags={tags.filter((tag) => selectedTagIds.includes(tag.id))}
@@ -927,8 +954,8 @@ export default function ClientsPage() {
                 </TabsList>
 
                 <TabsContent value="summary" className="space-y-4">
-                  <div className="grid gap-4 xl:grid-cols-[1.3fr_1fr]">
-                    <Card>
+                  <div className="grid min-w-0 gap-4 xl:grid-cols-[1.3fr_1fr]">
+                    <Card className="min-w-0">
                       <CardHeader>
                         <CardTitle>Dados principais</CardTitle>
                         <CardDescription>Campos centrais para retenção e operação diária.</CardDescription>
@@ -949,8 +976,8 @@ export default function ClientsPage() {
                       </CardContent>
                     </Card>
 
-                    <div className="space-y-4">
-                      <Card>
+                    <div className="min-w-0 space-y-4">
+                      <Card className="min-w-0">
                         <CardHeader>
                           <CardTitle>Tags & status</CardTitle>
                           <CardDescription>Classifique o cliente para atendimento e reativação.</CardDescription>
@@ -989,7 +1016,7 @@ export default function ClientsPage() {
                         </CardContent>
                       </Card>
 
-                      <Card>
+                      <Card className="min-w-0">
                         <CardHeader>
                           <CardTitle>Campos customizados</CardTitle>
                           <CardDescription>Configuráveis por tenant para aprofundar a ficha.</CardDescription>
@@ -1097,8 +1124,8 @@ export default function ClientsPage() {
                 </TabsContent>
 
                 <TabsContent value="media" className="space-y-4">
-                  <div className="grid gap-4 xl:grid-cols-2">
-                    <Card>
+                  <div className="grid min-w-0 gap-4 xl:grid-cols-2">
+                    <Card className="min-w-0">
                       <CardHeader>
                         <CardTitle>Arquivos</CardTitle>
                         <CardDescription>Anexos, documentos e materiais de apoio.</CardDescription>
@@ -1154,7 +1181,7 @@ export default function ClientsPage() {
                       </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="min-w-0">
                       <CardHeader>
                         <CardTitle>Fotos e antes/depois</CardTitle>
                         <CardDescription>Registro visual simples e profissional do cliente.</CardDescription>
@@ -1237,8 +1264,8 @@ export default function ClientsPage() {
                 </TabsContent>
 
                 <TabsContent value="consents" className="space-y-4">
-                  <div className="grid gap-4 xl:grid-cols-2">
-                    <Card>
+                  <div className="grid min-w-0 gap-4 xl:grid-cols-2">
+                    <Card className="min-w-0">
                       <CardHeader>
                         <CardTitle>Templates de consentimento</CardTitle>
                         <CardDescription>Base inicial para formulários e termos digitais.</CardDescription>
@@ -1286,7 +1313,7 @@ export default function ClientsPage() {
                       </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="min-w-0">
                       <CardHeader>
                         <CardTitle>Respostas do cliente</CardTitle>
                         <CardDescription>Histórico de pendências e assinaturas já registradas.</CardDescription>
@@ -1368,24 +1395,24 @@ function FiltersCard({
   const originLabel = filters.origin === "all" ? "Todas as origens" : filters.origin;
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
+    <Card className="min-w-0 w-full max-w-full">
+      <CardHeader className="px-4 pb-3 sm:px-6">
         <CardTitle className="text-base">Busca e filtros</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="relative">
+      <CardContent className="min-w-0 space-y-3 px-4 pb-4 sm:px-6 sm:pb-6">
+        <div className="min-w-0">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={filters.search}
             onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
             placeholder="Buscar por nome, telefone ou e-mail"
-            className="pl-9"
+            className="min-w-0 pl-9"
           />
         </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 [&>*]:min-w-0">
+        <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 [&>*]:min-w-0">
           <FilterSelectTooltip fieldLabel="Status" valueLabel={statusLabel}>
             <Select value={filters.status} onValueChange={(value) => setFilters((prev) => ({ ...prev, status: value as ClientStatus | "all" }))}>
-              <SelectTrigger className="w-full" aria-label={`Status: ${statusLabel}`}>
+              <SelectTrigger className="min-w-0 w-full" aria-label={`Status: ${statusLabel}`}>
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -1398,7 +1425,7 @@ function FiltersCard({
           </FilterSelectTooltip>
           <FilterSelectTooltip fieldLabel="Aniversariantes" valueLabel={birthdayLabel}>
             <Select value={filters.birthdayMonth} onValueChange={(value) => setFilters((prev) => ({ ...prev, birthdayMonth: value }))}>
-              <SelectTrigger className="w-full" aria-label={`Aniversariantes: ${birthdayLabel}`}>
+              <SelectTrigger className="min-w-0 w-full" aria-label={`Aniversariantes: ${birthdayLabel}`}>
                 <SelectValue placeholder="Aniversariantes" />
               </SelectTrigger>
               <SelectContent>
@@ -1411,7 +1438,7 @@ function FiltersCard({
           </FilterSelectTooltip>
           <FilterSelectTooltip fieldLabel="Unidade preferida" valueLabel={unitLabel}>
             <Select value={filters.preferredUnitId} onValueChange={(value) => setFilters((prev) => ({ ...prev, preferredUnitId: value }))}>
-              <SelectTrigger className="w-full" aria-label={`Unidade preferida: ${unitLabel}`}>
+              <SelectTrigger className="min-w-0 w-full" aria-label={`Unidade preferida: ${unitLabel}`}>
                 <SelectValue placeholder="Unidade preferida" />
               </SelectTrigger>
               <SelectContent>
@@ -1424,7 +1451,7 @@ function FiltersCard({
           </FilterSelectTooltip>
           <FilterSelectTooltip fieldLabel="Profissional preferido" valueLabel={professionalLabel}>
             <Select value={filters.preferredProfessionalId} onValueChange={(value) => setFilters((prev) => ({ ...prev, preferredProfessionalId: value }))}>
-              <SelectTrigger className="w-full" aria-label={`Profissional preferido: ${professionalLabel}`}>
+              <SelectTrigger className="min-w-0 w-full" aria-label={`Profissional preferido: ${professionalLabel}`}>
                 <SelectValue placeholder="Profissional preferido" />
               </SelectTrigger>
               <SelectContent>
@@ -1441,7 +1468,7 @@ function FiltersCard({
             className="sm:col-span-2 lg:col-span-1 xl:col-span-2"
           >
             <Select value={filters.origin} onValueChange={(value) => setFilters((prev) => ({ ...prev, origin: value }))}>
-              <SelectTrigger className="w-full" aria-label={`Origem: ${originLabel}`}>
+              <SelectTrigger className="min-w-0 w-full" aria-label={`Origem: ${originLabel}`}>
                 <SelectValue placeholder="Origem" />
               </SelectTrigger>
               <SelectContent>
@@ -1839,7 +1866,7 @@ function FilterSelectTooltip({
   return (
     <Tooltip delayDuration={250}>
       <TooltipTrigger asChild>
-        <div className={className}>{children}</div>
+        <div className={cn("min-w-0", className)}>{children}</div>
       </TooltipTrigger>
       <TooltipContent side="top" align="start" className="max-w-xs">
         <span className="font-medium">{fieldLabel}:</span> {valueLabel}

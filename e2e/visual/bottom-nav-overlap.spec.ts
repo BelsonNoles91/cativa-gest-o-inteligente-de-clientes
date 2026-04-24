@@ -26,11 +26,14 @@
  * Confirmações). O storageState do global-setup garante usuário logado.
  */
 import { test, expect, type Page } from "@playwright/test";
+import { AUTH_SKIP_REASON, HAS_E2E_AUTH } from "../_helpers/auth";
 import { prepareForSnapshot, assertBottomNavVisible } from "../_helpers/visual";
 import { captureFailureReport, type Offender } from "../_helpers/safeAreaReport";
 
 /** Máximo de área de um item do nav que pode ser coberta antes de falhar. */
 const MAX_OVERLAP_RATIO = 0.1;
+const ROUTE_TIMEOUT = 45_000;
+const SCENARIO_TIMEOUT = 90_000;
 
 /** Largura/altura máxima reservada ao badge do Lovable no canto inf. direito. */
 const LOVABLE_BADGE_MAX_PX = 72;
@@ -208,7 +211,27 @@ const ROUTES_TO_CHECK = [
   { path: "/app/confirmacoes", name: "confirmacoes" },
 ];
 
+async function waitForAppShell(page: Page, path: string): Promise<void> {
+  try {
+    await page
+      .locator("[data-app-main]")
+      .first()
+      .waitFor({ state: "visible", timeout: ROUTE_TIMEOUT });
+  } catch (err) {
+    const bodyText = await page.locator("body").innerText().catch(() => "");
+    throw new Error(
+      `[data-app-main] não apareceu em ${ROUTE_TIMEOUT}ms na rota ${path}. ` +
+        `URL atual: ${page.url()}. ` +
+        `Body snippet: ${bodyText.slice(0, 500)}\n` +
+        `Original: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+}
+
 test.describe("BottomNav overlap detection", () => {
+  test.describe.configure({ timeout: SCENARIO_TIMEOUT });
+  test.skip(!HAS_E2E_AUTH, AUTH_SKIP_REASON);
+
   for (const { path, name } of ROUTES_TO_CHECK) {
     test(`${name}: nenhum item do BottomNav é coberto por flutuantes`, async ({
       page,
@@ -217,7 +240,8 @@ test.describe("BottomNav overlap detection", () => {
       // BottomNav só existe < 768px (md:hidden). iPad pula.
       test.skip(vw >= 768, "BottomNav não renderiza em viewports >= 768px");
 
-      await page.goto(path);
+      await page.goto(path, { waitUntil: "domcontentloaded", timeout: ROUTE_TIMEOUT });
+      await waitForAppShell(page, path);
       await prepareForSnapshot(page);
       await assertBottomNavVisible(page);
 

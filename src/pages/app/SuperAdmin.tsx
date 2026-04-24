@@ -33,6 +33,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -573,6 +574,9 @@ function TenantsTab({
         <DialogContent className="max-h-[90vh] overflow-hidden sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle>{selectedTenant?.name ?? "Tenant"}</DialogTitle>
+            <DialogDescription>
+              Revise assinatura, limites efetivos, overrides e eventos recentes deste tenant.
+            </DialogDescription>
           </DialogHeader>
           {selectedTenant?.subscription ? (
             <div className="grid gap-6 overflow-y-auto pr-2 md:grid-cols-[1fr_1fr]">
@@ -652,6 +656,9 @@ function TenantsTab({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Editar tenant</DialogTitle>
+            <DialogDescription>
+              Ajuste os dados cadastrais básicos usados para identificação e segmentação do tenant.
+            </DialogDescription>
           </DialogHeader>
           <div className="grid gap-3">
             <Field label="Nome">

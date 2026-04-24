@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   Activity,
   BarChart3,
@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { AnalyticsFiltersBar } from "@/features/analytics/AnalyticsFiltersBar";
 import { CativaIndexCard } from "@/features/analytics/CativaIndexCard";
@@ -35,6 +36,7 @@ const SOURCE_LABELS: Record<string, string> = {
 };
 
 export default function AnalyticsPage() {
+  const [contextView, setContextView] = useState<"executive" | "operational" | "retention">("executive");
   const analytics = useAnalytics();
   const { metrics, labels, cativa, nba, filters, range } = analytics;
 
@@ -105,245 +107,294 @@ export default function AnalyticsPage() {
         onSource={analytics.setSource}
       />
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <KpiCard
-          label="Taxa de confirmação"
-          value={formatPct(metrics.confirmation.rate)}
-          hint={`${metrics.confirmation.confirmed} confirmados de ${metrics.confirmation.eligible}`}
-          icon={ListChecks}
-          tone={metrics.confirmation.rate >= 75 ? "success" : "warning"}
-        />
-        <KpiCard
-          label="Ocupação"
-          value={formatPct(metrics.occupancy.rate)}
-          hint={`${metrics.bookedMinutes} min reservados de ${metrics.availableMinutes} min disponíveis`}
-          icon={Gauge}
-          tone={metrics.occupancy.rate >= 70 ? "success" : "warning"}
-        />
-        <KpiCard
-          label="Ticket médio"
-          value={formatCurrency(metrics.ticketAvg)}
-          hint={`${analytics.appts.filter((appt) => appt.status === "completed").length} atendimentos concluídos`}
-          icon={CircleDollarSign}
-          tone="brand"
-        />
-        <KpiCard
-          label="Receita futura em risco"
-          value={formatCurrency(metrics.futureRisk.value)}
-          hint={`${metrics.futureRisk.count} agendamento(s) sem confirmação`}
-          icon={ShieldAlert}
-          tone={metrics.futureRisk.count > 0 ? "danger" : "success"}
-        />
-      </div>
+      <Tabs value={contextView} onValueChange={(value) => setContextView(value as "executive" | "operational" | "retention")}>
+        <TabsList className="h-10 w-full justify-start overflow-x-auto">
+          <TabsTrigger value="executive">Executivo</TabsTrigger>
+          <TabsTrigger value="operational">Operacional</TabsTrigger>
+          <TabsTrigger value="retention">Retenção</TabsTrigger>
+        </TabsList>
+        <p className="mt-3 text-sm text-muted-foreground">
+          {contextView === "executive"
+            ? "Leitura consolidada de receita futura, ticket, ocupação e ranking da operação."
+            : contextView === "operational"
+            ? "Acompanhamento diário de confirmação, comparecimento, no-show e origem da agenda."
+            : "Saúde da base, conversão de visitas, recorrência, reativação e fidelização."}
+        </p>
 
-      <div className="grid gap-6 xl:grid-cols-[1.3fr_0.9fr]">
-        <CativaIndexCard breakdown={cativa} scope={scopeLabel} />
-        <NextBestActions actions={nba} />
-      </div>
+        <div className="mt-6 space-y-6">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <KpiCard
+              label="Taxa de confirmação"
+              value={formatPct(metrics.confirmation.rate)}
+              hint={`${metrics.confirmation.confirmed} confirmados de ${metrics.confirmation.eligible}`}
+              icon={ListChecks}
+              tone={metrics.confirmation.rate >= 75 ? "success" : "warning"}
+            />
+            <KpiCard
+              label="Ocupação"
+              value={formatPct(metrics.occupancy.rate)}
+              hint={`${metrics.bookedMinutes} min reservados de ${metrics.availableMinutes} min disponíveis`}
+              icon={Gauge}
+              tone={metrics.occupancy.rate >= 70 ? "success" : "warning"}
+            />
+            <KpiCard
+              label="Ticket médio"
+              value={formatCurrency(metrics.ticketAvg)}
+              hint={`${analytics.appts.filter((appt) => appt.status === "completed").length} atendimentos concluídos`}
+              icon={CircleDollarSign}
+              tone="brand"
+            />
+            <KpiCard
+              label="Receita futura em risco"
+              value={formatCurrency(metrics.futureRisk.value)}
+              hint={`${metrics.futureRisk.count} agendamento(s) sem confirmação`}
+              icon={ShieldAlert}
+              tone={metrics.futureRisk.count > 0 ? "danger" : "success"}
+            />
+          </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <KpiCard
-          label="Comparecimento"
-          value={formatPct(metrics.attendance.rate)}
-          hint={`${metrics.attendance.attended} compareceram`}
-          icon={Activity}
-          tone={metrics.attendance.rate >= 80 ? "success" : "warning"}
-        />
-        <KpiCard
-          label="No-show"
-          value={formatPct(metrics.noShow.rate)}
-          hint={`${metrics.noShow.noShows} falta(s) no período`}
-          icon={CalendarClock}
-          tone={metrics.noShow.rate <= 8 ? "success" : "danger"}
-        />
-        <KpiCard
-          label="Cancelamentos"
-          value={formatPct(metrics.cancellation.rate)}
-          hint={`${metrics.cancellation.canceled} cancelamento(s)`}
-          icon={Clock3}
-          tone={metrics.cancellation.rate <= 12 ? "success" : "warning"}
-        />
-        <KpiCard
-          label="Tempo médio até confirmar"
-          value={`${metrics.avgConfirmHours.toFixed(1)}h`}
-          hint="Da criação até a confirmação"
-          icon={Clock3}
-          tone="info"
-        />
-      </div>
+          <div className="grid gap-6 xl:grid-cols-[1.3fr_0.9fr]">
+            <CativaIndexCard breakdown={cativa} scope={scopeLabel} />
+            <NextBestActions actions={nba} />
+          </div>
 
-      <div className="grid gap-6 xl:grid-cols-2">
-        <SectionCard
-          title="Receita e agenda futura"
-          description="Leitura executiva do pipeline de faturamento já agendado."
-        >
-          <MetricRow
-            label="Valor futuro agendado"
-            value={formatCurrency(metrics.futureValue)}
-            helper="Soma dos horários futuros não cancelados"
-          />
-          <MetricRow
-            label="Receita futura em risco"
-            value={formatCurrency(metrics.futureRisk.value)}
-            helper={`${metrics.futureRisk.count} horário(s) sem confirmação`}
-            tone={metrics.futureRisk.count > 0 ? "danger" : "success"}
-          />
-          <MetricRow
-            label="Alto valor sem confirmação"
-            value={String(metrics.highValueUnconfirmed)}
-            helper="Prioridade operacional da Central de Confirmação"
-            tone={metrics.highValueUnconfirmed > 0 ? "warning" : "success"}
-          />
-          <MetricRow
-            label="Conversão da lista de espera"
-            value={formatPct(metrics.waitlistConv)}
-            helper={`${metrics.waitlist.scheduled} agendados de ${metrics.waitlist.worked} trabalhados`}
-          />
-        </SectionCard>
-
-        <SectionCard
-          title="Retenção e recorrência"
-          description="Visão de saúde da base e aderência à jornada ideal."
-        >
-          <ProgressMetric
-            label="Retenção"
-            value={metrics.retention.rate}
-            helper={`${metrics.retention.retained}/${metrics.retention.eligible} clientes elegíveis`}
-          />
-          <ProgressMetric
-            label="1ª → 2ª visita"
-            value={metrics.conv1to2.rate}
-            helper={`${metrics.conv1to2.converted}/${metrics.conv1to2.eligible} clientes`}
-          />
-          <ProgressMetric
-            label="2ª → 3ª visita"
-            value={metrics.conv2to3.rate}
-            helper={`${metrics.conv2to3.converted}/${metrics.conv2to3.eligible} clientes`}
-          />
-          <ProgressMetric
-            label="Rebooking"
-            value={metrics.rebook.rate}
-            helper={`${metrics.rebook.rebooked}/${metrics.rebook.eligible} concluídos`}
-          />
-          <ProgressMetric
-            label="Janela ideal de retorno"
-            value={metrics.ideal.rate}
-            helper={`${metrics.ideal.in_window}/${metrics.ideal.eligible} retornos`}
-          />
-        </SectionCard>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-3">
-        <SectionCard
-          title="Aquisição e base"
-          description="Qualidade do CRM e composição da demanda."
-        >
-          <MetricRow
-            label="Novos clientes"
-            value={String(metrics.newReturning.news)}
-            helper={`${metrics.newReturning.total} clientes atendidos no período`}
-          />
-          <MetricRow
-            label="Clientes recorrentes"
-            value={String(metrics.newReturning.returning)}
-            helper="Já tinham histórico anterior"
-          />
-          <MetricRow
-            label="Completude do CRM"
-            value={formatPct(metrics.crm)}
-            helper="Campos-chave preenchidos"
-          />
-          <MetricRow
-            label="Pool inativo"
-            value={String(metrics.inactivePool)}
-            helper="Sem visita recente e passíveis de reativação"
-          />
-          <MetricRow
-            label="Reativação"
-            value={formatPct(metrics.reactivation)}
-            helper="Inativos que voltaram no período"
-          />
-        </SectionCard>
-
-        <SectionCard
-          title="Lealdade e pacotes"
-          description="Vínculo com marca, profissional e execução de protocolos."
-        >
-          <ProgressMetric
-            label="Lealdade ao profissional"
-            value={metrics.proLoyalty.rate}
-            helper={`${metrics.proLoyalty.loyal}/${metrics.proLoyalty.recurring} clientes recorrentes`}
-          />
-          <ProgressMetric
-            label="Lealdade à marca"
-            value={metrics.brand.rate}
-            helper={`${metrics.brand.recurring}/${metrics.brand.total} clientes com 2+ visitas`}
-          />
-          <ProgressMetric
-            label="Conclusão de pacotes"
-            value={metrics.packageCompletion}
-            helper={`${metrics.pendingPackages} pacote(s)/protocolo(s) ainda em aberto`}
-          />
-          <ProgressMetric
-            label="Recuperação de no-show"
-            value={metrics.noShowRecovery.rate}
-            helper={`${metrics.noShowRecovery.recovered}/${metrics.noShowRecovery.eligible} recuperados`}
-          />
-        </SectionCard>
-
-        <SectionCard
-          title="Origem da agenda"
-          description="Distribuição dos agendamentos por canal de entrada."
-        >
-          {metrics.sources.length === 0 ? (
-            <EmptyMiniState text="Sem dados suficientes neste período." />
-          ) : (
-            <div className="space-y-3">
-              {metrics.sources.map((item) => (
-                <ProgressMetric
-                  key={item.source}
-                  label={SOURCE_LABELS[item.source] ?? item.source}
-                  value={item.pct}
-                  helper={`${item.count} agendamento(s)`}
+          <TabsContent value="executive" className="mt-0 space-y-6">
+            <div className="grid gap-6 xl:grid-cols-2">
+              <SectionCard
+                title="Receita e agenda futura"
+                description="Leitura executiva do pipeline de faturamento já agendado."
+              >
+                <MetricRow
+                  label="Valor futuro agendado"
+                  value={formatCurrency(metrics.futureValue)}
+                  helper="Soma dos horários futuros não cancelados"
                 />
-              ))}
-            </div>
-          )}
-        </SectionCard>
-      </div>
+                <MetricRow
+                  label="Receita futura em risco"
+                  value={formatCurrency(metrics.futureRisk.value)}
+                  helper={`${metrics.futureRisk.count} horário(s) sem confirmação`}
+                  tone={metrics.futureRisk.count > 0 ? "danger" : "success"}
+                />
+                <MetricRow
+                  label="Alto valor sem confirmação"
+                  value={String(metrics.highValueUnconfirmed)}
+                  helper="Prioridade operacional da Central de Confirmação"
+                  tone={metrics.highValueUnconfirmed > 0 ? "warning" : "success"}
+                />
+                <MetricRow
+                  label="Conversão da lista de espera"
+                  value={formatPct(metrics.waitlistConv)}
+                  helper={`${metrics.waitlist.scheduled} agendados de ${metrics.waitlist.worked} trabalhados`}
+                />
+              </SectionCard>
 
-      <div className="grid gap-6 xl:grid-cols-3">
-        <RankedCard
-          title="Ticket por serviço"
-          description="Serviços com maior receita no período."
-          items={metrics.ticketByService.slice(0, 6).map((item) => ({
-            key: item.key,
-            label: item.label,
-            value: formatCurrency(item.revenue),
-            helper: `${item.visits} visita(s) · ticket ${formatCurrency(item.ticket)}`,
-          }))}
-        />
-        <RankedCard
-          title="Ticket por profissional"
-          description="Quem mais puxou receita concluída."
-          items={metrics.ticketByPro.slice(0, 6).map((item) => ({
-            key: item.key,
-            label: item.label,
-            value: formatCurrency(item.revenue),
-            helper: `${item.visits} visita(s) · ticket ${formatCurrency(item.ticket)}`,
-          }))}
-        />
-        <RankedCard
-          title="Ticket por unidade"
-          description="Desempenho consolidado por operação."
-          items={metrics.ticketByUnit.slice(0, 6).map((item) => ({
-            key: item.key,
-            label: item.label,
-            value: formatCurrency(item.revenue),
-            helper: `${item.visits} visita(s) · ticket ${formatCurrency(item.ticket)}`,
-          }))}
-        />
-      </div>
+              <SectionCard
+                title="Resumo da base"
+                description="Novos clientes, qualidade do CRM e reativação."
+              >
+                <MetricRow
+                  label="Novos clientes"
+                  value={String(metrics.newReturning.news)}
+                  helper={`${metrics.newReturning.total} clientes atendidos no período`}
+                />
+                <MetricRow
+                  label="Clientes recorrentes"
+                  value={String(metrics.newReturning.returning)}
+                  helper="Já tinham histórico anterior"
+                />
+                <MetricRow
+                  label="Completude do CRM"
+                  value={formatPct(metrics.crm)}
+                  helper="Campos-chave preenchidos"
+                />
+                <MetricRow
+                  label="Reativação"
+                  value={formatPct(metrics.reactivation)}
+                  helper={`${metrics.inactivePool} cliente(s) no pool reativável`}
+                />
+              </SectionCard>
+            </div>
+
+            <div className="grid gap-6 xl:grid-cols-3">
+              <RankedCard
+                title="Ticket por serviço"
+                description="Serviços com maior receita no período."
+                items={metrics.ticketByService.slice(0, 6).map((item) => ({
+                  key: item.key,
+                  label: item.label,
+                  value: formatCurrency(item.revenue),
+                  helper: `${item.visits} visita(s) · ticket ${formatCurrency(item.ticket)}`,
+                }))}
+              />
+              <RankedCard
+                title="Ticket por profissional"
+                description="Quem mais puxou receita concluída."
+                items={metrics.ticketByPro.slice(0, 6).map((item) => ({
+                  key: item.key,
+                  label: item.label,
+                  value: formatCurrency(item.revenue),
+                  helper: `${item.visits} visita(s) · ticket ${formatCurrency(item.ticket)}`,
+                }))}
+              />
+              <RankedCard
+                title="Ticket por unidade"
+                description="Desempenho consolidado por operação."
+                items={metrics.ticketByUnit.slice(0, 6).map((item) => ({
+                  key: item.key,
+                  label: item.label,
+                  value: formatCurrency(item.revenue),
+                  helper: `${item.visits} visita(s) · ticket ${formatCurrency(item.ticket)}`,
+                }))}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="operational" className="mt-0 space-y-6">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <KpiCard
+                label="Comparecimento"
+                value={formatPct(metrics.attendance.rate)}
+                hint={`${metrics.attendance.attended} compareceram`}
+                icon={Activity}
+                tone={metrics.attendance.rate >= 80 ? "success" : "warning"}
+              />
+              <KpiCard
+                label="No-show"
+                value={formatPct(metrics.noShow.rate)}
+                hint={`${metrics.noShow.noShows} falta(s) no período`}
+                icon={CalendarClock}
+                tone={metrics.noShow.rate <= 8 ? "success" : "danger"}
+              />
+              <KpiCard
+                label="Cancelamentos"
+                value={formatPct(metrics.cancellation.rate)}
+                hint={`${metrics.cancellation.canceled} cancelamento(s)`}
+                icon={Clock3}
+                tone={metrics.cancellation.rate <= 12 ? "success" : "warning"}
+              />
+              <KpiCard
+                label="Tempo médio até confirmar"
+                value={`${metrics.avgConfirmHours.toFixed(1)}h`}
+                hint="Da criação até a confirmação"
+                icon={Clock3}
+                tone="info"
+              />
+            </div>
+
+            <div className="grid gap-6 xl:grid-cols-2">
+              <SectionCard
+                title="Confirmação e risco"
+                description="Ritmo operacional da agenda e impacto imediato na receita."
+              >
+                <MetricRow
+                  label="Taxa de confirmação"
+                  value={formatPct(metrics.confirmation.rate)}
+                  helper={`${metrics.confirmation.confirmed}/${metrics.confirmation.eligible} elegíveis`}
+                />
+                <MetricRow
+                  label="Receita futura em risco"
+                  value={formatCurrency(metrics.futureRisk.value)}
+                  helper={`${metrics.futureRisk.count} agendamento(s) sem confirmação`}
+                  tone={metrics.futureRisk.count > 0 ? "danger" : "success"}
+                />
+                <MetricRow
+                  label="Alto valor sem confirmação"
+                  value={String(metrics.highValueUnconfirmed)}
+                  helper="Fila prioritária para contato humano"
+                  tone={metrics.highValueUnconfirmed > 0 ? "warning" : "success"}
+                />
+              </SectionCard>
+
+              <SectionCard
+                title="Origem da agenda"
+                description="Distribuição dos agendamentos por canal de entrada."
+              >
+                {metrics.sources.length === 0 ? (
+                  <EmptyMiniState text="Sem dados suficientes neste período." />
+                ) : (
+                  <div className="space-y-3">
+                    {metrics.sources.map((item) => (
+                      <ProgressMetric
+                        key={item.source}
+                        label={SOURCE_LABELS[item.source] ?? item.source}
+                        value={item.pct}
+                        helper={`${item.count} agendamento(s)`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </SectionCard>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="retention" className="mt-0 space-y-6">
+            <div className="grid gap-6 xl:grid-cols-3">
+              <SectionCard
+                title="Coortes de retorno"
+                description="Leitura das etapas críticas da jornada entre visitas."
+              >
+                <ProgressMetric
+                  label="Retenção"
+                  value={metrics.retention.rate}
+                  helper={`${metrics.retention.retained}/${metrics.retention.eligible} clientes elegíveis`}
+                />
+                <ProgressMetric
+                  label="1ª → 2ª visita"
+                  value={metrics.conv1to2.rate}
+                  helper={`${metrics.conv1to2.converted}/${metrics.conv1to2.eligible} clientes`}
+                />
+                <ProgressMetric
+                  label="2ª → 3ª visita"
+                  value={metrics.conv2to3.rate}
+                  helper={`${metrics.conv2to3.converted}/${metrics.conv2to3.eligible} clientes`}
+                />
+              </SectionCard>
+
+              <SectionCard
+                title="Recorrência e janela ideal"
+                description="Aderência à cadência recomendada e recuperação de falhas."
+              >
+                <ProgressMetric
+                  label="Rebooking"
+                  value={metrics.rebook.rate}
+                  helper={`${metrics.rebook.rebooked}/${metrics.rebook.eligible} concluídos`}
+                />
+                <ProgressMetric
+                  label="Janela ideal de retorno"
+                  value={metrics.ideal.rate}
+                  helper={`${metrics.ideal.in_window}/${metrics.ideal.eligible} retornos`}
+                />
+                <ProgressMetric
+                  label="Recuperação de no-show"
+                  value={metrics.noShowRecovery.rate}
+                  helper={`${metrics.noShowRecovery.recovered}/${metrics.noShowRecovery.eligible} recuperados`}
+                />
+              </SectionCard>
+
+              <SectionCard
+                title="Lealdade e pacotes"
+                description="Vínculo com marca, profissional e execução de protocolos."
+              >
+                <ProgressMetric
+                  label="Lealdade ao profissional"
+                  value={metrics.proLoyalty.rate}
+                  helper={`${metrics.proLoyalty.loyal}/${metrics.proLoyalty.recurring} clientes recorrentes`}
+                />
+                <ProgressMetric
+                  label="Lealdade à marca"
+                  value={metrics.brand.rate}
+                  helper={`${metrics.brand.recurring}/${metrics.brand.total} clientes com 2+ visitas`}
+                />
+                <ProgressMetric
+                  label="Conclusão de pacotes"
+                  value={metrics.packageCompletion}
+                  helper={`${metrics.pendingPackages} pacote(s)/protocolo(s) ainda em aberto`}
+                />
+              </SectionCard>
+            </div>
+          </TabsContent>
+        </div>
+      </Tabs>
     </div>
   );
 }

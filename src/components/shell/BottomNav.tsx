@@ -18,6 +18,7 @@ import { EmptyState } from "@/components/feedback/EmptyState";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetClose,
@@ -149,7 +150,12 @@ export function BottomNav() {
           className="rounded-t-3xl border-t border-border/70 p-0 max-h-[85vh]"
         >
           <SheetHeader className="flex-row items-center justify-between border-b border-border/60 px-5 py-4">
-            <SheetTitle className="text-left">Todos os módulos</SheetTitle>
+            <div className="space-y-1 text-left">
+              <SheetTitle className="text-left">Todos os módulos</SheetTitle>
+              <SheetDescription>
+                Acesse os módulos disponíveis para o seu perfil e plano atual.
+              </SheetDescription>
+            </div>
             <SheetClose
               data-testid="bottom-nav-sheet-close"
               className="rounded-full p-2 text-muted-foreground tap-feedback"

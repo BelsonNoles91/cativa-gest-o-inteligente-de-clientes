@@ -11,6 +11,10 @@ node_modules
 dist
 dist-ssr
 *.local
+e2e/.auth/
+e2e/.artifacts/
+e2e/.report/
+vite.config.ts.timestamp-*.mjs
 
 # Editor directories and files
 .vscode/*

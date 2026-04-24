@@ -478,23 +478,18 @@ export async function calculateLiveUsage(
   >
 > {
   const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
-  const [u, p, c, a, files, photos] = await Promise.all([
+  const [u, p, c, a, storageUsage] = await Promise.all([
     supabase.from("units").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
     supabase.from("professionals").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).eq("is_active", true),
     supabase.from("clients").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).eq("status", "active"),
     supabase.from("appointments").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).gte("starts_at", since),
-    // Soma do tamanho dos anexos de clientes (size_bytes pode ser null para registros antigos).
-    supabase.from("client_files").select("size_bytes").eq("tenant_id", tenantId),
-    // Para fotos não temos size persistido; estimamos 350 KB por foto como média de upload mobile.
-    supabase.from("client_photos").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
+    supabase.rpc("tenant_storage_bytes_used", { _tenant_id: tenantId }),
   ]);
 
-  const filesBytes = (files.data ?? []).reduce(
-    (sum, row) => sum + (typeof row.size_bytes === "number" ? row.size_bytes : 0),
-    0,
-  );
-  const photosBytesEstimate = (photos.count ?? 0) * 350 * 1024;
-  const storageMb = Math.round(((filesBytes + photosBytesEstimate) / (1024 * 1024)) * 100) / 100;
+  if (storageUsage.error) throw storageUsage.error;
+
+  const storageBytes = Number(storageUsage.data ?? 0);
+  const storageMb = Math.round((storageBytes / (1024 * 1024)) * 100) / 100;
 
   return {
     unitsCount: u.count ?? 0,

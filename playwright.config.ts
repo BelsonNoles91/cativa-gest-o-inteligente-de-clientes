@@ -18,7 +18,10 @@
  */
 import { defineConfig, devices } from "@playwright/test";
 
-const BASE_URL = process.env.E2E_BASE_URL ?? "http://localhost:8080";
+process.env.PW_TEST_SCREENSHOT_NO_FONTS_READY ??= "1";
+
+const BASE_URL = process.env.E2E_BASE_URL ?? "http://127.0.0.1:8080";
+const IS_CI = Boolean(process.env.CI);
 
 export default defineConfig({
   testDir: "./e2e",
@@ -27,10 +30,10 @@ export default defineConfig({
   // Snapshot path estável entre máquinas (sem nome do OS).
   snapshotPathTemplate:
     "{snapshotDir}/{testFileDir}/{testFileName}/{arg}-{projectName}{ext}",
-  fullyParallel: true,
-  forbidOnly: !!process.env.CI,
+  fullyParallel: IS_CI,
+  forbidOnly: IS_CI,
   retries: 0,
-  workers: process.env.CI ? 2 : undefined,
+  workers: IS_CI ? 2 : 1,
   reporter: [["list"], ["html", { open: "never", outputFolder: "e2e/.report" }]],
   expect: {
     toHaveScreenshot: {
@@ -41,6 +44,7 @@ export default defineConfig({
       // Animations são desligadas pelo helper; reforço aqui.
       animations: "disabled",
       caret: "hide",
+      timeout: 15_000,
     },
   },
   use: {

@@ -18,6 +18,16 @@ Antes de iniciar a validação, garanta que:
 - [ ] Caixa de e-mail real acessível por cada perfil de teste.
 - [ ] **2 dispositivos físicos** (1 Android + 1 iOS) com WhatsApp instalado.
 
+### Validado localmente em 23/04/2026
+
+- [x] `npm test` passando com `321` testes.
+- [x] `npm run build` concluindo com geração do bundle e PWA.
+- [x] Browsers do Playwright instalados localmente.
+- [x] Baseline visual pública de `/auth/login` gerada em `e2e/__screenshots__/`.
+- [x] Testes críticos de shell mobile (`BottomNav` e `OfflineBanner`) sem warnings técnicos remanescentes na suíte local.
+- [x] Smoke autenticada multi-rota validada para `/app`, `/app/agenda`, `/app/clientes` e `/app/confirmacoes`.
+- [x] Trilha visual autenticada crítica validada no perfil `iphone-14-portrait`, incluindo baseline das rotas principais, cenários de navegação e detector de overlap do `BottomNav`.
+
 ---
 
 ## 2. Banco Real & Multi-tenant
@@ -162,7 +172,7 @@ Antes de iniciar a validação, garanta que:
 
 - [ ] **Filtro por serviço em analytics**: confirmar com operador se "primeiro `appointment_item`" como serviço principal atende, ou se precisa de lógica diferente (mais caro, mais longo, etc.).
 - [ ] **Importadores de memberships/protocolos**: revalidar decisão de manter apenas exportação. Se >3 tenants pedirem, criar importador.
-- [ ] **Enforcement de `max_professionals` e `max_storage_mb`**: confirmar manter "soft warning" até instrumentação operacional na Fase 10.
+- [ ] **Limites de `max_professionals` e `max_storage_mb`**: validar em ambiente real os bloqueios já implementados em código e no banco.
 - [ ] **Feature gating do portal**: confirmar manter portal sempre aberto para leitura do cliente final, mesmo com tenant inadimplente.
 
 ---

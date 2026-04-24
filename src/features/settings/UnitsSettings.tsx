@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
@@ -112,7 +112,12 @@ export function UnitsSettings() {
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
-            <DialogHeader><DialogTitle>Nova unidade</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <DialogTitle>Nova unidade</DialogTitle>
+              <DialogDescription>
+                Cadastre uma nova unidade operacional para organizar agenda, equipe e atendimento.
+              </DialogDescription>
+            </DialogHeader>
             <div className="space-y-3">
               <div className="space-y-2"><Label>Nome</Label><Input value={name} onChange={(e) => setName(e.target.value)} className="h-11 rounded-xl" placeholder="Ex.: Filial Jardins" /></div>
               <div className="grid grid-cols-2 gap-3">

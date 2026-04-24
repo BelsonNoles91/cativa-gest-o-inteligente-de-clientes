@@ -61,7 +61,7 @@ projeto.
 - Validar em banco real todo o CRUD novo do super admin: planos, plan features, feature flags, templates por segmento, descontos e overrides de assinatura. **Pendente (humano)**.
 - Validar em ambiente real o merge de entitlements por tenant, especialmente a prioridade entre `plan_features` e `feature_flags` no hook de billing. **Pendente (humano)**.
 - Validar em banco real os bloqueios de limite aplicados em clientes e unidades, inclusive cenarios de override de assinatura e troca de plano em tempo de execucao. **Pendente (humano)**.
-- Decidir e validar a politica final para recursos ainda sem enforcement completo nesta fase, principalmente `max_professionals` e `max_storage_mb`, que dependem de fluxos/medicoes adicionais. **Decisao registrada** — `max_professionals` sera validado quando o convite real for fechado (ja conta na criacao via `inviteMember`); `max_storage_mb` exige instrumentacao do bucket `client-media` (job de medicao agendado para Fase 10/operacao). Enforcement permanece "soft" (banner) ate la.
+- Validar em banco real os limites ja fechados em codigo para `max_professionals` e `max_storage_mb`. **Atualizado** — `max_professionals` ja e aplicado no fluxo real de convite/aceite; `max_storage_mb` ja possui hard-limit no storage e leitura real no app via `tenant_storage_bytes_used(...)`. O pendente agora e apenas validacao operacional com tenant real.
 - Validar a estrategia final para feature gating do portal do cliente, pois nesta fase o gating forte foi aplicado no app autenticado e na navegacao principal. **Decisao registrada** — portal mantem leitura sempre aberta (cliente final nao deve ser bloqueado por inadimplencia do salao); apenas operacoes de escrita do tenant disparam `FeatureGate` no app autenticado.
 - Revisar estrategia de code-splitting do frontend novamente, pois o bundle voltou a crescer ao final da Fase 7. **OK** — endereçado em Fase 2.
 
@@ -87,7 +87,7 @@ projeto.
 - **Migrations aplicadas:** Fase 0 (ja estava) + Fase 5 (aplicada nesta sessao). Funcoes `claim_portal_links_for_current_user()` e `touch_portal_last_seen()` agora ativas.
 - **Code-splitting refinado:** chunks dedicados para `recharts`, `radix-ui`, `supabase`, `embla`, `input-otp`, `react-day-picker`, `react-hook-form`, `lucide-react`, `query` e `router`. Maior bundle individual: 249 kB (vendor) / 81 kB gzip. `chunkSizeWarningLimit: 800`.
 - **Browserslist:** atualizado.
-- **Testes:** 260/260 verde. Build limpo.
-- **Decisoes de produto registradas:** importadores de memberships/protocolos (manter apenas export), feature gating do portal (sempre aberto para leitura do cliente final), enforcement de `max_professionals`/`max_storage_mb` (soft warning ate medicao operacional).
+- **Testes:** 321/321 verde. Build limpo.
+- **Decisoes de produto registradas:** importadores de memberships/protocolos (manter apenas export), feature gating do portal (sempre aberto para leitura do cliente final). O enforcement de `max_professionals`/`max_storage_mb` deixou de ser apenas `soft warning` e passou a ter cobertura real em codigo; resta validacao humana em ambiente conectado.
 
 Pendencias restantes sao todas de **validacao humana em ambiente real** (banco produtivo, autenticacao real, dispositivos fisicos, decisoes de produto que dependem de feedback de operadores). Listadas com `Pendente (humano)` para o fechamento operacional do projeto.

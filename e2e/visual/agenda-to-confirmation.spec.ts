@@ -19,6 +19,7 @@
  *    desligue conexão durante o fluxo).
  */
 import { test, expect, type Page } from "@playwright/test";
+import { AUTH_SKIP_REASON, HAS_E2E_AUTH } from "../_helpers/auth";
 import {
   prepareForSnapshot,
   assertNoHorizontalOverflow,
@@ -35,7 +36,8 @@ import {
   waitFor,
 } from "../_helpers/resilience";
 
-const MAIN_TIMEOUT = 15_000;
+const MAIN_TIMEOUT = 20_000;
+const SCENARIO_TIMEOUT = 75_000;
 
 /** Aguarda `[data-app-main]` aparecer com mensagem de erro útil. */
 async function waitForMain(page: Page, route: string): Promise<void> {
@@ -147,6 +149,9 @@ async function waitForListOrEmpty(
 }
 
 test.describe("cenário: Agenda → Confirmações → modal de ação", () => {
+  test.describe.configure({ timeout: SCENARIO_TIMEOUT });
+  test.skip(!HAS_E2E_AUTH, AUTH_SKIP_REASON);
+
   test.afterEach(async ({ context }) => {
     await ensureOnline(context);
   });

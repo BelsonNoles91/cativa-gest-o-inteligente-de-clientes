@@ -67,6 +67,128 @@ npm run test:visual
 - Compara cada screenshot com `e2e/__screenshots__/...`.
 - Falha se diff > 0.2% de pixels.
 
+Se `E2E_USER` e `E2E_PASS` não estiverem configurados, os specs autenticados
+serão **pulados explicitamente** e você pode validar apenas a frente pública.
+
+### Rodar apenas a frente pública
+
+```bash
+npm run test:visual:public
+```
+
+Executa a baseline pública sem depender de login real.
+
+### Preflight do ambiente E2E
+
+```bash
+npm run test:visual:check
+```
+
+Inspeciona `.env.local`/`.env`, confirma variáveis-chave e informa
+objetivamente se a trilha autenticada está pronta.
+
+### Rodar apenas a frente autenticada
+
+```bash
+npm run test:visual:auth
+```
+
+Esse comando falha rápido se `E2E_USER` e `E2E_PASS` estiverem ausentes,
+evitando gastar minutos de execução do Playwright sem chance real de sucesso.
+
+### Rodar a frente autenticada crítica no perfil principal
+
+```bash
+npm run test:visual:auth:critical
+```
+
+Executa a trilha autenticada crítica no perfil `iphone-14-portrait`, cobrindo:
+
+- baseline visual de `/app`, `/app/agenda`, `/app/clientes` e `/app/confirmacoes`;
+- cenário transicional Home → Clientes → offline → Home;
+- cenário Agenda → Confirmações;
+- detecção de overlap do `BottomNav` nas rotas principais.
+
+### Validar contas QA por papel
+
+```bash
+npm run test:visual:roles
+```
+
+Confirma via Supabase Auth que as credenciais de `owner`, `manager`,
+`frontdesk` e `professional` são utilizáveis antes de avançar para cenários
+multi-perfil.
+
+### Observação para Windows/local
+
+O `playwright.config.ts` já força um modo mais estável para execução local:
+
+- `PW_TEST_SCREENSHOT_NO_FONTS_READY=1` por padrão no ambiente local;
+- `workers=1` fora de CI para reduzir flakiness do `webServer` local.
+
+Isso foi incorporado após a auditoria de 23/04/2026 para estabilizar a
+geração/validação do baseline público.
+
+### Validação realmente executada em 23/04/2026
+
+- Baseline pública de `/auth/login` gerada em
+  `e2e/__screenshots__/visual/public-routes.spec.ts/`.
+- Browsers Playwright instalados localmente com `npm run test:visual:install`.
+- Suite pública validada com sucesso em execução local serial.
+- Suite Vitest de navegação/safe-area limpa, sem warnings residuais do React Router
+  nos testes críticos do shell mobile.
+- Baseline pública atualizada após refinamentos recentes do layout de login
+  (`iphone-14-portrait` e `ipad-portrait`).
+- `npx playwright test --workers 1` executado sem credenciais externas com
+  resultado `5 passed / 55 skipped`, validando que os specs autenticados agora
+  são pulados de forma explícita e segura.
+- `npm run test:visual:check` e `node scripts/e2e-preflight.mjs --require-auth`
+  validados localmente; a trilha autenticada agora falha rápido com mensagem
+  objetiva quando as credenciais não existem.
+- O preflight também passou a validar login real no Supabase antes do Playwright.
+- Em 23/04/2026, a credencial `owner` de QA passou a validar corretamente no
+  preflight autenticado.
+- Em 23/04/2026, a matriz de contas QA por papel também foi validada com
+  sucesso: `owner`, `manager`, `frontdesk` e `professional`.
+- Na mesma data, foi corrigido um bug do spec `public-routes.spec.ts` que
+  aplicava `storageState` vazio ao arquivo inteiro e invalidava as rotas
+  autenticadas por desenho.
+- Também foi criada uma trilha de smoke autenticada separada (`playwright.smoke.config.ts`)
+  e o `globalSetup` passou a tentar autenticação direta via Supabase antes do
+  fallback por UI.
+- Em 23/04/2026, a smoke autenticada multi-rota também foi validada com
+  sucesso em preview/build local: `/app`, `/app/agenda`, `/app/clientes` e
+  `/app/confirmacoes`.
+- O comando `npm run test:auth:smoke` agora cobre essa smoke multi-rota e
+  deixou de validar apenas o shell isolado de `/app`.
+- Em 23/04/2026, a trilha visual autenticada crítica no perfil
+  `iphone-14-portrait` também foi validada com sucesso para as quatro rotas
+  principais, para os cenários `navigation-scenarios` e
+  `agenda-to-confirmation`, e para o detector `bottom-nav-overlap`.
+- Os specs `agenda-to-confirmation` e `bottom-nav-overlap` foram endurecidos
+  com orçamento de tempo compatível com a carga real de `/app/confirmacoes`,
+  eliminando falso negativo por timeout prematuro.
+- O spec `public-routes.spec.ts` também recebeu orçamento maior para
+  screenshots full-page autenticados, e a baseline do dashboard no perfil
+  `iphone-14-portrait` foi realinhada ao estado atual do app.
+- O ponto aberto desta frente deixou de ser a subida autenticada básica. O que
+  resta agora é expandir a validação para baseline visual autenticada completa,
+  portal real, bucket real e conferência humana de RLS/dispositivo.
+- Ainda existe instabilidade residual ao encadear toda a trilha crítica em um
+  único comando serial, por oscilação de `globalSetup`/rede Supabase no
+  ambiente local.
+- Em 23/04/2026, a primeira tentativa de expansão para outros perfis via
+  trilha sem `globalSetup` não foi adotada: com `storageState` bootstrapado,
+  os testes autenticados passaram a cair de volta no login. O caminho foi
+  mantido como hipótese técnica e não como fluxo operacional do projeto.
+- Ainda em 23/04/2026, a trilha preview-crítica recebeu recuperação explícita
+  de cold-start autenticado nas rotas visuais.
+- Na mesma rodada, `/app/clientes` voltou a subir corretamente no preview após
+  correção de `ReferenceError: cn is not defined` introduzido durante o ajuste
+  de responsividade do CRM.
+- Com isso, `/app/clientes` e `/app/confirmacoes` passaram com sucesso nos
+  perfis `iphone-se` e `iphone-14-landscape` na trilha preview-crítica.
+
 ### Ver relatório HTML após falha
 
 ```bash

@@ -1,0 +1,53 @@
+{
+  "name": "Cativa — Gestão que faz o cliente voltar",
+  "short_name": "Cativa",
+  "description": "Agenda, clientes, pacotes e retenção em um só app. Gestão para salões, clínicas de estética, barbearias e wellness.",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF7F9",
+  "theme_color": "#6E3B5D",
+  "lang": "pt-BR",
+  "categories": ["business", "productivity", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Agenda de hoje",
+      "short_name": "Agenda",
+      "url": "/app/agenda",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Confirmações",
+      "short_name": "Confirmar",
+      "url": "/app/confirmacoes",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Novo cliente",
+      "short_name": "Cliente",
+      "url": "/app/clientes",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

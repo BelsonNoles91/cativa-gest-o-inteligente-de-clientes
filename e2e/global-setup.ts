@@ -20,6 +20,7 @@
  * Sem credenciais → grava storage vazio com aviso (specs públicos seguem).
  */
 import { chromium, type FullConfig, type Browser } from "@playwright/test";
+import { createClient } from "@supabase/supabase-js";
 import {
   existsSync,
   mkdirSync,
@@ -41,6 +42,30 @@ function warn(msg: string, err?: unknown) {
     `${TAG} WARN ${msg}` +
       (err instanceof Error ? ` :: ${err.message}` : ""),
   );
+}
+
+async function waitForBaseUrlReady(baseURL: string, timeoutMs = 60_000) {
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 2_000);
+    try {
+      const response = await fetch(`${baseURL}/auth/login`, {
+        method: "GET",
+        signal: controller.signal,
+      });
+      if (response.ok) {
+        log(`baseURL pronta para login: ${baseURL}`);
+        return;
+      }
+    } catch {
+      // ainda não está pronto
+    } finally {
+      clearTimeout(timer);
+    }
+    await new Promise((resolveDelay) => setTimeout(resolveDelay, 1000));
+  }
+  throw new Error(`baseURL não ficou pronta em ${timeoutMs}ms: ${baseURL}`);
 }
 
 /** Carrega arquivo .env de forma defensiva (sem dep de runtime). */
@@ -93,9 +118,12 @@ async function attemptLogin(
     try {
       // Timeout explícito no goto — rede lenta não trava 30s.
       await page.goto(`${baseURL}/auth/login`, {
-        waitUntil: "domcontentloaded",
-        timeout: 20_000,
+        waitUntil: "commit",
+        timeout: 15_000,
       });
+      await page.waitForLoadState("domcontentloaded", {
+        timeout: 30_000,
+      }).catch(() => {});
 
       // Aguarda formulário renderizar antes de preencher (hidratação React).
       await page.waitForSelector('input[type="email"], input[name*="mail" i]', {
@@ -174,6 +202,90 @@ async function attemptLogin(
   return { ok: false, reason };
 }
 
+function tokenStorageKey(projectId: string | undefined, supabaseUrl: string | undefined) {
+  if (projectId) return `sb-${projectId}-auth-token`;
+  if (supabaseUrl) {
+    try {
+      const host = new URL(supabaseUrl).hostname;
+      const ref = host.split(".")[0];
+      return `sb-${ref}-auth-token`;
+    } catch {
+      // noop
+    }
+  }
+  return "sb-project-auth-token";
+}
+
+async function attemptDirectAuthLogin(
+  baseURL: string,
+  email: string,
+  password: string,
+  storagePath: string,
+): Promise<{ ok: true } | { ok: false; reason: string }> {
+  const supabaseUrl = process.env.VITE_SUPABASE_URL;
+  const publishableKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const projectId = process.env.VITE_SUPABASE_PROJECT_ID;
+
+  if (!supabaseUrl || !publishableKey) {
+    return { ok: false, reason: "VITE_SUPABASE_URL/VITE_SUPABASE_PUBLISHABLE_KEY ausentes" };
+  }
+
+  try {
+    const supabase = createClient(supabaseUrl, publishableKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
+    });
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error || !data.session) {
+      return { ok: false, reason: error?.message ?? "sessão não retornada" };
+    }
+
+    const sessionPayload = JSON.stringify({
+      ...data.session,
+      user: data.user ?? data.session.user,
+      weak_password: null,
+    });
+
+    writeFileSync(
+      storagePath,
+      JSON.stringify(
+        {
+          cookies: [],
+          origins: [
+            {
+              origin: new URL(baseURL).origin,
+              localStorage: [
+                {
+                  name: tokenStorageKey(projectId, supabaseUrl),
+                  value: sessionPayload,
+                },
+              ],
+            },
+          ],
+        },
+        null,
+        2,
+      ),
+    );
+
+    log("login direto via Supabase OK, storageState salvo");
+    return { ok: true };
+  } catch (err) {
+    return {
+      ok: false,
+      reason: err instanceof Error ? err.message : String(err),
+    };
+  }
+}
+
 export default async function globalSetup(config: FullConfig) {
   loadEnvFile(resolve(process.cwd(), ".env.local"));
   loadEnvFile(resolve(process.cwd(), ".env"));
@@ -181,7 +293,7 @@ export default async function globalSetup(config: FullConfig) {
   const baseURL =
     config.projects[0]?.use?.baseURL ??
     process.env.E2E_BASE_URL ??
-    "http://localhost:8080";
+    "http://127.0.0.1:8080";
 
   const storagePath = resolve(process.cwd(), "e2e/.auth/storageState.json");
   const dir = dirname(storagePath);
@@ -213,6 +325,16 @@ export default async function globalSetup(config: FullConfig) {
 
   let browser: Browser | undefined;
   try {
+    await waitForBaseUrlReady(baseURL);
+    const directResult = await attemptDirectAuthLogin(
+      baseURL,
+      email,
+      password,
+      storagePath,
+    );
+    if (directResult.ok) return;
+
+    warn("login direto falhou; usando fallback via UI", directResult.reason);
     browser = await chromium.launch();
     const result = await attemptLogin(browser, baseURL, email, password, 3);
     if (!result.ok) {

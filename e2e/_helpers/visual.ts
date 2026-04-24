@@ -11,12 +11,18 @@
 import { expect, type Page } from "@playwright/test";
 import { captureFailureReport, type Offender } from "./safeAreaReport";
 
+type Rect = { x: number; y: number; width: number; height: number };
+
 /** CSS injetado para tornar screenshots determinísticos. */
 const SNAPSHOT_CSS = `
   *, *::before, *::after {
     transition: none !important;
     animation: none !important;
     caret-color: transparent !important;
+  }
+  .animate-fade-in, [class*="animate-fade-in"] {
+    opacity: 1 !important;
+    transform: none !important;
   }
   /* Mascara o cursor de input piscando (caret) que diferencia builds */
   input, textarea { caret-color: transparent !important; }
@@ -46,6 +52,9 @@ export async function prepareForSnapshot(page: Page): Promise<void> {
     .catch(() => {
       /* contexto pode ter sido destruído por navegação concorrente */
     });
+  await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => {
+    /* páginas com polling ou conexões abertas seguem mesmo sem networkidle */
+  });
   // Aguarda fontes carregadas com TIMEOUT — sem isso, fontes que falham em
   // carregar (CDN offline) travam o teste por 30s sem mensagem útil.
   await page
@@ -60,7 +69,7 @@ export async function prepareForSnapshot(page: Page): Promise<void> {
       /* fontes não disponíveis no contexto atual — segue */
     });
   // Pequeno settle para layout final (carga assíncrona de avatares etc).
-  await page.waitForTimeout(250);
+  await page.waitForTimeout(400);
 }
 
 /**
@@ -71,14 +80,18 @@ export async function assertNoHorizontalOverflow(page: Page): Promise<void> {
   const overflow = await page.evaluate(() => {
     const root = document.documentElement;
     const vw = root.clientWidth;
-    const offenders: { tag: string; cls: string; w: number }[] = [];
+    const offenders: { tag: string; cls: string; w: number; left: number; right: number }[] = [];
     document.querySelectorAll("body *").forEach((el) => {
       const rect = (el as HTMLElement).getBoundingClientRect();
-      if (rect.width > vw + 1) {
+      const left = Math.round(rect.left);
+      const right = Math.round(rect.right);
+      if (left < -1 || right > vw + 1) {
         offenders.push({
           tag: el.tagName.toLowerCase(),
           cls: (el as HTMLElement).className?.toString().slice(0, 80) ?? "",
           w: Math.round(rect.width),
+          left,
+          right,
         });
       }
     });
@@ -89,6 +102,30 @@ export async function assertNoHorizontalOverflow(page: Page): Promise<void> {
     `Elementos ultrapassam viewport (${overflow.vw}px): ` +
       JSON.stringify(overflow.offenders),
   ).toEqual([]);
+}
+
+async function getBottomNavViewportRect(page: Page): Promise<Rect | null> {
+  const locator = page.locator("[data-bottom-nav]").first();
+  const box = await locator.boundingBox();
+  if (box) {
+    return {
+      x: box.x,
+      y: box.y,
+      width: box.width,
+      height: box.height,
+    };
+  }
+  return page.evaluate(() => {
+    const nav = document.querySelector("[data-bottom-nav]") as HTMLElement | null;
+    if (!nav) return null;
+    const rect = nav.getBoundingClientRect();
+    return {
+      x: rect.x,
+      y: rect.y,
+      width: rect.width,
+      height: rect.height,
+    };
+  });
 }
 
 /**
@@ -109,7 +146,7 @@ export async function assertBottomNavVisible(page: Page): Promise<void> {
     });
     throw err;
   }
-  const box = await nav.boundingBox();
+  const box = await getBottomNavViewportRect(page);
   expect(box, "BottomNav sem bounding box").not.toBeNull();
   const vh = page.viewportSize()?.height ?? 0;
   // Top do nav deve estar dentro do viewport (não cortado).
@@ -164,7 +201,7 @@ export async function assertMainHasBottomPadding(page: Page): Promise<void> {
 
   const nav = page.locator("[data-bottom-nav]").first();
   await expect(nav).toBeVisible();
-  const navBox = await nav.boundingBox();
+  const navBox = await getBottomNavViewportRect(page);
   expect(navBox, "BottomNav sem bounding box").not.toBeNull();
 
   const result = await page.evaluate(() => {
@@ -231,7 +268,7 @@ export async function assertContentNotHiddenByBottomNav(
 
   const nav = page.locator("[data-bottom-nav]").first();
   await expect(nav).toBeVisible();
-  const navBox = await nav.boundingBox();
+  const navBox = await getBottomNavViewportRect(page);
   expect(navBox, "BottomNav sem bounding box").not.toBeNull();
   const navTop = navBox!.y;
 
@@ -504,7 +541,7 @@ export async function assertCriticalActionsAboveBottomNav(
 
   const nav = page.locator("[data-bottom-nav]").first();
   await expect(nav).toBeVisible();
-  const navBox = await nav.boundingBox();
+  const navBox = await getBottomNavViewportRect(page);
   if (!navBox) return;
   const navTop = navBox.y;
 

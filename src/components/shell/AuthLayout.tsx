@@ -12,8 +12,8 @@ export function AuthLayout({ children }: { children: ReactNode }) {
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[1.05fr_1fr]">
       {/* Brand side */}
       <aside className="relative hidden flex-col justify-between overflow-hidden bg-gradient-brand p-10 text-primary-foreground lg:flex">
-        <div className="absolute -left-20 -top-20 h-80 w-80 rounded-full bg-accent/30 blur-3xl" />
-        <div className="absolute -bottom-24 -right-16 h-96 w-96 rounded-full bg-secondary/20 blur-3xl" />
+        <div data-volatile className="absolute -left-20 -top-20 h-80 w-80 rounded-full bg-accent/30 blur-3xl" />
+        <div data-volatile className="absolute -bottom-24 -right-16 h-96 w-96 rounded-full bg-secondary/20 blur-3xl" />
 
         <Link to="/" className="relative z-10">
           <Logo size="lg" />

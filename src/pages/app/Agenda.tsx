@@ -64,6 +64,7 @@ import {
   appointmentStatusLabels,
   canTransition,
   formatHourMinute,
+  resourceTypeLabels,
   statusTone,
   weekdayShortLabels,
   type BlockScope,
@@ -75,6 +76,7 @@ import {
 } from "@/domain/scheduling";
 
 type ViewMode = "day" | "week";
+type GroupMode = "professional" | "resource";
 
 type AppointmentFormState = {
   clientId: string;
@@ -141,9 +143,11 @@ export default function AgendaPage() {
   const { toast } = useToast();
 
   const [view, setView] = useState<ViewMode>("day");
+  const [groupMode, setGroupMode] = useState<GroupMode>("professional");
   const [selectedDate, setSelectedDate] = useState(todayLocalDate());
   const [unitFilter, setUnitFilter] = useState("all");
   const [professionalFilter, setProfessionalFilter] = useState("all");
+  const [resourceFilter, setResourceFilter] = useState("all");
   const [refreshToken, setRefreshToken] = useState(0);
 
   const [loading, setLoading] = useState(true);
@@ -174,6 +178,7 @@ export default function AgendaPage() {
   }, [searchParams]);
 
   const servicesMap = useMemo(() => new Map(services.map((service) => [service.id, service])), [services]);
+  const resourcesMap = useMemo(() => new Map(resources.map((resource) => [resource.id, resource])), [resources]);
   const selectedService = form.serviceId !== "none" ? (servicesMap.get(form.serviceId) ?? null) : null;
 
   const range = useMemo(() => {
@@ -296,23 +301,59 @@ export default function AgendaPage() {
   }, [currentTenant, dialogOpen, form.date, form.isOverbooked, form.professionalId, form.serviceId, form.unitId, toast]);
 
   const stats = useMemo(() => {
-    const total = appointments.length;
-    const confirmed = appointments.filter((item) => ["confirmed", "reminded"].includes(item.appointment.status)).length;
-    const arrived = appointments.filter((item) => ["arrived", "in_service"].includes(item.appointment.status)).length;
-    const completed = appointments.filter((item) => item.appointment.status === "completed").length;
+    const filteredAppointments = groupMode === "resource" && resourceFilter !== "all"
+      ? appointments.filter((item) => (item.appointment.resourceId ?? "__none__") === resourceFilter)
+      : appointments;
+    const total = filteredAppointments.length;
+    const confirmed = filteredAppointments.filter((item) => ["confirmed", "reminded"].includes(item.appointment.status)).length;
+    const arrived = filteredAppointments.filter((item) => ["arrived", "in_service"].includes(item.appointment.status)).length;
+    const completed = filteredAppointments.filter((item) => item.appointment.status === "completed").length;
     return { total, confirmed, arrived, completed };
-  }, [appointments]);
+  }, [appointments, groupMode, resourceFilter]);
+
+  const visibleAppointments = useMemo(
+    () =>
+      groupMode === "resource" && resourceFilter !== "all"
+        ? appointments.filter((item) => (item.appointment.resourceId ?? "__none__") === resourceFilter)
+        : appointments,
+    [appointments, groupMode, resourceFilter],
+  );
 
   const groupedAppointments = useMemo(() => {
     const groups = new Map<string, HydratedAppointment[]>();
-    appointments.forEach((item) => {
+    visibleAppointments.forEach((item) => {
       const key = item.appointment.startsAt.slice(0, 10);
       const list = groups.get(key) ?? [];
       list.push(item);
       groups.set(key, list);
     });
     return Array.from(groups.entries()).sort(([a], [b]) => a.localeCompare(b));
-  }, [appointments]);
+  }, [visibleAppointments]);
+
+  const resourceSections = useMemo(() => {
+    const groups = new Map<string, { resource: Resource | null; items: HydratedAppointment[] }>();
+    visibleAppointments.forEach((item) => {
+      const key = item.appointment.resourceId ?? "__none__";
+      const current = groups.get(key) ?? {
+        resource: item.appointment.resourceId ? (resourcesMap.get(item.appointment.resourceId) ?? null) : null,
+        items: [],
+      };
+      current.items.push(item);
+      groups.set(key, current);
+    });
+
+    return Array.from(groups.entries())
+      .sort(([leftKey, left], [rightKey, right]) => {
+        if (leftKey === "__none__") return 1;
+        if (rightKey === "__none__") return -1;
+        return (left.resource?.name ?? "").localeCompare(right.resource?.name ?? "");
+      })
+      .map(([key, value]) => ({
+        key,
+        resource: value.resource,
+        items: value.items.sort((a, b) => a.appointment.startsAt.localeCompare(b.appointment.startsAt)),
+      }));
+  }, [resourcesMap, visibleAppointments]);
 
   async function refreshAgenda(manual = false) {
     if (manual) setRefreshing(true);
@@ -597,8 +638,8 @@ export default function AgendaPage() {
 
       <Card>
         <CardContent className="pt-6">
-          <div className="grid gap-3 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-end lg:gap-4">
-            <Field label="Visualização">
+          <div className="grid gap-3 xl:grid-cols-[auto_auto_minmax(0,1fr)] xl:items-end xl:gap-4">
+            <Field label="Período">
               <Tabs value={view} onValueChange={(value) => setView(value as ViewMode)}>
                 <TabsList className="h-10 w-full sm:w-auto">
                   <TabsTrigger value="day" className="px-4">Dia</TabsTrigger>
@@ -607,7 +648,16 @@ export default function AgendaPage() {
               </Tabs>
             </Field>
 
-            <div className="grid gap-3 sm:grid-cols-3">
+            <Field label="Agrupar por">
+              <Tabs value={groupMode} onValueChange={(value) => setGroupMode(value as GroupMode)}>
+                <TabsList className="h-10 w-full sm:w-auto">
+                  <TabsTrigger value="professional" className="px-4">Profissional</TabsTrigger>
+                  <TabsTrigger value="resource" className="px-4">Recurso / sala</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </Field>
+
+            <div className={`grid gap-3 ${groupMode === "resource" ? "sm:grid-cols-4" : "sm:grid-cols-3"}`}>
               <Field label="Data base">
                 <Input type="date" value={selectedDate} onChange={(event) => setSelectedDate(event.target.value)} />
               </Field>
@@ -633,6 +683,20 @@ export default function AgendaPage() {
                   </SelectContent>
                 </Select>
               </Field>
+              {groupMode === "resource" ? (
+                <Field label="Recurso / sala">
+                  <Select value={resourceFilter} onValueChange={setResourceFilter}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os recursos</SelectItem>
+                      <SelectItem value="__none__">Sem recurso atribuído</SelectItem>
+                      {resources.map((resource) => (
+                        <SelectItem key={resource.id} value={resource.id}>{resource.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              ) : null}
             </div>
           </div>
         </CardContent>
@@ -644,16 +708,53 @@ export default function AgendaPage() {
             <div className="flex h-48 items-center justify-center">
               <Loader2 className="h-5 w-5 animate-spin text-primary" />
             </div>
-          ) : appointments.length === 0 ? (
+          ) : visibleAppointments.length === 0 ? (
             <EmptyState
               icon={<CalendarDays className="h-6 w-6" />}
               title="Nenhum agendamento encontrado"
-              description="Ajuste filtros ou crie um novo horário para preencher a agenda."
+              description={
+                groupMode === "resource"
+                  ? "Ajuste o recurso selecionado ou atribua um recurso aos agendamentos."
+                  : "Ajuste filtros ou crie um novo horário para preencher a agenda."
+              }
               action={<Button data-critical-action data-testid="agenda-create-cta" onClick={openCreateDialog}><Plus className="mr-2 h-4 w-4" />Criar agendamento</Button>}
             />
+          ) : groupMode === "resource" ? (
+            <div className="space-y-4">
+              {resourceSections.map((section) => (
+                <Card key={section.key}>
+                  <CardHeader className="pb-3">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <CardTitle className="text-base">
+                          {section.resource?.name ?? "Sem recurso atribuído"}
+                        </CardTitle>
+                        <CardDescription>
+                          {section.items.length} agendamento(s) {view === "day" ? "no dia" : "no período"}
+                        </CardDescription>
+                      </div>
+                      <StatusBadge tone="info">
+                        {section.resource ? resourceTypeLabels[section.resource.resourceType] : "Sem recurso"}
+                      </StatusBadge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {section.items.map((item) => (
+                      <AppointmentCard
+                        key={item.appointment.id}
+                        item={item}
+                        compact={view === "week"}
+                        onEdit={() => openEditDialog(item)}
+                        onStatusChange={(status) => void handleQuickStatus(item, status)}
+                      />
+                    ))}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           ) : view === "day" ? (
             <div className="space-y-3">
-              {appointments.map((item) => (
+              {visibleAppointments.map((item) => (
                 <AppointmentCard
                   key={item.appointment.id}
                   item={item}

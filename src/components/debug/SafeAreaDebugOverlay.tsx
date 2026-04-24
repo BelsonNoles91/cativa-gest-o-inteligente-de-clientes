@@ -33,7 +33,13 @@ import { cn } from "@/lib/utils";
 const LS_ENABLED = "cativa.debug.safearea";
 const LS_VISIBLE = "cativa.debug.safearea.visible";
 
+function isAutomatedBrowser(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return navigator.webdriver;
+}
+
 function isEnabled(): boolean {
+  if (isAutomatedBrowser()) return false;
   if (import.meta.env.DEV) return true;
   try {
     return localStorage.getItem(LS_ENABLED) === "1";

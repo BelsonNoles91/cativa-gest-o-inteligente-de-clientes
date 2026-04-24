@@ -75,6 +75,7 @@ export default function Billing() {
               <UsageBar label="Unidades" used={usage.unitsCount} limit={limits?.maxUnits ?? null} />
               <UsageBar label="Profissionais ativos" used={usage.professionalsCount} limit={limits?.maxProfessionals ?? null} />
               <UsageBar label="Clientes ativos" used={usage.activeClientsCount} limit={limits?.maxActiveClients ?? null} />
+              <UsageBar label="Armazenamento" used={usage.storageMb} limit={limits?.maxStorageMb ?? null} suffix=" MB" />
               <UsageBar label="Agendamentos (30d)" used={usage.appointmentsLast30d} limit={null} />
             </div>
           </div>

@@ -25,3 +25,4 @@ contém a visão de produto.
 13. [Visual Regression (Playwright)](./13-visual-regression.md)
 14. [Checklist operacional pré-lançamento](./14-checklist-pre-lancamento.md)
 15. [Pendências executáveis pelo Lovable](./15-pendencias-execucao-lovable.md)
+16. [Planejamento de fechamento da implementação](./16-planejamento-fechamento-implementacao.md)
