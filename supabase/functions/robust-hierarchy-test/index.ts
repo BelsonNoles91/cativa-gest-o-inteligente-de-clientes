@@ -62,6 +62,7 @@ Deno.serve(async (req) => {
       professional_id: pro.id,
       starts_at: startTime.toISOString(),
       ends_at: endTime.toISOString(),
+      duration_minutes: 60,
       status: "confirmed"
     };
 
