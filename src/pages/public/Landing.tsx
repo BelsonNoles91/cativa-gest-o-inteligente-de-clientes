@@ -42,6 +42,7 @@ import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { cn } from "@/lib/utils";
+import { ErrorBoundary } from "@/components/feedback/ErrorBoundary";
 
 // ---------------------------------------------------------------------------
 // Conteúdo declarativo — fácil de iterar
