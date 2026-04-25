@@ -209,7 +209,7 @@ export async function createClient(input: CreateClientInput): Promise<Client> {
   return toClient(data);
 }
 
-export type UpdateClientInput = Partial<Omit<CreateClientInput, "tenantId" | "createdBy">>;
+export type UpdateClientInput = Partial<Omit<CreateClientInput, "tenantId" | "createdBy"> & { status: ClientStatus }>;
 
 export async function updateClient(clientId: string, input: UpdateClientInput): Promise<Client> {
   const patch: Record<string, unknown> = {};
@@ -224,6 +224,7 @@ export async function updateClient(clientId: string, input: UpdateClientInput): 
   if (input.preferences !== undefined) patch.preferences = input.preferences || null;
   if (input.isVip !== undefined) patch.is_vip = input.isVip;
   if (input.riskLevel !== undefined) patch.risk_level = input.riskLevel;
+  if (input.status !== undefined) patch.status = input.status;
   if (input.preferredUnitId !== undefined) patch.preferred_unit_id = input.preferredUnitId || null;
   if (input.preferredProfessionalId !== undefined) patch.preferred_professional_id = input.preferredProfessionalId || null;
   if (input.whatsappPhone !== undefined) patch.whatsapp_phone = input.whatsappPhone || null;
