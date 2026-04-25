@@ -8,6 +8,9 @@ import {
   type ReactNode,
 } from "react";
 import { useTenant } from "@/features/tenant/TenantProvider";
+import { toast } from "sonner";
+import { AlertTriangle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   calculateLiveUsage,
   getSubscriptionByTenant,
@@ -86,26 +89,48 @@ export function TenantBillingProvider({ children }: { children: ReactNode }) {
     }
 
     setLoading(true);
-    const sub = await getSubscriptionByTenant(currentTenant.id);
-    const plans = await listPlans();
-    const currentPlan = sub ? plans.find((item) => item.id === sub.planId) ?? null : null;
-    const [planFeatures, tenantFlags, globalFlags, liveUsage, subEvents] = await Promise.all([
-      currentPlan ? listPlanFeatures([currentPlan.id]) : Promise.resolve([] as PlanFeature[]),
-      listFeatureFlags(currentTenant.id),
-      listFeatureFlags(null),
-      calculateLiveUsage(currentTenant.id),
-      sub ? listSubscriptionEvents(sub.id) : Promise.resolve([] as SubscriptionEvent[]),
-    ]);
+    try {
+      const sub = await getSubscriptionByTenant(currentTenant.id);
+      const plans = await listPlans();
+      const currentPlan = sub ? plans.find((item) => item.id === sub.planId) ?? null : null;
+      
+      const [featuresRes, tenantFlags, globalFlags, liveUsage, subEvents] = await Promise.allSettled([
+        currentPlan ? listPlanFeatures([currentPlan.id]) : Promise.resolve([] as PlanFeature[]),
+        listFeatureFlags(currentTenant.id),
+        listFeatureFlags(null),
+        calculateLiveUsage(currentTenant.id),
+        sub ? listSubscriptionEvents(sub.id) : Promise.resolve([] as SubscriptionEvent[]),
+      ]);
 
-    setSubscription(sub);
-    setPlan(currentPlan);
-    setAllPlans(plans);
-    setFeatures(planFeatures);
-    setFlags(mergeFlags(globalFlags, tenantFlags));
-    setEvents(subEvents);
-    setUsage(liveUsage);
-    setLoading(false);
-  }, [currentTenant]);
+      const planFeatures = featuresRes.status === "fulfilled" ? featuresRes.value : [];
+      const tFlags = tenantFlags.status === "fulfilled" ? tenantFlags.value : [];
+      const gFlags = globalFlags.status === "fulfilled" ? globalFlags.value : [];
+      const usageData = liveUsage.status === "fulfilled" ? liveUsage.value : usage;
+      const eventsData = subEvents.status === "fulfilled" ? subEvents.value : [];
+
+      if (featuresRes.status === "rejected") console.error("[Billing:features]", featuresRes.reason);
+      if (tenantFlags.status === "rejected") console.error("[Billing:tFlags]", tenantFlags.reason);
+      
+      setSubscription(sub);
+      setPlan(currentPlan);
+      setAllPlans(plans);
+      setFeatures(planFeatures);
+      setFlags(mergeFlags(gFlags, tFlags));
+      setEvents(eventsData);
+      setUsage(usageData);
+    } catch (err) {
+      console.error("[TenantBillingProvider:load]", err);
+      toast.error("Erro ao validar assinatura", {
+        description: "Alguns recursos podem estar limitados temporariamente.",
+        action: {
+          label: "Repetir",
+          onClick: () => load(),
+        }
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [currentTenant, usage]);
 
   useEffect(() => {
     void load();
