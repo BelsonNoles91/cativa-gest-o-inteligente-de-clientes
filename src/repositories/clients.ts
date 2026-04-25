@@ -105,10 +105,14 @@ export interface ListClientsParams {
 }
 
 export async function listClients(params: ListClientsParams): Promise<Client[]> {
+  if (!params.tenantId) {
+    throw new Error("tenantId é obrigatório para listClients");
+  }
   let q = supabase
     .from("clients")
     .select(CLIENT_COLUMNS)
     .eq("tenant_id", params.tenantId)
+
     .order("full_name", { ascending: true })
     .limit(params.limit ?? 200);
 
