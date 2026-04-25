@@ -56,7 +56,7 @@ export class ErrorBoundary extends Component<Props, State> {
             variant="outline"
             size="sm"
             className="mt-5 rounded-lg border-danger/20 hover:bg-danger-soft/20"
-            onClick={handleReset}
+            onClick={this.handleReset}
           >
             <RefreshCcw className="mr-2 h-3.5 w-3.5" /> Tentar novamente
           </Button>

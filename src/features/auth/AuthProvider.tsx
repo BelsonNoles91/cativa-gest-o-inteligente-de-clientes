@@ -9,6 +9,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface AuthContextValue {
   user: User | null;
@@ -55,6 +56,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn: AuthContextValue["signIn"] = async (email, password) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      console.error("[Auth:signIn]", error);
+      // Erro 400 em auth geralmente é credencial inválida ou e-mail não confirmado
+      if (error.status === 400 && error.message.includes("Invalid login credentials")) {
+        // Silencioso aqui pois o componente Login já trata e mostra toast
+      } else {
+        // Outros erros (rede, timeout) reportamos para facilitar debug
+        toast.error("Erro de conexão", {
+          description: "Não conseguimos contato com o servidor de autenticação. Verifique sua rede."
+        });
+      }
+    }
     return { error };
   };
 
