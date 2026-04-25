@@ -17,6 +17,7 @@ import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/feedback/EmptyState";
+import { ErrorBoundary } from "@/components/feedback/ErrorBoundary";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import { useToast } from "@/hooks/use-toast";
 import { listAppointmentsHydrated, type HydratedAppointment } from "@/repositories/scheduling";
