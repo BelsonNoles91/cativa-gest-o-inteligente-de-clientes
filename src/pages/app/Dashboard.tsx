@@ -17,6 +17,7 @@ import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/feedback/EmptyState";
+import { ErrorBoundary } from "@/components/feedback/ErrorBoundary";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import { useToast } from "@/hooks/use-toast";
 import { listAppointmentsHydrated, type HydratedAppointment } from "@/repositories/scheduling";
@@ -110,7 +111,7 @@ export default function Dashboard() {
         if (ignore) return;
         toast({
           title: "Erro ao carregar painel",
-          description: error instanceof Error ? error.message : "Erro inesperado.",
+          description: "Não foi possível carregar os dados de hoje. Tente novamente em instantes.",
           variant: "destructive",
         });
       } finally {
@@ -184,8 +185,10 @@ export default function Dashboard() {
       <NoSubscriptionBanner variant="panel" className="mb-4 md:mb-6" />
 
       {loading ? (
-        <div className="flex h-60 items-center justify-center">
-          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 xl:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="surface-card flex h-28 animate-pulse items-center gap-4 p-4 md:p-5" />
+          ))}
         </div>
       ) : (
         <>
@@ -224,7 +227,8 @@ export default function Dashboard() {
 
           <div className="mt-6 grid gap-4 md:gap-6 lg:grid-cols-[1.5fr_1fr]">
             <section className="surface-card p-5">
-              <div className="mb-4 flex items-center justify-between">
+              <ErrorBoundary name="UpcomingAppointments">
+                <div className="mb-4 flex items-center justify-between">
                 <div>
                   <h2 className="font-display text-lg font-semibold">Próximos atendimentos</h2>
                   <p className="text-xs text-muted-foreground">Baseado na agenda do dia atual.</p>
@@ -275,6 +279,7 @@ export default function Dashboard() {
                   })}
                 </ul>
               )}
+              </ErrorBoundary>
             </section>
 
             <div className="grid gap-4 md:gap-6">
@@ -300,7 +305,8 @@ export default function Dashboard() {
               </section>
 
               <section className="surface-card p-5">
-                <div className="mb-4 flex items-center justify-between">
+                <ErrorBoundary name="DashboardShortcuts">
+                  <div className="mb-4 flex items-center justify-between">
                   <div>
                     <h3 className="font-display text-lg font-semibold leading-tight">Atalhos</h3>
                     <p className="text-xs text-muted-foreground">Ações mais usadas no dia a dia</p>
@@ -332,6 +338,7 @@ export default function Dashboard() {
                     </button>
                   ))}
                 </div>
+                </ErrorBoundary>
               </section>
             </div>
           </div>

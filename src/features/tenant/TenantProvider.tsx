@@ -7,6 +7,8 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { toast } from "sonner";
+import { AlertCircle } from "lucide-react";
 import type { Role } from "@/domain/roles";
 import type { TenantSegment } from "@/domain/tenant";
 
@@ -94,8 +96,8 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       try {
         localStorage.removeItem(LS_TENANT);
         localStorage.removeItem(LS_UNIT);
-      } catch {
-        /* ignore */
+      } catch (e) {
+        console.warn("[TenantProvider:clearLS]", e);
       }
       setCurrentTenantIdState(null);
       setCurrentUnitIdState(null);
@@ -105,14 +107,19 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     }
     setLoading(true);
 
-    const [{ data: profile }, { data: memb }] = await Promise.all([
-      supabase.from("profiles").select("is_super_admin").eq("id", user.id).maybeSingle(),
-      supabase
-        .from("tenant_memberships")
-        .select("tenant_id, role, tenants:tenants!inner(id, name, slug, segment)")
-        .eq("user_id", user.id)
-        .eq("status", "active"),
-    ]);
+    try {
+      const [{ data: profile, error: profileErr }, { data: memb, error: membErr }] = await Promise.all([
+        supabase.from("profiles").select("is_super_admin").eq("id", user.id).maybeSingle(),
+        supabase
+          .from("tenant_memberships")
+          .select("tenant_id, role, tenants:tenants!inner(id, name, slug, segment)")
+          .eq("user_id", user.id)
+          .eq("status", "active"),
+      ]);
+
+      if (profileErr || membErr) {
+        throw profileErr || membErr;
+      }
 
     const superAdmin = Boolean(profile?.is_super_admin);
     setIsSuperAdmin(superAdmin);
@@ -122,7 +129,10 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     // Super admin: carregar lista global de tenants para o switcher / impersonação.
     let globalTenantIds: string[] = [];
     if (superAdmin) {
-      const { data: globalRows } = await supabase.rpc("admin_list_all_tenants");
+      const { data: globalRows, error: globalErr } = await supabase.rpc("admin_list_all_tenants");
+      if (globalErr) {
+        console.error("[TenantProvider:admin_list]", globalErr);
+      }
       const mapped = (globalRows ?? []).map((r: { id: string; name: string; slug: string; segment: TenantSegment }) => ({
         id: r.id,
         name: r.name,
@@ -151,7 +161,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     }
 
     if (allIds.length > 0) {
-      const [{ data: us }, { data: settings }] = await Promise.all([
+      const [usRes, settingsRes] = await Promise.all([
         supabase
           .from("units")
           .select("id, tenant_id, name, is_default")
@@ -162,9 +172,13 @@ export function TenantProvider({ children }: { children: ReactNode }) {
           .select("tenant_id, logo_url")
           .in("tenant_id", allIds),
       ]);
-      setUnits((us ?? []) as UnitRow[]);
+      
+      if (usRes.error) console.error("[TenantProvider:units]", usRes.error);
+      if (settingsRes.error) console.error("[TenantProvider:settings]", settingsRes.error);
+
+      setUnits((usRes.data ?? []) as UnitRow[]);
       const map: Record<string, string | null> = {};
-      for (const s of settings ?? []) {
+      for (const s of settingsRes.data ?? []) {
         map[s.tenant_id as string] = (s.logo_url as string) ?? null;
       }
       setLogosByTenant(map);
@@ -173,7 +187,15 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       setLogosByTenant({});
     }
     setVerified(true);
-    setLoading(false);
+    } catch (err) {
+      console.error("[TenantProvider:load]", err);
+      toast.error("Erro ao carregar contexto", {
+        description: "Não foi possível carregar suas contas. Tente recarregar a página.",
+        icon: <AlertCircle className="h-4 w-4" />,
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {

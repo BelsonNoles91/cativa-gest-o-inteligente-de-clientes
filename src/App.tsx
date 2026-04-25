@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/features/theme/ThemeProvider";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { TenantProvider } from "@/features/tenant/TenantProvider";
 import { ProtectedRoute, RequireOnboarding, RoleGuard, OnboardingGuard } from "@/features/auth/guards";
+import { ErrorBoundary } from "@/components/feedback/ErrorBoundary";
 import { appConfig } from "@/config/app";
 
 import { FeatureGate } from "@/features/billing/FeatureGate";
@@ -78,7 +79,8 @@ const PortalClientProvider = lazyWithReload(() =>
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme={appConfig.defaultTheme}>
+    <ErrorBoundary name="Root">
+      <ThemeProvider defaultTheme={appConfig.defaultTheme}>
       <BrowserRouter>
         <AuthProvider>
           <TenantProvider>
@@ -185,7 +187,8 @@ const App = () => (
           </TenantProvider>
         </AuthProvider>
       </BrowserRouter>
-    </ThemeProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   </QueryClientProvider>
 );
 

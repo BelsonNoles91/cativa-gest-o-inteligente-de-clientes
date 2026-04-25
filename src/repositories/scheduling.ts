@@ -295,7 +295,11 @@ export async function getAvailableSlots(input: {
     _day: input.day,
     _slot_step_minutes: input.slotStepMinutes ?? 15,
   });
-  if (error) throw error;
+  if (error) {
+    console.error("[SchedulingRepo:getAvailableSlots]", error);
+    // Retorna array vazio em vez de estourar erro para a UI lidar com "sem horários" graciosamente
+    return [];
+  }
   type Slot = { slot_start: string; slot_end: string };
   return ((data ?? []) as Slot[]).map((r) => ({ startsAt: r.slot_start, endsAt: r.slot_end }));
 }
