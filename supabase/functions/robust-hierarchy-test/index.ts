@@ -40,12 +40,13 @@ Deno.serve(async (req) => {
     const { data: pro } = await admin.from("professionals").select("id").eq("tenant_id", tenant_id).limit(1).single();
     const { data: client } = await admin.from("clients").select("id").eq("tenant_id", tenant_id).limit(1).single();
     const { data: service } = await admin.from("services").select("id").eq("tenant_id", tenant_id).limit(1).single();
+    const { data: unit } = await admin.from("units").select("id").eq("tenant_id", tenant_id).limit(1).single();
 
-    if (!pro || !client || !service) {
+    if (!pro || !client || !service || !unit) {
       return new Response(JSON.stringify({ 
         status: "incomplete", 
-        message: "Faltam entidades básicas (profissional, cliente ou serviço) para completar o teste de relacionamento.",
-        details: { pro: !!pro, client: !!client, service: !!service }
+        message: "Faltam entidades básicas para completar o teste de relacionamento.",
+        details: { pro: !!pro, client: !!client, service: !!service, unit: !!unit }
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
@@ -56,6 +57,7 @@ Deno.serve(async (req) => {
 
     const appointmentData = {
       tenant_id,
+      unit_id: unit.id,
       client_id: client.id,
       professional_id: pro.id,
       starts_at: startTime.toISOString(),
