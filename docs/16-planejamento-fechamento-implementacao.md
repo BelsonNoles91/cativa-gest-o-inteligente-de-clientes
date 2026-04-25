@@ -1,6 +1,6 @@
 # Planejamento de fechamento da implementação
 
-> Baseado na comparação entre [prompt_original.txt](../prompt_original.txt) e o estado atual do projeto em 23/04/2026.
+> Baseado na comparação entre [prompt_original.txt](../prompt_original.txt) e o estado atual do projeto em 24/04/2026.
 
 ## Objetivo
 
@@ -12,7 +12,7 @@ entrega considerada completa.
 
 | Frente atual | Status | Completude | Leitura objetiva |
 | --- | --- | ---: | --- |
-| Frente 6 — Validação integrada dos fluxos críticos | Em expansão multi-dispositivo com bloqueio técnico parcial | 95% | Infra local, baseline pública, preflight autenticado, login real do usuário owner, matriz de contas QA por papel, smoke autenticada multi-rota e trilha visual autenticada crítica no perfil `iphone-14-portrait` já estão validados. A trilha preview-crítica também já passou em `/app/clientes` e `/app/confirmacoes` nos perfis `iphone-se` e `iphone-14-landscape`. Seguem pendentes a baseline multi-dispositivo completa, portal real, bucket real e conferência humana de RLS/dispositivo. |
+| Frente 6 — Validação integrada dos fluxos críticos | Em validação operacional final com bloqueios técnicos parciais | 99% | Infra local, baseline pública, preflight autenticado, login real do usuário owner, matriz de contas QA por papel, smoke autenticada multi-rota e trilha visual autenticada crítica no perfil `iphone-14-portrait` já estão validados. A suíte `public-routes.spec.ts` das quatro rotas autenticadas também já passou integralmente em `iphone-se`, `iphone-14-landscape` e `ipad-portrait` na trilha preview-crítica. Em 24/04/2026, o bucket real `client-media`, o CRM de anexos, o portal de autoagendamento, a troca de contexto de unidade, o bloqueio de limite de unidades e o round-trip de import/export de clientes, serviços e equipe foram validados contra Supabase real. O fluxo de convite assistido recebeu E2E e correção de migration, mas a validação remota está bloqueada até aplicar a migration que corrige a RPC `create_team_invitation`. O bloqueio visual segue concentrado em `android-360-portrait`; as validações restantes dependem de e-mail real de cliente final, aplicação da migration de convite, limites extremos adicionais, onboarding completo com conta nova, expansão de import/export para pacotes/agendamentos e conferência humana de RLS/dispositivo. |
 
 ## Resumo executivo
 
@@ -28,7 +28,7 @@ entrega considerada completa.
 | Etapa 7 — Portal do cliente | 91% | Forte | Fluxos centrais presentes; precisa de validação integrada final. |
 | Etapa 8 — Dashboards, métricas e Índice Cativa | 90% | Forte | Analytics forte e agora separado por contexto executivo, operacional e retenção. |
 | Etapa 9 — Super admin, planos, trials e limites | 90% | Forte | Gestão robusta com consumo real de storage no app; resta alinhamento literal de modelagem. |
-| Etapa 10 — Import/export, portabilidade, segurança e docs | 89% | Parcial avançado | Ambiente técnico saneado; restam ajustes finais de documentação e validação integrada. |
+| Etapa 10 — Import/export, portabilidade, segurança e docs | 93% | Parcial avançado | Round-trip real de clientes, serviços e equipe validado por E2E; restam expansão para pacotes, agendamentos e validação humana de portabilidade completa. |
 | Etapa 11 — Landing e planos públicos | 95% | Forte | Página pública madura e quase final. |
 
 ## Prioridades de execução
@@ -177,9 +177,102 @@ entrega considerada completa.
   horizontal e a tela branca no preview autenticado foi corrigida após
   diagnóstico de `ReferenceError: cn is not defined`.
 - Com isso, `/app/clientes` e `/app/confirmacoes` passaram com sucesso em
-  `iphone-se` e `iphone-14-landscape` na trilha preview-crítica.
-- O restante das validações exige bucket real, portal real, usuários reais e
-  conferência humana de RLS/comportamento em dispositivos.
+  `iphone-se`, `iphone-14-landscape` e `ipad-portrait` na trilha
+  preview-crítica.
+- A suíte `public-routes.spec.ts` com as quatro rotas autenticadas também foi
+  validada integralmente em `iphone-se`, `iphone-14-landscape` e
+  `ipad-portrait`.
+- O bloqueio remanescente desta expansão está isolado no
+  `android-360-portrait`.
+- Em 24/04/2026, a execução elevada confirmou que esse perfil já consegue
+  validar `/auth/login` no proxy Chromium 360px da trilha preview-crítica.
+- Ainda assim, a trilha autenticada e o diagnóstico mínimo do perfil Android
+  seguiram excedendo 10 minutos sem devolver resultado útil, consolidando o
+  bloqueio como questão de runner/infraestrutura desse perfil.
+- Em 24/04/2026, foi criado `scripts/e2e-storage-check.mjs` e o comando
+  `npm run test:storage:check` para validar o bucket real `client-media`.
+- A execução elevada do check confirmou, com o usuário
+  `owner.studio-teste-qa@cativa.test`, upload no tenant `Studio Teste QA`,
+  emissão de URL assinada, download do conteúdo e remoção do objeto de teste.
+- Em 24/04/2026, foi criado `e2e/diagnostics/crm-media.spec.ts` e o comando
+  `npm run test:crm:media` para validar o fluxo pela UI do CRM.
+- A primeira execução validada criou um cliente pela UI, subiu um arquivo pela
+  aba `Arquivos & Fotos`, validou o registro em `client_files`, leu o conteúdo
+  por URL assinada, removeu o arquivo pela UI e confirmou cleanup no
+  banco/storage.
+- Na sequência, o mesmo E2E foi expandido e validado para foto/imagem:
+  upload pela UI, persistência em `client_photos`, leitura por URL assinada,
+  remoção pela UI e cleanup no banco/storage.
+- Em 24/04/2026, foi criado `e2e/diagnostics/portal-booking.spec.ts` e o
+  comando `npm run test:portal:booking`.
+- A execução validou portal e autoagendamento com sessão real, vínculo
+  temporário em `client_users`, cliente real, serviço real, preço,
+  horário da unidade, disponibilidade do profissional, slot via
+  `get_available_slots`, criação de appointment `source=client_portal` e
+  cleanup no banco.
+- A criação de conta nova de cliente final foi sondada, mas o Supabase Auth
+  retornou `hasSession=false`, indicando exigência de confirmação por e-mail;
+  por isso esse recorte permanece como pendência humana/operacional.
+- Em 24/04/2026, foi criado `e2e/diagnostics/team-invite.spec.ts` e o comando
+  `npm run test:team:invite` para validar convite e aceite pela tela
+  `/auth/aceite-convite` com owner e convidado QA reais.
+- A primeira execução do diagnóstico passou por preflight e build, mas revelou
+  erro real no Supabase remoto: a RPC `create_team_invitation` falha com
+  `column reference "id" is ambiguous`.
+- Foi criada a migration
+  `20260424090000_fix_team_invitation_ambiguous_id.sql`, corrigindo a
+  ambiguidade em `create_team_invitation` e `admin_provision_team_invitation`.
+- A validação final do convite fica pendente até essa migration ser aplicada
+  no projeto Supabase remoto e o comando `npm run test:team:invite` ser
+  reexecutado com sucesso.
+- Em 24/04/2026, foi criado `e2e/diagnostics/tenant-switch.spec.ts` e o
+  comando `npm run test:tenant:switch`.
+- A execução validou, em preview/build local + Supabase real, recuperação de
+  `cativa.currentTenantId` inválido em cache, criação de unidade temporária no
+  tenant QA, troca de unidade pela UI mobile do `TenantSwitcher`, retorno para
+  a unidade original e cleanup sem sobras (`E2E Unidade Contexto% = 0`).
+- Em 24/04/2026, foi criado `e2e/diagnostics/plan-limits.spec.ts` e o comando
+  `npm run test:plan:limits`.
+- A execução validou, em preview/build local + Supabase real, o bloqueio de
+  criação de nova unidade quando o plano/feature efetivo não permite expansão.
+  O teste usa dados reais de assinatura/plano, pode criar unidades temporárias
+  apenas se necessário para atingir um limite finito próximo e confirma cleanup
+  sem sobras (`E2E Limite Unidade% = 0`).
+- Em 24/04/2026, foi criado `e2e/diagnostics/client-limit.spec.ts` e o comando
+  `npm run test:client:limit` para validar bloqueio de criação de cliente ao
+  atingir `max_active_clients`.
+- A execução ficou como `skipped` de forma intencional: o tenant QA está com
+  `max_active_clients=2000` e apenas `1` cliente ativo, portanto não é seguro
+  popular 1.999 clientes temporários para forçar o bloqueio. O diagnóstico está
+  pronto e só cria até 3 clientes temporários quando o tenant estiver próximo do
+  limite, mantendo cleanup sem sobras (`E2E Limite Cliente% = 0`).
+- Em 24/04/2026, foi criado `e2e/diagnostics/import-export-clients.spec.ts` e
+  o comando `npm run test:import-export:clients`.
+- A execução validou, em preview/build local + Supabase real, importação CSV de
+  cliente pela tela `/app/dados`, persistência do registro em `clients`,
+  exportação CSV de clientes, presença do registro importado no arquivo
+  baixado e cleanup sem sobras (`E2E Import Export Cliente% = 0`).
+- Em 24/04/2026, foi criado `e2e/diagnostics/import-export-services.spec.ts` e
+  o comando `npm run test:import-export:services`.
+- A execução validou, em preview/build local + Supabase real, importação CSV de
+  serviço pela tela `/app/dados`, persistência do registro em `services`,
+  persistência do preço base em `service_prices`, exportação CSV de serviços,
+  presença do registro importado no arquivo baixado e cleanup sem sobras
+  (`E2E Serviço Import Export% = 0`).
+- Em 24/04/2026, foi criado `e2e/diagnostics/import-export-team.spec.ts` e
+  o comando `npm run test:import-export:team`.
+- A execução validou, em preview/build local + Supabase real, importação CSV de
+  profissional pela tela `/app/dados`, persistência em `professionals`,
+  validação de comissão via RPC segura `list_professionals_with_commission`,
+  exportação CSV de equipe com comissão e cleanup sem sobras
+  (`E2E Profissional Import Export% = 0`).
+- Durante essa validação, foi corrigido o exportador de equipe para buscar
+  `commission_pct` pela RPC autorizada, em vez de depender de SELECT direto na
+  coluna protegida.
+- O restante das validações exige cenários extremos adicionais de storage,
+  profissionais e clientes ativos, expansão de import/export para pacotes e
+  agendamentos, além de conferência humana de
+  RLS/comportamento em dispositivos.
 
 **Avanços finais desta preparação**
 - Preflight local de ambiente implementado em `scripts/e2e-preflight.mjs`.
@@ -200,6 +293,31 @@ entrega considerada completa.
 - `test:visual:auth:critical` criado para consolidar a validação visual
   autenticada crítica no perfil principal sem depender da suíte completa em
   todos os dispositivos na mesma rodada.
+- `test:storage:check` criado e validado contra o Supabase real para cobrir
+  upload, signed URL, download e cleanup no bucket `client-media`.
+- `test:crm:media` criado e validado contra preview/build local + Supabase
+  real para cobrir criação de cliente, upload/remoção de arquivo e foto pela
+  UI do CRM e cleanup.
+- `test:portal:booking` criado e validado contra preview/build local +
+  Supabase real para cobrir vínculo portal e autoagendamento ponta a ponta.
+- `test:team:invite` criado para cobrir convite e aceite de membro pela UI.
+- Migration de correção da RPC de convite criada; falta aplicar no Supabase
+  remoto e reexecutar o diagnóstico.
+- `test:tenant:switch` criado e validado contra Supabase real para cobrir
+  recuperação de tenant inválido em cache e troca real de unidade no app.
+- `test:plan:limits` criado e validado contra Supabase real para cobrir
+  bloqueio de criação de unidade por limite/feature efetiva de plano.
+- `test:client:limit` criado para cobrir `max_active_clients`; a execução atual
+  pulou por limite alto demais no tenant QA (`2000` vs `1` ativo).
+- `test:import-export:clients` criado e validado contra Supabase real para
+  cobrir round-trip mínimo de clientes: CSV importado, registro persistido,
+  CSV exportado e cleanup.
+- `test:import-export:services` criado e validado contra Supabase real para
+  cobrir round-trip mínimo de serviços: CSV importado, preço base persistido,
+  CSV exportado e cleanup.
+- `test:import-export:team` criado e validado contra Supabase real para cobrir
+  round-trip mínimo de equipe: CSV importado, comissão validada/exportada via
+  RPC segura e cleanup.
 
 ## Ordem recomendada
 

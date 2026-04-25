@@ -95,7 +95,7 @@ export default function DataImportExport() {
   const tenantId = currentTenant?.id;
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6">
+    <div className="mx-auto w-full max-w-5xl space-y-6" data-testid="import-export-page">
       <PageHeader
         title="Importar & Exportar"
         description="Migre dados de outras ferramentas e leve seus dados embora a qualquer momento."
@@ -109,10 +109,10 @@ export default function DataImportExport() {
       ) : (
         <Tabs defaultValue="import" className="space-y-4">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="import">
+            <TabsTrigger value="import" data-testid="import-export-tab-import">
               <Upload className="mr-2 h-4 w-4" /> Importar
             </TabsTrigger>
-            <TabsTrigger value="export">
+            <TabsTrigger value="export" data-testid="import-export-tab-export">
               <Download className="mr-2 h-4 w-4" /> Exportar
             </TabsTrigger>
           </TabsList>
@@ -235,10 +235,12 @@ function ImportPanel({ tenantId, userId }: { tenantId: string; userId: string })
           <div className="grid gap-2 sm:max-w-sm">
             <Label>Tipo de dado</Label>
             <Select value={entity} onValueChange={(v) => changeEntity(v as EntityKey)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger data-testid="import-entity-trigger"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {ENTITY_OPTIONS.map((o) => (
-                  <SelectItem key={o.key} value={o.key}>{o.label}</SelectItem>
+                  <SelectItem key={o.key} value={o.key} data-testid={`import-entity-${o.key}`}>
+                    {o.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -253,6 +255,7 @@ function ImportPanel({ tenantId, userId }: { tenantId: string; userId: string })
           <Button
             variant="outline"
             size="sm"
+            data-testid="import-template-download"
             onClick={() => downloadFile(`modelo_${entity}.csv`, buildTemplateCsv(schema))}
           >
             <FileSpreadsheet className="mr-2 h-4 w-4" />
@@ -271,6 +274,7 @@ function ImportPanel({ tenantId, userId }: { tenantId: string; userId: string })
             ref={fileInputRef}
             type="file"
             accept=".csv,text/csv"
+            data-testid="import-csv-input"
             onChange={(e) => {
               const f = e.target.files?.[0];
               if (f) handleFile(f);
@@ -386,6 +390,7 @@ function ImportPanel({ tenantId, userId }: { tenantId: string; userId: string })
             <div className="flex flex-wrap items-center justify-end gap-2">
               <Button
                 onClick={runImport}
+                data-testid="import-run-button"
                 disabled={running || (fullValidation?.errors.length ?? 0) > 0}
               >
                 {running ? (
@@ -401,7 +406,10 @@ function ImportPanel({ tenantId, userId }: { tenantId: string; userId: string })
             </div>
 
             {result && (
-              <Alert variant={result.failed > 0 ? "destructive" : "default"}>
+              <Alert
+                variant={result.failed > 0 ? "destructive" : "default"}
+                data-testid="import-result"
+              >
                 <AlertTitle>Resultado</AlertTitle>
                 <AlertDescription>
                   Inseridos: <strong>{result.inserted}</strong> · Falharam: <strong>{result.failed}</strong>
@@ -470,19 +478,21 @@ function ExportPanel({ tenantId }: { tenantId: string }) {
   async function exportTeam(format: "csv" | "json") {
     setBusy("team-" + format);
     try {
-      // Owner/manager veem commission_pct; demais roles não. Tenta com, cai pra sem.
-      const withCommission = await supabase
+      const { data, error } = await supabase
         .from("professionals")
-        .select("display_name, role_title, specialty, email, phone, commission_pct, is_active")
+        .select("id, display_name, role_title, specialty, email, phone, is_active")
         .eq("tenant_id", tenantId)
         .order("display_name");
-      const data = withCommission.error
-        ? (await supabase
-            .from("professionals")
-            .select("display_name, role_title, specialty, email, phone, is_active")
-            .eq("tenant_id", tenantId)
-            .order("display_name")).data
-        : withCommission.data;
+      if (error) throw error;
+
+      // commission_pct é protegido por coluna; owner/manager acessam via RPC.
+      const { data: commissionData } = await supabase.rpc(
+        "list_professionals_with_commission",
+        { _tenant_id: tenantId },
+      );
+      const commissionByProfessional = new Map(
+        (commissionData ?? []).map((row) => [row.id, row.commission_pct]),
+      );
 
       const professionals = (data ?? []).map((row) => ({
         displayName: row.display_name,
@@ -490,11 +500,9 @@ function ExportPanel({ tenantId }: { tenantId: string }) {
         specialty: (row as { specialty: string | null }).specialty ?? null,
         email: (row as { email: string | null }).email ?? null,
         phone: (row as { phone: string | null }).phone ?? null,
-        commissionPct:
-          (row as unknown as { commission_pct?: number | string | null }).commission_pct === null ||
-          (row as unknown as { commission_pct?: number | string | null }).commission_pct === undefined
-            ? null
-            : Number((row as unknown as { commission_pct: number | string }).commission_pct),
+        commissionPct: commissionByProfessional.has(row.id)
+          ? Number(commissionByProfessional.get(row.id))
+          : null,
         isActive: row.is_active,
       }));
       const filename = `equipe_${dateStamp()}.${format}`;
@@ -729,7 +737,7 @@ function ExportPanel({ tenantId }: { tenantId: string }) {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {items.map((it) => (
-        <Card key={it.keyId}>
+        <Card key={it.keyId} data-testid={`export-card-${it.keyId}`}>
           <CardHeader>
             <CardTitle className="text-base">{it.title}</CardTitle>
             <CardDescription>{it.description}</CardDescription>
@@ -738,6 +746,7 @@ function ExportPanel({ tenantId }: { tenantId: string }) {
             <Button
               size="sm"
               variant="outline"
+              data-testid={`export-${it.keyId}-csv`}
               onClick={it.onCsv}
               disabled={busy === it.keyId + "-csv" || busy === it.keyId}
             >
@@ -752,6 +761,7 @@ function ExportPanel({ tenantId }: { tenantId: string }) {
               <Button
                 size="sm"
                 variant="outline"
+                data-testid={`export-${it.keyId}-json`}
                 onClick={it.onJson}
                 disabled={busy === it.keyId + "-json"}
               >

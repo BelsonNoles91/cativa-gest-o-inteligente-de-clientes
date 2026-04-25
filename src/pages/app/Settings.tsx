@@ -36,6 +36,7 @@ export default function Settings() {
               <TabsTrigger
                 key={t.v}
                 value={t.v}
+                data-testid={`settings-tab-${t.v}`}
                 className="gap-2 whitespace-nowrap rounded-lg px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm"
               >
                 <t.icon className="h-4 w-4 shrink-0" />
@@ -47,7 +48,7 @@ export default function Settings() {
 
         <div className="mt-6">
           <TabsContent value="business"><BusinessSettings /></TabsContent>
-          <TabsContent value="units"><UnitsSettings /></TabsContent>
+          <TabsContent value="units" data-testid="settings-units-panel"><UnitsSettings /></TabsContent>
           <TabsContent value="team"><TeamSettings /></TabsContent>
           <TabsContent value="branding"><BrandingSettings /></TabsContent>
           <TabsContent value="prefs"><PreferencesSettings /></TabsContent>

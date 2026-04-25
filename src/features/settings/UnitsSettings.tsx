@@ -96,13 +96,14 @@ export function UnitsSettings() {
   if (!currentTenant) return null;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="units-settings">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">{units.length} {units.length === 1 ? "unidade" : "unidades"}</p>
+        <p className="text-sm text-muted-foreground" data-testid="units-count-label">{units.length} {units.length === 1 ? "unidade" : "unidades"}</p>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button
               className="rounded-xl bg-gradient-brand"
+              data-testid="units-create-trigger"
               disabled={
                 (!hasFeature("multi_unit") && usage.unitsCount >= 1) ||
                 (limits?.maxUnits !== null && limits?.maxUnits !== undefined && usage.unitsCount >= limits.maxUnits)
@@ -138,8 +139,12 @@ export function UnitsSettings() {
       {loading ? (
         <div className="flex h-40 items-center justify-center"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>
       ) : !hasFeature("multi_unit") && usage.unitsCount >= 1 ? (
-        <div className="rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm text-warning-foreground">
+        <div className="rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm text-warning-foreground" data-testid="units-limit-warning">
           Seu plano atual permite apenas uma unidade. Faça upgrade para liberar operação multi-unidade.
+        </div>
+      ) : limits?.maxUnits !== null && limits?.maxUnits !== undefined && usage.unitsCount >= limits.maxUnits ? (
+        <div className="rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm text-warning-foreground" data-testid="units-limit-warning">
+          Limite de unidades atingido. Ajuste o plano ou os overrides antes de criar outra unidade.
         </div>
       ) : units.length === 0 ? (
         <EmptyState icon={<MapPin className="h-6 w-6" />} title="Nenhuma unidade" description="Cadastre sua primeira unidade para começar a operar." />

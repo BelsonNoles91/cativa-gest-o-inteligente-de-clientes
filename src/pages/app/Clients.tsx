@@ -764,7 +764,7 @@ export default function ClientsPage() {
             {limits?.maxActiveClients !== null &&
             limits?.maxActiveClients !== undefined &&
             usage.activeClientsCount >= limits.maxActiveClients ? (
-              <StatusBadge tone="warning" dot={false}>Limite de clientes ativos atingido</StatusBadge>
+              <StatusBadge tone="warning" dot={false} data-testid="clients-active-limit-badge">Limite de clientes ativos atingido</StatusBadge>
             ) : null}
             <Dialog open={openCreate} onOpenChange={setOpenCreate}>
               <DialogTrigger asChild>
@@ -865,6 +865,9 @@ export default function ClientsPage() {
                       <li key={client.id}>
                         <button
                           type="button"
+                          data-testid="client-list-item"
+                          data-client-id={client.id}
+                          data-client-name={client.fullName}
                           onClick={() => setSelectedId(client.id)}
                           className={`flex w-full items-center gap-3 px-4 py-4 text-left transition hover:bg-muted/40 sm:px-6 ${selectedId === client.id ? "bg-muted/60" : ""}`}
                         >
@@ -949,7 +952,7 @@ export default function ClientsPage() {
                   <TabsTrigger value="summary">Resumo</TabsTrigger>
                   <TabsTrigger value="timeline">Timeline</TabsTrigger>
                   <TabsTrigger value="notes">Notas</TabsTrigger>
-                  <TabsTrigger value="media">Arquivos & Fotos</TabsTrigger>
+                  <TabsTrigger value="media" data-testid="client-media-tab">Arquivos & Fotos</TabsTrigger>
                   <TabsTrigger value="consents">Consentimentos</TabsTrigger>
                 </TabsList>
 
@@ -1133,7 +1136,12 @@ export default function ClientsPage() {
                       <CardContent className="space-y-4">
                         <div className="space-y-2">
                           <Label>Descrição opcional</Label>
-                          <Input value={fileDescription} onChange={(e) => setFileDescription(e.target.value)} placeholder="Ex.: ficha assinada, laudo, termo..." />
+                          <Input
+                            data-testid="client-file-description"
+                            value={fileDescription}
+                            onChange={(e) => setFileDescription(e.target.value)}
+                            placeholder="Ex.: ficha assinada, laudo, termo..."
+                          />
                           <Label htmlFor="client-file-upload" className="cursor-pointer">
                             <span className="inline-flex items-center rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-muted/40">
                               {uploadingFile ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
@@ -1142,6 +1150,7 @@ export default function ClientsPage() {
                           </Label>
                           <input
                             id="client-file-upload"
+                            data-testid="client-file-upload-input"
                             type="file"
                             className="hidden"
                             onChange={(e) => {
@@ -1159,9 +1168,14 @@ export default function ClientsPage() {
                             description="Uploads ficam organizados e visíveis na ficha."
                           />
                         ) : (
-                          <ul className="space-y-3">
+                          <ul className="space-y-3" data-testid="client-files-list">
                             {files.map((file) => (
-                              <li key={file.id} className="rounded-2xl border border-border/70 bg-card p-4">
+                              <li
+                                key={file.id}
+                                data-testid="client-file-item"
+                                data-file-name={file.fileName}
+                                className="rounded-2xl border border-border/70 bg-card p-4"
+                              >
                                 <div className="flex flex-wrap items-center justify-between gap-2">
                                   <div>
                                     <p className="text-sm font-medium">{file.fileName}</p>
@@ -1169,7 +1183,12 @@ export default function ClientsPage() {
                                       {formatBytes(file.sizeBytes)} · {formatDateTime(file.createdAt)}
                                     </p>
                                   </div>
-                                  <Button variant="ghost" size="sm" onClick={() => handleDeleteFile(file)}>
+                                  <Button
+                                    data-testid="client-file-remove"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDeleteFile(file)}
+                                  >
                                     Remover
                                   </Button>
                                 </div>
@@ -1204,7 +1223,12 @@ export default function ClientsPage() {
                             <Input type="datetime-local" value={photoTakenAt} onChange={(e) => setPhotoTakenAt(e.target.value)} />
                           </div>
                         </div>
-                        <Input value={photoCaption} onChange={(e) => setPhotoCaption(e.target.value)} placeholder="Legenda opcional" />
+                        <Input
+                          data-testid="client-photo-caption"
+                          value={photoCaption}
+                          onChange={(e) => setPhotoCaption(e.target.value)}
+                          placeholder="Legenda opcional"
+                        />
                         <Label htmlFor="client-photo-upload" className="cursor-pointer">
                           <span className="inline-flex items-center rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-muted/40">
                             {uploadingPhoto ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
@@ -1213,6 +1237,7 @@ export default function ClientsPage() {
                         </Label>
                         <input
                           id="client-photo-upload"
+                          data-testid="client-photo-upload-input"
                           type="file"
                           accept="image/*"
                           className="hidden"
@@ -1232,7 +1257,12 @@ export default function ClientsPage() {
                         ) : (
                           <div className="grid gap-3 sm:grid-cols-2">
                             {photos.map((photo) => (
-                              <div key={photo.id} className="overflow-hidden rounded-2xl border border-border/70 bg-card">
+                              <div
+                                key={photo.id}
+                                data-testid="client-photo-item"
+                                data-photo-id={photo.id}
+                                className="overflow-hidden rounded-2xl border border-border/70 bg-card"
+                              >
                                 <div className="aspect-[4/3] bg-muted">
                                   {photoUrls[photo.id] ? (
                                     <img src={photoUrls[photo.id]} alt={photo.caption ?? "Foto do cliente"} className="h-full w-full object-cover" />
@@ -1247,7 +1277,12 @@ export default function ClientsPage() {
                                     <StatusBadge tone={photo.photoType === "after" ? "success" : photo.photoType === "before" ? "warning" : "neutral"}>
                                       {photo.photoType === "before" ? "Antes" : photo.photoType === "after" ? "Depois" : "Geral"}
                                     </StatusBadge>
-                                    <Button variant="ghost" size="sm" onClick={() => handleDeletePhoto(photo)}>
+                                    <Button
+                                      data-testid="client-photo-remove"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleDeletePhoto(photo)}
+                                    >
                                       Remover
                                     </Button>
                                   </div>
@@ -1574,19 +1609,36 @@ function ClientForm({
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Nome completo" required>
-          <Input value={form.fullName} onChange={(e) => setForm((prev) => ({ ...prev, fullName: e.target.value }))} />
+          <Input
+            data-testid="client-form-full-name"
+            value={form.fullName}
+            onChange={(e) => setForm((prev) => ({ ...prev, fullName: e.target.value }))}
+          />
         </Field>
         <Field label="Origem">
-          <Input value={form.origin} onChange={(e) => setForm((prev) => ({ ...prev, origin: e.target.value }))} />
+          <Input
+            data-testid="client-form-origin"
+            value={form.origin}
+            onChange={(e) => setForm((prev) => ({ ...prev, origin: e.target.value }))}
+          />
         </Field>
         <Field label="Telefone">
-          <Input value={form.phone} onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))} />
+          <Input
+            data-testid="client-form-phone"
+            value={form.phone}
+            onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))}
+          />
         </Field>
         <Field label="WhatsApp">
           <Input value={form.whatsappPhone} onChange={(e) => setForm((prev) => ({ ...prev, whatsappPhone: e.target.value }))} />
         </Field>
         <Field label="E-mail">
-          <Input type="email" value={form.email} onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))} />
+          <Input
+            data-testid="client-form-email"
+            type="email"
+            value={form.email}
+            onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+          />
         </Field>
         <Field label="Nascimento">
           <Input type="date" value={form.birthDate} onChange={(e) => setForm((prev) => ({ ...prev, birthDate: e.target.value }))} />
@@ -1647,7 +1699,7 @@ function ClientForm({
           <Textarea value={form.contraindications} onChange={(e) => setForm((prev) => ({ ...prev, contraindications: e.target.value }))} rows={4} />
         </Field>
       </div>
-      <Button onClick={onSave} disabled={saving}>
+      <Button data-testid="client-form-submit" onClick={onSave} disabled={saving}>
         {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
         {saveLabel}
       </Button>

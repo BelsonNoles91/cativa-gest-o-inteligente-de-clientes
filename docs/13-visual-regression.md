@@ -188,6 +188,22 @@ geração/validação do baseline público.
   de responsividade do CRM.
 - Com isso, `/app/clientes` e `/app/confirmacoes` passaram com sucesso nos
   perfis `iphone-se` e `iphone-14-landscape` na trilha preview-crítica.
+- Em seguida, o mesmo recorte passou também em `ipad-portrait`, com baseline
+  autenticada criada para `/app/clientes` e `/app/confirmacoes`.
+- Na mesma frente, a suíte `public-routes.spec.ts` com as quatro rotas
+  autenticadas (`/app`, `/app/agenda`, `/app/clientes`, `/app/confirmacoes`)
+  passou integralmente em `ipad-portrait`, `iphone-se` e
+  `iphone-14-landscape` na trilha preview-crítica.
+- O único perfil ainda pendente nesse recorte é `android-360-portrait`, que
+  segue travando o runner antes mesmo de devolver resultado útil, inclusive na
+  rota pública de login.
+- Em 24/04/2026, a execução elevada fora do sandbox confirmou que o perfil
+  Android consegue ao menos abrir e validar `/auth/login` no proxy Chromium
+  360px da trilha preview-crítica.
+- Mesmo assim, a trilha autenticada e o diagnóstico mínimo desse perfil ainda
+  excederam 10 minutos sem devolver resultado útil, então o bloqueio restante
+  ficou caracterizado como problema de runner/infraestrutura do perfil Android,
+  não como defeito já reproduzido da UI autenticada.
 
 ### Ver relatório HTML após falha
 

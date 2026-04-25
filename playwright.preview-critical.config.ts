@@ -61,14 +61,11 @@ export default defineConfig({
     {
       name: "android-360-portrait",
       use: {
-        ...devices["Pixel 5"],
+        browserName: "chromium",
         viewport: { width: 360, height: 800 },
-        deviceScaleFactor: 3,
+        deviceScaleFactor: 2,
         hasTouch: true,
-        isMobile: true,
-        userAgent:
-          "Mozilla/5.0 (Linux; Android 13; Pixel 5) AppleWebKit/537.36 " +
-          "(KHTML, like Gecko) Chrome/121.0.0.0 Mobile Safari/537.36",
+        isMobile: false,
       },
     },
     {

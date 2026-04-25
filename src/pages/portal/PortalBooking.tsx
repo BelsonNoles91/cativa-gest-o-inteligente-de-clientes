@@ -48,6 +48,12 @@ import { cn } from "@/lib/utils";
 
 type Step = 1 | 2 | 3 | 4;
 
+function parseDateParam(value: string | null): Date | undefined {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
+  const date = new Date(`${value}T12:00:00`);
+  return Number.isNaN(date.getTime()) ? undefined : date;
+}
+
 export default function PortalBooking() {
   const { activeLink, profile } = usePortalClient();
   const { user } = useAuth();
@@ -55,6 +61,7 @@ export default function PortalBooking() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const rescheduleId = params.get("reschedule");
+  const dateParam = params.get("date");
 
   const [step, setStep] = useState<Step>(1);
   const [units, setUnits] = useState<PortalUnitOption[]>([]);
@@ -65,7 +72,7 @@ export default function PortalBooking() {
   const [unitId, setUnitId] = useState<string | null>(null);
   const [service, setService] = useState<PortalServiceOption | null>(null);
   const [proId, setProId] = useState<string | null>(null);
-  const [day, setDay] = useState<Date | undefined>(undefined);
+  const [day, setDay] = useState<Date | undefined>(() => parseDateParam(dateParam));
   const [slots, setSlots] = useState<Array<{ startsAt: string; endsAt: string }>>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [chosenSlot, setChosenSlot] = useState<string | null>(null);
@@ -111,6 +118,10 @@ export default function PortalBooking() {
       }
     })();
   }, [activeLink, profile?.preferredUnitId, rescheduleId]);
+
+  useEffect(() => {
+    setDay(parseDateParam(dateParam));
+  }, [dateParam]);
 
   const filteredPros = useMemo(
     () => pros.filter((p) => !p.unitId || p.unitId === unitId),
@@ -243,6 +254,8 @@ export default function PortalBooking() {
                 <li key={s.id}>
                   <button
                     type="button"
+                    data-testid="portal-service-option"
+                    data-service-id={s.id}
                     onClick={() => {
                       setService(s);
                       next();
@@ -295,6 +308,8 @@ export default function PortalBooking() {
                 <li key={p.id}>
                   <button
                     type="button"
+                    data-testid="portal-professional-option"
+                    data-professional-id={p.id}
                     onClick={() => {
                       setProId(p.id);
                       next();
@@ -379,6 +394,8 @@ export default function PortalBooking() {
                       <button
                         key={s.startsAt}
                         type="button"
+                        data-testid="portal-slot-option"
+                        data-slot-start={s.startsAt}
                         onClick={() => setChosenSlot(s.startsAt)}
                         className={cn(
                           "rounded-lg border px-2 py-2 text-sm font-medium transition",
@@ -400,7 +417,7 @@ export default function PortalBooking() {
             <Button variant="ghost" onClick={prev}>
               <ArrowLeft className="mr-1.5 h-4 w-4" /> Voltar
             </Button>
-            <Button onClick={next} disabled={!chosenSlot}>
+            <Button data-testid="portal-slot-continue" onClick={next} disabled={!chosenSlot}>
               Continuar <ArrowRight className="ml-1.5 h-4 w-4" />
             </Button>
           </div>
@@ -476,7 +493,7 @@ export default function PortalBooking() {
             <Button variant="ghost" onClick={prev} disabled={submitting}>
               <ArrowLeft className="mr-1.5 h-4 w-4" /> Voltar
             </Button>
-            <Button onClick={submit} disabled={submitting}>
+            <Button data-testid="portal-booking-submit" onClick={submit} disabled={submitting}>
               {submitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (

@@ -2,6 +2,24 @@
 
 A tela vive em **Configurações → Importar & Exportar** (`/app/dados`).
 
+## Status de validação
+
+Validado em 24/04/2026 contra preview/build local + Supabase real:
+
+- `npm run test:import-export:clients`: importação CSV de cliente pela tela
+  `/app/dados`, persistência em `clients`, exportação CSV de clientes,
+  conferência do cliente importado no arquivo baixado e cleanup sem sobras.
+- `npm run test:import-export:services`: importação CSV de serviço pela tela
+  `/app/dados`, persistência em `services`, persistência de preço base em
+  `service_prices`, exportação CSV de serviços, conferência do serviço
+  importado no arquivo baixado e cleanup sem sobras.
+- `npm run test:import-export:team`: importação CSV de profissional pela tela
+  `/app/dados`, persistência em `professionals`, leitura de comissão via RPC
+  segura, exportação CSV de equipe com comissão e cleanup sem sobras.
+
+Pendência restante: expandir o mesmo round-trip automatizado para pacotes e
+agendamentos, incluindo cenários com homônimos.
+
 ## Importação CSV
 
 Suporta:

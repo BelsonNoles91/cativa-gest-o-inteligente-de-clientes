@@ -28,6 +28,29 @@ Antes de iniciar a validação, garanta que:
 - [x] Smoke autenticada multi-rota validada para `/app`, `/app/agenda`, `/app/clientes` e `/app/confirmacoes`.
 - [x] Trilha visual autenticada crítica validada no perfil `iphone-14-portrait`, incluindo baseline das rotas principais, cenários de navegação e detector de overlap do `BottomNav`.
 
+### Validado localmente em 24/04/2026
+
+- [x] `npm run test:storage:check` validado contra o Supabase real com usuário owner QA.
+- [x] Bucket privado `client-media` validado com upload, URL assinada, download do conteúdo e remoção do objeto de teste.
+- [x] `npm run test:crm:media` validado contra preview/build local + Supabase real.
+- [x] Fluxo UI do CRM validado para criar cliente, anexar arquivo, ler por URL assinada, remover pela UI e limpar dados de teste.
+- [x] Fluxo UI do CRM validado para anexar foto/imagem, ler por URL assinada, remover pela UI e limpar dados de teste.
+- [x] `npm run test:portal:booking` validado contra preview/build local + Supabase real.
+- [x] Portal validado com vínculo real `client_users`, serviço/disponibilidade reais e criação de appointment `source=client_portal`.
+- [x] `npm run test:tenant:switch` validado contra preview/build local + Supabase real.
+- [x] Recuperação de tenant inválido em cache e troca real de unidade pelo `TenantSwitcher` mobile validadas com cleanup sem sobras.
+- [x] `npm run test:plan:limits` validado contra preview/build local + Supabase real.
+- [x] Bloqueio de criação de unidade por limite/feature efetiva de plano validado com cleanup sem sobras.
+- [x] `npm run test:import-export:clients` validado contra preview/build local + Supabase real.
+- [x] Round-trip mínimo de clientes validado em `/app/dados`: importação CSV, persistência em `clients`, exportação CSV e cleanup sem sobras.
+- [x] `npm run test:import-export:services` validado contra preview/build local + Supabase real.
+- [x] Round-trip mínimo de serviços validado em `/app/dados`: importação CSV, persistência em `services`, preço base em `service_prices`, exportação CSV e cleanup sem sobras.
+- [x] `npm run test:import-export:team` validado contra preview/build local + Supabase real.
+- [x] Round-trip mínimo de equipe validado em `/app/dados`: importação CSV, persistência em `professionals`, comissão exportada via RPC segura e cleanup sem sobras.
+- [ ] `npm run test:client:limit` criado, mas a execução atual pulou porque o tenant QA tem `max_active_clients=2000` e apenas `1` cliente ativo.
+- [ ] `npm run test:team:invite` criado, mas a validação remota está bloqueada até aplicar a migration `20260424090000_fix_team_invitation_ambiguous_id.sql`; a RPC atual falha com `column reference "id" is ambiguous`.
+- [ ] Cadastro de cliente final novo em `/portal/acesso` ainda exige caixa de e-mail real, pois o Auth retornou sessão pendente de confirmação.
+
 ---
 
 ## 2. Banco Real & Multi-tenant
@@ -85,7 +108,10 @@ Antes de iniciar a validação, garanta que:
 - [ ] Forçar cenário de RLS denied (logar como staff e tentar ativar trial) → confirmar log de falha categorizada.
 
 ### 2.9 Import/Export (Fase 8)
-- [ ] Round-trip completo: exportar CSV → editar → reimportar para clientes, serviços, equipe, pacotes, agendamentos.
+- [x] Round-trip mínimo de clientes validado por E2E automatizado (`npm run test:import-export:clients`).
+- [x] Round-trip mínimo de serviços validado por E2E automatizado (`npm run test:import-export:services`).
+- [x] Round-trip mínimo de equipe validado por E2E automatizado (`npm run test:import-export:team`).
+- [ ] Round-trip completo: exportar CSV → editar → reimportar para pacotes e agendamentos.
 - [ ] Validar packs em `docs/seeds/` em tenant limpo (barbearia, estética facial, wellness).
 - [ ] Importar agendamentos por nomes com **homônimos** e profissionais sem `display_name`.
 

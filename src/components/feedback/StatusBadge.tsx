@@ -15,16 +15,16 @@ const styles: Record<StatusTone, string> = {
   brand: "bg-primary-soft text-primary",
 };
 
-interface StatusBadgeProps {
+interface StatusBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   tone?: StatusTone;
   children: React.ReactNode;
-  className?: string;
   dot?: boolean;
 }
 
-export function StatusBadge({ tone = "neutral", children, className, dot = true }: StatusBadgeProps) {
+export function StatusBadge({ tone = "neutral", children, className, dot = true, ...props }: StatusBadgeProps) {
   return (
     <span
+      {...props}
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
         styles[tone],

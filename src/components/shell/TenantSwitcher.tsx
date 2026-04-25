@@ -47,6 +47,7 @@ export function TenantSwitcher({ compact = false }: { compact?: boolean }) {
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
+          data-testid="tenant-switcher-trigger"
           className={cn(
             "h-11 justify-between gap-2 rounded-xl border-border/70 bg-card/60 px-3 text-left shadow-xs hover:bg-card",
             compact ? "w-full" : "min-w-[220px]",
@@ -62,8 +63,8 @@ export function TenantSwitcher({ compact = false }: { compact?: boolean }) {
             {isImpersonating ? <ShieldCheck className="h-4 w-4" /> : <Building2 className="h-4 w-4" />}
           </span>
           <span className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate text-sm font-medium leading-tight">{currentTenant.name}</span>
-            <span className="truncate text-[11px] text-muted-foreground">
+            <span className="truncate text-sm font-medium leading-tight" data-testid="tenant-switcher-current-tenant">{currentTenant.name}</span>
+            <span className="truncate text-[11px] text-muted-foreground" data-testid="tenant-switcher-current-unit">
               {isImpersonating
                 ? "Impersonando · super admin"
                 : currentUnit?.name ?? segmentLabels[currentTenant.segment]}
@@ -77,7 +78,13 @@ export function TenantSwitcher({ compact = false }: { compact?: boolean }) {
           {isSuperAdmin ? "Todos os estabelecimentos" : "Estabelecimentos"}
         </DropdownMenuLabel>
         {availableTenants.map((t) => (
-          <DropdownMenuItem key={t.id} onSelect={() => handleSelect(t.id)} className="gap-2">
+          <DropdownMenuItem
+            key={t.id}
+            onSelect={() => handleSelect(t.id)}
+            className="gap-2"
+            data-testid="tenant-switcher-tenant-option"
+            data-tenant-id={t.id}
+          >
             <Building2 className="h-4 w-4 text-muted-foreground" />
             <span className="flex min-w-0 flex-1 flex-col">
               <span className="truncate text-sm">{t.name}</span>
@@ -102,7 +109,13 @@ export function TenantSwitcher({ compact = false }: { compact?: boolean }) {
             <DropdownMenuSeparator />
             <DropdownMenuLabel>Unidade</DropdownMenuLabel>
             {availableUnits.map((u) => (
-              <DropdownMenuItem key={u.id} onSelect={() => setCurrentUnitId(u.id)} className="gap-2">
+              <DropdownMenuItem
+                key={u.id}
+                onSelect={() => setCurrentUnitId(u.id)}
+                className="gap-2"
+                data-testid="tenant-switcher-unit-option"
+                data-unit-id={u.id}
+              >
                 <span className="flex-1 truncate">{u.name}</span>
                 {u.id === currentUnit?.id && <Check className="h-4 w-4 text-primary" />}
               </DropdownMenuItem>
