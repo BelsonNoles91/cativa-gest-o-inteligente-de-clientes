@@ -50,10 +50,10 @@ Deno.serve(async (req) => {
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // 3. Teste de Concorrência Simples (Tentativa de agendamento duplicado no mesmo slot)
+    // 3. Teste de Concorrência Forte (Múltiplos agendamentos simultâneos)
     const startTime = new Date();
-    startTime.setHours(10, 0, 0, 0);
-    const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+    startTime.setHours(14, 0, 0, 0);
+    const endTime = new Date(startTime.getTime() + 30 * 60 * 1000);
 
     const appointmentData = {
       tenant_id,
@@ -62,29 +62,43 @@ Deno.serve(async (req) => {
       professional_id: pro.id,
       starts_at: startTime.toISOString(),
       ends_at: endTime.toISOString(),
-      duration_minutes: 60,
+      duration_minutes: 30,
       status: "confirmed"
     };
 
-    // Criar agendamento de teste
-    const { data: appointment, error: appError } = await admin
-      .from("appointments")
-      .insert(appointmentData)
-      .select()
-      .single();
+    console.log("Disparando 5 tentativas simultâneas para o mesmo slot...");
+    
+    // Tentamos disparar 5 inserts em paralelo. 
+    // Em um sistema robusto com restrições de exclusão (EXCLUDE no Postgres), apenas 1 deve passar.
+    const attempts = Array.from({ length: 5 }).map(() => 
+      admin.from("appointments").insert(appointmentData).select()
+    );
 
-    if (appError) throw appError;
+    const results = await Promise.all(attempts);
+    
+    const successes = results.filter(r => !r.error).length;
+    const failures = results.filter(r => r.error).length;
 
-    // 4. Limpeza (Opcional, mas bom para não sujar o banco)
-    await admin.from("appointments").delete().eq("id", appointment.id);
+    // Limpeza dos sucessos
+    for (const res of results) {
+      if (res.data && res.data[0]) {
+        await admin.from("appointments").delete().eq("id", res.data[0].id);
+      }
+    }
 
     return new Response(JSON.stringify({
-      status: "success",
+      status: successes === 1 ? "success" : "warning",
       metrics: {
         clients: clientsCount,
         members: membersCount,
-        hierarchy_validation: "OK (Pro -> Client -> Service linked)",
-        concurrency_test: "Passed (Insert/Delete cycle)"
+        concurrency: {
+          total_attempts: 5,
+          successes,
+          failures,
+          integrity_kept: successes === 1 
+            ? "SIM (Apenas 1 agendamento permitido no slot)" 
+            : `NÃO (${successes} agendamentos permitidos - requer revisão de índices de exclusão)`
+        }
       }
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
