@@ -965,6 +965,8 @@ export default function ClientsPage() {
                       onSave={handleSaveForm}
                       saving={savingForm}
                       saveLabel="Salvar alterações"
+                      selectedStatus={selectedClient.status}
+                      onStatusChange={handleUpdateStatus}
                     />
                   </CardContent>
                 </Card>
@@ -1619,6 +1621,8 @@ function ClientForm({
   onSave,
   saving,
   saveLabel,
+  selectedStatus,
+  onStatusChange,
 }: {
   form: ClientFormState;
   setForm: React.Dispatch<React.SetStateAction<ClientFormState>>;
@@ -1627,6 +1631,8 @@ function ClientForm({
   onSave: () => void;
   saving: boolean;
   saveLabel: string;
+  selectedStatus?: ClientStatus;
+  onStatusChange?: (status: ClientStatus) => void;
 }) {
   return (
     <div className="space-y-4">
@@ -1685,16 +1691,18 @@ function ClientForm({
             </SelectContent>
           </Select>
         </Field>
-        <Field label="Status operacional">
-          <Select value={selectedClient?.status || "active"} onValueChange={(value) => handleUpdateStatus(value as ClientStatus)}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="active">Ativo</SelectItem>
-              <SelectItem value="inactive">Inativo</SelectItem>
-              <SelectItem value="blocked">Bloqueado</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
+        {onStatusChange && (
+          <Field label="Status operacional">
+            <Select value={selectedStatus || "active"} onValueChange={(value) => onStatusChange(value as ClientStatus)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">Ativo</SelectItem>
+                <SelectItem value="inactive">Inativo</SelectItem>
+                <SelectItem value="blocked">Bloqueado</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+        )}
         <Field label="Unidade preferida">
           <Select value={form.preferredUnitId} onValueChange={(value) => setForm((prev) => ({ ...prev, preferredUnitId: value }))}>
             <SelectTrigger><SelectValue /></SelectTrigger>
