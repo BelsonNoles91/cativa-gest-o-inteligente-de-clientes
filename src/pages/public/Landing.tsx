@@ -209,8 +209,9 @@ const ROI_STATS = [
 // ---------------------------------------------------------------------------
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-background">
-      <PublicHeader />
+    <ErrorBoundary name="LandingPage">
+      <div className="min-h-screen bg-background">
+        <PublicHeader />
 
       {/* =========================================================
            HERO
@@ -612,7 +613,8 @@ export default function Landing() {
         </div>
       </section>
 
-      <PublicFooter />
-    </div>
+        <PublicFooter />
+      </div>
+    </ErrorBoundary>
   );
 }
