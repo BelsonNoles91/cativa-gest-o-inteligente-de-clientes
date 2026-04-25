@@ -438,7 +438,7 @@ export default function ClientsPage() {
     }
     setSavingForm(true);
     try {
-      const payload = formToPayload(form, currentTenant.id, user.id);
+      const payload = formToPayload(form, currentTenant.id, user.id, selectedClient?.status ?? "active");
       let saved: Client;
       if (editing && selectedClient) {
         saved = await updateClient(selectedClient.id, payload);
@@ -752,6 +752,29 @@ export default function ClientsPage() {
     }
   }
 
+  async function handleUpdateStatus(status: ClientStatus) {
+    if (!currentTenant || !selectedClient || !user) return;
+    try {
+      await updateClient(selectedClient.id, { status });
+      await addTimelineEvent({
+        tenantId: currentTenant.id,
+        clientId: selectedClient.id,
+        actorId: user.id,
+        eventType: "status_change",
+        title: "Status alterado",
+        description: `Status operacional alterado para ${clientStatusLabels[status]}`,
+      });
+      toast({ title: "Status atualizado" });
+      await refreshSelectedClient();
+    } catch (error) {
+      toast({
+        title: "Erro ao atualizar status",
+        description: error instanceof Error ? error.message : "Erro inesperado.",
+        variant: "destructive",
+      });
+    }
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -828,7 +851,7 @@ export default function ClientsPage() {
         }
       />
 
-      <div className="grid min-w-0 gap-4 lg:grid-cols-[320px_1fr] xl:grid-cols-[360px_1fr] 2xl:grid-cols-[400px_1fr]">
+      <div className="grid min-w-0 gap-4 lg:grid-cols-[340px_1fr] xl:grid-cols-[380px_1fr] 2xl:grid-cols-[420px_1fr]">
         <section className="min-w-0 space-y-4">
           <FiltersCard
             filters={filters}
@@ -942,6 +965,8 @@ export default function ClientsPage() {
                       onSave={handleSaveForm}
                       saving={savingForm}
                       saveLabel="Salvar alterações"
+                      selectedStatus={selectedClient.status}
+                      onStatusChange={handleUpdateStatus}
                     />
                   </CardContent>
                 </Card>
@@ -1596,6 +1621,8 @@ function ClientForm({
   onSave,
   saving,
   saveLabel,
+  selectedStatus,
+  onStatusChange,
 }: {
   form: ClientFormState;
   setForm: React.Dispatch<React.SetStateAction<ClientFormState>>;
@@ -1604,6 +1631,8 @@ function ClientForm({
   onSave: () => void;
   saving: boolean;
   saveLabel: string;
+  selectedStatus?: ClientStatus;
+  onStatusChange?: (status: ClientStatus) => void;
 }) {
   return (
     <div className="space-y-4">
@@ -1662,6 +1691,18 @@ function ClientForm({
             </SelectContent>
           </Select>
         </Field>
+        {onStatusChange && (
+          <Field label="Status operacional">
+            <Select value={selectedStatus || "active"} onValueChange={(value) => onStatusChange(value as ClientStatus)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">Ativo</SelectItem>
+                <SelectItem value="inactive">Inativo</SelectItem>
+                <SelectItem value="blocked">Bloqueado</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+        )}
         <Field label="Unidade preferida">
           <Select value={form.preferredUnitId} onValueChange={(value) => setForm((prev) => ({ ...prev, preferredUnitId: value }))}>
             <SelectTrigger><SelectValue /></SelectTrigger>
@@ -1846,7 +1887,7 @@ function clientToForm(client: Client): ClientFormState {
   };
 }
 
-function formToPayload(form: ClientFormState, tenantId: string, createdBy: string) {
+function formToPayload(form: ClientFormState, tenantId: string, createdBy: string, status: ClientStatus) {
   return {
     tenantId,
     createdBy,
@@ -1864,6 +1905,7 @@ function formToPayload(form: ClientFormState, tenantId: string, createdBy: strin
     riskLevel: form.riskLevel,
     preferredUnitId: form.preferredUnitId === "none" ? undefined : form.preferredUnitId,
     preferredProfessionalId: form.preferredProfessionalId === "none" ? undefined : form.preferredProfessionalId,
+    status,
   };
 }
 
