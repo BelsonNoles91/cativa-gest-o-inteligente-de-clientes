@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, type ComponentType } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -13,44 +13,66 @@ import { appConfig } from "@/config/app";
 
 import { FeatureGate } from "@/features/billing/FeatureGate";
 import { DebugConsole } from "@/components/debug/DebugConsole";
+import Index from "./pages/Index";
 
 const queryClient = new QueryClient();
 
-const Index = lazy(() => import("./pages/Index"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const Pricing = lazy(() => import("./pages/public/Pricing"));
-const Login = lazy(() => import("./pages/auth/Login"));
-const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
-const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
-const AcceptInvite = lazy(() => import("./pages/auth/AcceptInvite"));
-const Onboarding = lazy(() => import("./pages/auth/Onboarding"));
-const Dashboard = lazy(() => import("./pages/app/Dashboard"));
-const Settings = lazy(() => import("./pages/app/Settings"));
-const Billing = lazy(() => import("./pages/app/Billing"));
-const Subscription = lazy(() => import("./pages/app/Subscription"));
-const SuperAdmin = lazy(() => import("./pages/app/SuperAdmin"));
-const DataImportExport = lazy(() => import("./pages/app/DataImportExport"));
-const ClientsPage = lazy(() => import("./pages/app/Clients"));
-const ServicesPage = lazy(() => import("./pages/app/Services"));
-const PackagesPage = lazy(() => import("./pages/app/Packages"));
-const AgendaPage = lazy(() => import("./pages/app/Agenda"));
-const WaitlistPage = lazy(() => import("./pages/app/Waitlist"));
-const AnalyticsPage = lazy(() => import("./pages/app/Analytics"));
-const ConfirmationCenter = lazy(() => import("./pages/app/ConfirmationCenter"));
-const PortalHome = lazy(() => import("./pages/portal/PortalHome"));
-const PortalAgenda = lazy(() => import("./pages/portal/PortalAgenda"));
-const PortalBooking = lazy(() => import("./pages/portal/PortalBooking"));
-const PortalHistory = lazy(() => import("./pages/portal/PortalHistory"));
-const PortalPackages = lazy(() => import("./pages/portal/PortalPackages"));
-const PortalProfile = lazy(() => import("./pages/portal/PortalProfile"));
-const PortalAccess = lazy(() => import("./pages/portal/PortalAccess"));
-const AppLayout = lazy(() =>
+/**
+ * Wrap dynamic imports so that, if a lazy chunk fails to load (typical
+ * after a deploy/HMR where the previous chunk hash no longer exists),
+ * we force a single hard reload instead of crashing into a blank screen.
+ */
+function lazyWithReload<T extends { default: ComponentType<any> }>(
+  factory: () => Promise<T>,
+) {
+  return lazy(() =>
+    factory().catch((error) => {
+      const key = "__lovable_chunk_reload__";
+      if (typeof window !== "undefined" && !sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, "1");
+        window.location.reload();
+        // Return a never-resolving promise while the page reloads.
+        return new Promise<T>(() => {});
+      }
+      throw error;
+    }),
+  );
+}
+
+const NotFound = lazyWithReload(() => import("./pages/NotFound"));
+const Pricing = lazyWithReload(() => import("./pages/public/Pricing"));
+const Login = lazyWithReload(() => import("./pages/auth/Login"));
+const ForgotPassword = lazyWithReload(() => import("./pages/auth/ForgotPassword"));
+const ResetPassword = lazyWithReload(() => import("./pages/auth/ResetPassword"));
+const AcceptInvite = lazyWithReload(() => import("./pages/auth/AcceptInvite"));
+const Onboarding = lazyWithReload(() => import("./pages/auth/Onboarding"));
+const Dashboard = lazyWithReload(() => import("./pages/app/Dashboard"));
+const Settings = lazyWithReload(() => import("./pages/app/Settings"));
+const Billing = lazyWithReload(() => import("./pages/app/Billing"));
+const Subscription = lazyWithReload(() => import("./pages/app/Subscription"));
+const SuperAdmin = lazyWithReload(() => import("./pages/app/SuperAdmin"));
+const DataImportExport = lazyWithReload(() => import("./pages/app/DataImportExport"));
+const ClientsPage = lazyWithReload(() => import("./pages/app/Clients"));
+const ServicesPage = lazyWithReload(() => import("./pages/app/Services"));
+const PackagesPage = lazyWithReload(() => import("./pages/app/Packages"));
+const AgendaPage = lazyWithReload(() => import("./pages/app/Agenda"));
+const WaitlistPage = lazyWithReload(() => import("./pages/app/Waitlist"));
+const AnalyticsPage = lazyWithReload(() => import("./pages/app/Analytics"));
+const ConfirmationCenter = lazyWithReload(() => import("./pages/app/ConfirmationCenter"));
+const PortalHome = lazyWithReload(() => import("./pages/portal/PortalHome"));
+const PortalAgenda = lazyWithReload(() => import("./pages/portal/PortalAgenda"));
+const PortalBooking = lazyWithReload(() => import("./pages/portal/PortalBooking"));
+const PortalHistory = lazyWithReload(() => import("./pages/portal/PortalHistory"));
+const PortalPackages = lazyWithReload(() => import("./pages/portal/PortalPackages"));
+const PortalProfile = lazyWithReload(() => import("./pages/portal/PortalProfile"));
+const PortalAccess = lazyWithReload(() => import("./pages/portal/PortalAccess"));
+const AppLayout = lazyWithReload(() =>
   import("@/components/shell/AppLayout").then((module) => ({ default: module.AppLayout })),
 );
-const PortalLayout = lazy(() =>
+const PortalLayout = lazyWithReload(() =>
   import("@/components/shell/PortalLayout").then((module) => ({ default: module.PortalLayout })),
 );
-const PortalClientProvider = lazy(() =>
+const PortalClientProvider = lazyWithReload(() =>
   import("@/features/portal/PortalClientProvider").then((module) => ({ default: module.PortalClientProvider })),
 );
 
