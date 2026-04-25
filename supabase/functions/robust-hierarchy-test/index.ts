@@ -58,9 +58,8 @@ Deno.serve(async (req) => {
       tenant_id,
       client_id: client.id,
       professional_id: pro.id,
-      service_id: service.id,
-      start_time: startTime.toISOString(),
-      end_time: endTime.toISOString(),
+      starts_at: startTime.toISOString(),
+      ends_at: endTime.toISOString(),
       status: "confirmed"
     };
 
