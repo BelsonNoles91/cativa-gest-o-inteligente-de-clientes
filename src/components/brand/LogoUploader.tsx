@@ -95,7 +95,6 @@ export function LogoUploader({
         )}
       >
         {value ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={value}
             alt="Logo do estabelecimento"

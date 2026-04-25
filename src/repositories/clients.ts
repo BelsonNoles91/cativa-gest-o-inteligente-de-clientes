@@ -370,7 +370,7 @@ export async function uploadClientFile(input: {
   file: File;
   description?: string | null;
 }): Promise<ClientFile> {
-  const safeName = input.file.name.replace(/[^\w.\-]+/g, "_");
+  const safeName = input.file.name.replace(/[^\w.-]+/g, "_");
   const storagePath = `${input.tenantId}/${input.clientId}/${crypto.randomUUID()}-${safeName}`;
   const { error: uploadError } = await supabase.storage
     .from("client-media")
@@ -468,7 +468,7 @@ export async function uploadClientPhoto(input: {
   caption?: string | null;
   takenAt?: string | null;
 }): Promise<ClientPhoto> {
-  const safeName = input.file.name.replace(/[^\w.\-]+/g, "_");
+  const safeName = input.file.name.replace(/[^\w.-]+/g, "_");
   const storagePath = `${input.tenantId}/${input.clientId}/${crypto.randomUUID()}-${safeName}`;
   const { error: uploadError } = await supabase.storage
     .from("client-media")

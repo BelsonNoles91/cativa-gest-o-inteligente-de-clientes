@@ -264,7 +264,7 @@ test.describe("team invitation", () => {
       });
 
       await page.getByRole("button", { name: "Aceitar convite" }).click();
-      await expect(page.getByText("Convite aceito!", { exact: false })).toBeVisible({
+      await expect(page.getByText("Convite aceito!", { exact: false }).first()).toBeVisible({
         timeout: 30_000,
       });
 
