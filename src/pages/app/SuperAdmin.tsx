@@ -652,7 +652,26 @@ function TenantsTab({
                   </Field>
                 </div>
 
-                <Button onClick={() => void handleSaveTenantAdjustments()}>
+                <div className="mt-4 space-y-3">
+                  <h4 className="text-sm font-medium">Liberações esporádicas (Pulo do Gato)</h4>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {[
+                      { key: "online_scheduling", label: "Agendamento Online" },
+                      { key: "custom_logo", label: "Logo Personalizada" },
+                      { key: "advanced_reports", label: "Relatórios Avançados" }
+                    ].map(feat => (
+                      <label key={feat.key} className="flex items-center gap-2 text-xs">
+                        <Switch 
+                          checked={metadataForm.feature_overrides[feat.key] || false} 
+                          onCheckedChange={(val) => toggleMetadataOverride(feat.key, val)} 
+                        />
+                        {feat.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <Button className="mt-4" onClick={() => void handleSaveTenantAdjustments()}>
                   Salvar ajustes
                 </Button>
               </div>
@@ -753,8 +772,10 @@ function PlansTab({
             maxProfessionals: numberField(plan.maxProfessionals),
             maxActiveClients: numberField(plan.maxActiveClients),
             maxStorageMb: numberField(plan.maxStorageMb),
+            maxAppointmentsMonth: numberField(plan.maxAppointmentsMonth),
             status: plan.status,
             isDefault: plan.isDefault,
+            features: plan.features ?? {},
             displayOrder: String(plan.displayOrder),
           }
         : EMPTY_PLAN_FORM,
@@ -792,10 +813,13 @@ function PlansTab({
         maxProfessionals: parseNullableNumber(planForm.maxProfessionals),
         maxActiveClients: parseNullableNumber(planForm.maxActiveClients),
         maxStorageMb: parseNullableNumber(planForm.maxStorageMb),
+        maxAppointmentsMonth: parseNullableNumber(planForm.maxAppointmentsMonth),
         status: planForm.status,
         isDefault: planForm.isDefault,
+        // @ts-ignore
+        features: planForm.features,
         displayOrder: parseInt(planForm.displayOrder || "0", 10) || 0,
-      });
+      } as any);
       toast({ title: editingPlan ? "Plano atualizado" : "Plano criado" });
       setOpenPlanDialog(false);
       await onReload();
