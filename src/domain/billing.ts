@@ -45,6 +45,7 @@ export interface Plan {
   maxProfessionals: number | null;
   maxActiveClients: number | null;
   maxStorageMb: number | null;
+  maxAppointmentsMonth: number | null;
   status: PlanStatus;
   isDefault: boolean;
   displayOrder: number;
@@ -186,6 +187,7 @@ export function effectiveLimits(plan: Plan, override: Record<string, number | nu
     maxProfessionals: pickLimit(override.max_professionals, plan.maxProfessionals),
     maxActiveClients: pickLimit(override.max_active_clients, plan.maxActiveClients),
     maxStorageMb: pickLimit(override.max_storage_mb, plan.maxStorageMb),
+    maxAppointmentsMonth: pickLimit(override.max_appointments_month, plan.maxAppointmentsMonth),
   };
 }
 

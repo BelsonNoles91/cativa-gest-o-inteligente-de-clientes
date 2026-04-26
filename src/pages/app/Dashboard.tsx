@@ -8,6 +8,7 @@ import {
   Loader2,
   PhoneCall,
   Plus,
+  ShieldCheck,
   Sparkles,
   TrendingUp,
   Users,
@@ -25,6 +26,8 @@ import { countQueueByStage } from "@/repositories/confirmation";
 import { fetchAvailability } from "@/repositories/analytics";
 import { supabase } from "@/integrations/supabase/client";
 import { NoSubscriptionBanner } from "@/features/billing/NoSubscriptionBanner";
+import { useTenantBilling } from "@/features/billing/useTenantBilling";
+import { UsageBar } from "@/features/billing/UsageBar";
 
 type DashboardSnapshot = {
   appointmentsToday: number;
@@ -46,6 +49,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { currentTenant } = useTenant();
   const { toast } = useToast();
+  const { plan, usage, limits, subscription } = useTenantBilling();
 
   const [loading, setLoading] = useState(true);
   const [snapshot, setSnapshot] = useState<DashboardSnapshot>({
@@ -183,6 +187,34 @@ export default function Dashboard() {
       />
 
       <NoSubscriptionBanner variant="panel" className="mb-4 md:mb-6" />
+
+      {subscription && (
+        <section className="surface-card mb-4 grid grid-cols-1 gap-4 p-4 md:mb-6 md:grid-cols-2 md:p-5">
+          <div className="flex items-center gap-3">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Seu plano atual</p>
+              <p className="font-display text-lg font-semibold text-primary">{plan?.name ?? "Carregando..."}</p>
+            </div>
+          </div>
+          <div className="flex flex-col justify-center gap-1 border-t pt-3 md:border-l md:border-t-0 md:pl-6 md:pt-0">
+            <UsageBar 
+              label="Agendamentos (30 dias)" 
+              used={usage.appointmentsLast30d} 
+              limit={limits?.maxAppointmentsMonth ?? null} 
+            />
+            {limits?.maxAppointmentsMonth && (
+              <p className="text-[10px] text-muted-foreground">
+                {usage.appointmentsLast30d >= (limits.maxAppointmentsMonth * 0.8) 
+                  ? "Você está próximo do limite mensal. Considere um upgrade." 
+                  : "Uso saudável dos limites do seu plano."}
+              </p>
+            )}
+          </div>
+        </section>
+      )}
 
       {loading ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 xl:grid-cols-4">

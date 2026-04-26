@@ -44,6 +44,7 @@ export function PlanCard({ plan, features, highlight }: Props) {
       <dl className="grid grid-cols-2 gap-2 text-xs">
         <Limit label="Unidades" value={plan.maxUnits} />
         <Limit label="Profissionais" value={plan.maxProfessionals} />
+        <Limit label="Atendimentos/mês" value={plan.maxAppointmentsMonth} />
         <Limit label="Clientes ativos" value={plan.maxActiveClients} />
         <Limit label="Armazenamento" value={plan.maxStorageMb} suffix=" MB" />
       </dl>

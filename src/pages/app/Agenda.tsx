@@ -40,6 +40,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { listClients, type Client } from "@/repositories/clients";
+import { useTenantBilling } from "@/features/billing/useTenantBilling";
+import { isUsageBlocked } from "@/domain/billing";
 import { listBasePrices, listCancellationPolicies, listServices, type Service } from "@/repositories/catalog";
 import {
   getAvailableSlots,
@@ -141,6 +143,8 @@ export default function AgendaPage() {
   const { currentTenant, currentUnit, availableUnits } = useTenant();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { usage, limits, plan } = useTenantBilling();
+  const isBlockedByLimit = isUsageBlocked(usage.appointmentsLast30d, limits?.maxAppointmentsMonth ?? null);
 
   const [view, setView] = useState<ViewMode>("day");
   const [groupMode, setGroupMode] = useState<GroupMode>("professional");
@@ -361,6 +365,14 @@ export default function AgendaPage() {
   }
 
   function openCreateDialog() {
+    if (isBlockedByLimit) {
+      toast({
+        title: "Limite de agendamentos atingido",
+        description: `Seu plano ${plan?.name} atingiu o limite de ${limits?.maxAppointmentsMonth} atendimentos mensais. Faça upgrade para continuar.`,
+        variant: "destructive",
+      });
+      return;
+    }
     setEditing(null);
     setForm({
       ...EMPTY_FORM,

@@ -76,7 +76,7 @@ export default function Billing() {
               <UsageBar label="Profissionais ativos" used={usage.professionalsCount} limit={limits?.maxProfessionals ?? null} />
               <UsageBar label="Clientes ativos" used={usage.activeClientsCount} limit={limits?.maxActiveClients ?? null} />
               <UsageBar label="Armazenamento" used={usage.storageMb} limit={limits?.maxStorageMb ?? null} suffix=" MB" />
-              <UsageBar label="Agendamentos (30d)" used={usage.appointmentsLast30d} limit={null} />
+              <UsageBar label="Agendamentos (30d)" used={usage.appointmentsLast30d} limit={limits?.maxAppointmentsMonth ?? null} />
             </div>
           </div>
 
@@ -89,6 +89,7 @@ export default function Billing() {
               <Detail label="Profissionais" value={formatLimit(limits?.maxProfessionals ?? null)} />
               <Detail label="Clientes ativos" value={formatLimit(limits?.maxActiveClients ?? null)} />
               <Detail label="Armazenamento" value={formatLimit(limits?.maxStorageMb ?? null, " MB")} />
+              <Detail label="Agendamentos/mês" value={formatLimit(limits?.maxAppointmentsMonth ?? null)} />
             </dl>
           </div>
 
