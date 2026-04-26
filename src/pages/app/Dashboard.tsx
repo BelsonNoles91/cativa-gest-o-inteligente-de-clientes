@@ -8,6 +8,7 @@ import {
   Loader2,
   PhoneCall,
   Plus,
+  ShieldCheck,
   Sparkles,
   TrendingUp,
   Users,
@@ -25,6 +26,8 @@ import { countQueueByStage } from "@/repositories/confirmation";
 import { fetchAvailability } from "@/repositories/analytics";
 import { supabase } from "@/integrations/supabase/client";
 import { NoSubscriptionBanner } from "@/features/billing/NoSubscriptionBanner";
+import { useTenantBilling } from "@/features/billing/useTenantBilling";
+import { UsageBar } from "@/features/billing/UsageBar";
 
 type DashboardSnapshot = {
   appointmentsToday: number;
@@ -46,6 +49,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { currentTenant } = useTenant();
   const { toast } = useToast();
+  const { plan, usage, limits, subscription } = useTenantBilling();
 
   const [loading, setLoading] = useState(true);
   const [snapshot, setSnapshot] = useState<DashboardSnapshot>({
