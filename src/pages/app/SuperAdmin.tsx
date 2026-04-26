@@ -473,14 +473,14 @@ function TenantsTab({
       await Promise.all([
         setOverrideLimits({
           subscriptionId: selectedTenant.subscription.id,
-          tenant_id: selectedTenant.id, // Corrigindo para tenant_id se necessário, ou mantendo tenantId se for camelCase no repo
+          tenantId: selectedTenant.id,
           override: {
             max_units: parseNullableNumber(overrideForm.maxUnits),
             max_professionals: parseNullableNumber(overrideForm.maxProfessionals),
             max_active_clients: parseNullableNumber(overrideForm.maxActiveClients),
             max_storage_mb: parseNullableNumber(overrideForm.maxStorageMb),
           },
-        } as any),
+        }),
         setDiscount({
           subscriptionId: selectedTenant.subscription.id,
           tenantId: selectedTenant.id,
