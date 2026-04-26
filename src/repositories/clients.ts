@@ -112,7 +112,6 @@ export async function listClients(params: ListClientsParams): Promise<Client[]> 
     .from("clients")
     .select(CLIENT_COLUMNS)
     .eq("tenant_id", params.tenantId)
-
     .order("full_name", { ascending: true })
     .limit(params.limit ?? 200);
 
@@ -131,7 +130,18 @@ export async function listClients(params: ListClientsParams): Promise<Client[]> 
 
   const { data, error } = await q;
   if (error) throw error;
-  let list = (data ?? []).map(toClient);
+  let list = (data ?? []).map((r: any) => ({
+    id: r.id,
+    fullName: r.full_name,
+    phone: r.phone,
+    email: r.email,
+    status: r.status,
+    isVip: r.is_vip,
+    riskLevel: r.risk_level,
+    lastVisitAt: r.last_visit_at,
+    city: r.city,
+    tenantId: r.tenant_id,
+  } as Client));
 
   if (params.birthdayMonth) {
     list = list.filter((c) => {
@@ -203,10 +213,10 @@ export async function createClient(input: CreateClientInput): Promise<Client> {
       preferred_professional_id: input.preferredProfessionalId ?? null,
       whatsapp_phone: input.whatsappPhone ?? null,
     })
-    .select(CLIENT_COLUMNS)
+    .select(CLIENT_DETAIL_COLUMNS)
     .single();
   if (error) throw error;
-  return toClient(data);
+  return toClient(data as DbClient);
 }
 
 export type UpdateClientInput = Partial<Omit<CreateClientInput, "tenantId" | "createdBy"> & { status: ClientStatus }>;
@@ -234,10 +244,10 @@ export async function updateClient(clientId: string, input: UpdateClientInput): 
     // cast: types Supabase ainda serão regenerados após esta migration
     .update(patch as never)
     .eq("id", clientId)
-    .select(CLIENT_COLUMNS)
+    .select(CLIENT_DETAIL_COLUMNS)
     .single();
   if (error) throw error;
-  return toClient(data);
+  return toClient(data as DbClient);
 }
 
 export async function deleteClient(clientId: string): Promise<void> {
