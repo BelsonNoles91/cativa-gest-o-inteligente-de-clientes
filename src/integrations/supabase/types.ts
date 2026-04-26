@@ -2167,6 +2167,7 @@ export type Database = {
           id: string
           is_default: boolean
           max_active_clients: number | null
+          max_appointments_month: number | null
           max_professionals: number | null
           max_storage_mb: number | null
           max_units: number | null
@@ -2188,6 +2189,7 @@ export type Database = {
           id?: string
           is_default?: boolean
           max_active_clients?: number | null
+          max_appointments_month?: number | null
           max_professionals?: number | null
           max_storage_mb?: number | null
           max_units?: number | null
@@ -2209,6 +2211,7 @@ export type Database = {
           id?: string
           is_default?: boolean
           max_active_clients?: number | null
+          max_appointments_month?: number | null
           max_professionals?: number | null
           max_storage_mb?: number | null
           max_units?: number | null
