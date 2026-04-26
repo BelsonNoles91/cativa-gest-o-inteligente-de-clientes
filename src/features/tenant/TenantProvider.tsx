@@ -7,6 +7,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { AlertCircle } from "lucide-react";
 import type { Role } from "@/domain/roles";
@@ -61,6 +62,8 @@ const LS_UNIT = "cativa.currentUnitId";
 
 export function TenantProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [verified, setVerified] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
@@ -88,7 +91,19 @@ export function TenantProvider({ children }: { children: ReactNode }) {
   };
 
   const loadBaseData = useCallback(async () => {
+    // Se ainda estamos carregando auth, não faz nada
+    if (authLoading) return;
+
+    // Se estivermos em uma rota de portal, o TenantProvider não deve atuar
+    // O PortalClientProvider cuidará do contexto do cliente
+    if (location.pathname.startsWith("/portal")) {
+      setLoading(false);
+      setVerified(true);
+      return;
+    }
+
     if (!user) {
+      console.log("[TenantProvider] No user found, clearing context");
       setMemberships([]);
       setAllTenants([]);
       setUnits([]);
@@ -106,7 +121,9 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    console.log("[TenantProvider] Requesting load for user:", user.id);
     setLoading(true);
+    setVerified(false);
     try {
       const [{ data: profile, error: profileErr }, { data: memb, error: membErr }] = await Promise.all([
         supabase.from("profiles").select("is_super_admin").eq("id", user.id).maybeSingle(),
@@ -121,7 +138,18 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 
       const superAdmin = Boolean(profile?.is_super_admin);
       setIsSuperAdmin(superAdmin);
-      setMemberships((memb ?? []) as unknown as MembershipRow[]);
+      
+      const membershipList = (memb ?? []) as unknown as MembershipRow[];
+      setMemberships(membershipList);
+
+      // Se o usuário não é super admin e não tem nenhum membership ativo, 
+      // mas está tentando acessar o /app, mandamos para onboarding
+      if (!superAdmin && membershipList.length === 0 && location.pathname.startsWith("/app")) {
+        console.log("[TenantProvider] No active memberships found, redirecting to onboarding");
+        // Deferimos o navigate para o próximo tick para evitar loops de render
+        setTimeout(() => navigate("/onboarding", { replace: true }), 0);
+        return;
+      }
 
       if (superAdmin) {
         const { data: globalRows, error: globalErr } = await supabase.rpc("admin_list_all_tenants");
@@ -148,14 +176,19 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, authLoading, location.pathname]);
 
   useEffect(() => {
-    if (!authLoading) void loadBaseData();
-  }, [authLoading, loadBaseData]);
+    let ignore = false;
+    if (!ignore) void loadBaseData();
+    return () => { ignore = true; };
+  }, [loadBaseData]);
 
   // Cálculo do Tenant Efetivo (memoizado para evitar re-renderers desnecessários)
   const availableTenants = useMemo(() => {
+    // No Portal, não mostramos os tenants do painel administrativo
+    if (location.pathname.startsWith("/portal")) return [];
+    
     const fromMemberships = memberships.map((m) => m.tenants).filter((t): t is TenantRow => Boolean(t));
     const seen = new Set<string>();
     const result: TenantRow[] = [];
@@ -253,7 +286,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     const membershipRole = memberships.find((m) => m.tenant_id === effectiveTenantId)?.role ?? null;
     const currentRole: Role | null = isSuperAdmin ? ("super_admin" as Role) : membershipRole;
 
-    const hasActiveTenant = memberships.length > 0 || isSuperAdmin;
+    const hasActiveTenant = (memberships.length > 0 || isSuperAdmin) && !location.pathname.startsWith("/portal");
     const currentLogoUrl = effectiveTenantId ? logosByTenant[effectiveTenantId] ?? null : null;
 
     const isImpersonating = isSuperAdmin && !!effectiveTenantId && !memberships.some((m) => m.tenant_id === effectiveTenantId);
@@ -278,7 +311,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     };
   }, [
     loading, verified, memberships, availableTenants, effectiveTenantId, 
-    units, currentUnitId, isSuperAdmin, logosByTenant
+    units, currentUnitId, isSuperAdmin, logosByTenant, loadBaseData
   ]);
 
   return <TenantContext.Provider value={contextValue}>{children}</TenantContext.Provider>;
