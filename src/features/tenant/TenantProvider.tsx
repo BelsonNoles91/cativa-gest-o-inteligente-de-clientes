@@ -156,10 +156,8 @@ export function TenantProvider({ children }: { children: ReactNode }) {
   }, [user?.id, authLoading]);
 
   useEffect(() => {
-    if (!authLoading) {
-      void loadBaseData();
-    }
-  }, [authLoading, loadBaseData]);
+    void loadBaseData();
+  }, [loadBaseData]);
 
   // Cálculo do Tenant Efetivo (memoizado para evitar re-renderers desnecessários)
   const availableTenants = useMemo(() => {
