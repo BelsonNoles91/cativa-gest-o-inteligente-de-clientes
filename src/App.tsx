@@ -14,7 +14,7 @@ import { appConfig } from "@/config/app";
 
 import { FeatureGate } from "@/features/billing/FeatureGate";
 import { DebugConsole } from "@/components/debug/DebugConsole";
-import Index from "./pages/Index";
+const Index = lazyWithReload(() => import("./pages/Index"));
 
 const queryClient = new QueryClient();
 
