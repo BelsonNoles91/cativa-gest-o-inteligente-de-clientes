@@ -155,7 +155,7 @@ export function TenantBillingProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo<TenantBillingContextValue>(() => ({
-    loading,
+    loading: initialLoading,
     subscription,
     plan,
     allPlans,
@@ -175,7 +175,7 @@ export function TenantBillingProvider({ children }: { children: ReactNode }) {
     },
     flagValue: (flagKey: string) => flagMap.get(flagKey),
     refresh: load,
-  }), [loading, subscription, plan, allPlans, features, flags, events, usage, limits, flagMap, featureMap, load]);
+  }), [initialLoading, subscription, plan, allPlans, features, flags, events, usage, limits, flagMap, featureMap, load]);
 
   return <TenantBillingContext.Provider value={value}>{children}</TenantBillingContext.Provider>;
 }
