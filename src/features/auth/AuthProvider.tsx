@@ -38,17 +38,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1) listener primeiro
+    let resolved = false;
+
+    // 1) listener primeiro — qualquer evento de auth também marca loading=false
+    //    para evitar que a app fique presa em FullScreenLoader caso o evento
+    //    chegue antes do getSession() (ex.: refresh de token, magic link).
     const { data: sub } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession);
       setUser(nextSession?.user ?? null);
+      if (!resolved) {
+        resolved = true;
+        setLoading(false);
+      }
     });
 
     // 2) sessão atual depois
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setUser(data.session?.user ?? null);
-      setLoading(false);
+      if (!resolved) {
+        resolved = true;
+        setLoading(false);
+      }
     });
 
     return () => sub.subscription.unsubscribe();
