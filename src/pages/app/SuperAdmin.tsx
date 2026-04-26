@@ -111,8 +111,10 @@ type PlanFormState = {
   maxProfessionals: string;
   maxActiveClients: string;
   maxStorageMb: string;
+  maxAppointmentsMonth: string;
   status: Plan["status"];
   isDefault: boolean;
+  features: Record<string, boolean>;
   displayOrder: string;
 };
 
@@ -156,8 +158,14 @@ const EMPTY_PLAN_FORM: PlanFormState = {
   maxProfessionals: "",
   maxActiveClients: "",
   maxStorageMb: "",
+  maxAppointmentsMonth: "",
   status: "public",
   isDefault: false,
+  features: {
+    online_scheduling: false,
+    custom_logo: false,
+    advanced_reports: false
+  },
   displayOrder: "0",
 };
 
@@ -316,7 +324,25 @@ function TenantsTab({
 
   function openEdit(tenant: TenantWithSub) {
     setEditingTenant(tenant);
-    setEditForm({ name: tenant.name, slug: tenant.slug, segment: tenant.segment });
+    setEditForm({ 
+      name: tenant.name, 
+      slug: tenant.slug, 
+      segment: tenant.segment
+    });
+  }
+
+  const [metadataForm, setMetadataForm] = useState({
+    feature_overrides: {} as Record<string, boolean>
+  });
+
+  function toggleMetadataOverride(featureKey: string, value: boolean) {
+    setMetadataForm(prev => ({
+      ...prev,
+      feature_overrides: {
+        ...prev.feature_overrides,
+        [featureKey]: value
+      }
+    }));
   }
 
   async function saveEdit() {
@@ -398,6 +424,10 @@ function TenantsTab({
       discountCents: String(tenant.subscription?.discountCents ?? 0),
       discountReason: tenant.subscription?.discountReason ?? "",
     });
+    // @ts-ignore - metadata existe no BD após migração
+    setMetadataForm({
+      feature_overrides: (tenant.metadata?.feature_overrides as Record<string, boolean>) ?? {}
+    });
   }
 
   async function handleChangePlan(tenant: TenantWithSub, nextPlanId: string) {
@@ -443,20 +473,24 @@ function TenantsTab({
       await Promise.all([
         setOverrideLimits({
           subscriptionId: selectedTenant.subscription.id,
-          tenantId: selectedTenant.id,
+          tenant_id: selectedTenant.id, // Corrigindo para tenant_id se necessário, ou mantendo tenantId se for camelCase no repo
           override: {
             max_units: parseNullableNumber(overrideForm.maxUnits),
             max_professionals: parseNullableNumber(overrideForm.maxProfessionals),
             max_active_clients: parseNullableNumber(overrideForm.maxActiveClients),
             max_storage_mb: parseNullableNumber(overrideForm.maxStorageMb),
           },
-        }),
+        } as any),
         setDiscount({
           subscriptionId: selectedTenant.subscription.id,
           tenantId: selectedTenant.id,
           discountCents: parseInt(overrideForm.discountCents || "0", 10) || 0,
           discountReason: overrideForm.discountReason.trim() || null,
         }),
+        // Salvar metadata (overrides de recursos)
+        supabase.from("tenants").update({
+          metadata: metadataForm
+        }).eq("id", selectedTenant.id)
       ]);
       toast({ title: "Ajustes salvos" });
       await onReload();
