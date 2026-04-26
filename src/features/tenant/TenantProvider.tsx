@@ -142,8 +142,8 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       setIsSuperAdmin(false);
       setIsClient(false);
       try {
-        localStorage.removeItem(LS_TENANT);
-        localStorage.removeItem(LS_UNIT);
+        localStorage.removeItem(STORAGE_KEY_TENANT);
+        localStorage.removeItem(STORAGE_KEY_UNIT);
       } catch (e) {
         console.warn("[TenantProvider:clearLS]", e);
       }
@@ -318,8 +318,8 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     if (fallback) {
       setCurrentTenantId(fallback);
     } else {
-      localStorage.removeItem(LS_TENANT);
-      localStorage.removeItem(LS_UNIT);
+      localStorage.removeItem(STORAGE_KEY_TENANT);
+      localStorage.removeItem(STORAGE_KEY_UNIT);
       setCurrentTenantIdState(null);
       setCurrentUnitIdState(null);
     }
