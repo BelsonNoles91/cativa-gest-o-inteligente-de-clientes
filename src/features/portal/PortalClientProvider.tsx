@@ -127,7 +127,9 @@ export function PortalClientProvider({ children }: { children: ReactNode }) {
   }, [user, activeTenantId, authLoading]);
 
   useEffect(() => {
-    void load();
+    let ignore = false;
+    if (!ignore) void load();
+    return () => { ignore = true; };
   }, [load]);
 
   const value = useMemo<PortalContextValue>(() => {
