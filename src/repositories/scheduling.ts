@@ -345,60 +345,39 @@ export async function listAppointments(params: ListAppointmentsParams): Promise<
 }
 
 export async function listAppointmentsHydrated(params: ListAppointmentsParams): Promise<HydratedAppointment[]> {
-  const appointments = await listAppointments(params);
-  if (appointments.length === 0) return [];
+  const { data, error } = await supabase
+    .from("appointments")
+    .select(`
+      *,
+      client:clients(id, full_name),
+      professional:professionals(id, display_name),
+      unit:units(id, name),
+      resource:resources(id, name),
+      appointment_items(
+        id,
+        service:services(id, name)
+      )
+    `)
+    .eq("tenant_id", params.tenantId)
+    .gte("starts_at", params.rangeStart)
+    .lt("starts_at", params.rangeEnd)
+    .order("starts_at");
 
-  const appointmentIds = appointments.map((appointment) => appointment.id);
-  const clientIds = Array.from(new Set(appointments.map((appointment) => appointment.clientId)));
-  const professionalIds = Array.from(new Set(appointments.map((appointment) => appointment.professionalId)));
-  const unitIds = Array.from(new Set(appointments.map((appointment) => appointment.unitId)));
-  const resourceIds = Array.from(
-    new Set(appointments.map((appointment) => appointment.resourceId).filter((id): id is string => Boolean(id))),
-  );
+  if (error) throw error;
+  if (!data) return [];
 
-  const [items, clients, professionals, units, resources] = await Promise.all([
-    listAppointmentItemsForAppointments(appointmentIds),
-    supabase.from("clients").select("id, full_name").in("id", clientIds),
-    supabase.from("professionals").select("id, display_name").in("id", professionalIds),
-    supabase.from("units").select("id, name").in("id", unitIds),
-    resourceIds.length
-      ? supabase.from("resources").select("id, name").in("id", resourceIds)
-      : Promise.resolve({ data: [], error: null }),
-  ]);
-
-  if (clients.error) throw clients.error;
-  if (professionals.error) throw professionals.error;
-  if (units.error) throw units.error;
-  if (resources.error) throw resources.error;
-
-  const itemRows = items;
-  const serviceIds = Array.from(new Set(itemRows.map((item) => item.serviceId)));
-  const { data: services, error: servicesError } = serviceIds.length
-    ? await supabase.from("services").select("id, name").in("id", serviceIds)
-    : { data: [], error: null };
-  if (servicesError) throw servicesError;
-
-  const itemMap = new Map<string, AppointmentItem>();
-  itemRows.forEach((item) => {
-    if (!itemMap.has(item.appointmentId)) itemMap.set(item.appointmentId, item);
-  });
-
-  const clientMap = new Map((clients.data ?? []).map((row) => [row.id, row.full_name]));
-  const professionalMap = new Map((professionals.data ?? []).map((row) => [row.id, row.display_name]));
-  const unitMap = new Map((units.data ?? []).map((row) => [row.id, row.name]));
-  const resourceMap = new Map((resources.data ?? []).map((row) => [row.id, row.name]));
-  const serviceMap = new Map((services ?? []).map((row) => [row.id, row.name]));
-
-  return appointments.map((appointment) => {
-    const item = itemMap.get(appointment.id) ?? null;
+  return data.map((row: any) => {
+    const appointment = toAppointment(row);
+    const item = row.appointment_items?.[0] ?? null;
+    
     return {
       appointment,
-      serviceId: item?.serviceId ?? null,
-      serviceName: item ? (serviceMap.get(item.serviceId) ?? null) : null,
-      clientName: clientMap.get(appointment.clientId) ?? null,
-      professionalName: professionalMap.get(appointment.professionalId) ?? null,
-      unitName: unitMap.get(appointment.unitId) ?? null,
-      resourceName: appointment.resourceId ? (resourceMap.get(appointment.resourceId) ?? null) : null,
+      serviceId: item?.service?.id ?? null,
+      serviceName: item?.service?.name ?? null,
+      clientName: row.client?.full_name ?? null,
+      professionalName: row.professional?.display_name ?? null,
+      unitName: row.unit?.name ?? null,
+      resourceName: row.resource?.name ?? null,
     };
   });
 }
