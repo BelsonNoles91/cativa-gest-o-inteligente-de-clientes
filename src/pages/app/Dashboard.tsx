@@ -1,11 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowUpRight,
   CalendarHeart,
   CheckCircle2,
   Clock3,
-  Loader2,
   PhoneCall,
   Plus,
   ShieldCheck,
@@ -20,21 +19,10 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { ErrorBoundary } from "@/components/feedback/ErrorBoundary";
 import { useTenant } from "@/features/tenant/TenantProvider";
-import { useToast } from "@/hooks/use-toast";
-import { listAppointmentsHydrated, type HydratedAppointment } from "@/repositories/scheduling";
-import { countQueueByStage } from "@/repositories/confirmation";
-import { fetchAvailability } from "@/repositories/analytics";
-import { supabase } from "@/integrations/supabase/client";
 import { NoSubscriptionBanner } from "@/features/billing/NoSubscriptionBanner";
 import { useTenantBilling } from "@/features/billing/useTenantBilling";
 import { UsageBar } from "@/features/billing/UsageBar";
-
-type DashboardSnapshot = {
-  appointmentsToday: number;
-  occupancyToday: number;
-  pendingConfirmations: number;
-  newClientsWeek: number;
-};
+import { useDashboardData } from "@/hooks/use-dashboard-data";
 
 function initials(name: string) {
   return name
@@ -48,85 +36,18 @@ function initials(name: string) {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { currentTenant } = useTenant();
-  const { toast } = useToast();
   const { plan, usage, limits, subscription } = useTenantBilling();
+  const { data, isLoading } = useDashboardData();
 
-  const [loading, setLoading] = useState(true);
-  const [snapshot, setSnapshot] = useState<DashboardSnapshot>({
-    appointmentsToday: 0,
-    occupancyToday: 0,
-    pendingConfirmations: 0,
-    newClientsWeek: 0,
-  });
-  const [upcoming, setUpcoming] = useState<HydratedAppointment[]>([]);
+  const snapshot = useMemo(() => ({
+    appointmentsToday: data?.appointmentsToday ?? 0,
+    occupancyToday: data?.occupancyToday ?? 0,
+    pendingConfirmations: data?.pendingConfirmations ?? 0,
+    newClientsWeek: data?.newClientsWeek ?? 0,
+  }), [data]);
 
-  useEffect(() => {
-    if (!currentTenant) return;
-    let ignore = false;
-    setLoading(true);
+  const upcoming = data?.upcoming ?? [];
 
-    const today = localDayRange(new Date());
-    const weekStart = startOfWeek(new Date());
-
-    void (async () => {
-      try {
-        const [appointmentsToday, queueCounts, availability, newClients] = await Promise.all([
-          listAppointmentsHydrated({
-            tenantId: currentTenant.id,
-            rangeStart: today.start.toISOString(),
-            rangeEnd: today.end.toISOString(),
-          }),
-          countQueueByStage(currentTenant.id),
-          fetchAvailability({
-            tenantId: currentTenant.id,
-            start: today.start.toISOString(),
-            end: today.end.toISOString(),
-          }),
-          supabase
-            .from("clients")
-            .select("id", { count: "exact", head: true })
-            .eq("tenant_id", currentTenant.id)
-            .gte("created_at", weekStart.toISOString()),
-        ]);
-
-        if (ignore) return;
-
-        const bookedMinutes = appointmentsToday
-          .filter((item) => !["canceled", "no_show"].includes(item.appointment.status))
-          .reduce((total, item) => total + item.appointment.durationMinutes, 0);
-        const occupancyToday =
-          availability.availableMinutes > 0
-            ? Math.round((bookedMinutes / availability.availableMinutes) * 100)
-            : 0;
-        const pendingConfirmations = Object.values(queueCounts).reduce((total, value) => total + value, 0);
-
-        setUpcoming(
-          appointmentsToday
-            .filter((item) => new Date(item.appointment.startsAt).getTime() >= Date.now())
-            .slice(0, 6),
-        );
-        setSnapshot({
-          appointmentsToday: appointmentsToday.length,
-          occupancyToday,
-          pendingConfirmations,
-          newClientsWeek: newClients.count ?? 0,
-        });
-      } catch (error) {
-        if (ignore) return;
-        toast({
-          title: "Erro ao carregar painel",
-          description: "Não foi possível carregar os dados de hoje. Tente novamente em instantes.",
-          variant: "destructive",
-        });
-      } finally {
-        if (!ignore) setLoading(false);
-      }
-    })();
-
-    return () => {
-      ignore = true;
-    };
-  }, [currentTenant, toast]);
 
   const kpis = useMemo(
     () => [
@@ -222,7 +143,7 @@ export default function Dashboard() {
         </section>
       )}
 
-      {loading ? (
+      {isLoading ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 xl:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="surface-card flex h-28 animate-pulse items-center gap-4 p-4 md:p-5" />
@@ -384,22 +305,6 @@ export default function Dashboard() {
       )}
     </>
   );
-}
-
-function localDayRange(base: Date) {
-  const start = new Date(base);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 1);
-  return { start, end };
-}
-
-function startOfWeek(base: Date) {
-  const date = new Date(base);
-  date.setHours(0, 0, 0, 0);
-  const diff = (date.getDay() + 6) % 7;
-  date.setDate(date.getDate() - diff);
-  return date;
 }
 
 function todayIso() {
