@@ -1032,6 +1032,31 @@ function PlansTab({
               <Field label="Storage MB">
                 <Input value={planForm.maxStorageMb} onChange={(e) => setPlanForm((current) => ({ ...current, maxStorageMb: e.target.value }))} placeholder="Ilimitado" />
               </Field>
+              <Field label="Agendamentos/mês">
+                <Input value={planForm.maxAppointmentsMonth} onChange={(e) => setPlanForm((current) => ({ ...current, maxAppointmentsMonth: e.target.value }))} placeholder="Ilimitado" />
+              </Field>
+            </div>
+            
+            <div className="space-y-3 rounded-lg border border-border/60 p-4">
+              <h4 className="text-sm font-semibold">Recursos Habilitados</h4>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {[
+                  { key: "online_scheduling", label: "Agendamento Online" },
+                  { key: "custom_logo", label: "Logo Personalizada" },
+                  { key: "advanced_reports", label: "Relatórios Avançados" }
+                ].map(feat => (
+                  <label key={feat.key} className="flex items-center gap-2 text-xs">
+                    <Switch 
+                      checked={planForm.features[feat.key] || false} 
+                      onCheckedChange={(val) => setPlanForm(prev => ({
+                        ...prev,
+                        features: { ...prev.features, [feat.key]: val }
+                      }))} 
+                    />
+                    {feat.label}
+                  </label>
+                ))}
+              </div>
             </div>
             <label className="flex items-center gap-2 text-sm">
               <Switch checked={planForm.isDefault} onCheckedChange={(checked) => setPlanForm((current) => ({ ...current, isDefault: checked }))} />
