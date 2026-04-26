@@ -47,6 +47,8 @@ interface TenantContextValue {
   currentLogoUrl: string | null;
   /** Indica que o super admin está atuando em um tenant onde NÃO é membro. */
   isImpersonating: boolean;
+  /** Indica se o usuário é um cliente (possui vínculo em client_users). */
+  isClient: boolean;
   setCurrentTenantId: (id: string) => void;
   setCurrentUnitId: (id: string) => void;
   /** Inicia impersonação registrando audit log. */
@@ -67,6 +69,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [verified, setVerified] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const [memberships, setMemberships] = useState<MembershipRow[]>([]);
   const [allTenants, setAllTenants] = useState<TenantRow[]>([]);
   const [units, setUnits] = useState<UnitRow[]>([]);
@@ -108,6 +111,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       setAllTenants([]);
       setUnits([]);
       setIsSuperAdmin(false);
+      setIsClient(false);
       try {
         localStorage.removeItem(LS_TENANT);
         localStorage.removeItem(LS_UNIT);
@@ -125,34 +129,48 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setVerified(false);
     try {
-      const [{ data: profile, error: profileErr }, { data: memb, error: membErr }] = await Promise.all([
+      const [
+        { data: profile, error: profileErr }, 
+        { data: memb, error: membErr },
+        { data: clientLinks, error: clientErr }
+      ] = await Promise.all([
         supabase.from("profiles").select("is_super_admin").eq("id", user.id).maybeSingle(),
         supabase
           .from("tenant_memberships")
           .select("tenant_id, role, tenants:tenants!inner(id, name, slug, segment)")
           .eq("user_id", user.id)
           .eq("status", "active"),
+        supabase
+          .from("client_users")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("status", "active")
+          .limit(1)
       ]);
 
-      if (profileErr || membErr) throw profileErr || membErr;
+      if (profileErr || membErr || clientErr) throw profileErr || membErr || clientErr;
 
       const superAdmin = Boolean(profile?.is_super_admin);
       setIsSuperAdmin(superAdmin);
+      
+      const clientLinksList = clientLinks ?? [];
+      setIsClient(clientLinksList.length > 0);
       
       const membershipList = (memb ?? []) as unknown as MembershipRow[];
       setMemberships(membershipList);
 
       // Se o usuário não é super admin e não tem nenhum membership ativo, 
-      // mas está tentando acessar o /app, mandamos para onboarding.
-      // Ignoramos redirecionamento se estivermos em rotas do /portal, pois o PortalClientProvider cuida disso.
-      if (
-        !superAdmin && 
-        membershipList.length === 0 && 
-        location.pathname.startsWith("/app")
-      ) {
-        console.log("[TenantProvider] No active memberships found, redirecting to onboarding");
-        setTimeout(() => navigate("/onboarding", { replace: true }), 0);
-        return;
+      // precisamos decidir para onde enviá-lo.
+      if (!superAdmin && membershipList.length === 0) {
+        const isClient = (clientLinks ?? []).length > 0;
+        
+        // Log para debug, mas os Guards (RequireOnboarding/OnboardingGuard) 
+        // agora cuidam do redirecionamento baseados no estado isClient.
+        if (isClient && location.pathname.startsWith("/app")) {
+          console.log("[TenantProvider] Client detected, guards will redirect to portal");
+        } else if (!isClient && location.pathname.startsWith("/app")) {
+          console.log("[TenantProvider] No memberships found, guards will redirect to onboarding");
+        }
       }
 
       if (superAdmin) {
@@ -307,6 +325,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       currentRole,
       currentLogoUrl,
       isImpersonating,
+      isClient,
       setCurrentTenantId,
       setCurrentUnitId,
       impersonateTenant,
