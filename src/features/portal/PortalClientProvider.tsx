@@ -65,7 +65,11 @@ export function PortalClientProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const load = useCallback(async () => {
+    // Se ainda estamos carregando auth, não faz nada
+    if (authLoading) return;
+
     if (!user) {
+      console.log("[PortalClientProvider] No user found, clearing context");
       setLinks([]);
       setProfile(null);
       setBranding(null);
@@ -73,6 +77,8 @@ export function PortalClientProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       return;
     }
+    
+    console.log("[PortalClientProvider] Loading data for user:", user.id);
     setLoading(true);
     try {
       await claimPortalLinksForCurrentUser();
@@ -82,12 +88,13 @@ export function PortalClientProvider({ children }: { children: ReactNode }) {
       // escolha do tenant ativo
       const effective =
         ls.find((l) => l.tenantId === activeTenantId) ?? ls[0] ?? null;
-      if (effective && effective.tenantId !== activeTenantId) {
-        setActiveTenantIdState(effective.tenantId);
-        localStorage.setItem(LS_PORTAL_TENANT, effective.tenantId);
-      }
-
+      
       if (effective) {
+        if (effective.tenantId !== activeTenantId) {
+          setActiveTenantIdState(effective.tenantId);
+          localStorage.setItem(LS_PORTAL_TENANT, effective.tenantId);
+        }
+        
         void touchPortalLink(effective.id).catch(() => undefined);
         const prof = await getClientProfile(effective.clientId);
         setProfile(prof);
@@ -117,7 +124,7 @@ export function PortalClientProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [user, activeTenantId]);
+  }, [user, activeTenantId, authLoading]);
 
   useEffect(() => {
     if (!authLoading) {

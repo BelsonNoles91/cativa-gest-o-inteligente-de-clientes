@@ -88,7 +88,11 @@ export function TenantProvider({ children }: { children: ReactNode }) {
   };
 
   const loadBaseData = useCallback(async () => {
+    // Se ainda estamos carregando auth, não faz nada
+    if (authLoading) return;
+
     if (!user) {
+      console.log("[TenantProvider] No user found, clearing context");
       setMemberships([]);
       setAllTenants([]);
       setUnits([]);
@@ -106,6 +110,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    console.log("[TenantProvider] Loading data for user:", user.id);
     setLoading(true);
     try {
       const [{ data: profile, error: profileErr }, { data: memb, error: membErr }] = await Promise.all([
@@ -148,7 +153,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, authLoading]);
 
   useEffect(() => {
     if (!authLoading) {
