@@ -125,16 +125,26 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setVerified(false);
     try {
-      const [{ data: profile, error: profileErr }, { data: memb, error: membErr }] = await Promise.all([
+      const [
+        { data: profile, error: profileErr }, 
+        { data: memb, error: membErr },
+        { data: clientLinks, error: clientErr }
+      ] = await Promise.all([
         supabase.from("profiles").select("is_super_admin").eq("id", user.id).maybeSingle(),
         supabase
           .from("tenant_memberships")
           .select("tenant_id, role, tenants:tenants!inner(id, name, slug, segment)")
           .eq("user_id", user.id)
           .eq("status", "active"),
+        supabase
+          .from("client_users")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("status", "active")
+          .limit(1)
       ]);
 
-      if (profileErr || membErr) throw profileErr || membErr;
+      if (profileErr || membErr || clientErr) throw profileErr || membErr || clientErr;
 
       const superAdmin = Boolean(profile?.is_super_admin);
       setIsSuperAdmin(superAdmin);
@@ -143,16 +153,23 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       setMemberships(membershipList);
 
       // Se o usuário não é super admin e não tem nenhum membership ativo, 
-      // mas está tentando acessar o /app, mandamos para onboarding.
-      // Ignoramos redirecionamento se estivermos em rotas do /portal, pois o PortalClientProvider cuida disso.
-      if (
-        !superAdmin && 
-        membershipList.length === 0 && 
-        location.pathname.startsWith("/app")
-      ) {
-        console.log("[TenantProvider] No active memberships found, redirecting to onboarding");
-        setTimeout(() => navigate("/onboarding", { replace: true }), 0);
-        return;
+      // precisamos decidir para onde enviá-lo.
+      if (!superAdmin && membershipList.length === 0) {
+        const isClient = (clientLinks ?? []).length > 0;
+        
+        // Se é cliente e está na área de app, manda para o portal
+        if (isClient && location.pathname.startsWith("/app")) {
+          console.log("[TenantProvider] Client detected, redirecting to portal");
+          setTimeout(() => navigate("/portal", { replace: true }), 0);
+          return;
+        }
+        
+        // Se não é cliente e está na área de app, manda para onboarding
+        if (!isClient && location.pathname.startsWith("/app")) {
+          console.log("[TenantProvider] No memberships found, redirecting to onboarding");
+          setTimeout(() => navigate("/onboarding", { replace: true }), 0);
+          return;
+        }
       }
 
       if (superAdmin) {
