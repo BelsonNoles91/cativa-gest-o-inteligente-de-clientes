@@ -182,6 +182,9 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 
   // Cálculo do Tenant Efetivo (memoizado para evitar re-renderers desnecessários)
   const availableTenants = useMemo(() => {
+    // No Portal, não mostramos os tenants do painel administrativo
+    if (location.pathname.startsWith("/portal")) return [];
+    
     const fromMemberships = memberships.map((m) => m.tenants).filter((t): t is TenantRow => Boolean(t));
     const seen = new Set<string>();
     const result: TenantRow[] = [];
@@ -279,7 +282,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     const membershipRole = memberships.find((m) => m.tenant_id === effectiveTenantId)?.role ?? null;
     const currentRole: Role | null = isSuperAdmin ? ("super_admin" as Role) : membershipRole;
 
-    const hasActiveTenant = memberships.length > 0 || isSuperAdmin;
+    const hasActiveTenant = (memberships.length > 0 || isSuperAdmin) && !location.pathname.startsWith("/portal");
     const currentLogoUrl = effectiveTenantId ? logosByTenant[effectiveTenantId] ?? null : null;
 
     const isImpersonating = isSuperAdmin && !!effectiveTenantId && !memberships.some((m) => m.tenant_id === effectiveTenantId);
