@@ -146,7 +146,8 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       // mas está tentando acessar o /app, mandamos para onboarding
       if (!superAdmin && membershipList.length === 0 && location.pathname.startsWith("/app")) {
         console.log("[TenantProvider] No active memberships found, redirecting to onboarding");
-        navigate("/onboarding", { replace: true });
+        // Deferimos o navigate para o próximo tick para evitar loops de render
+        setTimeout(() => navigate("/onboarding", { replace: true }), 0);
         return;
       }
 
