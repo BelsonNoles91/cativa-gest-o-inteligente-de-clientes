@@ -121,8 +121,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    console.log("[TenantProvider] Loading data for user:", user.id);
-    if (loading) return; // evita re-trigger se já estiver carregando
+    console.log("[TenantProvider] Requesting load for user:", user.id);
     setLoading(true);
     try {
       const [{ data: profile, error: profileErr }, { data: memb, error: membErr }] = await Promise.all([
