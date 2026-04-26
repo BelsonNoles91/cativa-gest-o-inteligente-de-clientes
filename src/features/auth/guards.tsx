@@ -44,9 +44,12 @@ export function ProtectedRoute({ children }: { children?: ReactNode }) {
  * obsoleto de localStorage.
  */
 export function RequireOnboarding({ children }: { children?: ReactNode }) {
-  const { loading, verified, hasActiveTenant } = useTenant();
+  const { loading, verified, hasActiveTenant, isClient } = useTenant();
   if (loading || !verified) return <FullScreenLoader />;
+  
+  if (isClient && !hasActiveTenant) return <Navigate to="/portal" replace />;
   if (!hasActiveTenant) return <Navigate to="/onboarding" replace />;
+  
   return <>{children ?? <Outlet />}</>;
 }
 
@@ -59,12 +62,15 @@ export function RequireOnboarding({ children }: { children?: ReactNode }) {
  */
 export function OnboardingGuard({ children }: { children?: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
-  const { loading: tenantLoading, verified, hasActiveTenant } = useTenant();
+  const { loading: tenantLoading, verified, hasActiveTenant, isClient } = useTenant();
 
   if (authLoading) return <FullScreenLoader />;
   if (!user) return <>{children ?? <Outlet />}</>;
   if (tenantLoading || !verified) return <FullScreenLoader />;
+  
+  if (isClient && !hasActiveTenant) return <Navigate to="/portal" replace />;
   if (hasActiveTenant && !location.pathname.startsWith("/portal")) return <Navigate to="/app" replace />;
+  
   return <>{children ?? <Outlet />}</>;
 }
 
