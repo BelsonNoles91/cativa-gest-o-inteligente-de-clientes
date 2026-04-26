@@ -82,8 +82,8 @@ function toClient(r: DbClient): Client {
   };
 }
 
-const CLIENT_COLUMNS =
-  "id, tenant_id, preferred_unit_id, preferred_professional_id, referred_by_client_id, full_name, email, phone, whatsapp_phone, birth_date, origin, notes, allergies, contraindications, preferences, status, is_vip, risk_level, needs_reactivation, last_visit_at, next_visit_at, city, state, created_at, updated_at";
+const CLIENT_COLUMNS = "id, tenant_id, full_name, phone, email, status, is_vip, risk_level, last_visit_at, city";
+const CLIENT_DETAIL_COLUMNS = "id, tenant_id, preferred_unit_id, preferred_professional_id, referred_by_client_id, full_name, email, phone, whatsapp_phone, birth_date, origin, notes, allergies, contraindications, preferences, status, is_vip, risk_level, needs_reactivation, last_visit_at, next_visit_at, city, state, created_at, updated_at";
 
 // -----------------------------------------------------------------------------
 // CLIENTS
@@ -156,11 +156,11 @@ export async function listClients(params: ListClientsParams): Promise<Client[]> 
 export async function getClient(clientId: string): Promise<Client | null> {
   const { data, error } = await supabase
     .from("clients")
-    .select(CLIENT_COLUMNS)
+    .select(CLIENT_DETAIL_COLUMNS)
     .eq("id", clientId)
     .maybeSingle();
   if (error) throw error;
-  return data ? toClient(data) : null;
+  return data ? toClient(data as DbClient) : null;
 }
 
 export interface CreateClientInput {

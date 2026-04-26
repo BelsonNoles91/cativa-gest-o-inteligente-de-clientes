@@ -74,12 +74,13 @@ export async function listQueue(params: ListQueueParams): Promise<ConfirmationQu
 export async function countQueueByStage(tenantId: string): Promise<Record<ConfirmationStage, number>> {
   const { data, error } = await supabase
     .from("confirmation_queue")
-    .select("stage, status")
-    .eq("tenant_id", tenantId);
+    .select("stage")
+    .eq("tenant_id", tenantId)
+    .not("status", "in", "(closed,confirmed,canceled)");
+  
   if (error) throw error;
   const counts: Record<string, number> = {};
   for (const row of data ?? []) {
-    if (["closed", "confirmed", "canceled"].includes(row.status as string)) continue;
     counts[row.stage as string] = (counts[row.stage as string] ?? 0) + 1;
   }
   return counts as Record<ConfirmationStage, number>;
