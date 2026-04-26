@@ -175,7 +175,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [user?.id, authLoading, location.pathname, navigate]);
+  }, [user?.id, authLoading, location.pathname]);
 
   useEffect(() => {
     let ignore = false;
