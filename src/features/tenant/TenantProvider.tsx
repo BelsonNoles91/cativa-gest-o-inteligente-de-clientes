@@ -123,6 +123,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 
     console.log("[TenantProvider] Requesting load for user:", user.id);
     setLoading(true);
+    setVerified(false);
     try {
       const [{ data: profile, error: profileErr }, { data: memb, error: membErr }] = await Promise.all([
         supabase.from("profiles").select("is_super_admin").eq("id", user.id).maybeSingle(),
