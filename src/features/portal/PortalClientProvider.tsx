@@ -79,6 +79,7 @@ export function PortalClientProvider({ children }: { children: ReactNode }) {
     }
     
     console.log("[PortalClientProvider] Loading data for user:", user.id);
+    if (loading) return;
     setLoading(true);
     try {
       await claimPortalLinksForCurrentUser();
