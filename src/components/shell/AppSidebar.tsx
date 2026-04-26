@@ -3,6 +3,7 @@
  * Mobile usa BottomNav. Sidebar colapsa em modo "icon".
  */
 import { useCallback, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import { Lock } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
