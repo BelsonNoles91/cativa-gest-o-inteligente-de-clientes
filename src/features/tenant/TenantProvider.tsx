@@ -118,24 +118,15 @@ export function TenantProvider({ children }: { children: ReactNode }) {
   };
 
   const loadBaseData = useCallback(async (force = false) => {
-    // Se ainda estamos carregando auth, não faz nada
     if (authLoading) return;
-
-    // Se estivermos em uma rota de portal, o TenantProvider não deve atuar
-    // O PortalClientProvider cuidará do contexto do cliente
     const isPortalRoute = window.location.pathname.startsWith("/portal");
-    
     if (isPortalRoute) {
       setLoading(false);
       setVerified(true);
       return;
     }
-
-    // Se já está verificado e não é um force refresh, evita reload inútil
     if (verified && !force && user?.id) return;
-
     if (!user) {
-      console.log("[TenantProvider] No user found, clearing context");
       setMemberships([]);
       setAllTenants([]);
       setUnits([]);
@@ -144,17 +135,13 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       try {
         localStorage.removeItem(STORAGE_KEY_TENANT);
         localStorage.removeItem(STORAGE_KEY_UNIT);
-      } catch (e) {
-        console.warn("[TenantProvider:clearLS]", e);
-      }
+      } catch (e) {}
       setCurrentTenantIdState(null);
       setCurrentUnitIdState(null);
       setVerified(true);
       setLoading(false);
       return;
     }
-
-    console.log("[TenantProvider] Requesting load for user:", user.id);
     setLoading(true);
     setVerified(false);
     try {
@@ -176,36 +163,15 @@ export function TenantProvider({ children }: { children: ReactNode }) {
           .eq("status", "active")
           .limit(1)
       ]);
-
       if (profileErr || membErr || clientErr) throw profileErr || membErr || clientErr;
-
       const superAdmin = Boolean(profile?.is_super_admin);
       setIsSuperAdmin(superAdmin);
-      
       const clientLinksList = clientLinks ?? [];
       setIsClient(clientLinksList.length > 0);
-      
       const membershipList = (memb ?? []) as unknown as MembershipRow[];
       setMemberships(membershipList);
-
-      // Se o usuário não é super admin e não tem nenhum membership ativo, 
-      // precisamos decidir para onde enviá-lo.
-      if (!superAdmin && membershipList.length === 0) {
-        const isClient = (clientLinks ?? []).length > 0;
-        
-        // Log para debug, mas os Guards (RequireOnboarding/OnboardingGuard) 
-        // agora cuidam do redirecionamento baseados no estado isClient.
-        if (isClient && location.pathname.startsWith("/app")) {
-          console.log("[TenantProvider] Client detected, guards will redirect to portal");
-        } else if (!isClient && location.pathname.startsWith("/app")) {
-          console.log("[TenantProvider] No memberships found, guards will redirect to onboarding");
-        }
-      }
-
       if (superAdmin) {
         const { data: globalRows, error: globalErr } = await supabase.rpc("admin_list_all_tenants");
-        if (globalErr) console.error("[TenantProvider:admin_list]", globalErr);
-
         const mapped = (globalRows ?? []).map((r: any) => ({
           id: r.id,
           name: r.name,
@@ -216,14 +182,10 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       } else {
         setAllTenants([]);
       }
-
       setVerified(true);
     } catch (err) {
       console.error("[TenantProvider:loadBaseData]", err);
-      toast.error("Erro ao carregar contexto", {
-        description: "Não foi possível carregar suas contas.",
-        icon: <AlertCircle className="h-4 w-4" />,
-      });
+      toast.error("Erro ao carregar contexto");
     } finally {
       setLoading(false);
     }

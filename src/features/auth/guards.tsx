@@ -63,13 +63,21 @@ export function RequireOnboarding({ children }: { children?: ReactNode }) {
 export function OnboardingGuard({ children }: { children?: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const { loading: tenantLoading, verified, hasActiveTenant, isClient } = useTenant();
+  const location = useLocation();
 
   if (authLoading) return <FullScreenLoader />;
   if (!user) return <>{children ?? <Outlet />}</>;
+  
+  // Se ainda está carregando ou não verificou, espera.
   if (tenantLoading || !verified) return <FullScreenLoader />;
   
+  // Cliente vai para o portal
   if (isClient && !hasActiveTenant) return <Navigate to="/portal" replace />;
-  if (hasActiveTenant && !location.pathname.startsWith("/portal")) return <Navigate to="/app" replace />;
+  
+  // Se já tem tenant e está tentando acessar onboarding, manda para /app
+  if (hasActiveTenant && location.pathname === "/onboarding") {
+    return <Navigate to="/app" replace />;
+  }
   
   return <>{children ?? <Outlet />}</>;
 }
