@@ -285,7 +285,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     };
   }, [
     loading, verified, memberships, availableTenants, effectiveTenantId, 
-    units, currentUnitId, isSuperAdmin, logosByTenant
+    units, currentUnitId, isSuperAdmin, logosByTenant, loadBaseData
   ]);
 
   return <TenantContext.Provider value={contextValue}>{children}</TenantContext.Provider>;
