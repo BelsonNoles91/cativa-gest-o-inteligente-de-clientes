@@ -93,17 +93,22 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     setCurrentUnitIdState(id);
   };
 
-  const loadBaseData = useCallback(async () => {
+  const loadBaseData = useCallback(async (force = false) => {
     // Se ainda estamos carregando auth, não faz nada
     if (authLoading) return;
 
     // Se estivermos em uma rota de portal, o TenantProvider não deve atuar
     // O PortalClientProvider cuidará do contexto do cliente
-    if (location.pathname.startsWith("/portal")) {
+    const isPortalRoute = window.location.pathname.startsWith("/portal");
+    
+    if (isPortalRoute) {
       setLoading(false);
       setVerified(true);
       return;
     }
+
+    // Se já está verificado e não é um force refresh, evita reload inútil
+    if (verified && !force && user?.id) return;
 
     if (!user) {
       console.log("[TenantProvider] No user found, clearing context");
@@ -198,7 +203,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [user?.id, authLoading, location.pathname]);
+  }, [user?.id, authLoading, verified]);
 
   useEffect(() => {
     let ignore = false;
@@ -330,7 +335,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       setCurrentUnitId,
       impersonateTenant,
       endImpersonation,
-      refresh: loadBaseData,
+      refresh: () => loadBaseData(true),
     };
   }, [
     loading, verified, memberships, availableTenants, effectiveTenantId, 
