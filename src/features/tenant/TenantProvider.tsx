@@ -143,10 +143,14 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       setMemberships(membershipList);
 
       // Se o usuário não é super admin e não tem nenhum membership ativo, 
-      // mas está tentando acessar o /app, mandamos para onboarding
-      if (!superAdmin && membershipList.length === 0 && location.pathname.startsWith("/app")) {
+      // mas está tentando acessar o /app, mandamos para onboarding.
+      // Ignoramos redirecionamento se estivermos em rotas do /portal, pois o PortalClientProvider cuida disso.
+      if (
+        !superAdmin && 
+        membershipList.length === 0 && 
+        location.pathname.startsWith("/app")
+      ) {
         console.log("[TenantProvider] No active memberships found, redirecting to onboarding");
-        // Deferimos o navigate para o próximo tick para evitar loops de render
         setTimeout(() => navigate("/onboarding", { replace: true }), 0);
         return;
       }

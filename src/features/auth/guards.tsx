@@ -64,7 +64,7 @@ export function OnboardingGuard({ children }: { children?: ReactNode }) {
   if (authLoading) return <FullScreenLoader />;
   if (!user) return <>{children ?? <Outlet />}</>;
   if (tenantLoading || !verified) return <FullScreenLoader />;
-  if (hasActiveTenant) return <Navigate to="/app" replace />;
+  if (hasActiveTenant && !location.pathname.startsWith("/portal")) return <Navigate to="/app" replace />;
   return <>{children ?? <Outlet />}</>;
 }
 
