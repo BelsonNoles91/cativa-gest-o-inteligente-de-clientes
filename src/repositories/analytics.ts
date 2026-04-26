@@ -116,9 +116,10 @@ export async function fetchClients(tenantId: string): Promise<ClientFact[]> {
   const { data, error } = await supabase
     .from("clients")
     .select(
-      "id, created_at, is_vip, full_name, email, phone, whatsapp_phone, birth_date, preferences, preferred_professional_id, preferred_unit_id, last_visit_at",
+      "id, created_at, is_vip, full_name, email, phone, last_visit_at",
     )
-    .eq("tenant_id", tenantId);
+    .eq("tenant_id", tenantId)
+    .limit(1000);
   if (error) throw error;
   // calcula completedVisits e firstVisitAt em outra query agregada
   const ids = (data ?? []).map((c) => c.id as string);
@@ -133,11 +134,11 @@ export async function fetchClients(tenantId: string): Promise<ClientFact[]> {
       fullName: c.full_name as string,
       email: (c.email as string) ?? null,
       phone: (c.phone as string) ?? null,
-      whatsappPhone: (c.whatsapp_phone as string) ?? null,
-      birthDate: (c.birth_date as string) ?? null,
-      preferences: (c.preferences as string) ?? null,
-      preferredProfessionalId: (c.preferred_professional_id as string) ?? null,
-      preferredUnitId: (c.preferred_unit_id as string) ?? null,
+      whatsappPhone: null,
+      birthDate: null,
+      preferences: null,
+      preferredProfessionalId: null,
+      preferredUnitId: null,
       completedVisits: v?.count ?? 0,
       firstVisitAt: v?.first ?? null,
       lastVisitAt: (c.last_visit_at as string) ?? v?.last ?? null,
