@@ -94,6 +94,14 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     // Se ainda estamos carregando auth, não faz nada
     if (authLoading) return;
 
+    // Se estivermos em uma rota de portal, o TenantProvider não deve atuar
+    // O PortalClientProvider cuidará do contexto do cliente
+    if (location.pathname.startsWith("/portal")) {
+      setLoading(false);
+      setVerified(true);
+      return;
+    }
+
     if (!user) {
       console.log("[TenantProvider] No user found, clearing context");
       setMemberships([]);
@@ -129,7 +137,17 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 
       const superAdmin = Boolean(profile?.is_super_admin);
       setIsSuperAdmin(superAdmin);
-      setMemberships((memb ?? []) as unknown as MembershipRow[]);
+      
+      const membershipList = (memb ?? []) as unknown as MembershipRow[];
+      setMemberships(membershipList);
+
+      // Se o usuário não é super admin e não tem nenhum membership ativo, 
+      // mas está tentando acessar o /app, mandamos para onboarding
+      if (!superAdmin && membershipList.length === 0 && location.pathname.startsWith("/app")) {
+        console.log("[TenantProvider] No active memberships found, redirecting to onboarding");
+        navigate("/onboarding", { replace: true });
+        return;
+      }
 
       if (superAdmin) {
         const { data: globalRows, error: globalErr } = await supabase.rpc("admin_list_all_tenants");
@@ -156,7 +174,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [user?.id, authLoading]);
+  }, [user?.id, authLoading, location.pathname, navigate]);
 
   useEffect(() => {
     void loadBaseData();
