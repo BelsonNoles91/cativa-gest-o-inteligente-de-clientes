@@ -7,6 +7,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { AlertCircle } from "lucide-react";
 import type { Role } from "@/domain/roles";
