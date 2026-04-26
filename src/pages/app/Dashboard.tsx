@@ -205,11 +205,17 @@ export default function Dashboard() {
               used={usage.appointmentsLast30d} 
               limit={limits?.maxAppointmentsMonth ?? null} 
             />
-            {limits?.maxAppointmentsMonth && (
+            {limits?.maxAppointmentsMonth ? (
               <p className="text-[10px] text-muted-foreground">
-                {usage.appointmentsLast30d >= (limits.maxAppointmentsMonth * 0.8) 
-                  ? "Você está próximo do limite mensal. Considere um upgrade." 
-                  : "Uso saudável dos limites do seu plano."}
+                {usage.appointmentsLast30d >= limits.maxAppointmentsMonth
+                  ? "Limite atingido! Seu negócio cresceu e agora precisa de mais fôlego. Faça upgrade para continuar agendando."
+                  : usage.appointmentsLast30d >= (limits.maxAppointmentsMonth * 0.8) 
+                    ? "Você está próximo do limite mensal. Considere um upgrade para não parar sua operação." 
+                    : "Uso saudável dos limites do seu plano."}
+              </p>
+            ) : (
+              <p className="text-[10px] text-muted-foreground">
+                Você tem agendamentos ilimitados. Aproveite para crescer seu negócio!
               </p>
             )}
           </div>
