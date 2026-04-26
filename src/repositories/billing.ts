@@ -40,6 +40,7 @@ function rowToPlan(r: Record<string, unknown>): Plan {
     maxAppointmentsMonth: (r.max_appointments_month as number) ?? null,
     status: r.status as Plan["status"],
     isDefault: Boolean(r.is_default),
+    features: (r.features as Record<string, boolean>) ?? {},
     displayOrder: r.display_order as number,
     createdAt: r.created_at as string,
     updatedAt: r.updated_at as string,
