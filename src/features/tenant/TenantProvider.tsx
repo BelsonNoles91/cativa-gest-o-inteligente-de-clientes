@@ -1,8 +1,8 @@
 /**
- * TenantProvider — agora carrega memberships reais do usuário autenticado.
- *
- * Super admin: além dos memberships próprios, recebe a lista global de tenants
- * via RPC `admin_list_all_tenants` e pode impersonar qualquer um (com auditoria).
+ * @file TenantProvider.tsx
+ * @description Centralized state management for Multi-tenant context.
+ * Responsible for resolving the current tenant, managing impersonation for super-admins,
+ * and handling tenant-specific settings and units.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,48 +19,72 @@ interface TenantRow {
   slug: string;
   segment: TenantSegment;
 }
+
 interface UnitRow {
   id: string;
   tenant_id: string;
   name: string;
   is_default: boolean;
 }
+
 interface MembershipRow {
   tenant_id: string;
   role: Role;
   tenants: TenantRow | null;
 }
 
+/**
+ * @interface TenantContextValue
+ * @description Contract for the Multi-tenant context.
+ */
 interface TenantContextValue {
+  /** Global loading state for tenant resolution */
   loading: boolean;
-  /** True quando já fizemos pelo menos uma checagem no servidor após auth pronto. */
+  /** True when the initial server verification of memberships has completed */
   verified: boolean;
-  /** Confirmação real do servidor: existe membership ativo OU é super_admin. */
+  /** Whether the user has at least one active tenant membership or is a super admin */
   hasActiveTenant: boolean;
+  /** Flag for internal support/admin users with global access */
   isSuperAdmin: boolean;
+  /** The currently selected tenant object */
   currentTenant: TenantRow | null;
+  /** The currently selected business unit within the tenant */
   currentUnit: UnitRow | null;
+  /** List of all tenants the user has access to */
   availableTenants: TenantRow[];
+  /** List of business units available for the current tenant */
   availableUnits: UnitRow[];
+  /** Effective role of the user (resolved between memberships and super_admin status) */
   currentRole: Role | null;
-  /** URL do logo do tenant atual (se configurado). */
+  /** Public URL for the tenant's branding logo */
   currentLogoUrl: string | null;
-  /** Indica que o super admin está atuando em um tenant onde NÃO é membro. */
+  /** True if a super_admin is accessing a tenant they are not explicitly a member of */
   isImpersonating: boolean;
-  /** Indica se o usuário é um cliente (possui vínculo em client_users). */
+  /** Whether the user is identified as a client/customer in the portal */
   isClient: boolean;
+  /** Updates the active tenant and persists selection to localStorage */
   setCurrentTenantId: (id: string) => void;
+  /** Updates the active unit and persists selection to localStorage */
   setCurrentUnitId: (id: string) => void;
-  /** Inicia impersonação registrando audit log. */
+  /**
+   * Switches context to any tenant (Super Admin only).
+   * @async
+   * @param id - Target tenant ID
+   * @param reason - Optional justification for audit logging
+   */
   impersonateTenant: (id: string, reason?: string | null) => Promise<void>;
-  /** Encerra impersonação retornando ao primeiro tenant onde o usuário é membro. */
+  /**
+   * Resets impersonation context back to the user's primary memberships.
+   * @async
+   */
   endImpersonation: () => Promise<void>;
+  /** Forces a re-fetch of all tenant memberships and profile data */
   refresh: () => Promise<void>;
 }
 
 const TenantContext = createContext<TenantContextValue | undefined>(undefined);
-const LS_TENANT = "cativa.currentTenantId";
-const LS_UNIT = "cativa.currentUnitId";
+const STORAGE_KEY_TENANT = "cativa.currentTenantId";
+const STORAGE_KEY_UNIT = "cativa.currentUnitId";
 
 export function TenantProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
@@ -75,21 +99,21 @@ export function TenantProvider({ children }: { children: ReactNode }) {
   const [units, setUnits] = useState<UnitRow[]>([]);
   const [logosByTenant, setLogosByTenant] = useState<Record<string, string | null>>({});
   const [currentTenantId, setCurrentTenantIdState] = useState<string | null>(
-    () => localStorage.getItem(LS_TENANT),
+    () => localStorage.getItem(STORAGE_KEY_TENANT),
   );
   const [currentUnitId, setCurrentUnitIdState] = useState<string | null>(
-    () => localStorage.getItem(LS_UNIT),
+    () => localStorage.getItem(STORAGE_KEY_UNIT),
   );
 
   const setCurrentTenantId = (id: string) => {
-    localStorage.setItem(LS_TENANT, id);
+    localStorage.setItem(STORAGE_KEY_TENANT, id);
     setCurrentTenantIdState(id);
-    localStorage.removeItem(LS_UNIT);
+    localStorage.removeItem(STORAGE_KEY_UNIT);
     setCurrentUnitIdState(null);
   };
 
   const setCurrentUnitId = (id: string) => {
-    localStorage.setItem(LS_UNIT, id);
+    localStorage.setItem(STORAGE_KEY_UNIT, id);
     setCurrentUnitIdState(id);
   };
 
@@ -118,8 +142,8 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       setIsSuperAdmin(false);
       setIsClient(false);
       try {
-        localStorage.removeItem(LS_TENANT);
-        localStorage.removeItem(LS_UNIT);
+        localStorage.removeItem(STORAGE_KEY_TENANT);
+        localStorage.removeItem(STORAGE_KEY_UNIT);
       } catch (e) {
         console.warn("[TenantProvider:clearLS]", e);
       }
@@ -294,8 +318,8 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     if (fallback) {
       setCurrentTenantId(fallback);
     } else {
-      localStorage.removeItem(LS_TENANT);
-      localStorage.removeItem(LS_UNIT);
+      localStorage.removeItem(STORAGE_KEY_TENANT);
+      localStorage.removeItem(STORAGE_KEY_UNIT);
       setCurrentTenantIdState(null);
       setCurrentUnitIdState(null);
     }

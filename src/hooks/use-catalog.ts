@@ -1,67 +1,80 @@
+/**
+ * @file use-catalog.ts
+ * @description Hook library for interacting with the service catalog.
+ * Uses React Query for state management, intelligent caching, and optimistic updates.
+ */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import * as catalogRepo from "@/repositories/catalog";
 import { toast } from "sonner";
 
+interface UseCatalogOptions {
+  /** If false, the queries will not run automatically. Useful for conditional fetching. */
+  enabled?: boolean;
+}
+
 /**
- * Hook centralizado para acesso ao catálogo com cache TanStack Query.
- * Implementa cache de longa duração (staleTime) para dados pouco mutáveis
- * e invalidação inteligente por eventos (mutations).
+ * @hook useCatalog
+ * @description Provides read access to all catalog entities (categories, services, protocols, etc.)
+ * for the current active tenant.
+ * 
+ * @param {UseCatalogOptions} [options] - Configuration for query execution.
+ * @returns {Object} Object containing query states and an invalidation helper.
+ * 
+ * @example
+ * const { services, isLoading } = useCatalog();
  */
-export function useCatalog(options?: { enabled?: boolean }) {
+export function useCatalog(options?: UseCatalogOptions) {
   const { currentTenant } = useTenant();
   const queryClient = useQueryClient();
   const tenantId = currentTenant?.id;
 
-  // Cache de categorias
   const categories = useQuery({
     queryKey: ["catalog", tenantId, "categories"],
     queryFn: () => catalogRepo.listCategories(tenantId!),
     enabled: !!tenantId && options?.enabled !== false,
-    staleTime: 1000 * 60 * 60, // 1 hora
+    staleTime: 1000 * 60 * 60, // 1 hour - Categories are highly static
   });
 
-  // Cache de serviços
   const services = useQuery({
     queryKey: ["catalog", tenantId, "services"],
     queryFn: () => catalogRepo.listServices({ tenantId: tenantId! }),
     enabled: !!tenantId && options?.enabled !== false,
-    staleTime: 1000 * 60 * 30, // 30 minutos
+    staleTime: 1000 * 60 * 30, // 30 minutes
   });
 
-  // Cache de preços base (mapa serviceId -> price)
   const basePrices = useQuery({
     queryKey: ["catalog", tenantId, "base-prices"],
     queryFn: () => catalogRepo.listBasePrices(tenantId!),
     enabled: !!tenantId && options?.enabled !== false,
-    staleTime: 1000 * 60 * 30, // 30 minutos
+    staleTime: 1000 * 60 * 30, // 30 minutes
   });
 
-  // Protocolos
   const protocols = useQuery({
     queryKey: ["catalog", tenantId, "protocols"],
     queryFn: () => catalogRepo.listProtocols(tenantId!),
     enabled: !!tenantId && options?.enabled !== false,
-    staleTime: 1000 * 60 * 60, // 1 hora
+    staleTime: 1000 * 60 * 60, // 1 hour
   });
 
-  // Pacotes
   const packages = useQuery({
     queryKey: ["catalog", tenantId, "packages"],
     queryFn: () => catalogRepo.listPackages(tenantId!),
     enabled: !!tenantId && options?.enabled !== false,
-    staleTime: 1000 * 60 * 60, // 1 hora
+    staleTime: 1000 * 60 * 60, // 1 hour
   });
 
-  // Políticas de cancelamento
   const policies = useQuery({
     queryKey: ["catalog", tenantId, "policies"],
     queryFn: () => catalogRepo.listCancellationPolicies(tenantId!),
     enabled: !!tenantId && options?.enabled !== false,
-    staleTime: 1000 * 60 * 60, // 1 hora
+    staleTime: 1000 * 60 * 60, // 1 hour
   });
 
-  // Helpers de invalidação
+  /**
+   * Manually invalidates all catalog-related queries for the current tenant.
+   * Useful when external events require a full data refresh.
+   */
   const invalidateCatalog = () => {
     queryClient.invalidateQueries({ queryKey: ["catalog", tenantId] });
   };
@@ -79,7 +92,9 @@ export function useCatalog(options?: { enabled?: boolean }) {
 }
 
 /**
- * Mutation hooks para o catálogo com invalidação automática de cache.
+ * @hook useCatalogMutations
+ * @description Exposes functions to modify catalog data with automatic cache invalidation.
+ * Handles toast notifications for success/error feedback.
  */
 export function useCatalogMutations() {
   const queryClient = useQueryClient();
