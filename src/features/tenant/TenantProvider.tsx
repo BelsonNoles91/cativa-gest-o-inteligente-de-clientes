@@ -4,7 +4,7 @@
  * Super admin: além dos memberships próprios, recebe a lista global de tenants
  * via RPC `admin_list_all_tenants` e pode impersonar qualquer um (com auditoria).
  */
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { toast } from "sonner";
@@ -87,7 +87,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     setCurrentUnitIdState(id);
   };
 
-  const loadBaseData = async () => {
+  const loadBaseData = useCallback(async () => {
     if (!user) {
       setMemberships([]);
       setAllTenants([]);
@@ -126,7 +126,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       if (superAdmin) {
         const { data: globalRows, error: globalErr } = await supabase.rpc("admin_list_all_tenants");
         if (globalErr) console.error("[TenantProvider:admin_list]", globalErr);
-        
+
         const mapped = (globalRows ?? []).map((r: any) => ({
           id: r.id,
           name: r.name,
@@ -137,7 +137,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       } else {
         setAllTenants([]);
       }
-      
+
       setVerified(true);
     } catch (err) {
       console.error("[TenantProvider:loadBaseData]", err);
@@ -148,11 +148,11 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
 
   useEffect(() => {
     if (!authLoading) void loadBaseData();
-  }, [authLoading, user?.id]);
+  }, [authLoading, loadBaseData]);
 
   // Cálculo do Tenant Efetivo (memoizado para evitar re-renderers desnecessários)
   const availableTenants = useMemo(() => {
