@@ -277,6 +277,7 @@
 
 /* Ocultar marca d'água do Lovable */
 #lovable-badge,
+#lovable-badge-cta,
 [data-testid="lovable-badge"],
 a[href*="lovable.dev"],
 iframe[src*="lovable.dev"],
