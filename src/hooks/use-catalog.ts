@@ -53,6 +53,14 @@ export function useCatalog(options?: { enabled?: boolean }) {
     staleTime: 1000 * 60 * 60, // 1 hora
   });
 
+  // Políticas de cancelamento
+  const policies = useQuery({
+    queryKey: ["catalog", tenantId, "policies"],
+    queryFn: () => catalogRepo.listCancellationPolicies(tenantId!),
+    enabled: !!tenantId && options?.enabled !== false,
+    staleTime: 1000 * 60 * 60, // 1 hora
+  });
+
   // Helpers de invalidação
   const invalidateCatalog = () => {
     queryClient.invalidateQueries({ queryKey: ["catalog", tenantId] });
@@ -64,15 +72,16 @@ export function useCatalog(options?: { enabled?: boolean }) {
     basePrices,
     protocols,
     packages,
+    policies,
     invalidateCatalog,
     isLoading: categories.isLoading || services.isLoading || basePrices.isLoading,
   };
 }
 
 /**
- * Mutation wrapper para serviços com invalidação automática de cache.
+ * Mutation hooks para o catálogo com invalidação automática de cache.
  */
-export function useServiceMutations() {
+export function useCatalogMutations() {
   const queryClient = useQueryClient();
   const { currentTenant } = useTenant();
   const tenantId = currentTenant?.id;
@@ -82,9 +91,8 @@ export function useServiceMutations() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["catalog", tenantId, "services"] });
       queryClient.invalidateQueries({ queryKey: ["catalog", tenantId, "base-prices"] });
-      toast.success("Serviço criado com sucesso");
+      toast.success("Serviço criado");
     },
-    onError: () => toast.error("Falha ao criar serviço"),
   });
 
   const updateService = useMutation({
@@ -97,5 +105,44 @@ export function useServiceMutations() {
     },
   });
 
-  return { createService, updateService };
+  const createCategory = useMutation({
+    mutationFn: catalogRepo.createCategory,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["catalog", tenantId, "categories"] });
+      toast.success("Categoria criada");
+    },
+  });
+
+  const updateCategory = useMutation({
+    mutationFn: ({ id, patch }: { id: string; patch: any }) => catalogRepo.updateCategory(id, patch),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["catalog", tenantId, "categories"] });
+      toast.success("Categoria atualizada");
+    },
+  });
+
+  const createProtocol = useMutation({
+    mutationFn: catalogRepo.createProtocol,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["catalog", tenantId, "protocols"] });
+      toast.success("Protocolo criado");
+    },
+  });
+
+  const createPackage = useMutation({
+    mutationFn: catalogRepo.createPackage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["catalog", tenantId, "packages"] });
+      toast.success("Pacote criado");
+    },
+  });
+
+  return {
+    createService,
+    updateService,
+    createCategory,
+    updateCategory,
+    createProtocol,
+    createPackage,
+  };
 }
