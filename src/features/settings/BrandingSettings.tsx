@@ -70,11 +70,11 @@ export function BrandingSettings() {
       </div>
     );
   }
-  if (!hasFeature("custom_branding")) {
+  if (!hasFeature("custom_logo")) {
     return (
       <PlanLockedNotice
-        title="Branding personalizado disponível em planos superiores"
-        description="Faça upgrade para personalizar cores, logo e identidade visual do seu portal e mensagens."
+        title="Branding personalizado e Logo disponível em planos superiores"
+        description="O plano Apoio (Gratuito) permite apenas o uso do nome do seu negócio. Faça upgrade para o plano Empreendedor para enviar sua logo e personalizar as cores do seu portal."
       />
     );
   }
