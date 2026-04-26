@@ -54,7 +54,9 @@ const TenantBillingContext = createContext<TenantBillingContextValue | undefined
 
 export function TenantBillingProvider({ children }: { children: ReactNode }) {
   const { currentTenant } = useTenant();
-  const [loading, setLoading] = useState(true);
+  const tenantId = currentTenant?.id ?? null;
+  // initialLoading = primeira carga (mostra loader). subsequentes são "soft refresh".
+  const [initialLoading, setInitialLoading] = useState(true);
   const [subscription, setSubscription] = useState<TenantSubscription | null>(null);
   const [plan, setPlan] = useState<Plan | null>(null);
   const [allPlans, setAllPlans] = useState<Plan[]>([]);
@@ -70,8 +72,7 @@ export function TenantBillingProvider({ children }: { children: ReactNode }) {
   });
 
   const load = useCallback(async () => {
-    if (!currentTenant) {
-      setLoading(false);
+    if (!tenantId) {
       setSubscription(null);
       setPlan(null);
       setAllPlans([]);
@@ -85,52 +86,52 @@ export function TenantBillingProvider({ children }: { children: ReactNode }) {
         appointmentsLast30d: 0,
         storageMb: 0,
       });
+      setInitialLoading(false);
       return;
     }
 
-    setLoading(true);
     try {
-      const sub = await getSubscriptionByTenant(currentTenant.id);
+      const sub = await getSubscriptionByTenant(tenantId);
       const plans = await listPlans();
       const currentPlan = sub ? plans.find((item) => item.id === sub.planId) ?? null : null;
-      
+
       const [featuresRes, tenantFlags, globalFlags, liveUsage, subEvents] = await Promise.allSettled([
         currentPlan ? listPlanFeatures([currentPlan.id]) : Promise.resolve([] as PlanFeature[]),
-        listFeatureFlags(currentTenant.id),
+        listFeatureFlags(tenantId),
         listFeatureFlags(null),
-        calculateLiveUsage(currentTenant.id),
+        calculateLiveUsage(tenantId),
         sub ? listSubscriptionEvents(sub.id) : Promise.resolve([] as SubscriptionEvent[]),
       ]);
 
       const planFeatures = featuresRes.status === "fulfilled" ? featuresRes.value : [];
       const tFlags = tenantFlags.status === "fulfilled" ? tenantFlags.value : [];
       const gFlags = globalFlags.status === "fulfilled" ? globalFlags.value : [];
-      const usageData = liveUsage.status === "fulfilled" ? liveUsage.value : usage;
+      const usageData = liveUsage.status === "fulfilled" ? liveUsage.value : null;
       const eventsData = subEvents.status === "fulfilled" ? subEvents.value : [];
 
       if (featuresRes.status === "rejected") console.error("[Billing:features]", featuresRes.reason);
       if (tenantFlags.status === "rejected") console.error("[Billing:tFlags]", tenantFlags.reason);
-      
+
       setSubscription(sub);
       setPlan(currentPlan);
       setAllPlans(plans);
       setFeatures(planFeatures);
       setFlags(mergeFlags(gFlags, tFlags));
       setEvents(eventsData);
-      setUsage(usageData);
+      if (usageData) setUsage(usageData);
     } catch (err) {
       console.error("[TenantBillingProvider:load]", err);
       toast.error("Erro ao validar assinatura", {
         description: "Alguns recursos podem estar limitados temporariamente.",
         action: {
           label: "Repetir",
-          onClick: () => load(),
+          onClick: () => void load(),
         }
       });
     } finally {
-      setLoading(false);
+      setInitialLoading(false);
     }
-  }, [currentTenant]);
+  }, [tenantId]);
 
   useEffect(() => {
     void load();
@@ -154,7 +155,7 @@ export function TenantBillingProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo<TenantBillingContextValue>(() => ({
-    loading,
+    loading: initialLoading,
     subscription,
     plan,
     allPlans,
@@ -174,7 +175,7 @@ export function TenantBillingProvider({ children }: { children: ReactNode }) {
     },
     flagValue: (flagKey: string) => flagMap.get(flagKey),
     refresh: load,
-  }), [loading, subscription, plan, allPlans, features, flags, events, usage, limits, flagMap, featureMap, load]);
+  }), [initialLoading, subscription, plan, allPlans, features, flags, events, usage, limits, flagMap, featureMap, load]);
 
   return <TenantBillingContext.Provider value={value}>{children}</TenantBillingContext.Provider>;
 }
