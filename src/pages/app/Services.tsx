@@ -1289,34 +1289,40 @@ function Field({
 
 function serviceFormToSummary(form: ServiceFormState) {
   return {
-    durationMinutes: parseInt(form.durationMinutes || "0", 10) || 0,
-    bufferBeforeMinutes: parseInt(form.bufferBeforeMinutes || "0", 10) || 0,
-    bufferAfterMinutes: parseInt(form.bufferAfterMinutes || "0", 10) || 0,
-    processingMinutes: parseInt(form.processingMinutes || "0", 10) || 0,
+    durationMinutes: Math.max(0, parseInt(form.durationMinutes || "0", 10) || 0),
+    bufferBeforeMinutes: Math.max(0, parseInt(form.bufferBeforeMinutes || "0", 10) || 0),
+    bufferAfterMinutes: Math.max(0, parseInt(form.bufferAfterMinutes || "0", 10) || 0),
+    processingMinutes: Math.max(0, parseInt(form.processingMinutes || "0", 10) || 0),
   };
 }
 
 function emptyToNull(value: string) {
+  if (typeof value !== "string") return null;
   const trimmed = value.trim();
   return trimmed ? trimmed : null;
 }
 
 function emptyToUndefined(value: string) {
+  if (typeof value !== "string") return undefined;
   const trimmed = value.trim();
   return trimmed ? trimmed : undefined;
 }
 
 function parseOptionalNumber(value: string) {
+  if (typeof value !== "string") return null;
   const trimmed = value.trim();
   if (!trimmed) return null;
   const parsed = parseInt(trimmed, 10);
   return Number.isNaN(parsed) ? null : parsed;
 }
 
-function amountToCents(value: string) {
-  return Math.round(Number(value || "0") * 100);
+function amountToCents(value: string | number) {
+  const numValue = typeof value === "string" ? parseFloat(value.replace(",", ".")) : value;
+  if (Number.isNaN(numValue) || !Number.isFinite(numValue)) return 0;
+  return Math.round(Math.max(0, numValue) * 100);
 }
 
 function centsToAmount(value: number) {
-  return (value / 100).toFixed(2);
+  if (typeof value !== "number" || Number.isNaN(value)) return "0.00";
+  return (Math.max(0, value) / 100).toFixed(2);
 }
