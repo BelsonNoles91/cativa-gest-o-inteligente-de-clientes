@@ -62,6 +62,8 @@ const LS_UNIT = "cativa.currentUnitId";
 
 export function TenantProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [verified, setVerified] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
