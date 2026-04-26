@@ -99,21 +99,21 @@ export function TenantProvider({ children }: { children: ReactNode }) {
   const [units, setUnits] = useState<UnitRow[]>([]);
   const [logosByTenant, setLogosByTenant] = useState<Record<string, string | null>>({});
   const [currentTenantId, setCurrentTenantIdState] = useState<string | null>(
-    () => localStorage.getItem(LS_TENANT),
+    () => localStorage.getItem(STORAGE_KEY_TENANT),
   );
   const [currentUnitId, setCurrentUnitIdState] = useState<string | null>(
-    () => localStorage.getItem(LS_UNIT),
+    () => localStorage.getItem(STORAGE_KEY_UNIT),
   );
 
   const setCurrentTenantId = (id: string) => {
-    localStorage.setItem(LS_TENANT, id);
+    localStorage.setItem(STORAGE_KEY_TENANT, id);
     setCurrentTenantIdState(id);
-    localStorage.removeItem(LS_UNIT);
+    localStorage.removeItem(STORAGE_KEY_UNIT);
     setCurrentUnitIdState(null);
   };
 
   const setCurrentUnitId = (id: string) => {
-    localStorage.setItem(LS_UNIT, id);
+    localStorage.setItem(STORAGE_KEY_UNIT, id);
     setCurrentUnitIdState(id);
   };
 
