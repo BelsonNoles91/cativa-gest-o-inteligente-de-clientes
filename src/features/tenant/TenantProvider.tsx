@@ -47,6 +47,8 @@ interface TenantContextValue {
   currentLogoUrl: string | null;
   /** Indica que o super admin está atuando em um tenant onde NÃO é membro. */
   isImpersonating: boolean;
+  /** Indica se o usuário é um cliente (possui vínculo em client_users). */
+  isClient: boolean;
   setCurrentTenantId: (id: string) => void;
   setCurrentUnitId: (id: string) => void;
   /** Inicia impersonação registrando audit log. */
@@ -67,6 +69,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [verified, setVerified] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const [memberships, setMemberships] = useState<MembershipRow[]>([]);
   const [allTenants, setAllTenants] = useState<TenantRow[]>([]);
   const [units, setUnits] = useState<UnitRow[]>([]);
@@ -108,6 +111,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       setAllTenants([]);
       setUnits([]);
       setIsSuperAdmin(false);
+      setIsClient(false);
       try {
         localStorage.removeItem(LS_TENANT);
         localStorage.removeItem(LS_UNIT);
@@ -148,6 +152,9 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 
       const superAdmin = Boolean(profile?.is_super_admin);
       setIsSuperAdmin(superAdmin);
+      
+      const clientLinksList = clientLinks ?? [];
+      setIsClient(clientLinksList.length > 0);
       
       const membershipList = (memb ?? []) as unknown as MembershipRow[];
       setMemberships(membershipList);
@@ -324,6 +331,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       currentRole,
       currentLogoUrl,
       isImpersonating,
+      isClient,
       setCurrentTenantId,
       setCurrentUnitId,
       impersonateTenant,
