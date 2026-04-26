@@ -30,7 +30,7 @@ export function AppLayout() {
               data-app-context="tenant"
               className="flex-1 px-4 pt-4 pb-bottom-nav md:px-8 md:pb-10 md:pt-6"
             >
-              <div className="mx-auto w-full max-w-7xl animate-fade-in">
+              <div className="mx-auto w-full max-w-7xl">
                 <Outlet />
               </div>
             </main>

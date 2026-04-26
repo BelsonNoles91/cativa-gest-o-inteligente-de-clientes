@@ -78,16 +78,16 @@ export function TenantProvider({ children }: { children: ReactNode }) {
   const setCurrentTenantId = (id: string) => {
     localStorage.setItem(LS_TENANT, id);
     setCurrentTenantIdState(id);
-    // Reset de unit ao trocar tenant para evitar inconsistência.
     localStorage.removeItem(LS_UNIT);
     setCurrentUnitIdState(null);
   };
+
   const setCurrentUnitId = (id: string) => {
     localStorage.setItem(LS_UNIT, id);
     setCurrentUnitIdState(id);
   };
 
-  const load = async () => {
+  const loadBaseData = async () => {
     if (!user) {
       setMemberships([]);
       setAllTenants([]);
@@ -105,8 +105,8 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       return;
     }
-    setLoading(true);
 
+    setLoading(true);
     try {
       const [{ data: profile, error: profileErr }, { data: memb, error: membErr }] = await Promise.all([
         supabase.from("profiles").select("is_super_admin").eq("id", user.id).maybeSingle(),
@@ -117,80 +117,32 @@ export function TenantProvider({ children }: { children: ReactNode }) {
           .eq("status", "active"),
       ]);
 
-      if (profileErr || membErr) {
-        throw profileErr || membErr;
+      if (profileErr || membErr) throw profileErr || membErr;
+
+      const superAdmin = Boolean(profile?.is_super_admin);
+      setIsSuperAdmin(superAdmin);
+      setMemberships((memb ?? []) as unknown as MembershipRow[]);
+
+      if (superAdmin) {
+        const { data: globalRows, error: globalErr } = await supabase.rpc("admin_list_all_tenants");
+        if (globalErr) console.error("[TenantProvider:admin_list]", globalErr);
+        
+        const mapped = (globalRows ?? []).map((r: any) => ({
+          id: r.id,
+          name: r.name,
+          slug: r.slug,
+          segment: r.segment,
+        }));
+        setAllTenants(mapped);
+      } else {
+        setAllTenants([]);
       }
-
-    const superAdmin = Boolean(profile?.is_super_admin);
-    setIsSuperAdmin(superAdmin);
-    const list = (memb ?? []) as unknown as MembershipRow[];
-    setMemberships(list);
-
-    // Super admin: carregar lista global de tenants para o switcher / impersonação.
-    let globalTenantIds: string[] = [];
-    if (superAdmin) {
-      const { data: globalRows, error: globalErr } = await supabase.rpc("admin_list_all_tenants");
-      if (globalErr) {
-        console.error("[TenantProvider:admin_list]", globalErr);
-      }
-      const mapped = (globalRows ?? []).map((r: { id: string; name: string; slug: string; segment: TenantSegment }) => ({
-        id: r.id,
-        name: r.name,
-        slug: r.slug,
-        segment: r.segment,
-      }));
-      setAllTenants(mapped);
-      globalTenantIds = mapped.map((t) => t.id);
-    } else {
-      setAllTenants([]);
-    }
-
-    const tenantIds = list.map((m) => m.tenant_id);
-    const allIds = Array.from(new Set([...tenantIds, ...globalTenantIds]));
-
-    const cachedTenant = localStorage.getItem(LS_TENANT);
-    if (cachedTenant && !allIds.includes(cachedTenant)) {
-      try {
-        localStorage.removeItem(LS_TENANT);
-        localStorage.removeItem(LS_UNIT);
-      } catch {
-        /* ignore */
-      }
-      setCurrentTenantIdState(null);
-      setCurrentUnitIdState(null);
-    }
-
-    if (allIds.length > 0) {
-      const [usRes, settingsRes] = await Promise.all([
-        supabase
-          .from("units")
-          .select("id, tenant_id, name, is_default")
-          .in("tenant_id", allIds)
-          .order("is_default", { ascending: false }),
-        supabase
-          .from("tenant_settings")
-          .select("tenant_id, logo_url")
-          .in("tenant_id", allIds),
-      ]);
       
-      if (usRes.error) console.error("[TenantProvider:units]", usRes.error);
-      if (settingsRes.error) console.error("[TenantProvider:settings]", settingsRes.error);
-
-      setUnits((usRes.data ?? []) as UnitRow[]);
-      const map: Record<string, string | null> = {};
-      for (const s of settingsRes.data ?? []) {
-        map[s.tenant_id as string] = (s.logo_url as string) ?? null;
-      }
-      setLogosByTenant(map);
-    } else {
-      setUnits([]);
-      setLogosByTenant({});
-    }
-    setVerified(true);
+      setVerified(true);
     } catch (err) {
-      console.error("[TenantProvider:load]", err);
+      console.error("[TenantProvider:loadBaseData]", err);
       toast.error("Erro ao carregar contexto", {
-        description: "Não foi possível carregar suas contas. Tente recarregar a página.",
+        description: "Não foi possível carregar suas contas.",
         icon: <AlertCircle className="h-4 w-4" />,
       });
     } finally {
@@ -199,19 +151,73 @@ export function TenantProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    if (!authLoading) void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!authLoading) void loadBaseData();
   }, [authLoading, user?.id]);
+
+  // Cálculo do Tenant Efetivo (memoizado para evitar re-renderers desnecessários)
+  const availableTenants = useMemo(() => {
+    const fromMemberships = memberships.map((m) => m.tenants).filter((t): t is TenantRow => Boolean(t));
+    const seen = new Set<string>();
+    const result: TenantRow[] = [];
+    for (const t of [...fromMemberships, ...(isSuperAdmin ? allTenants : [])]) {
+      if (!seen.has(t.id)) {
+        seen.add(t.id);
+        result.push(t);
+      }
+    }
+    return result;
+  }, [memberships, allTenants, isSuperAdmin]);
+
+  const effectiveTenantId = useMemo(() => {
+    if (currentTenantId && availableTenants.some((t) => t.id === currentTenantId)) {
+      return currentTenantId;
+    }
+    return availableTenants[0]?.id ?? null;
+  }, [currentTenantId, availableTenants]);
+
+  // Carrega unidades e configurações APENAS do tenant selecionado
+  useEffect(() => {
+    if (!effectiveTenantId) {
+      setUnits([]);
+      setLogosByTenant({});
+      return;
+    }
+
+    let ignore = false;
+    const loadTenantDetails = async () => {
+      const [usRes, settingsRes] = await Promise.all([
+        supabase
+          .from("units")
+          .select("id, tenant_id, name, is_default")
+          .eq("tenant_id", effectiveTenantId)
+          .order("is_default", { ascending: false }),
+        supabase
+          .from("tenant_settings")
+          .select("tenant_id, logo_url")
+          .eq("tenant_id", effectiveTenantId)
+          .maybeSingle(),
+      ]);
+
+      if (ignore) return;
+      if (usRes.error) console.error("[TenantProvider:units]", usRes.error);
+      
+      setUnits((usRes.data ?? []) as UnitRow[]);
+      const map: Record<string, string | null> = {};
+      if (settingsRes.data) {
+        map[settingsRes.data.tenant_id] = settingsRes.data.logo_url ?? null;
+      }
+      setLogosByTenant(map);
+    };
+
+    void loadTenantDetails();
+    return () => { ignore = true; };
+  }, [effectiveTenantId]);
 
   async function impersonateTenant(id: string, reason?: string | null) {
     if (!isSuperAdmin) return;
     try {
-      await supabase.rpc("admin_log_impersonation_start", {
-        _tenant_id: id,
-        _reason: reason ?? null,
-      });
+      await supabase.rpc("admin_log_impersonation_start", { _tenant_id: id, _reason: reason ?? null });
     } catch (err) {
-      // Mantém a troca mesmo se o log falhar; mas reporta no console.
       console.error("Falha ao registrar impersonação", err);
     }
     setCurrentTenantId(id);
@@ -228,60 +234,29 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     if (fallback) {
       setCurrentTenantId(fallback);
     } else {
-      try {
-        localStorage.removeItem(LS_TENANT);
-        localStorage.removeItem(LS_UNIT);
-      } catch {
-        /* ignore */
-      }
+      localStorage.removeItem(LS_TENANT);
+      localStorage.removeItem(LS_UNIT);
       setCurrentTenantIdState(null);
       setCurrentUnitIdState(null);
     }
   }
 
-  const value = useMemo<TenantContextValue>(() => {
-    // Tenants disponíveis: union de memberships + (se super admin) lista global.
-    const fromMemberships = memberships
-      .map((m) => m.tenants)
-      .filter((t): t is TenantRow => Boolean(t));
-
-    const seen = new Set<string>();
-    const availableTenants: TenantRow[] = [];
-    for (const t of [...fromMemberships, ...(isSuperAdmin ? allTenants : [])]) {
-      if (seen.has(t.id)) continue;
-      seen.add(t.id);
-      availableTenants.push(t);
-    }
-
-    const effectiveTenantId =
-      currentTenantId && availableTenants.some((t) => t.id === currentTenantId)
-        ? currentTenantId
-        : availableTenants[0]?.id ?? null;
-
+  const contextValue = useMemo<TenantContextValue>(() => {
     const currentTenant = availableTenants.find((t) => t.id === effectiveTenantId) ?? null;
     const availableUnits = units.filter((u) => u.tenant_id === effectiveTenantId);
-    const effectiveUnitId =
-      currentUnitId && availableUnits.some((u) => u.id === currentUnitId)
-        ? currentUnitId
-        : availableUnits[0]?.id ?? null;
+    
+    const effectiveUnitId = currentUnitId && availableUnits.some((u) => u.id === currentUnitId)
+      ? currentUnitId
+      : availableUnits[0]?.id ?? null;
     const currentUnit = availableUnits.find((u) => u.id === effectiveUnitId) ?? null;
 
     const membershipRole = memberships.find((m) => m.tenant_id === effectiveTenantId)?.role ?? null;
-    // Super admin SEMPRE prevalece sobre o role de membership: mesmo que o usuário
-    // também seja owner/manager em algum tenant, o papel efetivo exibido e usado
-    // para autorização de UI é "super_admin" (privilégio mais alto e correto).
-    const currentRole: Role | null = isSuperAdmin
-      ? ("super_admin" as Role)
-      : membershipRole;
+    const currentRole: Role | null = isSuperAdmin ? ("super_admin" as Role) : membershipRole;
 
-    const hasActiveTenant = fromMemberships.length > 0 || isSuperAdmin;
+    const hasActiveTenant = memberships.length > 0 || isSuperAdmin;
     const currentLogoUrl = effectiveTenantId ? logosByTenant[effectiveTenantId] ?? null : null;
 
-    // Impersonando: super admin atuando em tenant onde NÃO é membro.
-    const isImpersonating =
-      isSuperAdmin &&
-      !!effectiveTenantId &&
-      !memberships.some((m) => m.tenant_id === effectiveTenantId);
+    const isImpersonating = isSuperAdmin && !!effectiveTenantId && !memberships.some((m) => m.tenant_id === effectiveTenantId);
 
     return {
       loading,
@@ -299,12 +274,14 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       setCurrentUnitId,
       impersonateTenant,
       endImpersonation,
-      refresh: load,
+      refresh: loadBaseData,
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [memberships, allTenants, units, logosByTenant, currentTenantId, currentUnitId, isSuperAdmin, loading, verified]);
+  }, [
+    loading, verified, memberships, availableTenants, effectiveTenantId, 
+    units, currentUnitId, isSuperAdmin, logosByTenant
+  ]);
 
-  return <TenantContext.Provider value={value}>{children}</TenantContext.Provider>;
+  return <TenantContext.Provider value={contextValue}>{children}</TenantContext.Provider>;
 }
 
 export function useTenant() {

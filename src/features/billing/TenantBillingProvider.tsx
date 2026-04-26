@@ -130,7 +130,7 @@ export function TenantBillingProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [currentTenant, usage]);
+  }, [currentTenant]);
 
   useEffect(() => {
     void load();
