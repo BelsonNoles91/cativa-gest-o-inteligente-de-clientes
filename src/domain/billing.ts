@@ -48,6 +48,7 @@ export interface Plan {
   maxAppointmentsMonth: number | null;
   status: PlanStatus;
   isDefault: boolean;
+  features: Record<string, boolean>;
   displayOrder: number;
   createdAt: string;
   updatedAt: string;

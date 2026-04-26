@@ -95,7 +95,7 @@ export const navItems: NavItem[] = [
     label: "Analytics",
     icon: BarChart3,
     roles: ["owner", "manager"],
-    featureKey: "analytics",
+    featureKey: "advanced_reports",
     group: "gestao",
   },
   {

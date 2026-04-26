@@ -49,8 +49,23 @@ export function PlanCard({ plan, features, highlight }: Props) {
         <Limit label="Armazenamento" value={plan.maxStorageMb} suffix=" MB" />
       </dl>
 
-      {features.length > 0 && (
+      {(features.length > 0 || (plan.features && Object.keys(plan.features).length > 0)) && (
         <ul className="space-y-1.5 border-t border-border/60 pt-3 text-xs">
+          {/* Novas flags de recursos */}
+          {plan.features && Object.entries(plan.features).map(([key, enabled]) => {
+            const label = {
+              online_scheduling: "Agendamento Online",
+              custom_logo: "Logo Personalizada",
+              advanced_reports: "Relatórios Avançados",
+            }[key] || key;
+            return (
+              <li key={key} className={cn("flex items-center gap-2", !enabled && "opacity-50")}>
+                <Check className={cn("h-3.5 w-3.5 shrink-0", enabled ? "text-success" : "text-muted-foreground")} />
+                <span>{label}</span>
+              </li>
+            );
+          })}
+          {/* Features legadas da tabela plan_features */}
           {features.map((f) => {
             const enabled = f.value === true || f.value === "true" || (typeof f.value === "number" && f.value > 0);
             return (

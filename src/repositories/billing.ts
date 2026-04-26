@@ -40,6 +40,7 @@ function rowToPlan(r: Record<string, unknown>): Plan {
     maxAppointmentsMonth: (r.max_appointments_month as number) ?? null,
     status: r.status as Plan["status"],
     isDefault: Boolean(r.is_default),
+    features: (r.features as Record<string, boolean>) ?? {},
     displayOrder: r.display_order as number,
     createdAt: r.created_at as string,
     updatedAt: r.updated_at as string,
@@ -543,11 +544,12 @@ export interface TenantWithSub {
   createdAt: string;
   subscription: TenantSubscription | null;
   planName: string | null;
+  metadata: Record<string, unknown>;
 }
 
 export async function listTenantsWithSubscriptions(): Promise<TenantWithSub[]> {
   const [tenantsRes, subsRes, plansRes] = await Promise.all([
-    supabase.from("tenants").select("id, name, slug, segment, status, created_at").order("created_at", { ascending: false }),
+    supabase.from("tenants").select("id, name, slug, segment, status, created_at, metadata").order("created_at", { ascending: false }),
     supabase.from("tenant_subscriptions").select("*"),
     supabase.from("plans").select("id, name"),
   ]);
@@ -569,6 +571,7 @@ export async function listTenantsWithSubscriptions(): Promise<TenantWithSub[]> {
       createdAt: t.created_at as string,
       subscription: sub,
       planName: sub ? planMap.get(sub.planId) ?? null : null,
+      metadata: (t.metadata as Record<string, unknown>) ?? {},
     };
   });
 }

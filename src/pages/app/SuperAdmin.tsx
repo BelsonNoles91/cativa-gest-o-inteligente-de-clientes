@@ -111,8 +111,10 @@ type PlanFormState = {
   maxProfessionals: string;
   maxActiveClients: string;
   maxStorageMb: string;
+  maxAppointmentsMonth: string;
   status: Plan["status"];
   isDefault: boolean;
+  features: Record<string, boolean>;
   displayOrder: string;
 };
 
@@ -156,8 +158,14 @@ const EMPTY_PLAN_FORM: PlanFormState = {
   maxProfessionals: "",
   maxActiveClients: "",
   maxStorageMb: "",
+  maxAppointmentsMonth: "",
   status: "public",
   isDefault: false,
+  features: {
+    online_scheduling: false,
+    custom_logo: false,
+    advanced_reports: false
+  },
   displayOrder: "0",
 };
 
@@ -316,7 +324,25 @@ function TenantsTab({
 
   function openEdit(tenant: TenantWithSub) {
     setEditingTenant(tenant);
-    setEditForm({ name: tenant.name, slug: tenant.slug, segment: tenant.segment });
+    setEditForm({ 
+      name: tenant.name, 
+      slug: tenant.slug, 
+      segment: tenant.segment
+    });
+  }
+
+  const [metadataForm, setMetadataForm] = useState({
+    feature_overrides: {} as Record<string, boolean>
+  });
+
+  function toggleMetadataOverride(featureKey: string, value: boolean) {
+    setMetadataForm(prev => ({
+      ...prev,
+      feature_overrides: {
+        ...prev.feature_overrides,
+        [featureKey]: value
+      }
+    }));
   }
 
   async function saveEdit() {
@@ -398,6 +424,10 @@ function TenantsTab({
       discountCents: String(tenant.subscription?.discountCents ?? 0),
       discountReason: tenant.subscription?.discountReason ?? "",
     });
+    // @ts-ignore - metadata existe no BD após migração
+    setMetadataForm({
+      feature_overrides: (tenant.metadata?.feature_overrides as Record<string, boolean>) ?? {}
+    });
   }
 
   async function handleChangePlan(tenant: TenantWithSub, nextPlanId: string) {
@@ -457,6 +487,10 @@ function TenantsTab({
           discountCents: parseInt(overrideForm.discountCents || "0", 10) || 0,
           discountReason: overrideForm.discountReason.trim() || null,
         }),
+        // Salvar metadata (overrides de recursos)
+        supabase.from("tenants").update({
+          metadata: metadataForm
+        }).eq("id", selectedTenant.id)
       ]);
       toast({ title: "Ajustes salvos" });
       await onReload();
@@ -618,7 +652,26 @@ function TenantsTab({
                   </Field>
                 </div>
 
-                <Button onClick={() => void handleSaveTenantAdjustments()}>
+                <div className="mt-4 space-y-3">
+                  <h4 className="text-sm font-medium">Liberações esporádicas (Pulo do Gato)</h4>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {[
+                      { key: "online_scheduling", label: "Agendamento Online" },
+                      { key: "custom_logo", label: "Logo Personalizada" },
+                      { key: "advanced_reports", label: "Relatórios Avançados" }
+                    ].map(feat => (
+                      <label key={feat.key} className="flex items-center gap-2 text-xs">
+                        <Switch 
+                          checked={metadataForm.feature_overrides[feat.key] || false} 
+                          onCheckedChange={(val) => toggleMetadataOverride(feat.key, val)} 
+                        />
+                        {feat.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <Button className="mt-4" onClick={() => void handleSaveTenantAdjustments()}>
                   Salvar ajustes
                 </Button>
               </div>
@@ -719,8 +772,10 @@ function PlansTab({
             maxProfessionals: numberField(plan.maxProfessionals),
             maxActiveClients: numberField(plan.maxActiveClients),
             maxStorageMb: numberField(plan.maxStorageMb),
+            maxAppointmentsMonth: numberField(plan.maxAppointmentsMonth),
             status: plan.status,
             isDefault: plan.isDefault,
+            features: plan.features ?? {},
             displayOrder: String(plan.displayOrder),
           }
         : EMPTY_PLAN_FORM,
@@ -758,10 +813,13 @@ function PlansTab({
         maxProfessionals: parseNullableNumber(planForm.maxProfessionals),
         maxActiveClients: parseNullableNumber(planForm.maxActiveClients),
         maxStorageMb: parseNullableNumber(planForm.maxStorageMb),
+        maxAppointmentsMonth: parseNullableNumber(planForm.maxAppointmentsMonth),
         status: planForm.status,
         isDefault: planForm.isDefault,
+        // @ts-ignore
+        features: planForm.features,
         displayOrder: parseInt(planForm.displayOrder || "0", 10) || 0,
-      });
+      } as any);
       toast({ title: editingPlan ? "Plano atualizado" : "Plano criado" });
       setOpenPlanDialog(false);
       await onReload();
@@ -974,6 +1032,31 @@ function PlansTab({
               <Field label="Storage MB">
                 <Input value={planForm.maxStorageMb} onChange={(e) => setPlanForm((current) => ({ ...current, maxStorageMb: e.target.value }))} placeholder="Ilimitado" />
               </Field>
+              <Field label="Agendamentos/mês">
+                <Input value={planForm.maxAppointmentsMonth} onChange={(e) => setPlanForm((current) => ({ ...current, maxAppointmentsMonth: e.target.value }))} placeholder="Ilimitado" />
+              </Field>
+            </div>
+            
+            <div className="space-y-3 rounded-lg border border-border/60 p-4">
+              <h4 className="text-sm font-semibold">Recursos Habilitados</h4>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {[
+                  { key: "online_scheduling", label: "Agendamento Online" },
+                  { key: "custom_logo", label: "Logo Personalizada" },
+                  { key: "advanced_reports", label: "Relatórios Avançados" }
+                ].map(feat => (
+                  <label key={feat.key} className="flex items-center gap-2 text-xs">
+                    <Switch 
+                      checked={planForm.features[feat.key] || false} 
+                      onCheckedChange={(val) => setPlanForm(prev => ({
+                        ...prev,
+                        features: { ...prev.features, [feat.key]: val }
+                      }))} 
+                    />
+                    {feat.label}
+                  </label>
+                ))}
+              </div>
             </div>
             <label className="flex items-center gap-2 text-sm">
               <Switch checked={planForm.isDefault} onCheckedChange={(checked) => setPlanForm((current) => ({ ...current, isDefault: checked }))} />

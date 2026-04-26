@@ -2163,6 +2163,7 @@ export type Database = {
           currency: string
           description: string | null
           display_order: number
+          features: Json | null
           grace_period_days: number
           id: string
           is_default: boolean
@@ -2185,6 +2186,7 @@ export type Database = {
           currency?: string
           description?: string | null
           display_order?: number
+          features?: Json | null
           grace_period_days?: number
           id?: string
           is_default?: boolean
@@ -2207,6 +2209,7 @@ export type Database = {
           currency?: string
           description?: string | null
           display_order?: number
+          features?: Json | null
           grace_period_days?: number
           id?: string
           is_default?: boolean
@@ -3352,6 +3355,7 @@ export type Database = {
           currency: string
           id: string
           locale: string
+          metadata: Json | null
           name: string
           segment: Database["public"]["Enums"]["tenant_segment"]
           slug: string
@@ -3366,6 +3370,7 @@ export type Database = {
           currency?: string
           id?: string
           locale?: string
+          metadata?: Json | null
           name: string
           segment: Database["public"]["Enums"]["tenant_segment"]
           slug: string
@@ -3380,6 +3385,7 @@ export type Database = {
           currency?: string
           id?: string
           locale?: string
+          metadata?: Json | null
           name?: string
           segment?: Database["public"]["Enums"]["tenant_segment"]
           slug?: string
@@ -4160,6 +4166,7 @@ export type Database = {
           currency: string
           id: string
           locale: string
+          metadata: Json | null
           name: string
           segment: Database["public"]["Enums"]["tenant_segment"]
           slug: string
@@ -4385,6 +4392,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      tenant_has_feature: {
+        Args: { _feature_key: string; _tenant_id: string }
+        Returns: boolean
       }
       tenant_storage_bytes_used: {
         Args: { _tenant_id: string }

@@ -166,6 +166,10 @@ export function TenantBillingProvider({ children }: { children: ReactNode }) {
     hasFeature: (featureKey: string) => {
       const flagOverride = flagMap.get(featureKey);
       if (flagOverride !== undefined) return isBooleanFeatureEnabled(flagOverride);
+      // Fallback para as novas flags de recurso na coluna 'features' do plano
+      if (plan?.features && plan.features[featureKey] !== undefined) {
+        return plan.features[featureKey];
+      }
       return isBooleanFeatureEnabled(featureMap.get(featureKey));
     },
     flagValue: (flagKey: string) => flagMap.get(flagKey),
