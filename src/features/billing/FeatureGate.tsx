@@ -10,9 +10,12 @@ export function FeatureGate({
   featureKey: string;
   children: ReactNode;
 }) {
-  const { loading, hasFeature } = useTenantBilling();
+  const { loading, hasFeature, plan } = useTenantBilling();
 
-  if (loading) {
+  // Enquanto o plano ainda não chegou (primeira carga ou troca de tenant),
+  // mostramos um loader leve. NUNCA redirecionamos com base em estado parcial,
+  // pois isso causa flash de tela e loops de navegação.
+  if (loading || !plan) {
     return (
       <div className="flex h-60 items-center justify-center">
         <Loader2 className="h-5 w-5 animate-spin text-primary" />
