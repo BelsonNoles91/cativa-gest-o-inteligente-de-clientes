@@ -125,10 +125,25 @@ export default function Billing() {
             </div>
           )}
 
-          {flags.length > 0 && (
+          {(flags.length > 0 || (plan.features && Object.keys(plan.features).length > 0)) && (
             <div className="surface-card p-5">
               <h2 className="mb-3 font-display text-lg font-semibold">Funcionalidades habilitadas</h2>
               <ul className="space-y-1.5 text-sm">
+                {plan.features && Object.entries(plan.features).map(([key, enabled]) => {
+                  const label = {
+                    online_scheduling: "Agendamento Online",
+                    custom_logo: "Logo Personalizada",
+                    advanced_reports: "Relatórios Avançados",
+                  }[key] || key;
+                  return (
+                    <li key={key} className="flex items-center justify-between rounded-md bg-muted/40 px-3 py-2">
+                      <span>{label}</span>
+                      <StatusBadge tone={enabled ? "success" : "neutral"}>
+                        {enabled ? "ativa" : "inativa"}
+                      </StatusBadge>
+                    </li>
+                  );
+                })}
                 {flags.map((f) => (
                   <li key={f.id} className="flex items-center justify-between rounded-md bg-muted/40 px-3 py-2">
                     <span>{f.label}</span>
