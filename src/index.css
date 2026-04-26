@@ -290,3 +290,21 @@ div[style*="Edit with Lovable"],
   position: absolute !important;
   z-index: -9999 !important;
 }
+
+/* Strictly hide Lovable badge and watermark injects */
+#lovable-badge,
+#lovable-badge-cta,
+#lovable-badge-divider,
+#lovable-badge-close,
+[data-testid="lovable-badge"],
+a[href*="lovable.dev"],
+iframe[src*="lovable.dev"],
+div[style*="Edit with Lovable"],
+.lovable-badge {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  position: absolute !important;
+  z-index: -9999 !important;
+}
