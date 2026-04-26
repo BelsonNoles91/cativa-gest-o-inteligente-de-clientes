@@ -160,26 +160,26 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       setCurrentUnitIdState(null);
     }
 
-    if (allIds.length > 0) {
+    if (effectiveTenantId) {
       const [usRes, settingsRes] = await Promise.all([
         supabase
           .from("units")
           .select("id, tenant_id, name, is_default")
-          .in("tenant_id", allIds)
+          .eq("tenant_id", effectiveTenantId)
           .order("is_default", { ascending: false }),
         supabase
           .from("tenant_settings")
           .select("tenant_id, logo_url")
-          .in("tenant_id", allIds),
+          .eq("tenant_id", effectiveTenantId)
+          .maybeSingle(),
       ]);
       
       if (usRes.error) console.error("[TenantProvider:units]", usRes.error);
-      if (settingsRes.error) console.error("[TenantProvider:settings]", settingsRes.error);
-
+      
       setUnits((usRes.data ?? []) as UnitRow[]);
       const map: Record<string, string | null> = {};
-      for (const s of settingsRes.data ?? []) {
-        map[s.tenant_id as string] = (s.logo_url as string) ?? null;
+      if (settingsRes.data) {
+        map[settingsRes.data.tenant_id as string] = (settingsRes.data.logo_url as string) ?? null;
       }
       setLogosByTenant(map);
     } else {
