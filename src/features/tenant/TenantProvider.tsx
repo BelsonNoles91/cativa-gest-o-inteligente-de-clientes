@@ -164,18 +164,12 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       if (!superAdmin && membershipList.length === 0) {
         const isClient = (clientLinks ?? []).length > 0;
         
-        // Se é cliente e está na área de app, manda para o portal
+        // Log para debug, mas os Guards (RequireOnboarding/OnboardingGuard) 
+        // agora cuidam do redirecionamento baseados no estado isClient.
         if (isClient && location.pathname.startsWith("/app")) {
-          console.log("[TenantProvider] Client detected, redirecting to portal");
-          setTimeout(() => navigate("/portal", { replace: true }), 0);
-          return;
-        }
-        
-        // Se não é cliente e está na área de app, manda para onboarding
-        if (!isClient && location.pathname.startsWith("/app")) {
-          console.log("[TenantProvider] No memberships found, redirecting to onboarding");
-          setTimeout(() => navigate("/onboarding", { replace: true }), 0);
-          return;
+          console.log("[TenantProvider] Client detected, guards will redirect to portal");
+        } else if (!isClient && location.pathname.startsWith("/app")) {
+          console.log("[TenantProvider] No memberships found, guards will redirect to onboarding");
         }
       }
 
