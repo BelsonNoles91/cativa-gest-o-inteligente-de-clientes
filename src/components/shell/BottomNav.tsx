@@ -4,7 +4,7 @@
  * Mostra até 4 atalhos diretos (showInBottomNav) + um item "Mais"
  * que abre um Sheet com todos os módulos restantes acessíveis ao role.
  */
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { LayoutGrid, Lock, PackageOpen, X } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
@@ -34,31 +34,29 @@ export function BottomNav() {
   // Gestores (owner/manager) e super_admin enxergam módulos com featureKey
   // mesmo sem assinatura ativa (com indicador de cadeado). FeatureGate cuida
   // do redirecionamento ao /app/meu-plano.
-  const canPreviewLockedFeatures =
-    currentRole === "owner" || currentRole === "manager" || currentRole === "super_admin";
+  const canPreviewLockedFeatures = useMemo(() =>
+    currentRole === "owner" || currentRole === "manager" || currentRole === "super_admin", [currentRole]);
 
-  const allowedItems = navItems
-    .filter(
-      (i) =>
-        canAccess(currentRole, i.roles) &&
-        (!i.featureKey || hasFeature(i.featureKey) || canPreviewLockedFeatures),
-    )
-    .map((i) => ({
-      ...i,
-      locked: Boolean(i.featureKey) && !hasFeature(i.featureKey!),
-    }));
-  // Mantemos no máximo 3 atalhos diretos no nav inferior + botão "Mais",
-  // totalizando 4 colunas. Isso evita corte do último ícone em telas
-  // estreitas e deixa folga para o badge do Lovable no canto inferior
-  // direito (~64px) sem sobrepor itens de navegação.
-  const primary = allowedItems.filter((i) => i.showInBottomNav).slice(0, 3);
-  const secondary = allowedItems.filter(
-    (i) => !primary.some((p) => p.to === i.to),
-  );
+  const { primary, secondary, moreActive } = useMemo(() => {
+    const allowedItems = navItems
+      .filter(
+        (i) =>
+          canAccess(currentRole, i.roles) &&
+          (!i.featureKey || hasFeature(i.featureKey) || canPreviewLockedFeatures),
+      )
+      .map((i) => ({
+        ...i,
+        locked: Boolean(i.featureKey) && !hasFeature(i.featureKey!),
+      }));
 
-  const moreActive = secondary.some((i) =>
-    i.to === "/app" ? location.pathname === "/app" : location.pathname.startsWith(i.to),
-  );
+    const p = allowedItems.filter((i) => i.showInBottomNav).slice(0, 3);
+    const s = allowedItems.filter((i) => !p.some((prev) => prev.to === i.to));
+    const active = s.some((i) =>
+      i.to === "/app" ? location.pathname === "/app" : location.pathname.startsWith(i.to),
+    );
+
+    return { primary: p, secondary: s, moreActive: active };
+  }, [currentRole, hasFeature, canPreviewLockedFeatures, location.pathname]);
 
   /**
    * Convenção de testids (estável para E2E):
