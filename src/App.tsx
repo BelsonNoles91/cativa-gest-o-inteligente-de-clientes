@@ -102,6 +102,7 @@ const App = () => (
                   {/* Público */}
                   <Route path="/" element={<Index />} />
                   <Route path="/planos" element={<Pricing />} />
+                  <Route path="/pricing" element={<Pricing />} />
 
                   {/* Auth */}
                   <Route path="/auth/login" element={<Login />} />
