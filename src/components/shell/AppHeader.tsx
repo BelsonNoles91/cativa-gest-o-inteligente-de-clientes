@@ -5,7 +5,7 @@
  * Mobile     : linha única compacta (avatar tenant + nome + busca + perfil).
  *               A busca abre num CommandDialog ao tocar no ícone.
  */
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Bell, Search, ShieldCheck, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";

@@ -1,5 +1,5 @@
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Hook para debouncing de valores de entrada (útil para buscas e filtros).
