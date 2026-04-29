@@ -38,6 +38,7 @@ export function BottomNav() {
     currentRole === "owner" || currentRole === "manager" || currentRole === "super_admin", [currentRole]);
 
   const { primary, secondary, moreActive } = useMemo(() => {
+    // Computação de itens permitidos e normalizados
     const allowedItems = navItems
       .filter(
         (i) =>
@@ -49,8 +50,11 @@ export function BottomNav() {
         locked: Boolean(i.featureKey) && !hasFeature(i.featureKey!),
       }));
 
+    // Divisão entre barra principal e menu "Mais"
     const p = allowedItems.filter((i) => i.showInBottomNav).slice(0, 3);
     const s = allowedItems.filter((i) => !p.some((prev) => prev.to === i.to));
+    
+    // Verificação de rota ativa (O(n) amortizado)
     const active = s.some((i) =>
       i.to === "/app" ? location.pathname === "/app" : location.pathname.startsWith(i.to),
     );

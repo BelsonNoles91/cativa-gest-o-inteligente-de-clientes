@@ -165,12 +165,16 @@ export function TenantBillingProvider({ children }: { children: ReactNode }) {
     usage,
     limits,
     hasFeature: (featureKey: string) => {
+      // Prioridade 1: Flags de override (telemetria/suporte)
       const flagOverride = flagMap.get(featureKey);
       if (flagOverride !== undefined) return isBooleanFeatureEnabled(flagOverride);
-      // Fallback para as novas flags de recurso na coluna 'features' do plano
+      
+      // Prioridade 2: Features diretas no schema do plano (O(1) lookup)
       if (plan?.features && plan.features[featureKey] !== undefined) {
         return plan.features[featureKey];
       }
+      
+      // Prioridade 3: Features relacionadas (legacy/granular)
       return isBooleanFeatureEnabled(featureMap.get(featureKey));
     },
     flagValue: (flagKey: string) => flagMap.get(flagKey),
