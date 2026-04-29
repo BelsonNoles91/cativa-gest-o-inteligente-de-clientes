@@ -1,6 +1,7 @@
 import { Component, ErrorInfo, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, RefreshCcw } from "lucide-react";
+import { handleError } from "@/lib/error-handler";
 
 interface Props {
   children: ReactNode;
@@ -29,7 +30,11 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error(`[ErrorBoundary:${this.props.name || "Global"}]`, error, errorInfo);
+    handleError(error, { 
+      category: 'UNKNOWN', 
+      context: { componentStack: errorInfo.componentStack, boundaryName: this.props.name || "Global" },
+      silent: true // Evita toast duplo (ErrorBoundary já renderiza fallback visual)
+    });
   }
 
   private handleReset = () => {

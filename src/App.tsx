@@ -10,6 +10,7 @@ import { AuthProvider } from "@/features/auth/AuthProvider";
 import { TenantProvider } from "@/features/tenant/TenantProvider";
 import { ProtectedRoute, RequireOnboarding, RoleGuard, OnboardingGuard } from "@/features/auth/guards";
 import { ErrorBoundary } from "@/components/feedback/ErrorBoundary";
+import { handleError } from "@/lib/error-handler";
 import { appConfig } from "@/config/app";
 
 import { FeatureGate } from "@/features/billing/FeatureGate";
@@ -45,6 +46,7 @@ function lazyWithReload<T extends { default: ComponentType<any> }>(
         // Return a never-resolving promise while the page reloads.
         return new Promise<T>(() => {});
       }
+      handleError(error, { category: 'NETWORK', context: { type: 'chunk_load_fail' } });
       throw error;
     }),
   );
