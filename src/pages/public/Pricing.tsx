@@ -167,12 +167,13 @@ export default function Pricing() {
     return Array.from(set);
   }, [plans]);
 
-  // Plans filtrados pela periodicidade ativa
+  // Plans filtrados pela periodicidade ativa + planos "custom" (enterprise/sob consulta)
   const visiblePlans = useMemo(() => {
     if (!plans) return null;
     if (plans.length === 0) return [];
-    const filtered = plans.filter((p) => p.billingPeriod === period);
-    return filtered.length > 0 ? filtered : plans.filter((p) => p.billingPeriod === "monthly");
+    
+    // Mostra planos do período selecionado OU planos com período "custom"
+    return plans.filter((p) => p.billingPeriod === period || p.billingPeriod === "custom");
   }, [plans, period]);
 
   return (
