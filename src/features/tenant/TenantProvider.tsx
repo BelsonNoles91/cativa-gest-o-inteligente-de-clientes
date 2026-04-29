@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { AlertCircle } from "lucide-react";
+import { handleError } from "@/lib/error-handler";
 import type { Role } from "@/domain/roles";
 import type { TenantSegment } from "@/domain/tenant";
 
@@ -184,8 +184,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       }
       setVerified(true);
     } catch (err) {
-      console.error("[TenantProvider:loadBaseData]", err);
-      toast.error("Erro ao carregar contexto");
+      handleError(err, { category: 'DATABASE', context: { action: 'loadBaseData' } });
     } finally {
       setLoading(false);
     }
