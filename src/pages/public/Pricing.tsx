@@ -316,7 +316,8 @@ function PricingGrid({ plans }: { plans: PlanWithFeatures[] }) {
         "mx-auto mt-10 grid gap-6",
         plans.length === 1 && "max-w-md",
         plans.length === 2 && "md:grid-cols-2 max-w-3xl",
-        plans.length >= 3 && "md:grid-cols-3 max-w-6xl",
+        plans.length === 3 && "md:grid-cols-3 max-w-6xl",
+        plans.length >= 4 && "md:grid-cols-2 lg:grid-cols-4 max-w-7xl",
       )}
     >
       {plans.map((p) => (

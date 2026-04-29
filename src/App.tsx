@@ -1,4 +1,4 @@
-import { Suspense, lazy, type ComponentType } from "react";
+import { Suspense, lazy, type ComponentType, forwardRef } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -50,8 +50,8 @@ function lazyWithReload<T extends { default: ComponentType<any> }>(
   );
 }
 
+const Pricing = lazyWithReload(() => import("./pages/public/Pricing"));
 const NotFound = lazyWithReload(() => import("./pages/NotFound"));
-import Pricing from "./pages/public/Pricing";
 const Login = lazyWithReload(() => import("./pages/auth/Login"));
 const ForgotPassword = lazyWithReload(() => import("./pages/auth/ForgotPassword"));
 const ResetPassword = lazyWithReload(() => import("./pages/auth/ResetPassword"));
