@@ -51,7 +51,7 @@ function lazyWithReload<T extends { default: ComponentType<any> }>(
 }
 
 const NotFound = lazyWithReload(() => import("./pages/NotFound"));
-const Pricing = lazyWithReload(() => import("./pages/public/Pricing"));
+import Pricing from "./pages/public/Pricing";
 const Login = lazyWithReload(() => import("./pages/auth/Login"));
 const ForgotPassword = lazyWithReload(() => import("./pages/auth/ForgotPassword"));
 const ResetPassword = lazyWithReload(() => import("./pages/auth/ResetPassword"));
