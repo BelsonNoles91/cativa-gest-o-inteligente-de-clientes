@@ -5,7 +5,7 @@
  * Mobile     : linha única compacta (avatar tenant + nome + busca + perfil).
  *               A busca abre num CommandDialog ao tocar no ícone.
  */
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Bell, Search, ShieldCheck, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -24,16 +24,18 @@ import {
 
 export function AppHeader() {
   const [searchOpen, setSearchOpen] = useState(false);
-  const { currentTenant, currentUnit, currentLogoUrl, isImpersonating, endImpersonation } = useTenant();
+  const { currentTenant, currentUnit, currentLogoUrl } = useTenant();
 
-  const initials = currentTenant
-    ? currentTenant.name
-        .split(" ")
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((p) => p[0]?.toUpperCase() ?? "")
-        .join("") || "·"
-    : "·";
+  // Memoização do cálculo de iniciais para evitar processamento de strings em todo render
+  const initials = useMemo(() => {
+    if (!currentTenant?.name) return "·";
+    return currentTenant.name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((p) => p[0]?.toUpperCase() ?? "")
+      .join("") || "·";
+  }, [currentTenant?.name]);
 
   return (
     <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur-xl pt-safe">
