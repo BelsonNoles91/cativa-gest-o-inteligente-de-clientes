@@ -159,11 +159,13 @@ export default function Pricing() {
     };
   }, []);
 
-  // periodicidades disponíveis (monthly + qualquer outra encontrada)
+  // periodicidades disponíveis para o toggle (excluímos "custom")
   const availablePeriods = useMemo<PlanBillingPeriod[]>(() => {
     if (!plans || plans.length === 0) return ["monthly"];
     const set = new Set<PlanBillingPeriod>();
-    plans.forEach((p) => set.add(p.billingPeriod));
+    plans.forEach((p) => {
+      if (p.billingPeriod !== "custom") set.add(p.billingPeriod);
+    });
     return Array.from(set);
   }, [plans]);
 
