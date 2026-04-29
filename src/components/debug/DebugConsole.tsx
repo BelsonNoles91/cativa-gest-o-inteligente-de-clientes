@@ -32,7 +32,8 @@ function isAutomatedBrowser(): boolean {
 
 function isEnabled(): boolean {
   if (isAutomatedBrowser()) return false;
-  if (import.meta.env.DEV) return true;
+  // Desativado por padrão na preview para não poluir a página pública,
+  // exceto se explicitamente habilitado via localStorage.
   try {
     return localStorage.getItem(LS_ENABLED) === "1";
   } catch {

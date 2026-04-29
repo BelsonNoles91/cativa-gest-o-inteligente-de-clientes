@@ -159,20 +159,23 @@ export default function Pricing() {
     };
   }, []);
 
-  // periodicidades disponíveis (monthly + qualquer outra encontrada)
+  // periodicidades disponíveis para o toggle (excluímos "custom")
   const availablePeriods = useMemo<PlanBillingPeriod[]>(() => {
     if (!plans || plans.length === 0) return ["monthly"];
     const set = new Set<PlanBillingPeriod>();
-    plans.forEach((p) => set.add(p.billingPeriod));
+    plans.forEach((p) => {
+      if (p.billingPeriod !== "custom") set.add(p.billingPeriod);
+    });
     return Array.from(set);
   }, [plans]);
 
-  // Plans filtrados pela periodicidade ativa
+  // Plans filtrados pela periodicidade ativa + planos "custom" (enterprise/sob consulta)
   const visiblePlans = useMemo(() => {
     if (!plans) return null;
     if (plans.length === 0) return [];
-    const filtered = plans.filter((p) => p.billingPeriod === period);
-    return filtered.length > 0 ? filtered : plans.filter((p) => p.billingPeriod === "monthly");
+    
+    // Mostra planos do período selecionado OU planos com período "custom"
+    return plans.filter((p) => p.billingPeriod === period || p.billingPeriod === "custom");
   }, [plans, period]);
 
   return (
@@ -316,7 +319,8 @@ function PricingGrid({ plans }: { plans: PlanWithFeatures[] }) {
         "mx-auto mt-10 grid gap-6",
         plans.length === 1 && "max-w-md",
         plans.length === 2 && "md:grid-cols-2 max-w-3xl",
-        plans.length >= 3 && "md:grid-cols-3 max-w-6xl",
+        plans.length === 3 && "md:grid-cols-3 max-w-6xl",
+        plans.length >= 4 && "md:grid-cols-2 lg:grid-cols-4 max-w-7xl",
       )}
     >
       {plans.map((p) => (
@@ -377,7 +381,8 @@ function PlanCard({
   highlight,
   trialDays,
 }: PlanCardProps) {
-  const isFree = priceCents === 0;
+  const isFree = priceCents === 0 && name.toLowerCase().includes("apoio");
+  const isCustom = priceCents === 0 && !isFree;
   const periodLabel =
     period === "monthly" ? "/mês"
     : period === "quarterly" ? "/trimestre"
@@ -403,6 +408,8 @@ function PlanCard({
       <div className="mt-5 flex items-end gap-1">
         {isFree ? (
           <span className="font-display text-4xl">Grátis</span>
+        ) : isCustom ? (
+          <span className="font-display text-4xl">Sob consulta</span>
         ) : (
           <>
             <span className="font-display text-4xl">{formatPrice(priceCents, currency)}</span>

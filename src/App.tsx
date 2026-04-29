@@ -1,4 +1,4 @@
-import { Suspense, lazy, type ComponentType } from "react";
+import { Suspense, lazy, type ComponentType, forwardRef } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -14,7 +14,7 @@ import { appConfig } from "@/config/app";
 
 import { FeatureGate } from "@/features/billing/FeatureGate";
 import { DebugConsole } from "@/components/debug/DebugConsole";
-const Index = lazyWithReload(() => import("./pages/Index"));
+import Index from "./pages/Index";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -50,8 +50,8 @@ function lazyWithReload<T extends { default: ComponentType<any> }>(
   );
 }
 
+import Pricing from "./pages/public/Pricing";
 const NotFound = lazyWithReload(() => import("./pages/NotFound"));
-const Pricing = lazyWithReload(() => import("./pages/public/Pricing"));
 const Login = lazyWithReload(() => import("./pages/auth/Login"));
 const ForgotPassword = lazyWithReload(() => import("./pages/auth/ForgotPassword"));
 const ResetPassword = lazyWithReload(() => import("./pages/auth/ResetPassword"));
@@ -102,6 +102,7 @@ const App = () => (
                   {/* Público */}
                   <Route path="/" element={<Index />} />
                   <Route path="/planos" element={<Pricing />} />
+                  <Route path="/pricing" element={<Pricing />} />
 
                   {/* Auth */}
                   <Route path="/auth/login" element={<Login />} />
