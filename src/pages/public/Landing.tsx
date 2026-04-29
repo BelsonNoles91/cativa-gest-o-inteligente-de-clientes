@@ -222,22 +222,22 @@ export default function Landing() {
         <div className="pointer-events-none absolute -top-32 right-[-10%] h-80 w-80 rounded-full bg-primary/15 blur-3xl" aria-hidden />
         <div className="pointer-events-none absolute -bottom-24 left-[-10%] h-80 w-80 rounded-full bg-accent/20 blur-3xl" aria-hidden />
 
-        <div className="container relative grid gap-10 py-16 md:grid-cols-12 md:py-24 md:gap-12">
-          <div className="space-y-6 md:col-span-6 lg:col-span-7">
-            <StatusBadge tone="brand">Plataforma SaaS · Beleza & Wellness</StatusBadge>
-            <h1 className="font-display text-4xl leading-[1.05] tracking-tight md:text-6xl lg:text-[4.25rem]">
+        <div className="container relative grid gap-12 py-16 md:grid-cols-12 md:py-28 lg:py-32">
+          <div className="flex flex-col justify-center space-y-8 md:col-span-6 lg:col-span-7">
+            <StatusBadge tone="brand" className="w-fit">Plataforma SaaS · Beleza & Wellness</StatusBadge>
+            <h1 className="font-display text-5xl leading-[0.95] tracking-tight md:text-7xl lg:text-[5.5rem]">
               Gestão que faz o{" "}
-              <span className="text-gradient-brand">cliente voltar</span>.
+              <span className="text-gradient-brand italic">cliente voltar</span>.
             </h1>
-            <p className="max-w-xl text-base text-muted-foreground md:text-lg">
+            <p className="max-w-xl text-lg text-muted-foreground/90 md:text-xl leading-relaxed">
               Cativa centraliza agenda, clientes, pacotes, confirmações e portal
               de autoatendimento — para você focar em atender enquanto o sistema
               cuida da retenção, do rebooking e do no-show.
             </p>
             <div className="flex flex-wrap items-center gap-3">
-              <Button asChild size="lg" className="h-12 rounded-xl bg-gradient-brand px-6 shadow-md">
+              <Button asChild size="lg" className="h-14 rounded-2xl bg-gradient-brand px-8 text-lg shadow-lg tap-feedback">
                 <Link to="/onboarding">
-                  Começar trial grátis <ArrowRight className="ml-2 h-4 w-4" />
+                  Começar trial grátis <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="h-12 rounded-xl px-6">
