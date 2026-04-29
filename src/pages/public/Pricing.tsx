@@ -378,7 +378,8 @@ function PlanCard({
   highlight,
   trialDays,
 }: PlanCardProps) {
-  const isFree = priceCents === 0;
+  const isFree = priceCents === 0 && name.toLowerCase().includes("apoio");
+  const isCustom = priceCents === 0 && !isFree;
   const periodLabel =
     period === "monthly" ? "/mês"
     : period === "quarterly" ? "/trimestre"
@@ -404,6 +405,8 @@ function PlanCard({
       <div className="mt-5 flex items-end gap-1">
         {isFree ? (
           <span className="font-display text-4xl">Grátis</span>
+        ) : isCustom ? (
+          <span className="font-display text-4xl">Sob consulta</span>
         ) : (
           <>
             <span className="font-display text-4xl">{formatPrice(priceCents, currency)}</span>

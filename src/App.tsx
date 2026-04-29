@@ -14,7 +14,7 @@ import { appConfig } from "@/config/app";
 
 import { FeatureGate } from "@/features/billing/FeatureGate";
 import { DebugConsole } from "@/components/debug/DebugConsole";
-const Index = lazyWithReload(() => import("./pages/Index"));
+import Index from "./pages/Index";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -50,7 +50,7 @@ function lazyWithReload<T extends { default: ComponentType<any> }>(
   );
 }
 
-const Pricing = lazyWithReload(() => import("./pages/public/Pricing"));
+import Pricing from "./pages/public/Pricing";
 const NotFound = lazyWithReload(() => import("./pages/NotFound"));
 const Login = lazyWithReload(() => import("./pages/auth/Login"));
 const ForgotPassword = lazyWithReload(() => import("./pages/auth/ForgotPassword"));
