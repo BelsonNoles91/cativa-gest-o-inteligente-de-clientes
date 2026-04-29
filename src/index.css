@@ -260,7 +260,11 @@
 
   /* Toque "tátil": leve scale ao pressionar — sensação de app nativo */
   .tap-feedback {
-    @apply transition-transform duration-150 active:scale-[0.97];
+    @apply transition-all duration-200 active:scale-[0.96] active:brightness-95 select-none;
+  }
+
+  .glass-card {
+    @apply bg-card/60 backdrop-blur-md border border-white/20 shadow-sm;
   }
 }
 

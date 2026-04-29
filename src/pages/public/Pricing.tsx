@@ -393,13 +393,14 @@ function PlanCard({
   return (
     <div
       className={cn(
-        "relative flex flex-col rounded-3xl border bg-card p-6 shadow-sm transition-all md:p-7",
-        highlight ? "border-primary shadow-md ring-1 ring-primary/30" : "border-border/70",
+        "relative flex flex-col rounded-[2rem] border bg-card p-6 shadow-sm transition-all duration-300 md:p-8",
+        "hover:shadow-lg hover:-translate-y-1 group",
+        highlight ? "border-primary/50 shadow-md ring-1 ring-primary/20" : "border-border/60",
       )}
     >
       {highlight && (
-        <span className="absolute -top-3 left-6 inline-flex items-center gap-1 rounded-full bg-gradient-brand px-3 py-1 text-xs font-medium text-primary-foreground shadow-sm">
-          <Sparkles className="h-3 w-3" /> Mais escolhido
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 rounded-full bg-gradient-brand px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-primary-foreground shadow-md animate-fade-in">
+          <Sparkles className="h-3.5 w-3.5" /> Mais escolhido
         </span>
       )}
       <h3 className="font-display text-xl">{name}</h3>
@@ -435,9 +436,9 @@ function PlanCard({
       <Button
         asChild
         className={cn(
-          "mt-7 h-11 w-full rounded-xl",
+          "mt-8 h-12 w-full rounded-2xl tap-feedback font-semibold text-base",
           highlight
-            ? "bg-gradient-brand text-primary-foreground"
+            ? "bg-gradient-brand text-primary-foreground shadow-sm hover:brightness-110"
             : "bg-foreground text-background hover:bg-foreground/90",
         )}
       >
