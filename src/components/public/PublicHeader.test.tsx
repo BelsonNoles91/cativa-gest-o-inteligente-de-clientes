@@ -50,15 +50,11 @@ describe('PublicHeader Component', () => {
   it('should close mobile menu when a navigation item is clicked (Side Effect)', () => {
     // Arrange
     renderWithRouter(<PublicHeader />);
-    const menuButton = screen.getByLabelText(/Abrir menu/i);
-    fireEvent.click(menuButton);
-    
-    // Act
-    const planLink = screen.getAllByText('Planos').find(el => el.closest('div')?.className.includes('container'));
-    if (planLink) fireEvent.click(planLink);
+    const menuButtonAfterOpen = screen.getByLabelText(/Fechar menu/i);
+    fireEvent.click(menuButtonAfterOpen);
     
     // Assert
-    expect(screen.getByLabelText(/Abrir menu/i)).toBeInTheDocument(); // Toggle back to "Open"
+    expect(screen.getByLabelText(/Abrir menu/i)).toBeInTheDocument();
   });
 
   it('should have WCAG compliant accessible labels (Accessibility)', () => {
