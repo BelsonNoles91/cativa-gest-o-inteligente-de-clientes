@@ -9,9 +9,9 @@
  *
  * Tudo em tokens semânticos do design system.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Check, HelpCircle, Loader2, Sparkles } from "lucide-react";
+import { ArrowRight, Check, HelpCircle, Loader2, Sparkles, RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { PublicHeader } from "@/components/public/PublicHeader";
@@ -25,6 +25,7 @@ import {
   type PlanFeature,
 } from "@/domain/billing";
 import { cn } from "@/lib/utils";
+import { handleError } from "@/lib/error-handler";
 
 // ---------------------------------------------------------------------------
 // FAQ institucional
@@ -124,40 +125,45 @@ interface PlanWithFeatures extends Plan {
 export default function Pricing() {
   const [plans, setPlans] = useState<PlanWithFeatures[] | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [period, setPeriod] = useState<PlanBillingPeriod>("monthly");
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const all = await listPlans();
-        const publicPlans = all.filter((p) => p.status === "public");
-        const ids = publicPlans.map((p) => p.id);
-        const features = ids.length ? await listPlanFeatures(ids) : [];
-        const byPlan = new Map<string, PlanFeature[]>();
-        features.forEach((f) => {
-          const arr = byPlan.get(f.planId) ?? [];
-          arr.push(f);
-          byPlan.set(f.planId, arr);
-        });
-        if (mounted) {
-          setPlans(
-            publicPlans.map((p) => ({
-              ...p,
-              featureList: (byPlan.get(p.id) ?? []).sort((a, b) => a.displayOrder - b.displayOrder),
-            })),
-          );
-        }
-      } catch {
-        if (mounted) setPlans([]);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    setError(false);
+    
+    try {
+      const all = await listPlans();
+      const publicPlans = all.filter((p) => p.status === "public");
+      const ids = publicPlans.map((p) => p.id);
+      
+      const features = ids.length ? await listPlanFeatures(ids) : [];
+      const byPlan = new Map<string, PlanFeature[]>();
+      
+      features.forEach((f) => {
+        const arr = byPlan.get(f.planId) ?? [];
+        arr.push(f);
+        byPlan.set(f.planId, arr);
+      });
+
+      setPlans(
+        publicPlans.map((p) => ({
+          ...p,
+          featureList: (byPlan.get(p.id) ?? []).sort((a, b) => a.displayOrder - b.displayOrder),
+        })),
+      );
+    } catch (err) {
+      handleError(err, { category: "DATABASE" });
+      setError(true);
+      setPlans([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   // periodicidades disponíveis para o toggle (excluímos "custom")
   const availablePeriods = useMemo<PlanBillingPeriod[]>(() => {
@@ -221,8 +227,23 @@ export default function Pricing() {
       {/* PLANS */}
       <section className="container pb-16 md:pb-20">
         {loading ? (
-          <div className="flex items-center justify-center py-16 text-muted-foreground">
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Carregando planos…
+          <div className="flex flex-col items-center justify-center py-20 text-muted-foreground animate-in fade-in duration-500">
+            <Loader2 className="mb-4 h-8 w-8 animate-spin text-primary" />
+            <p className="text-lg font-medium">Carregando planos profissionais…</p>
+          </div>
+        ) : error ? (
+          <div className="mx-auto max-w-md rounded-2xl border border-danger/20 bg-danger/5 p-8 text-center animate-in zoom-in-95 duration-300">
+            <h3 className="text-lg font-semibold text-danger">Falha na conexão</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Não conseguimos carregar os planos em tempo real. Tente novamente ou use nossos valores base abaixo.
+            </p>
+            <Button 
+              variant="outline" 
+              onClick={loadData} 
+              className="mt-6 gap-2"
+            >
+              <RefreshCcw className="h-4 w-4" /> Tentar novamente
+            </Button>
           </div>
         ) : visiblePlans && visiblePlans.length > 0 ? (
           <PricingGrid plans={visiblePlans} />
