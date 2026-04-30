@@ -50,8 +50,16 @@ describe('PublicHeader Component', () => {
   it('should close mobile menu when a navigation item is clicked (Side Effect)', () => {
     // Arrange
     renderWithRouter(<PublicHeader />);
-    const menuButtonAfterOpen = screen.getByLabelText(/Fechar menu/i);
-    fireEvent.click(menuButtonAfterOpen);
+    const menuButton = screen.getByLabelText(/Abrir menu/i);
+    fireEvent.click(menuButton);
+    
+    // Act - find the link inside the mobile container (the one visible now)
+    const mobileLinks = screen.getAllByRole('link', { name: /Planos/i });
+    const mobilePlanLink = mobileLinks.find(link => link.closest('.md\\:hidden'));
+    
+    if (mobilePlanLink) {
+      fireEvent.click(mobilePlanLink);
+    }
     
     // Assert
     expect(screen.getByLabelText(/Abrir menu/i)).toBeInTheDocument();
