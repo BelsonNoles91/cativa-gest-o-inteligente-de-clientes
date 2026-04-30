@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { PublicHeader } from '../PublicHeader';
+import { PublicHeader } from './PublicHeader';
 import { BrowserRouter } from 'react-router-dom';
 import React from 'react';
 
