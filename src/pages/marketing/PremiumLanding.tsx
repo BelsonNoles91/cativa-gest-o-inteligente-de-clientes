@@ -143,22 +143,22 @@ export default function PremiumLanding() {
             {[
               {
                 role: "Proprietário",
-                title: "Decisões Guiadas por Dados",
-                desc: "Indicadores de saúde do negócio, taxa de retenção por unidade e previsibilidade de caixa real.",
+                title: "O Fim da Gestão por 'Feeling'",
+                desc: "Indicadores de saúde real, taxa de retorno por profissional e previsibilidade de faturamento para os próximos 30 dias.",
                 accent: "border-accent/30",
                 iconBg: "bg-accent/10"
               },
               {
                 role: "Recepção",
-                title: "Agilidade que Encanta",
-                desc: "Confirmações em um toque, lista de espera inteligente e interface pensada para quem tem pressa.",
+                title: "80% Menos Trabalho Manual",
+                desc: "Confirmações automáticas, lista de espera que se auto-gerencia e interface que elimina o caos dos horários de pico.",
                 accent: "border-blue-500/30",
                 iconBg: "bg-blue-500/10"
               },
               {
                 role: "Profissional",
-                title: "Foco Total no Atendimento",
-                desc: "Agenda no celular, histórico clínico acessível e lembretes de retorno sugeridos automaticamente.",
+                title: "Foco 100% no Cliente",
+                desc: "Histórico clínico completo no celular, metas individuais visíveis e lembretes automáticos para garantir o retorno.",
                 accent: "border-emerald-500/30",
                 iconBg: "bg-emerald-500/10"
               }
