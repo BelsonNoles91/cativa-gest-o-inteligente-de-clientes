@@ -84,15 +84,17 @@ export default function PremiumLanding() {
             <div className="space-y-12">
               <div>
                 <div className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-8">
-                  A Nova Estratégia
+                  Estratégia & Controle
                 </div>
                 <h3 className="font-display text-5xl md:text-7xl text-primary-dark tracking-tighter leading-[0.9] mb-8">
-                  Sua nova <br />
-                  <span className="italic serif font-normal text-accent">inteligência</span> <br />
-                  operacional.
+                  O problema não é <br />
+                  <span className="italic serif font-normal text-accent">só agenda.</span>
                 </h3>
-                <p className="text-xl text-muted-foreground/80 leading-relaxed font-light">
-                  Nós mudamos o foco da "marcação de horários" para a "gestão de relacionamento". A Cativa antecipa o comportamento do seu cliente e sugere ações para lotar sua agenda.
+                <p className="text-xl text-muted-foreground/80 leading-relaxed font-light mb-6">
+                  A maioria dos sistemas ajuda a marcar horários. A Cativa foi criada para ajudar seu negócio a reter melhor, confirmar melhor, operar melhor e crescer com mais previsibilidade.
+                </p>
+                <p className="text-2xl font-display italic serif text-primary-dark/60">
+                  "Porque crescer com consistência exige mais do que agenda. Exige inteligência operacional."
                 </p>
               </div>
               
@@ -307,8 +309,8 @@ export default function PremiumLanding() {
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[150%] bg-accent/20 blur-[150px] rounded-full -z-10 animate-pulse" />
               
               <h2 className="font-display text-6xl md:text-9xl text-white mb-12 tracking-tighter leading-[0.85]">
-                Seu negócio, <br />
-                <span className="italic serif font-normal text-accent">redefinido.</span>
+                Sua operação, <br />
+                <span className="italic serif font-normal text-accent">elevada.</span>
               </h2>
               
               <div className="flex flex-col sm:flex-row justify-center items-center gap-8 mb-16">
