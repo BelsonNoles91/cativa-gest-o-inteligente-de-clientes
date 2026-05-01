@@ -76,7 +76,7 @@ import { canAccess } from "@/domain/roles";
 import { isUsageBlocked } from "@/domain/billing";
 import { QuickFiltersBar } from "@/features/clients/QuickFiltersBar";
 import { supabase } from "@/integrations/supabase/client";
-import { cn } from "@/lib/utils";
+import { cn, debounce } from "@/lib/utils";
 
 type FiltersState = {
   search: string;
