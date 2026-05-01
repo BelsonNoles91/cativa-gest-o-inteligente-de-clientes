@@ -64,12 +64,15 @@ export default function PremiumLanding() {
   return (
     <div className="min-h-screen bg-background font-sans selection:bg-accent/30 selection:text-primary-dark overflow-x-hidden">
       <Helmet>
-        <title>Cativa — Sistema para clínicas e salões focado em retenção</title>
-        <meta name="description" content="Organize agenda, clientes, confirmações, protocolos e indicadores com a Cativa. Um sistema premium para clínicas de estética, salões e negócios de beleza que querem reduzir faltas e fazer o cliente voltar." />
+        <title>Cativa — Sistema para Clínicas e Salões focado em Retenção</title>
+        <meta name="description" content="Organize agenda, clientes, confirmações e indicadores com a Cativa. O software premium para clínicas de estética e salões que buscam fidelidade e recorrência." />
         <link rel="canonical" href="https://cativapp.lovable.app" />
         <meta property="og:url" content="https://cativapp.lovable.app" />
-        <meta property="og:title" content="Cativa — Sistema para clínicas e salões focado em retenção" />
-        <meta property="og:description" content="A inteligência que fideliza e faz sua clínica ou salão prosperar com organização e previsibilidade." />
+        <meta property="og:title" content="Cativa — Sistema para Clínicas e Salões focado em Retenção" />
+        <meta property="og:description" content="A inteligência que profissionaliza sua gestão e faz seu cliente voltar mais vezes." />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="keywords" content="sistema para clínica de estética, sistema para salão de beleza, agenda para estética, CRM para salão, confirmação de horários, gestão para clínica estética, software para salão de beleza" />
       </Helmet>
       <motion.div className="fixed top-0 left-0 right-0 h-1 bg-accent z-[200] origin-left" style={{ scaleX }} />
       <Navbar />
@@ -477,13 +480,13 @@ export default function PremiumLanding() {
             initial={{ y: 100 }}
             animate={{ y: 0 }}
             exit={{ y: 100 }}
-            className="fixed bottom-0 left-0 right-0 z-50 p-4 lg:hidden bg-white/80 backdrop-blur-xl border-t border-border/40 pb-safe"
+            className="fixed bottom-0 left-0 right-0 z-[100] p-4 lg:hidden bg-white/90 backdrop-blur-xl border-t border-border/40 pb-safe shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.1)]"
           >
             <div className="flex gap-3">
-              <Button asChild variant="outline" className="flex-1 rounded-full border-primary-dark/20 h-12">
-                <Link to="/demo">Agendar Demo</Link>
+              <Button asChild variant="outline" className="flex-1 rounded-full border-primary-dark/20 h-14 font-bold text-xs uppercase tracking-widest">
+                <Link to="/demo">Demo</Link>
               </Button>
-              <Button asChild className="flex-1 rounded-full bg-primary-dark h-12">
+              <Button asChild className="flex-1 rounded-full bg-primary-dark h-14 font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20">
                 <Link to="/onboarding">Teste Grátis</Link>
               </Button>
             </div>
