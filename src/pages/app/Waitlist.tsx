@@ -131,8 +131,13 @@ export default function WaitlistPage() {
     if (statusFilter !== "all") {
       result = result.filter((entry) => entry.entry.status === statusFilter);
     }
+    if (proFilter !== "all") {
+      result = result.filter((entry) => entry.entry.preferredProfessionalId === proFilter);
+    }
+    if (serviceFilter !== "all") {
+      result = result.filter((entry) => entry.entry.serviceId === serviceFilter);
+    }
     
-    // Filtros adicionais integrados (exemplo: profissional logado ou unidade ativa)
     return result.sort((a, b) => {
       // Priorização: VIPs primeiro, depois prioridade numérica, depois janela
       if (a.entry.priority !== b.entry.priority) return b.entry.priority - a.entry.priority;
@@ -141,7 +146,7 @@ export default function WaitlistPage() {
       const startB = b.entry.desiredWindowStart ? new Date(b.entry.desiredWindowStart).getTime() : Infinity;
       return startA - startB;
     });
-  }, [entries, statusFilter]);
+  }, [entries, statusFilter, proFilter, serviceFilter]);
 
   useEffect(() => {
     if (!currentTenant) return;
