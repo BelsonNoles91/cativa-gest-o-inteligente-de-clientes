@@ -398,7 +398,7 @@ export default function PremiumLanding() {
                      </Link>
                   </Button>
                   
-                  <Button asChild variant="outline" size="lg" className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border bg-background h-16 md:h-20 px-8 md:px-12 rounded-full border-white/20 text-lg md:text-xl hover:bg-white transition-all duration-500 text-secondary-foreground">
+                  <Button asChild variant="outline" size="lg" className="hover:text-accent-foreground inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border bg-background h-16 md:h-20 px-8 md:px-12 rounded-full border-white/20 text-lg md:text-xl hover:bg-white transition-all duration-500 text-secondary-foreground opacity-100">
                      <Link to="/onboarding">Começar teste de 14 dias</Link>
                   </Button>
                </div>
