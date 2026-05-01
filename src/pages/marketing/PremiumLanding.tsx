@@ -3,8 +3,11 @@ import { Footer } from "@/components/marketing/layout/Footer";
 import { HeroSection } from "@/components/marketing/sections/HeroSection";
 import { ProblemSection } from "@/components/marketing/sections/ProblemSection";
 import { FeaturesSection } from "@/components/marketing/sections/FeaturesSection";
+import { ModulesSection } from "@/components/marketing/sections/ModulesSection";
+import { ProcessSection } from "@/components/marketing/sections/ProcessSection";
+import { MetricsSection } from "@/components/marketing/sections/MetricsSection";
 import { PremiumSection } from "@/components/marketing/layout/PremiumSection";
-import { ArrowRight, CheckCircle2, TrendingUp, Users, Calendar, Smartphone, Star, Quote } from "lucide-react";
+import { ArrowRight, CheckCircle2, TrendingUp, Users, Calendar, Star, Quote, ShieldCheck, UserCheck, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -126,6 +129,7 @@ export default function PremiumLanding() {
         </PremiumSection>
 
         <FeaturesSection />
+        <ModulesSection />
 
         {/* Plans Section */}
         <PremiumSection id="planos" variant="soft" padding="lg">
@@ -213,41 +217,52 @@ export default function PremiumLanding() {
             </h3>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-12">
+          <div className="grid md:grid-cols-4 gap-8">
             {[
               {
                 role: "Proprietário",
                 title: "O Fim da Gestão por 'Feeling'",
                 desc: "Indicadores de saúde real, taxa de retorno por profissional e previsibilidade de faturamento para os próximos 30 dias.",
-                accent: "border-accent/30",
+                icon: LayoutDashboard,
                 iconBg: "bg-accent/10"
               },
               {
-                role: "Recepção",
-                title: "80% Menos Trabalho Manual",
-                desc: "Confirmações automáticas, lista de espera que se auto-gerencia e interface que elimina o caos dos horários de pico.",
-                accent: "border-blue-500/30",
+                role: "Gerente",
+                title: "Controle da Rotina e Equipe",
+                desc: "Visibilidade sobre agenda, fluxo operacional, confirmações, gargalos e oportunidades de melhoria em tempo real.",
+                icon: ShieldCheck,
                 iconBg: "bg-blue-500/10"
               },
               {
-                role: "Profissional",
-                title: "Foco 100% no Cliente",
-                desc: "Histórico clínico completo no celular, metas individuais visíveis e lembretes automáticos para garantir o retorno.",
-                accent: "border-emerald-500/30",
+                role: "Recepção",
+                title: "Agilidade e Menos Retrabalho",
+                desc: "Organize confirmações, cadastros e reagendamentos com poucos cliques e muito mais previsibilidade.",
+                icon: Calendar,
                 iconBg: "bg-emerald-500/10"
+              },
+              {
+                role: "Profissional",
+                title: "Mais Contexto para Atender",
+                desc: "Acesse informações importantes do cliente, acompanhe histórico e atue com continuidade na jornada.",
+                icon: UserCheck,
+                iconBg: "bg-purple-500/10"
               }
             ].map((card, i) => (
-              <div key={i} className={cn("group p-12 rounded-[3rem] bg-white/5 border backdrop-blur-xl transition-all duration-700 hover:bg-white/10 hover:-translate-y-2", card.accent)}>
-                <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center mb-10 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3", card.iconBg)}>
-                   <Users className="h-6 w-6 text-white" />
+              <div key={i} className="group p-10 rounded-[3rem] bg-white/5 border border-white/10 backdrop-blur-xl transition-all duration-700 hover:bg-white/10 hover:-translate-y-2">
+                <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center mb-8 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3", card.iconBg)}>
+                   <card.icon className="h-6 w-6 text-white" />
                 </div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-4">{card.role}</p>
-                <h4 className="text-2xl font-display font-bold text-white mb-6 group-hover:text-accent transition-colors">{card.title}</h4>
-                <p className="text-white/60 leading-relaxed font-light text-lg">{card.desc}</p>
+                <h4 className="text-xl font-display font-bold text-white mb-6 group-hover:text-accent transition-colors">{card.title}</h4>
+                <p className="text-white/60 leading-relaxed font-light text-base">{card.desc}</p>
               </div>
             ))}
           </div>
         </PremiumSection>
+
+        <ProcessSection />
+
+        <MetricsSection />
 
         {/* FAQ Section - Clean & Sophisticated */}
         <PremiumSection variant="light" padding="lg" id="faq">
@@ -264,10 +279,12 @@ export default function PremiumLanding() {
                  </div>
                  <div className="lg:w-2/3 space-y-4">
                     {[
-                      { q: "A Cativa serve para meu tipo de negócio?", a: "Sim! Somos especialistas em clínicas de estética, salões de beleza, barbearias, esmalterias e profissionais autônomos que desejam profissionalizar sua gestão." },
-                      { q: "Já tenho outro sistema, como faço?", a: "Nós ajudamos na migração! Nossa equipe auxilia na importação de dados para que você não perca seu histórico e comece a lucrar mais já no primeiro dia." },
-                      { q: "O sistema funciona no meu celular?", a: "Totalmente. A Cativa é Mobile-First, oferecendo uma experiência nativa e impecável tanto no computador quanto em qualquer smartphone." },
-                      { q: "Preciso cadastrar cartão de crédito para testar?", a: "Não. Você tem 14 dias de acesso total sem compromisso. Só paga se decidir que a Cativa é essencial para seu crescimento." }
+                      { q: "A Cativa serve para o meu tipo de negócio?", a: "Sim. A plataforma foi pensada para clínicas de estética, salões de beleza, barbearias, esmalterias, lash/brow, massagem, wellness e negócios correlatos." },
+                      { q: "Preciso usar API de WhatsApp?", a: "Não. A Cativa não depende de API de WhatsApp. O processo foi pensado para funcionar de forma organizada e semiautomatizada, mantendo controle operacional." },
+                      { q: "O sistema é difícil de usar?", a: "Não. A interface foi desenhada para ser intuitiva, rápida e clara, especialmente para quem vive a rotina da recepção e da gestão." },
+                      { q: "Funciona no celular?", a: "Sim. A Cativa foi pensada com abordagem mobile-first, para que a experiência funcione muito bem em diferentes tamanhos de tela." },
+                      { q: "Consigo personalizar para a minha operação?", a: "Sim. Serviços, mensagens, regras, equipe e unidades podem ser ajustados conforme a realidade do seu negócio." },
+                      { q: "A Cativa é apenas uma agenda?", a: "Não. A agenda é apenas uma parte. A proposta é organizar operação, relacionamento, confirmação, protocolos e indicadores para aumentar retenção." }
                     ].map((item, i) => (
                       <div key={i} className="p-10 rounded-[2.5rem] bg-[#FAF7F9] border border-border/20 transition-all hover:border-accent/40 group">
                          <h4 className="text-xl font-bold text-primary-dark mb-4 flex items-center justify-between">
