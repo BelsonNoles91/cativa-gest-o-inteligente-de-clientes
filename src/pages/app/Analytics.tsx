@@ -92,8 +92,8 @@ export default function AnalyticsPage() {
 
   const exportToCsv = () => {
     const data = analytics.appts.map((a) => ({
-      Data: formatDateForExport(a.date),
-      Cliente: a.clientName,
+      Data: formatDateForExport(a.startsAt),
+      Cliente: a.clientId, // No ApptFact, temos o clientId. Em um cenário real, o clientName viria via join.
       Serviço: labels?.services.get(a.serviceId ?? "") ?? "—",
       Profissional: labels?.pros.get(a.professionalId) ?? "—",
       Unidade: labels?.units.get(a.unitId) ?? "—",
@@ -105,6 +105,7 @@ export default function AnalyticsPage() {
     const fileName = `relatorio-cativa-${new Date().toISOString().split("T")[0]}.csv`;
     downloadFile(csv, fileName, "text/csv;charset=utf-8;");
   };
+
 
   const exportSummaryToCsv = () => {
     const summary = [
