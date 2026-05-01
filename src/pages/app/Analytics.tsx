@@ -147,12 +147,13 @@ export default function AnalyticsPage() {
               tone="brand"
             />
             <KpiCard
-              label="Receita futura em risco"
-              value={formatCurrency(metrics.futureRisk.value)}
-              hint={`${metrics.futureRisk.count} agendamento(s) sem confirmação`}
-              icon={ShieldAlert}
-              tone={metrics.futureRisk.count > 0 ? "danger" : "success"}
+              label="LTV (Anual)"
+              value={formatCurrency(metrics.ltv)}
+              hint="Potencial médio por cliente"
+              icon={TrendingUp}
+              tone="info"
             />
+
           </div>
 
           <div className="grid gap-6 xl:grid-cols-[1.3fr_0.9fr]">
