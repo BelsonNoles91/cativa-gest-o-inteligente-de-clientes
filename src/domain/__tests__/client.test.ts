@@ -42,6 +42,7 @@ describe("Client Domain Logic", () => {
         origin: "Instagram",
         preferences: "Likes coffee",
         allergies: "None",
+        contraindications: "None",
         preferredUnitId: "u1",
         preferredProfessionalId: "p1",
       };
