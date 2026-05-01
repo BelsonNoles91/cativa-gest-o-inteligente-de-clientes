@@ -2,7 +2,7 @@ import { PremiumSection } from "@/components/marketing/layout/PremiumSection";
 import { PremiumHeader } from "@/components/marketing/layout/PremiumHeader";
 import { PremiumFooter } from "@/components/marketing/layout/PremiumFooter";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, CheckCircle2, ArrowRight, Play, Check } from "lucide-react";
+import { Calendar, Clock, CheckCircle2, ArrowRight, Play, Check, Users, TrendingUp, Shield, Settings } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -220,13 +220,120 @@ export default function DemoPage() {
                   </div>
                 </>
               ) : (
-                <iframe
-                  src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
-                  title="Cativa Platform Tour"
-                  className="absolute inset-0 w-full h-full border-0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
+                <div className="absolute inset-0 w-full h-full bg-[#FAF7F9] flex flex-col">
+                  {/* Header do Mockup */}
+                  <div className="h-12 bg-white border-b border-border/40 px-6 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-lg bg-accent flex items-center justify-center">
+                        <span className="text-white font-black text-[10px]">C</span>
+                      </div>
+                      <span className="text-xs font-black tracking-tighter text-primary-dark">CATIVA</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="w-2 h-2 rounded-full bg-red-400" />
+                      <div className="w-2 h-2 rounded-full bg-amber-400" />
+                      <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                    </div>
+                  </div>
+
+                  <div className="flex-1 flex overflow-hidden">
+                    {/* Sidebar do Mockup */}
+                    <div className="w-16 bg-white border-r border-border/40 py-4 flex flex-col items-center gap-6">
+                      {[Calendar, Users, TrendingUp, Shield, Settings].map((Icon, i) => (
+                        <div key={i} className={cn("p-2 rounded-xl transition-colors", i === 0 ? "bg-accent/10 text-accent" : "text-muted-foreground")}>
+                          <Icon className="w-4 h-4" />
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Conteúdo do Mockup com Animação */}
+                    <div className="flex-1 p-6 overflow-hidden">
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="space-y-6"
+                      >
+                        <div className="flex justify-between items-end">
+                          <div>
+                            <h4 className="text-lg font-bold text-primary-dark">Agenda de Hoje</h4>
+                            <p className="text-[10px] text-muted-foreground">Sexta-feira, 15 de Maio</p>
+                          </div>
+                          <div className="bg-emerald-500/10 text-emerald-600 text-[10px] font-bold px-3 py-1 rounded-full border border-emerald-500/20">
+                            87% Ocupação
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          {[
+                            { time: "09:00", name: "Ana Paula", service: "Limpeza de Pele", status: "Confirmado" },
+                            { time: "10:30", name: "Beatriz Silva", service: "Peeling", status: "Aguardando" },
+                            { time: "13:00", name: "Carla Souza", service: "Avaliação", status: "Pendente" },
+                            { time: "14:30", name: "Denise Lima", service: "Manicure", status: "Confirmado" }
+                          ].map((item, i) => (
+                            <motion.div 
+                              key={i}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.2 + (i * 0.1) }}
+                              className="bg-white p-3 rounded-2xl border border-border/40 shadow-sm flex items-center gap-3"
+                            >
+                              <div className="w-10 h-10 rounded-full bg-accent/5 flex items-center justify-center text-accent font-bold text-xs">
+                                {item.name.charAt(0)}
+                              </div>
+                              <div className="flex-1 overflow-hidden">
+                                <p className="text-xs font-bold text-primary-dark truncate">{item.name}</p>
+                                <p className="text-[9px] text-muted-foreground truncate">{item.service}</p>
+                              </div>
+                              <div className="text-[8px] font-bold text-muted-foreground">{item.time}</div>
+                            </motion.div>
+                          ))}
+                        </div>
+
+                        {/* Gráfico Simulado */}
+                        <div className="bg-white p-4 rounded-2xl border border-border/40 shadow-sm">
+                          <div className="flex justify-between items-center mb-4">
+                            <p className="text-[10px] font-bold text-primary-dark uppercase tracking-widest">Faturamento Semanal</p>
+                            <span className="text-emerald-500 font-bold text-xs">+12.5%</span>
+                          </div>
+                          <div className="flex items-end gap-2 h-20">
+                            {[40, 65, 45, 80, 55, 90, 70].map((h, i) => (
+                              <motion.div 
+                                key={i}
+                                initial={{ height: 0 }}
+                                animate={{ height: `${h}%` }}
+                                transition={{ delay: 0.5 + (i * 0.05), duration: 1 }}
+                                className={cn("flex-1 rounded-t-md", i === 5 ? "bg-accent" : "bg-accent/20")}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </motion.div>
+                    </div>
+                  </div>
+
+                  {/* Overlay de Simulação de Clique */}
+                  <motion.div 
+                    animate={{ 
+                      x: [100, 300, 300, 500, 500],
+                      y: [300, 300, 150, 150, 400],
+                      scale: [1, 1, 0.9, 0.9, 1]
+                    }}
+                    transition={{ 
+                      duration: 8, 
+                      repeat: Infinity,
+                      times: [0, 0.2, 0.4, 0.6, 1]
+                    }}
+                    className="absolute w-6 h-6 pointer-events-none z-50"
+                  >
+                    <div className="w-full h-full bg-accent/30 rounded-full border border-accent animate-ping absolute" />
+                    <div className="w-full h-full bg-accent rounded-full shadow-lg" />
+                  </motion.div>
+                  
+                  <div className="absolute bottom-4 right-6 text-[8px] font-bold text-accent uppercase tracking-widest animate-pulse">
+                    Simulação Interativa
+                  </div>
+                </div>
               )}
             </div>
           </div>
