@@ -20,7 +20,7 @@ export function HeroSection() {
     <PremiumSection
       variant="soft"
       padding="none"
-      className="pt-24 pb-16 md:pt-40 md:pb-40 overflow-hidden md:overflow-visible min-h-[90vh] flex items-center"
+      className="pt-20 pb-12 md:pt-40 md:pb-40 overflow-hidden md:overflow-visible min-h-screen flex items-center"
       containerSize="xl"
     >
       <div ref={containerRef} className="absolute inset-0 pointer-events-none" />
@@ -43,7 +43,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white border border-secondary shadow-sm mb-8 group cursor-default"
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-secondary shadow-sm mb-6 md:mb-8 group cursor-default"
           >
             <span className="flex h-2 w-2 rounded-full bg-accent animate-pulse" />
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Gestão Inteligente para Estética e Beleza</span>
@@ -53,7 +53,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="font-display text-4xl sm:text-6xl md:text-7xl xl:text-[7rem] leading-[0.9] tracking-tight text-primary-dark mb-8 relative"
+            className="font-display text-[2.5rem] sm:text-6xl md:text-7xl xl:text-[7rem] leading-[0.95] tracking-tight text-primary-dark mb-8 relative"
           >
             <span className="relative z-10">A inteligência <br className="hidden sm:block" />
             <span className="relative inline-block">
@@ -80,8 +80,8 @@ export function HeroSection() {
             A Cativa centraliza clientes, agendamentos, confirmações e relatórios em um único sistema pensado para quem quer crescer com organização e <span className="text-primary-dark font-medium">fazer o cliente voltar sempre.</span>
           </motion.p>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-4 mb-6">
-            <Button asChild size="lg" className="h-16 px-10 rounded-full bg-primary-dark text-lg shadow-2xl shadow-primary/20 group relative overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98]">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-4 mb-8">
+            <Button asChild size="lg" className="h-14 md:h-16 px-8 md:px-10 rounded-full bg-primary-dark text-base md:text-lg shadow-2xl shadow-primary/20 group relative overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98]">
               <Link to="/demo">
                 <span className="relative z-10 flex items-center gap-2">
                   Ver demonstração gratuita
@@ -91,7 +91,7 @@ export function HeroSection() {
               </Link>
             </Button>
             
-            <Button asChild variant="outline" size="lg" className="h-16 px-10 rounded-full border-primary-dark/40 text-primary-dark font-bold text-lg hover:bg-primary-dark hover:text-white hover:border-primary-dark transition-all">
+            <Button asChild variant="outline" size="lg" className="h-14 md:h-16 px-8 md:px-10 rounded-full border-primary-dark/40 text-primary-dark font-bold text-base md:text-lg hover:bg-primary-dark hover:text-white hover:border-primary-dark transition-all">
               <Link to="/onboarding">Começar teste de 14 dias</Link>
             </Button>
           </div>

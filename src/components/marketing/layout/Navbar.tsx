@@ -28,13 +28,13 @@ export function Navbar() {
   return (
     <nav 
       className={cn(
-        "fixed top-0 left-0 right-0 z-[100] transition-all duration-500 px-6 md:px-12",
-        isScrolled ? "py-4" : "py-10"
+        "fixed top-0 left-0 right-0 z-[100] transition-all duration-500 px-4 md:px-12",
+        isScrolled ? "py-2 md:py-4" : "py-4 md:py-10"
       )}
     >
       <div 
         className={cn(
-          "mx-auto max-w-7xl h-20 rounded-full flex items-center justify-between px-10 transition-all duration-500",
+          "mx-auto max-w-7xl h-16 md:h-20 rounded-full flex items-center justify-between px-6 md:px-10 transition-all duration-500",
           isScrolled 
             ? "bg-white/90 backdrop-blur-xl shadow-[0_20px_50px_-10px_rgba(0,0,0,0.05)] border border-white/40" 
             : "bg-white/40 backdrop-blur-md border border-white/20 lg:bg-transparent lg:backdrop-blur-none lg:border-none"
