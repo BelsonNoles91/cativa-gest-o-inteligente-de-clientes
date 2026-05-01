@@ -12,10 +12,16 @@ import { ArrowRight, CheckCircle2, TrendingUp, Users, Calendar, Star, Quote, Shi
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 import { useState } from "react";
 
 export default function PremiumLanding() {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
   const [activeSegment, setActiveSegment] = useState(0);
   const segments = [
     { 
