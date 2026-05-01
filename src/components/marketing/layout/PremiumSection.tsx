@@ -5,8 +5,9 @@ interface PremiumSectionProps {
   children: ReactNode;
   className?: string;
   id?: string;
-  variant?: "light" | "dark" | "soft" | "gradient" | "transparent";
-  padding?: "none" | "sm" | "md" | "lg" | "xl";
+  variant?: "light" | "dark" | "soft" | "gradient" | "transparent" | "accent";
+  padding?: "none" | "xs" | "sm" | "md" | "lg" | "xl";
+  containerSize?: "sm" | "md" | "lg" | "xl" | "full";
 }
 
 export function PremiumSection({
@@ -15,34 +16,47 @@ export function PremiumSection({
   id,
   variant = "light",
   padding = "lg",
+  containerSize = "lg",
 }: PremiumSectionProps) {
   const variants = {
     light: "bg-background text-foreground",
-    dark: "bg-primary-dark text-white",
+    dark: "bg-[#1A0F16] text-white", // Darker, more sophisticated purple-black
     soft: "bg-[#FAF7F9] text-foreground",
-    gradient: "bg-gradient-soft text-foreground",
+    gradient: "bg-gradient-to-b from-[#FAF7F9] to-white text-foreground",
     transparent: "bg-transparent",
+    accent: "bg-primary text-primary-foreground",
   };
 
   const paddings = {
     none: "py-0",
-    sm: "py-12 md:py-16",
-    md: "py-16 md:py-24",
-    lg: "py-24 md:py-32",
-    xl: "py-32 md:py-48",
+    xs: "py-8 md:py-12",
+    sm: "py-12 md:py-20",
+    md: "py-20 md:py-32",
+    lg: "py-32 md:py-48",
+    xl: "py-48 md:py-64",
+  };
+
+  const containers = {
+    sm: "max-w-3xl",
+    md: "max-w-5xl",
+    lg: "max-w-7xl",
+    xl: "max-w-[90rem]",
+    full: "max-w-none px-0",
   };
 
   return (
     <section
       id={id}
       className={cn(
-        "relative overflow-hidden",
+        "relative overflow-hidden selection:bg-accent/30",
         variants[variant],
         paddings[padding],
         className
       )}
     >
-      <div className="container relative z-10">{children}</div>
+      <div className={cn("container relative z-10 mx-auto px-6 md:px-8", containers[containerSize])}>
+        {children}
+      </div>
     </section>
   );
 }
@@ -56,7 +70,7 @@ export function PremiumGrid({
   children: ReactNode;
   className?: string;
   cols?: "1" | "2" | "3" | "4" | "flexible";
-  gap?: "sm" | "md" | "lg";
+  gap?: "xs" | "sm" | "md" | "lg" | "xl";
 }) {
   const colStyles = {
     "1": "grid-cols-1",
@@ -67,9 +81,11 @@ export function PremiumGrid({
   };
 
   const gapStyles = {
-    sm: "gap-4",
-    md: "gap-6 md:gap-8",
-    lg: "gap-10 md:gap-16",
+    xs: "gap-2 md:gap-4",
+    sm: "gap-4 md:gap-6",
+    md: "gap-8 md:gap-12",
+    lg: "gap-12 md:gap-20",
+    xl: "gap-20 md:gap-32",
   };
 
   return (
