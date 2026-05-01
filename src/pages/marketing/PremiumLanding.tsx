@@ -320,29 +320,29 @@ export default function PremiumLanding() {
             {[
               {
                 role: "Dono do Negócio",
-                title: "Gestão Baseada em Dados",
-                desc: "Relatórios de saúde real, taxa de retorno e previsão de faturamento para tomar as melhores decisões.",
+                title: "Decisão com clareza",
+                desc: "Mais clareza sobre retenção, ocupação e previsibilidade para decidir com menos achismo e mais segurança.",
                 icon: LayoutDashboard,
                 iconBg: "bg-accent/10"
               },
               {
                 role: "Gerente",
-                title: "Controle Total da Equipe",
-                desc: "Visibilidade sobre agendas, fluxo de trabalho e oportunidades de melhoria em tempo real.",
+                title: "Padrão operacional",
+                desc: "Mais controle sobre equipe, confirmações, gargalos e processos que garantem a qualidade da marca.",
                 icon: ShieldCheck,
                 iconBg: "bg-blue-500/10"
               },
               {
                 role: "Recepção",
-                title: "Rapidez no Atendimento",
-                desc: "Organize confirmações e novos agendamentos com poucos cliques e muito mais agilidade.",
+                title: "Agilidade real",
+                desc: "Menos improviso, menos retrabalho e mais agilidade para confirmar, reagendar e organizar a agenda.",
                 icon: Calendar,
                 iconBg: "bg-emerald-500/10"
               },
               {
                 role: "Profissional",
-                title: "Melhor Contexto do Cliente",
-                desc: "Acesse o histórico de quem você atende e ofereça um serviço muito mais personalizado.",
+                title: "Contexto do cliente",
+                desc: "Mais contexto sobre cada cliente, histórico de atendimento e próxima oportunidade de retorno.",
                 icon: UserCheck,
                 iconBg: "bg-purple-500/10"
               }
