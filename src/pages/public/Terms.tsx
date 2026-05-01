@@ -1,5 +1,5 @@
-import { Navbar } from "@/components/marketing/layout/Navbar";
-import { Footer } from "@/components/marketing/layout/Footer";
+import { PremiumHeader as Navbar } from "@/components/marketing/layout/PremiumHeader";
+import { PremiumFooter as Footer } from "@/components/marketing/layout/PremiumFooter";
 import { PremiumSection } from "@/components/marketing/layout/PremiumSection";
 
 export default function Terms() {
