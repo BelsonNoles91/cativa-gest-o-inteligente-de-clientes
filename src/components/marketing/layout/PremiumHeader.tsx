@@ -6,10 +6,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
-  { label: "O Problema", href: "#dor" },
-  { label: "Solução", href: "#solucao" },
-  { label: "Módulos", href: "#modulos" },
-  { label: "Diferenciais", href: "#diferenciais" },
+  { label: "Funcionalidades", href: "/#funcionalidades" },
+  { label: "Módulos", href: "/#modulos" },
+  { label: "Métricas", href: "/#metricas" },
   { label: "Planos", href: "/planos" },
   { label: "Demonstração", href: "/demo" },
 ];
@@ -31,16 +30,13 @@ export function PremiumHeader() {
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out px-4 py-4 md:px-8",
         isScrolled 
-          ? "bg-background/80 backdrop-blur-xl border-b border-border/40 py-3" 
+          ? "bg-white/90 backdrop-blur-xl border-b border-border/40 py-3 shadow-sm" 
           : "bg-transparent"
       )}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 group">
-          <Logo className="w-8 h-8 md:w-10 md:h-10 transition-transform group-hover:scale-105" />
-          <span className="font-display text-xl md:text-2xl font-bold tracking-tight text-primary-dark">
-            Cativa
-          </span>
+        <Link to="/" className="flex items-center group shrink-0">
+          <Logo size="sm" className="transition-transform group-hover:scale-105" />
         </Link>
 
         {/* Desktop Nav */}
