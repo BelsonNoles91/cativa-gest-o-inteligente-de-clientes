@@ -27,16 +27,16 @@ export function HeroSection() {
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">SaaS Premium para Gestão de Beleza</span>
           </div>
 
-          <h1 className="font-display text-5xl sm:text-7xl md:text-8xl xl:text-[7.5rem] leading-[0.9] tracking-[-0.03em] text-primary-dark mb-10 animate-fade-in delay-100">
-            Transforme sua <br className="hidden sm:block" />
+          <h1 className="font-display text-5xl sm:text-7xl md:text-8xl xl:text-[7.5rem] leading-[0.85] tracking-tight text-primary-dark mb-10 animate-fade-in delay-100">
+            A inteligência <br className="hidden sm:block" />
             <span className="relative inline-block">
-              agenda
+              que retém
               <svg className="absolute -bottom-1 sm:-bottom-2 left-0 w-full h-2 sm:h-3 text-accent/30 -z-10" viewBox="0 0 300 12" fill="none">
                 <path d="M1 10.5C50 4 150 1 299 10.5" stroke="currentColor" strokeWidth="6" strokeLinecap="round"/>
               </svg>
             </span>
             <br className="hidden sm:block" />
-            {" "}em <span className="italic font-normal serif text-accent">retenção.</span>
+            {" "}e <span className="italic font-normal serif text-accent">prospera.</span>
           </h1>
 
           <p className="text-xl md:text-2xl text-muted-foreground/80 leading-relaxed max-w-xl mb-12 animate-fade-in delay-200 font-light">
