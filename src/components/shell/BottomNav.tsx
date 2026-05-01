@@ -51,7 +51,7 @@ export function BottomNav() {
       }));
 
     // Divisão entre barra principal e menu "Mais"
-    const p = allowedItems.filter((i) => i.showInBottomNav).slice(0, 3);
+    const p = allowedItems.filter((i) => i.showInBottomNav).slice(0, 4);
     const s = allowedItems.filter((i) => !p.some((prev) => prev.to === i.to));
     
     // Verificação de rota ativa (O(n) amortizado)
@@ -83,11 +83,11 @@ export function BottomNav() {
         aria-label="Navegação principal"
         className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/95 backdrop-blur-xl pb-safe pl-safe pr-safe md:hidden"
       >
-        <ul className="grid grid-cols-4 px-1 pt-1">
+        <ul className="grid grid-cols-5 px-1 pt-1">
           {/* Skeletons enquanto billing carrega: evita "pulo" do nav
               quando itens com featureKey são incluídos/removidos. */}
           {billingLoading && primary.length === 0
-            ? Array.from({ length: 4 }).map((_, i) => (
+            ? Array.from({ length: 5 }).map((_, i) => (
                 <li key={`skeleton-${i}`} data-testid="bottom-nav-skeleton">
                   <div className="flex flex-col items-center justify-center gap-1 py-2 min-h-touch">
                     <Skeleton className="h-5 w-5 rounded-md" />

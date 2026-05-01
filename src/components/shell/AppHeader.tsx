@@ -38,7 +38,7 @@ export function AppHeader() {
   }, [currentTenant?.name]);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur-xl pt-safe">
+    <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur-xl pt-safe-top">
       {/* Desktop */}
       <div className="hidden h-16 items-center gap-3 px-4 md:flex">
         <SidebarTrigger className="rounded-lg" />
@@ -57,10 +57,10 @@ export function AppHeader() {
           <GlobalSearch />
         </div>
         <Button variant="ghost" size="icon" className="rounded-full" aria-label="Notificações">
-          <Bell className="h-4 w-4" />
+          < Bell className="h-4 w-4" />
         </Button>
-        <ThemeToggle />
-        <UserMenu />
+        < ThemeToggle />
+        < UserMenu />
       </div>
 
       {/* Mobile — uma linha apenas */}
@@ -88,7 +88,7 @@ export function AppHeader() {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-[88vw] max-w-sm p-0">
-            <SheetHeader className="border-b border-border/60 p-4">
+            <SheetHeader className="border-b border-border/60 p-4 pt-safe-top">
               <SheetTitle className="text-left">Estabelecimento</SheetTitle>
             </SheetHeader>
             <div className="p-4">
@@ -130,6 +130,13 @@ export function AppHeader() {
           <Bell className="h-4 w-4" />
         </Button>
         <UserMenu />
+
+
+
+
+
+
+
       </div>
 
       {/* CommandDialog de busca controlado pelo botão mobile */}
@@ -141,3 +148,4 @@ export function AppHeader() {
     </header>
   );
 }
+
