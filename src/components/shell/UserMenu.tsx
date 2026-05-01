@@ -69,6 +69,23 @@ export function UserMenu() {
           {role && <span className="text-xs text-muted-foreground">{roleLabels[role]}</span>}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {pushStatus !== "granted" && pushStatus !== "unsupported" && (
+          <DropdownMenuItem onSelect={requestPush} className="gap-2">
+            <Bell className="h-4 w-4" /> Ativar notificações push
+          </DropdownMenuItem>
+        )}
+        {pushStatus === "granted" && (
+          <DropdownMenuItem disabled className="gap-2 opacity-50">
+            <Bell className="h-4 w-4" /> Notificações ativas
+          </DropdownMenuItem>
+        )}
+        {pushStatus === "unsupported" && isMobile && (
+          <DropdownMenuItem disabled className="gap-2 opacity-50">
+            <BellOff className="h-4 w-4" /> Push não suportado
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
+
         <DropdownMenuItem onSelect={() => navigate("/app/configuracoes")} className="gap-2">
           <User className="h-4 w-4" /> Perfil
         </DropdownMenuItem>
