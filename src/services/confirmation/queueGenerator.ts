@@ -163,5 +163,12 @@ export async function generateQueueForTenant(
     }
   }
 
+  // Gera também tarefas de reativação (Recovery) baseadas em inteligência
+  try {
+    await supabase.rpc("generate_reactivation_tasks", { _tenant_id: tenantId });
+  } catch (err) {
+    console.error("[QueueGenerator:Reactivation]", err);
+  }
+
   return { created, skipped, total: created + skipped };
 }
