@@ -76,7 +76,7 @@ export async function listResources(tenantId: string, unitId?: string | null): P
     .select(RESOURCE_COLS)
     .eq("tenant_id", tenantId)
     .order("name");
-  if (unitId) q = q.and(`unit_id.eq.${unitId},unit_id.is.null`);
+  if (unitId) q = q.or(`unit_id.eq.${unitId},unit_id.is.null`);
   const { data, error } = await q;
   if (error) throw error;
   return (data ?? []).map((r) => ({
@@ -736,7 +736,7 @@ export async function listProfessionalsLite(
     .eq("tenant_id", tenantId)
     .eq("is_active", true)
     .order("display_name");
-  if (unitId) q = q.and(`unit_id.eq.${unitId},unit_id.is.null`);
+  if (unitId) q = q.or(`unit_id.eq.${unitId},unit_id.is.null`);
   const { data, error } = await q;
   if (error) throw error;
   return (data ?? []).map((r) => ({
