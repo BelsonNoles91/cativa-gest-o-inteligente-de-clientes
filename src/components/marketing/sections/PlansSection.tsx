@@ -67,7 +67,7 @@ export function PlansSection() {
 
         return (
           <div key={plan.id} className={cn(
-            "group relative p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem] border transition-all duration-700 flex flex-col h-full min-h-[650px]",
+            "group relative p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem] border transition-all duration-700 flex flex-col h-full",
             isHighlight 
               ? "bg-[#1A0F16] text-white border-accent/30 shadow-[0_40px_100px_-20px_rgba(168,76,134,0.3)] md:scale-105 z-10" 
               : "bg-white text-primary-dark border-border/40 hover:border-accent/20 hover:shadow-xl"
@@ -78,58 +78,62 @@ export function PlansSection() {
               </div>
             )}
             
-            <p className={cn("text-[10px] font-bold uppercase tracking-[0.3em] mb-6", isHighlight ? "text-accent" : "text-muted-foreground")}>
-              {plan.name === 'Studio' ? 'Estúdio' : plan.name}
-            </p>
-            
-            <div className="flex items-baseline gap-1 mb-8">
-              <span className="text-xl font-bold opacity-60">R$</span>
-              <span className="text-6xl md:text-7xl font-display font-bold tracking-tighter">
-                {plan.code === 'free' ? "Grátis" : 
-                 plan.code === 'pro' || plan.code === 'entrepreneur' ? "47,90" : "87,90"}
-              </span>
-              {plan.code !== 'free' && <span className="text-sm font-bold opacity-60">/mês</span>}
-            </div>
-            
-            <p className={cn("text-lg font-light mb-10 leading-relaxed min-h-[60px]", isHighlight ? "text-white/70" : "text-muted-foreground")}>
-              {plan.description || "A solução ideal para organizar sua rotina."}
-            </p>
-            
-            <div className="space-y-6 mb-12 flex-grow">
-               {features.slice(0, 5).map((feat, idx) => (
-                 <div key={idx} className="flex items-start gap-4">
-                    <CheckCircle2 className={cn("h-5 w-5 shrink-0 mt-0.5", isHighlight ? "text-accent" : "text-primary-dark")} />
-                    <span className="font-light tracking-tight text-base">{feat}</span>
-                 </div>
-               ))}
-            </div>
-
-            <div className="flex flex-col gap-4 mt-auto">
-              <Button asChild className={cn(
-                "w-full h-14 md:h-16 rounded-full text-lg font-bold transition-all relative overflow-hidden group/btn shadow-lg",
-                isHighlight 
-                  ? "bg-accent text-white hover:bg-white hover:text-primary-dark border-none" 
-                  : "bg-primary-dark text-white hover:bg-accent border-none"
-              )}>
-                <Link to="/onboarding">
-                  <span className="relative z-10">{plan.code === 'free' ? "Começar agora" : "Escolher este plano"}</span>
-                  <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover/btn:translate-y-0" />
-                </Link>
-              </Button>
+            <div className="flex flex-col h-full">
+              <div className="mb-8">
+                <p className={cn("text-[10px] font-bold uppercase tracking-[0.3em] mb-6", isHighlight ? "text-accent" : "text-muted-foreground")}>
+                  {plan.name === 'Studio' ? 'Estúdio' : plan.name}
+                </p>
+                
+                <div className="flex items-baseline gap-1 mb-8">
+                  <span className="text-xl font-bold opacity-60">R$</span>
+                  <span className="text-6xl md:text-7xl font-display font-bold tracking-tighter">
+                    {plan.code === 'free' ? "Grátis" : 
+                     plan.code === 'pro' || plan.code === 'entrepreneur' ? "47,90" : "87,90"}
+                  </span>
+                  {plan.code !== 'free' && <span className="text-sm font-bold opacity-60">/mês</span>}
+                </div>
+                
+                <p className={cn("text-lg font-light leading-relaxed min-h-[80px]", isHighlight ? "text-white/70" : "text-muted-foreground")}>
+                  {plan.description || "A solução ideal para organizar sua rotina."}
+                </p>
+              </div>
               
-              <Button asChild variant="ghost" className={cn(
-                "w-full h-12 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all",
-                isHighlight ? "text-white/60 hover:text-white" : "text-primary-dark/60 hover:text-primary-dark"
-              )}>
-                <Link to="/demo">Ver demonstração</Link>
-              </Button>
+              <div className="space-y-6 mb-12 flex-grow">
+                 {features.slice(0, 5).map((feat, idx) => (
+                   <div key={idx} className="flex items-start gap-4">
+                      <CheckCircle2 className={cn("h-5 w-5 shrink-0 mt-0.5", isHighlight ? "text-accent" : "text-primary-dark")} />
+                      <span className="font-light tracking-tight text-base">{feat}</span>
+                   </div>
+                 ))}
+              </div>
+
+              <div className="flex flex-col gap-4 mt-auto">
+                <Button asChild className={cn(
+                  "w-full h-14 md:h-16 rounded-full text-lg font-bold transition-all relative overflow-hidden group/btn shadow-lg",
+                  isHighlight 
+                    ? "bg-accent text-white hover:bg-white hover:text-primary-dark border-none" 
+                    : "bg-primary-dark text-white hover:bg-accent border-none"
+                )}>
+                  <Link to="/onboarding">
+                    <span className="relative z-10">{plan.code === 'free' ? "Começar agora" : "Escolher este plano"}</span>
+                    <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover/btn:translate-y-0" />
+                  </Link>
+                </Button>
+                
+                <Button asChild variant="ghost" className={cn(
+                  "w-full h-12 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all",
+                  isHighlight ? "text-white/60 hover:text-white" : "text-primary-dark/60 hover:text-primary-dark"
+                )}>
+                  <Link to="/demo">Ver demonstração</Link>
+                </Button>
+                
+                {plan.trial_days > 0 && (
+                  <p className={cn("text-center mt-2 text-[9px] font-bold uppercase tracking-widest opacity-40")}>
+                    {plan.trial_days} dias para testar sem compromisso
+                  </p>
+                )}
+              </div>
             </div>
-            
-            {plan.trial_days > 0 && (
-              <p className={cn("text-center mt-6 text-[9px] font-bold uppercase tracking-widest opacity-40")}>
-                {plan.trial_days} dias para testar sem compromisso
-              </p>
-            )}
           </div>
         );
       })}
