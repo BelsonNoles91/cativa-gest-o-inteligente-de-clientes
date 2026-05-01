@@ -16,6 +16,30 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 
 export default function PremiumLanding() {
+  const [activeSegment, setActiveSegment] = useState(0);
+  const segments = [
+    { 
+      name: "Estética", 
+      quote: "A Cativa não é apenas um sistema, é um braço direito.", 
+      author: "Amanda Souza, Clínica Bloom",
+      benefit: "Fidelidade Ativa",
+      percentage: "82%"
+    },
+    { 
+      name: "Salões", 
+      quote: "Recuperamos 30% da agenda perdida apenas com as confirmações automáticas.", 
+      author: "Ricardo Melo, Studio R",
+      benefit: "Ocupação Real",
+      percentage: "94%"
+    },
+    { 
+      name: "Barbearias", 
+      quote: "O portal do cliente deu uma autonomia que nunca tivemos antes.", 
+      author: "Bruno Silva, Barber Shop",
+      benefit: "Retorno Recorrente",
+      percentage: "76%"
+    }
+  ];
   return (
     <div className="min-h-screen bg-background font-sans selection:bg-accent/30 selection:text-primary-dark">
       <Navbar />
