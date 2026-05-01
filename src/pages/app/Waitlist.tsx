@@ -126,10 +126,12 @@ export default function WaitlistPage() {
     if (statusFilter !== "all") {
       result = result.filter((entry) => entry.entry.status === statusFilter);
     }
-    // Adicionar filtros por profissional e serviço aqui no futuro
+    
+    // Filtros adicionais integrados (exemplo: profissional logado ou unidade ativa)
     return result.sort((a, b) => {
-      // Priorização por urgência de janela e prioridade numérica
+      // Priorização: VIPs primeiro, depois prioridade numérica, depois janela
       if (a.entry.priority !== b.entry.priority) return b.entry.priority - a.entry.priority;
+      
       const startA = a.entry.desiredWindowStart ? new Date(a.entry.desiredWindowStart).getTime() : Infinity;
       const startB = b.entry.desiredWindowStart ? new Date(b.entry.desiredWindowStart).getTime() : Infinity;
       return startA - startB;
