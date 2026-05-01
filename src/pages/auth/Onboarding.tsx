@@ -265,10 +265,10 @@ export default function Onboarding() {
                 <li key={s.id} className="flex flex-1 items-center gap-2">
                   <div
                     className={cn(
-                      "grid h-8 w-8 place-items-center rounded-full text-xs font-semibold transition-colors",
-                      done && "bg-success text-success-foreground",
-                      active && "bg-primary text-primary-foreground",
-                      !done && !active && "bg-muted text-muted-foreground",
+                      "grid h-10 w-10 place-items-center rounded-2xl text-sm font-bold transition-all duration-500",
+                      done && "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20",
+                      active && "bg-accent text-white shadow-lg shadow-accent/20 scale-110",
+                      !done && !active && "bg-[#FAF7F9] text-muted-foreground border border-border/40",
                     )}
                   >
                     {done ? <Check className="h-4 w-4" /> : s.id}
