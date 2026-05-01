@@ -15,6 +15,8 @@ import {
   SlidersHorizontal,
   Trash2,
   Users,
+  AlertCircle,
+  PlusCircle,
 } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { TrialLogsTab } from "@/features/admin/TrialLogsTab";
@@ -250,6 +252,7 @@ export default function SuperAdmin() {
             <TabsTrigger value="flags"><Flag className="mr-1.5 h-3.5 w-3.5" />Flags</TabsTrigger>
             <TabsTrigger value="templates"><FileStack className="mr-1.5 h-3.5 w-3.5" />Templates</TabsTrigger>
             <TabsTrigger value="audit" data-testid="tab-audit"><ScrollText className="mr-1.5 h-3.5 w-3.5" />Auditoria</TabsTrigger>
+            <TabsTrigger value="incidents"><AlertCircle className="mr-1.5 h-3.5 w-3.5" />Incidentes</TabsTrigger>
             <TabsTrigger value="trial-logs" data-testid="tab-trial-logs"><CreditCard className="mr-1.5 h-3.5 w-3.5" />Trial</TabsTrigger>
           </TabsList>
 
@@ -284,6 +287,10 @@ export default function SuperAdmin() {
 
           <TabsContent value="audit">
             <AuditLogsTab tenants={tenants.map((t) => ({ id: t.id, name: t.name }))} />
+          </TabsContent>
+
+          <TabsContent value="incidents">
+            <IncidentsTab />
           </TabsContent>
 
           <TabsContent value="trial-logs">
