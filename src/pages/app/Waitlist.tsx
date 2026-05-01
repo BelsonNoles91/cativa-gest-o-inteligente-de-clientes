@@ -11,7 +11,9 @@ import {
   Trash2,
   UserRound,
   XCircle,
+  Filter,
 } from "lucide-react";
+
 import { PageHeader } from "@/components/shell/PageHeader";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
