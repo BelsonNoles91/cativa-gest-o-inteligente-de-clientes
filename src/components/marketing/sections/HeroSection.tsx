@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Star, Clock, Calendar, Users, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PremiumSection } from "../layout/PremiumSection";
+import { Logo } from "@/components/brand/Logo";
 import { cn } from "@/lib/utils";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
@@ -132,10 +133,7 @@ export function HeroSection() {
                    <div className="h-12 md:h-14 border-b border-border/40 bg-white/80 backdrop-blur-md px-4 md:px-6 flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-1">
-                          <div className="w-5 h-5 rounded-lg bg-accent flex items-center justify-center">
-                            <span className="text-[10px] font-black text-white">C</span>
-                          </div>
-                          <span className="text-xs font-display font-black tracking-tighter text-primary-dark">CATIVA</span>
+                          <Logo size="sm" className="scale-75 origin-left" />
                         </div>
                         <div className="h-4 w-px bg-border/40 mx-1 hidden sm:block" />
                         <div className="hidden sm:flex gap-4">
