@@ -106,13 +106,13 @@ export function PlansSection() {
 
             <div className="flex flex-col gap-4 mt-auto">
               <Button asChild className={cn(
-                "w-full h-16 rounded-full text-lg font-bold transition-all relative overflow-hidden group/btn shadow-lg",
+                "w-full h-14 md:h-16 rounded-full text-lg font-bold transition-all relative overflow-hidden group/btn shadow-lg",
                 isHighlight 
                   ? "bg-accent text-white hover:bg-white hover:text-primary-dark border-none" 
                   : "bg-primary-dark text-white hover:bg-accent border-none"
               )}>
                 <Link to="/onboarding">
-                  <span className="relative z-10">{price === 0 ? "Começar agora" : "Escolher este plano"}</span>
+                  <span className="relative z-10">{plan.code === 'free' ? "Começar agora" : "Escolher este plano"}</span>
                   <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover/btn:translate-y-0" />
                 </Link>
               </Button>
