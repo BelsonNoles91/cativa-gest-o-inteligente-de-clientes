@@ -88,36 +88,74 @@ export function HeroSection() {
           <div className="relative z-20 group">
              {/* Main App Window - Skewed/Perspective */}
              <div className="bg-white rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(75,36,61,0.25)] border border-white/50 p-3 transition-all duration-1000 group-hover:rotate-x-2 group-hover:rotate-y-[-2deg] group-hover:translate-y-[-10px]">
-                <div className="bg-[#FAF7F9] rounded-[2rem] overflow-hidden border border-border/20 aspect-[16/10] relative">
-                   {/* App UI Simulation */}
+                <div className="bg-[#FAF7F9] rounded-[2rem] overflow-hidden border border-border/20 aspect-[16/10] relative group/mockup">
+                   {/* App UI Simulation - Now with more interactivity */}
                    <div className="h-14 border-b border-border/40 bg-white/80 backdrop-blur-md px-6 flex items-center justify-between">
                       <div className="flex gap-3">
                         <div className="h-2 w-16 bg-primary-dark/10 rounded-full" />
                         <div className="h-2 w-12 bg-primary-dark/5 rounded-full" />
                       </div>
-                      <div className="w-8 h-8 rounded-full bg-accent/10 border border-accent/20" />
+                      <div className="flex items-center gap-4">
+                        <div className="w-6 h-6 rounded-full bg-accent/10 flex items-center justify-center">
+                          <Clock className="h-3 w-3 text-accent" />
+                        </div>
+                        <div className="w-8 h-8 rounded-full bg-accent/10 border border-accent/20 overflow-hidden">
+                           <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" alt="User" className="w-full h-full object-cover" />
+                        </div>
+                      </div>
                    </div>
+                   
                    <div className="p-8">
                       <div className="grid grid-cols-3 gap-6 mb-8">
-                         {[1,2,3].map(i => (
-                           <div key={i} className="h-28 bg-white rounded-2xl border border-border/40 p-5 shadow-sm">
-                              <div className="h-1.5 w-1/2 bg-muted/40 rounded mb-3" />
-                              <div className="h-6 w-3/4 bg-primary-dark/5 rounded" />
+                         {[
+                           { label: "Receita", val: "R$ 12.4k", icon: TrendingUp, color: "text-success bg-success/10" },
+                           { label: "Agendamentos", val: "142", icon: Calendar, color: "text-blue-500 bg-blue-500/10" },
+                           { label: "Novos Clientes", val: "24", icon: Users, color: "text-accent bg-accent/10" }
+                         ].map((stat, i) => (
+                           <div key={i} className="bg-white rounded-2xl border border-border/40 p-5 shadow-sm transition-all duration-500 group-hover/mockup:border-accent/20 group-hover/mockup:shadow-md">
+                              <div className="flex items-center justify-between mb-3">
+                                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{stat.label}</span>
+                                 <div className={cn("w-6 h-6 rounded-lg flex items-center justify-center", stat.color)}>
+                                    <stat.icon className="h-3 w-3" />
+                                 </div>
+                              </div>
+                              <div className="text-xl font-display font-bold text-primary-dark">{stat.val}</div>
                            </div>
                          ))}
                       </div>
-                      <div className="h-56 bg-white rounded-[2rem] border border-border/40 p-6 shadow-sm relative overflow-hidden">
+                      
+                      <div className="bg-white rounded-[2rem] border border-border/40 p-6 shadow-sm relative overflow-hidden group-hover/mockup:border-accent/20">
                          <div className="flex justify-between items-center mb-6">
-                            <div className="h-3 w-1/4 bg-muted/40 rounded" />
-                            <div className="h-5 w-16 bg-accent/10 rounded-full" />
+                            <div className="flex items-center gap-2">
+                               <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                               <span className="text-xs font-bold text-primary-dark uppercase tracking-widest">Agenda de Hoje</span>
+                            </div>
+                            <Button variant="ghost" size="sm" className="h-8 px-3 text-[10px] font-bold uppercase tracking-widest text-accent">Ver tudo</Button>
                          </div>
-                         <div className="space-y-5">
-                            {[1,2,3].map(i => (
-                              <div key={i} className="flex items-center gap-4">
-                                 <div className="w-10 h-10 rounded-full bg-secondary/30" />
-                                 <div className="flex-1 space-y-1.5">
-                                    <div className="h-2.5 w-1/3 bg-muted/30 rounded" />
-                                    <div className="h-1.5 w-1/4 bg-muted/10 rounded" />
+                         <div className="space-y-4">
+                            {[
+                              { time: "09:00", name: "Ana Paula", service: "Microagulhamento", status: "Confirmado" },
+                              { time: "10:30", name: "Beatriz Silva", service: "Limpeza de Pele", status: "Em espera" },
+                              { time: "14:00", name: "Carla Mendes", service: "Protocolo Detox", status: "Pendente" }
+                            ].map((item, i) => (
+                              <div key={i} className="flex items-center gap-4 p-3 rounded-xl transition-colors hover:bg-secondary/10 group/row">
+                                 <div className="text-xs font-bold text-muted-foreground w-12">{item.time}</div>
+                                 <div className="w-10 h-10 rounded-full bg-secondary/30 overflow-hidden border border-white">
+                                    <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-primary-dark/40 uppercase">
+                                       {item.name.charAt(0)}
+                                    </div>
+                                 </div>
+                                 <div className="flex-1">
+                                    <div className="text-sm font-bold text-primary-dark">{item.name}</div>
+                                    <div className="text-[10px] text-muted-foreground">{item.service}</div>
+                                 </div>
+                                 <div className={cn(
+                                   "text-[8px] font-black uppercase tracking-[0.2em] px-2 py-1 rounded-full border",
+                                   item.status === 'Confirmado' ? "bg-success/10 text-success border-success/20" : 
+                                   item.status === 'Em espera' ? "bg-blue-500/10 text-blue-500 border-blue-500/20" : 
+                                   "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                                 )}>
+                                   {item.status}
                                  </div>
                               </div>
                             ))}
