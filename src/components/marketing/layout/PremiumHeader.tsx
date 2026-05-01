@@ -36,8 +36,8 @@ export function PremiumHeader() {
       )}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 group">
-          <Logo className="w-8 h-8 md:w-10 md:h-10 transition-transform group-hover:scale-105" />
+        <Link to="/" className="flex items-center gap-2 group shrink-0">
+          <Logo showWordmark={false} className="w-8 h-8 md:w-10 md:h-10 transition-transform group-hover:scale-105" />
           <span className="font-display text-xl md:text-2xl font-bold tracking-tight text-primary-dark">
             Cativa
           </span>
