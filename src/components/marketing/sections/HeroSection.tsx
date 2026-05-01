@@ -1,11 +1,21 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Star, Clock, Calendar, Users, TrendingUp, MousePointer2 } from "lucide-react";
+import { ArrowRight, Star, Clock, Calendar, Users, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PremiumSection } from "../layout/PremiumSection";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef } from "react";
 
 export function HeroSection() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"]
+  });
+
+  const mockupY = useTransform(scrollYProgress, [0, 1], [0, -100]);
+  const mockupRotate = useTransform(scrollYProgress, [0, 1], [0, 2]);
+
   return (
     <PremiumSection
       variant="soft"
@@ -13,6 +23,8 @@ export function HeroSection() {
       className="pt-24 pb-16 md:pt-40 md:pb-40 overflow-hidden md:overflow-visible min-h-[90vh] flex items-center"
       containerSize="xl"
     >
+      <div ref={containerRef} className="absolute inset-0 pointer-events-none" />
+      
       {/* Elementos Visuais de Fundo */}
       <div className="absolute top-0 right-0 w-[70%] h-full bg-[#F3EBF0] -skew-x-6 transform origin-top-right -z-10 translate-x-20 opacity-50 md:opacity-100" />
       <div className="absolute top-1/4 left-10 w-1 h-32 bg-accent/20 hidden lg:block" />
@@ -106,10 +118,8 @@ export function HeroSection() {
         </motion.div>
 
         <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1, ease: "easeOut" }}
-          className="relative perspective-1000 px-4 md:px-0"
+          style={{ y: mockupY, rotate: mockupRotate }}
+          className="relative perspective-1000 px-4 md:px-0 z-0"
         >
           <div className="relative z-20 group">
              {/* Janela Principal do Aplicativo */}
@@ -204,7 +214,7 @@ export function HeroSection() {
                initial={{ opacity: 0, x: 20, rotate: 10 }}
                whileInView={{ opacity: 1, x: 0, rotate: 3 }}
                transition={{ duration: 1, delay: 1 }}
-               className="absolute -top-12 -right-4 md:-right-8 bg-white/95 backdrop-blur-xl rounded-2xl md:rounded-[2.5rem] shadow-xl p-4 md:p-8 border border-white/50 max-w-[180px] md:max-w-[260px] hidden sm:block z-40"
+               className="absolute -top-12 -right-4 md:-right-8 bg-white/95 backdrop-blur-xl rounded-2xl md:rounded-[2.5rem] shadow-xl p-4 md:p-8 border border-white/50 max-w-[180px] md:max-w-[260px] hidden sm:block z-30"
              >
                 <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
                   <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">

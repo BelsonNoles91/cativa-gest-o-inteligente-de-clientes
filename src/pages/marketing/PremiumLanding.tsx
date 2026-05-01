@@ -8,14 +8,20 @@ import { ProcessSection } from "@/components/marketing/sections/ProcessSection";
 import { MetricsSection } from "@/components/marketing/sections/MetricsSection";
 import { PremiumSection } from "@/components/marketing/layout/PremiumSection";
 import { PlansSection } from "@/components/marketing/sections/PlansSection";
-import { ArrowRight, CheckCircle2, TrendingUp, Users, Calendar, Star, Quote, ShieldCheck, UserCheck, LayoutDashboard, ChevronLeft, ChevronRight as ChevronRightIcon } from "lucide-react";
+import { ArrowRight, CheckCircle2, TrendingUp, Users, Calendar, Star, Quote, ShieldCheck, UserCheck, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 import { useState } from "react";
 
 export default function PremiumLanding() {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
   const [activeSegment, setActiveSegment] = useState(0);
   const segments = [
     { 
@@ -23,25 +29,29 @@ export default function PremiumLanding() {
       quote: "A Cativa não é apenas um sistema, é um braço direito.", 
       author: "Amanda Souza, Clínica Bloom",
       benefit: "Fidelidade Ativa",
-      percentage: "82%"
+      percentage: "82%",
+      beforeAfter: { before: "40% de faltas", after: "8% de faltas", chart: [20, 35, 15, 8] }
     },
     { 
       name: "Salões", 
       quote: "Recuperamos 30% da agenda perdida apenas com as confirmações automáticas.", 
       author: "Ricardo Melo, Studio R",
       benefit: "Ocupação Real",
-      percentage: "94%"
+      percentage: "94%",
+      beforeAfter: { before: "R$ 12k perdidos/mês", after: "R$ 900 perdidos/mês", chart: [40, 45, 10, 5] }
     },
     { 
       name: "Barbearias", 
       quote: "O portal do cliente deu uma autonomia que nunca tivemos antes.", 
       author: "Bruno Silva, Barber Shop",
       benefit: "Retorno Recorrente",
-      percentage: "76%"
+      percentage: "76%",
+      beforeAfter: { before: "15 min/agendamento", after: "0 min (automático)", chart: [60, 50, 5, 2] }
     }
   ];
   return (
-    <div className="min-h-screen bg-background font-sans selection:bg-accent/30 selection:text-primary-dark">
+    <div className="min-h-screen bg-background font-sans selection:bg-accent/30 selection:text-primary-dark overflow-x-hidden">
+      <motion.div className="fixed top-0 left-0 right-0 h-1 bg-accent z-[200] origin-left" style={{ scaleX }} />
       <Navbar />
       
       <main>
@@ -118,16 +128,36 @@ export default function PremiumLanding() {
                                 {segments[activeSegment].percentage.replace('%', '')}
                              </div>
                              <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                                <span className="text-5xl md:text-7xl font-display font-bold text-primary-dark">{segments[activeSegment].percentage}</span>
+                                <motion.span 
+                                  key={`perc-${activeSegment}`}
+                                  initial={{ opacity: 0, scale: 0.5 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  className="text-5xl md:text-7xl font-display font-bold text-primary-dark"
+                                >
+                                  {segments[activeSegment].percentage}
+                                </motion.span>
                                 <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">{segments[activeSegment].benefit}</span>
                              </div>
                           </div>
                        </div>
 
                        <div className="grid grid-cols-2 gap-4">
-                          <div className="h-12 md:h-16 bg-secondary/20 rounded-2xl border border-border/20" />
-                          <div className="h-12 md:h-16 bg-primary-dark rounded-2xl flex items-center justify-center text-white">
-                             <Star className="h-5 w-5 fill-accent text-accent" />
+                          <div className="h-12 md:h-16 bg-secondary/20 rounded-2xl border border-border/20 p-4 flex flex-col justify-center">
+                            <span className="text-[8px] font-bold text-muted-foreground uppercase">Antes: {segments[activeSegment].beforeAfter.before}</span>
+                            <div className="h-1 w-full bg-rose-200 rounded-full mt-1">
+                               <motion.div initial={{ width: "80%" }} animate={{ width: "80%" }} className="h-full bg-rose-500 rounded-full" />
+                            </div>
+                          </div>
+                          <div className="h-12 md:h-16 bg-primary-dark rounded-2xl flex flex-col justify-center p-4 text-white">
+                            <span className="text-[8px] font-bold uppercase opacity-60">Hoje: {segments[activeSegment].beforeAfter.after}</span>
+                            <div className="h-1 w-full bg-white/20 rounded-full mt-1">
+                               <motion.div 
+                                 key={`bar-${activeSegment}`}
+                                 initial={{ width: 0 }} 
+                                 animate={{ width: "100%" }} 
+                                 className="h-full bg-accent rounded-full" 
+                               />
+                            </div>
                           </div>
                        </div>
                     </div>
@@ -211,8 +241,8 @@ export default function PremiumLanding() {
           </div>
         </PremiumSection>
 
-        <FeaturesSection />
-        <ModulesSection />
+        <div id="funcionalidades"><FeaturesSection /></div>
+        <div id="modulos"><ModulesSection /></div>
 
         {/* Seção de Planos */}
         <PremiumSection id="planos" variant="soft" padding="lg">
@@ -290,9 +320,9 @@ export default function PremiumLanding() {
         </PremiumSection>
 ...
 
-        <ProcessSection />
+        <div id="processo"><ProcessSection /></div>
 
-        <MetricsSection />
+        <div id="metricas"><MetricsSection /></div>
 
         {/* Seção de Dúvidas Frequentes */}
         <PremiumSection variant="light" padding="lg" id="duvidas">
@@ -302,8 +332,8 @@ export default function PremiumLanding() {
                     <div className="sticky top-32">
                        <h2 className="font-display text-5xl md:text-6xl text-primary-dark tracking-tighter leading-none mb-8">Dúvidas <br />Comuns.</h2>
                        <p className="text-muted-foreground font-light text-lg mb-10">Tudo o que você precisa saber para elevar seu negócio hoje.</p>
-                       <Button variant="link" className="p-0 text-accent font-bold uppercase tracking-widest text-xs gap-2 hover:gap-4 transition-all">
-                          Falar com Especialista <ArrowRight className="h-4 w-4" />
+                       <Button asChild variant="link" className="p-0 text-accent font-bold uppercase tracking-widest text-xs gap-2 hover:gap-4 transition-all">
+                          <Link to="/demo" className="flex items-center gap-2">Falar com Especialista <ArrowRight className="h-4 w-4" /></Link>
                        </Button>
                     </div>
                  </div>
@@ -332,7 +362,7 @@ export default function PremiumLanding() {
         </PremiumSection>
 
         {/* Chamada Final */}
-        <PremiumSection variant="dark" padding="xl" className="text-center overflow-visible">
+        <PremiumSection id="final-cta" variant="dark" padding="xl" className="text-center overflow-visible">
            {/* Fundo sofisticado */}
            <div className="absolute inset-0 bg-[#1A0F16]" />
            <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[140%] bg-accent/5 blur-[120px] rounded-full rotate-12" />
