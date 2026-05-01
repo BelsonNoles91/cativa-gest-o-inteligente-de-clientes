@@ -73,6 +73,7 @@ export function AuditLogsTab({
   const [search, setSearch] = useState("");
   const [limit, setLimit] = useState<string>("50");
   const [page, setPage] = useState(0);
+  const [cursors, setCursors] = useState<Array<{ id: string; timestamp: string } | null>>([null]);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [periodPreset, setPeriodPreset] = useState<string>("all");
@@ -102,6 +103,7 @@ export function AuditLogsTab({
     try {
       const range = resolveRange();
       const currentLimit = parseInt(limit, 10);
+      const cursor = cursors[page];
       
       const { data, error } = await supabase.rpc("get_audit_logs_advanced", {
         _tenant_id: tenantFilter === "all" ? null : tenantFilter,
@@ -109,7 +111,8 @@ export function AuditLogsTab({
         _from: range.from,
         _to: range.to,
         _limit: currentLimit,
-        _offset: page * currentLimit,
+        _cursor_id: cursor?.id ?? null,
+        _cursor_timestamp: cursor?.timestamp ?? null,
         _sort_order: sortOrder
       });
 
@@ -117,7 +120,7 @@ export function AuditLogsTab({
       
       const results = (data ?? []) as AuditRow[];
       setRows(results);
-      setTotalCount(results[0]?.total_count ?? 0);
+      setTotalCount(Number(results[0]?.total_count ?? 0));
     } catch (err) {
       toast({
         title: "Erro ao carregar auditoria",
@@ -128,6 +131,11 @@ export function AuditLogsTab({
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    setPage(0);
+    setCursors([null]);
+  }, [tenantFilter, actionFilter, limit, periodPreset, fromDate, toDate, sortOrder]);
 
   useEffect(() => {
     void load();
@@ -279,7 +287,17 @@ export function AuditLogsTab({
               variant="ghost" 
               className="h-7 w-7" 
               disabled={page >= totalPages - 1 || loading}
-              onClick={() => setPage(p => p + 1)}
+              onClick={() => {
+                const lastRow = rows[rows.length - 1];
+                if (lastRow) {
+                  setCursors(prev => {
+                    const next = [...prev];
+                    next[page + 1] = { id: lastRow.id, timestamp: lastRow.created_at };
+                    return next;
+                  });
+                  setPage(p => p + 1);
+                }
+              }}
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -458,10 +476,7 @@ function renderBeforeAfter(metadata: Record<string, unknown>) {
 
 function formatVal(v: unknown): string {
   if (v === null || v === undefined) return "—";
-  if (typeof v === "string") return v || '""';
-  if (typeof v === "boolean") return v ? "SIM" : "NÃO";
-  if (typeof v === "number") return String(v);
-  if (typeof v === "object") return "{...}";
+  if (typeof v === "object") return JSON.stringify(v);
   return String(v);
 }
 
