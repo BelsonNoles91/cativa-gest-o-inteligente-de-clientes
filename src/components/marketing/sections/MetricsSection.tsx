@@ -1,5 +1,6 @@
 import { PremiumSection } from "../layout/PremiumSection";
 import { TrendingUp, Users, CalendarX, Clock, UserPlus, DollarSign, Activity } from "lucide-react";
+import { motion } from "framer-motion";
 
 const metrics = [
   {
