@@ -659,6 +659,19 @@ export default function AgendaPage() {
           icon={<Hourglass className="h-5 w-5" />}
         />
       </div>
+      <Card className="mb-6">
+        <CardContent className="pt-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input 
+              placeholder="Busca rápida: cliente, serviço ou profissional..." 
+              className="pl-9 h-11 rounded-xl bg-muted/30 border-border/60"
+              value={quickSearch}
+              onChange={(e) => setQuickSearch(e.target.value)}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardContent className="pt-6">
