@@ -797,3 +797,47 @@ export function nextBestActions(i: NbaInputs): NextBestAction[] {
     return order[a.impact] - order[b.impact];
   });
 }
+
+/**
+ * Rentabilidade por Hora (Cents/h)
+ * Calcula quanto cada profissional ou serviço gera por hora trabalhada.
+ */
+export function hourlyProfitability(
+  rows: ApptFact[],
+  keyOf: (r: ApptFact) => string,
+  labelOf: (k: string) => string,
+): Array<{ label: string; hourlyRate: number }> {
+  const map = new Map<string, { totalRevenue: number; totalMinutes: number }>();
+  
+  for (const r of rows) {
+    if (r.status !== "completed") continue;
+    const k = keyOf(r);
+    const cur = map.get(k) ?? { totalRevenue: 0, totalMinutes: 0 };
+    cur.totalRevenue += r.totalPriceCents;
+    cur.totalMinutes += r.durationMinutes;
+    map.set(k, cur);
+  }
+
+  return Array.from(map.entries())
+    .map(([k, v]) => ({
+      label: labelOf(k),
+      hourlyRate: Math.round(safeRatio(v.totalRevenue, v.totalMinutes) * 60 / 100),
+    }))
+    .sort((a, b) => b.hourlyRate - a.hourlyRate);
+}
+
+/**
+ * LTV Estimado (Life Time Value)
+ * Ticket Médio × Frequência Média (Visitas/Mês) × 12 meses
+ */
+export function estimatedLtv(rows: ApptFact[], clients: ClientFact[]): number {
+  const tkt = averageTicket(rows);
+  const totalCompleted = rows.filter(r => r.status === "completed").length;
+  const uniqueClients = new Set(rows.filter(r => r.status === "completed").map(r => r.clientId)).size;
+  
+  if (uniqueClients === 0) return 0;
+  
+  const frequency = totalCompleted / uniqueClients;
+  return Math.round(tkt * frequency * 12);
+}
+
