@@ -1235,7 +1235,9 @@ export type Database = {
           address_line1: string | null
           address_line2: string | null
           allergies: string | null
+          average_cycle_days: number | null
           birth_date: string | null
+          churn_risk_score: number | null
           city: string | null
           contraindications: string | null
           country: string | null
@@ -1245,8 +1247,10 @@ export type Database = {
           full_name: string
           id: string
           is_vip: boolean
+          last_service_id: string | null
           last_visit_at: string | null
           needs_reactivation: boolean
+          next_best_action: string | null
           next_visit_at: string | null
           notes: string | null
           origin: string | null
@@ -1267,7 +1271,9 @@ export type Database = {
           address_line1?: string | null
           address_line2?: string | null
           allergies?: string | null
+          average_cycle_days?: number | null
           birth_date?: string | null
+          churn_risk_score?: number | null
           city?: string | null
           contraindications?: string | null
           country?: string | null
@@ -1277,8 +1283,10 @@ export type Database = {
           full_name: string
           id?: string
           is_vip?: boolean
+          last_service_id?: string | null
           last_visit_at?: string | null
           needs_reactivation?: boolean
+          next_best_action?: string | null
           next_visit_at?: string | null
           notes?: string | null
           origin?: string | null
@@ -1299,7 +1307,9 @@ export type Database = {
           address_line1?: string | null
           address_line2?: string | null
           allergies?: string | null
+          average_cycle_days?: number | null
           birth_date?: string | null
+          churn_risk_score?: number | null
           city?: string | null
           contraindications?: string | null
           country?: string | null
@@ -1309,8 +1319,10 @@ export type Database = {
           full_name?: string
           id?: string
           is_vip?: boolean
+          last_service_id?: string | null
           last_visit_at?: string | null
           needs_reactivation?: boolean
+          next_best_action?: string | null
           next_visit_at?: string | null
           notes?: string | null
           origin?: string | null
@@ -1328,6 +1340,13 @@ export type Database = {
           whatsapp_phone?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "clients_last_service_id_fkey"
+            columns: ["last_service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "clients_preferred_professional_id_fkey"
             columns: ["preferred_professional_id"]
@@ -4402,6 +4421,10 @@ export type Database = {
         Returns: number
       }
       touch_portal_last_seen: { Args: { _link_id: string }; Returns: undefined }
+      update_client_retention_metrics: {
+        Args: { p_client_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role:

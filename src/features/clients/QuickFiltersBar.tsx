@@ -21,6 +21,7 @@ type FiltersShape = {
   needsReactivationOnly: boolean;
   birthdayMonth: string;
   preferredProfessionalId: string;
+  churnRiskScore: string;
 };
 
 interface QuickFiltersBarProps<F extends FiltersShape> {
@@ -51,7 +52,8 @@ export function QuickFiltersBar<F extends FiltersShape>({
     filters.highRiskOnly ||
     filters.needsReactivationOnly ||
     filters.birthdayMonth !== "all" ||
-    filters.preferredProfessionalId !== "all";
+    filters.preferredProfessionalId !== "all" ||
+    filters.churnRiskScore !== "all";
 
   return (
     <div
@@ -128,6 +130,19 @@ export function QuickFiltersBar<F extends FiltersShape>({
           }
         />
       ) : null}
+      
+      <QuickChip
+        active={filters.churnRiskScore === "high"}
+        icon={<ShieldAlert className="h-3.5 w-3.5 text-red-500" />}
+        label="Risco de Churn"
+        testId="quick-filter-churn-risk"
+        onClick={() =>
+          setFilters((prev) => ({
+            ...prev,
+            churnRiskScore: prev.churnRiskScore === "high" ? "all" : "high",
+          }))
+        }
+      />
 
       {anyActive ? (
         <button

@@ -89,6 +89,7 @@ type FiltersState = {
   preferredUnitId: string;
   preferredProfessionalId: string;
   origin: string;
+  churnRiskScore: string;
 };
 
 const DEFAULT_FILTERS: FiltersState = {
@@ -102,6 +103,7 @@ const DEFAULT_FILTERS: FiltersState = {
   preferredUnitId: "all",
   preferredProfessionalId: "all",
   origin: "all",
+  churnRiskScore: "all",
 };
 
 type ClientFormState = {
@@ -151,7 +153,6 @@ export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loadingList, setLoadingList] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-
   const [professionals, setProfessionals] = useState<ProfessionalLite[]>([]);
   const [tags, setTags] = useState<ClientTag[]>([]);
   const [ownProfessional, setOwnProfessional] = useState<{ id: string; name: string } | null>(null);
@@ -271,6 +272,7 @@ export default function ClientsPage() {
           preferredUnitId: filters.preferredUnitId === "all" ? undefined : filters.preferredUnitId,
           preferredProfessionalId: filters.preferredProfessionalId === "all" ? undefined : filters.preferredProfessionalId,
           origin: filters.origin === "all" ? undefined : filters.origin,
+          churnRiskScoreMin: filters.churnRiskScore === "high" ? 70 : undefined,
           limit: 300,
         });
         if (ignore) return;
@@ -1066,6 +1068,39 @@ export default function ClientsPage() {
                       </Card>
                     </div>
                   </div>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Inteligência de Retenção</CardTitle>
+                      <CardDescription>Métricas de ciclo e risco calculadas pelo sistema.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid gap-4 sm:grid-cols-3">
+                      <InfoItem 
+                        label="Ciclo Médio" 
+                        value={selectedClient.averageCycleDays ? `${selectedClient.averageCycleDays} dias` : "Não calculado"} 
+                      />
+                      <InfoItem 
+                        label="Risco de Churn" 
+                        value={
+                          <div className="flex items-center gap-2">
+                            <div className="h-2 w-24 overflow-hidden rounded-full bg-muted">
+                              <div 
+                                className={cn(
+                                  "h-full transition-all",
+                                  selectedClient.churnRiskScore > 70 ? "bg-red-500" : selectedClient.churnRiskScore > 30 ? "bg-amber-500" : "bg-green-500"
+                                )}
+                                style={{ width: `${selectedClient.churnRiskScore}%` }}
+                              />
+                            </div>
+                            <span className="text-xs font-medium">{selectedClient.churnRiskScore}%</span>
+                          </div>
+                        } 
+                      />
+                      <InfoItem 
+                        label="Próxima Ação" 
+                        value={selectedClient.nextBestAction || "Nenhuma sugestão"} 
+                      />
+                    </CardContent>
+                  </Card>
                 </TabsContent>
 
                 <TabsContent value="timeline">
@@ -1793,13 +1828,13 @@ function InfoItem({
   full = false,
 }: {
   label: string;
-  value: string | null | undefined;
+  value: React.ReactNode;
   full?: boolean;
 }) {
   return (
     <div className={full ? "sm:col-span-2" : ""}>
       <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className="mt-1 text-sm">{value?.trim() ? value : "—"}</p>
+      <div className="mt-1 text-sm">{typeof value === 'string' ? (value.trim() ? value : "—") : (value ?? "—")}</div>
     </div>
   );
 }

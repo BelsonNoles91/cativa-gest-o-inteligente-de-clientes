@@ -328,24 +328,26 @@ export interface HydratedAppointment {
 }
 
 export async function listAppointments(params: ListAppointmentsParams): Promise<Appointment[]> {
+  const { tenantId, rangeStart, rangeEnd, unitId, professionalId, clientId, excludeStatuses } = params;
   let q = supabase
     .from("appointments")
     .select(APPOINTMENT_COLS)
-    .eq("tenant_id", params.tenantId)
-    .gte("starts_at", params.rangeStart)
-    .lt("starts_at", params.rangeEnd)
+    .eq("tenant_id", tenantId)
+    .gte("starts_at", rangeStart)
+    .lt("starts_at", rangeEnd)
     .order("starts_at");
-  if (params.unitId) q = q.eq("unit_id", params.unitId);
-  if (params.professionalId) q = q.eq("professional_id", params.professionalId);
-  if (params.clientId) q = q.eq("client_id", params.clientId);
-  if (params.excludeStatuses?.length) q = q.not("status", "in", `(${params.excludeStatuses.join(",")})`);
+  if (unitId) q = q.eq("unit_id", unitId);
+  if (professionalId) q = q.eq("professional_id", professionalId);
+  if (clientId) q = q.eq("client_id", clientId);
+  if (excludeStatuses?.length) q = q.not("status", "in", `(${excludeStatuses.join(",")})`);
   const { data, error } = await q;
   if (error) throw error;
   return (data ?? []).map((r) => toAppointment(r as Record<string, unknown>));
 }
 
 export async function listAppointmentsHydrated(params: ListAppointmentsParams): Promise<HydratedAppointment[]> {
-  const { data, error } = await supabase
+  const { tenantId, rangeStart, rangeEnd, unitId, professionalId, clientId, excludeStatuses } = params;
+  let q = supabase
     .from("appointments")
     .select(`
       *,
@@ -358,11 +360,18 @@ export async function listAppointmentsHydrated(params: ListAppointmentsParams): 
         service:services(id, name)
       )
     `)
-    .eq("tenant_id", params.tenantId)
-    .gte("starts_at", params.rangeStart)
-    .lt("starts_at", params.rangeEnd)
-    .order("starts_at");
+    .eq("tenant_id", tenantId)
+    .gte("starts_at", rangeStart)
+    .lt("starts_at", rangeEnd);
 
+  if (unitId) q = q.eq("unit_id", unitId);
+  if (professionalId) q = q.eq("professional_id", professionalId);
+  if (clientId) q = q.eq("client_id", clientId);
+  if (excludeStatuses?.length) q = q.not("status", "in", `(${excludeStatuses.join(",")})`);
+
+  q = q.order("starts_at");
+
+  const { data, error } = await q;
   if (error) throw error;
   if (!data) return [];
 
