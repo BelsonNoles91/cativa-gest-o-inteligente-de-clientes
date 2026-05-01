@@ -56,9 +56,9 @@ export function HeroSection() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="font-display text-[2.5rem] sm:text-6xl md:text-7xl xl:text-[7rem] leading-[0.95] tracking-tight text-primary-dark mb-8 relative"
           >
-            <span className="relative z-10">A inteligência <br className="hidden sm:block" />
+            <span className="relative z-10">Faça seus clientes <br className="hidden sm:block" />
             <span className="relative inline-block">
-              que fideliza
+              voltarem mais
               <motion.svg 
                 initial={{ pathLength: 0, opacity: 0 }}
                 animate={{ pathLength: 1, opacity: 1 }}
@@ -68,8 +68,8 @@ export function HeroSection() {
                 <path d="M1 10.5C50 4 150 1 299 10.5" stroke="currentColor" strokeWidth="6" strokeLinecap="round"/>
               </motion.svg>
             </span>
-            <br className="hidden sm:block" />
-            {" "}e faz <span className="italic font-normal serif text-accent">prosperar.</span></span>
+            {" "}vezes — com <br className="hidden sm:block" />
+            uma <span className="italic font-normal serif text-accent">operação organizada.</span></span>
           </motion.h1>
 
           <motion.p 
@@ -78,23 +78,29 @@ export function HeroSection() {
             transition={{ duration: 0.8, delay: 0.5 }}
             className="text-lg md:text-xl text-muted-foreground/80 leading-relaxed max-w-xl mx-auto lg:mx-0 mb-10 font-light"
           >
-            A Cativa centraliza clientes, agendamentos, confirmações e relatórios em um único sistema pensado para quem quer crescer com organização e <span className="text-primary-dark font-medium">fazer o cliente voltar sempre.</span>
+            A Cativa centraliza agenda, clientes, confirmações, protocolos e indicadores para clínicas e salões que querem reduzir faltas, melhorar o rebooking e crescer com mais previsibilidade.
           </motion.p>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-4 mb-8">
-            <Button asChild size="lg" variant="premium" className="group relative overflow-hidden" aria-label="Começar teste gratuito de 14 dias">
-              <Link to="/onboarding">
-                <span className="relative z-10 flex items-center gap-2">
-                  Começar teste de 14 dias
-                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-                </span>
-                <div className="absolute inset-0 bg-white translate-y-full transition-transform group-hover:translate-y-0" />
-              </Link>
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button asChild size="lg" variant="premium" className="group relative overflow-hidden h-16 px-8" aria-label="Começar teste gratuito de 14 dias">
+                <Link to="/onboarding">
+                  <span className="relative z-10 flex items-center gap-2">
+                    Começar teste grátis
+                    <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                  </span>
+                  <div className="absolute inset-0 bg-white translate-y-full transition-transform group-hover:translate-y-0" />
+                </Link>
+              </Button>
+              <span className="text-[10px] text-muted-foreground font-medium text-center lg:text-left px-2">Experimente os principais fluxos sem compromisso.</span>
+            </div>
             
-            <Button asChild variant="outline" size="lg" aria-label="Ver demonstração gratuita do sistema">
-              <Link to="/demo">Ver demonstração</Link>
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button asChild variant="outline" size="lg" className="h-16 px-8 rounded-full border-primary-dark/20 hover:bg-secondary/10" aria-label="Agendar demonstração personalizada">
+                <Link to="/demo">Agendar demonstração</Link>
+              </Button>
+              <span className="text-[10px] text-muted-foreground font-medium text-center lg:text-left px-2">Veja a Cativa aplicada ao seu tipo de negócio.</span>
+            </div>
           </div>
 
           <div className="flex items-center justify-center lg:justify-start gap-2 mb-10 px-2">
@@ -109,7 +115,7 @@ export function HeroSection() {
           </div>
 
           <div className="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-3 mb-12">
-            {["Tudo em um só lugar", "Funciona no celular", "Fácil de usar"].map((item, i) => (
+            {["Sem API de WhatsApp", "Mobile-first", "Foco em Retenção"].map((item, i) => (
               <div key={i} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary-dark/40">
                 <div className="w-1.5 h-1.5 rounded-full bg-accent" />
                 {item}
@@ -155,8 +161,8 @@ export function HeroSection() {
                       {/* Título da Página no Mockup */}
                       <div className="flex justify-between items-end mb-6">
                         <div>
-                          <h2 className="text-xs md:text-sm font-bold text-primary-dark">Visão Geral</h2>
-                          <p className="text-[8px] md:text-[10px] text-muted-foreground">Bem-vinda de volta, Amanda.</p>
+                          <h2 className="text-xs md:text-sm font-bold text-primary-dark uppercase tracking-tight">Índice Cativa</h2>
+                          <p className="text-[8px] md:text-[10px] text-muted-foreground">Sua saúde de retenção hoje.</p>
                         </div>
                         <div className="flex gap-2">
                            <div className="px-2 py-1 rounded-md bg-white border border-border/40 text-[8px] font-bold text-primary-dark">Hoje</div>

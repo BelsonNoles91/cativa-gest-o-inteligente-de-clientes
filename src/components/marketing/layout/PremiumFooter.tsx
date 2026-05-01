@@ -7,27 +7,27 @@ const FOOTER_LINKS = [
   {
     title: "Produto",
     links: [
-      { label: "Funcionalidades", href: "#modulos" },
-      { label: "O Problema", href: "#dor" },
-      { label: "Planos e Preços", href: "/planos" },
+      { label: "Funcionalidades", href: "/#funcionalidades" },
+      { label: "Módulos", href: "/#modulos" },
+      { label: "Preços", href: "/planos" },
       { label: "Demonstração", href: "/demo" },
     ],
   },
   {
-    title: "Empresa",
+    title: "Para quem é",
     links: [
-      { label: "Sobre nós", href: "#" },
-      { label: "Blog", href: "#" },
-      { label: "Carreiras", href: "#" },
-      { label: "Contato", href: "#" },
+      { label: "Clínicas de estética", href: "/#solucao" },
+      { label: "Salões de beleza", href: "/#solucao" },
+      { label: "Barbearias", href: "/#solucao" },
+      { label: "Wellness & Spa", href: "/#solucao" },
     ],
   },
   {
     title: "Legal",
     links: [
-      { label: "Privacidade", href: "#" },
-      { label: "Termos de Uso", href: "#" },
-      { label: "Cookies", href: "#" },
+      { label: "Privacidade", href: "/privacidade" },
+      { label: "Termos de Uso", href: "/termos" },
+      { label: "Status do Sistema", href: "/status" },
     ],
   },
 ];
@@ -44,8 +44,8 @@ export function PremiumFooter() {
             <Link to="/" className="flex items-center group mb-8">
               <Logo className="brightness-0 invert" size="md" />
             </Link>
-            <p className="text-white/60 text-lg leading-relaxed max-w-md mb-8 italic">
-              "Nossa missão é transformar a gestão de negócios de beleza através de tecnologia inteligente e foco implacável na experiência do cliente."
+            <p className="text-white/60 text-lg leading-relaxed max-w-md mb-8">
+              Gestão que faz o cliente voltar. Sistema para clínicas e salões que querem organizar agenda, clientes, confirmações e indicadores com foco em retenção.
             </p>
             <div className="flex flex-col gap-4">
                <div className="flex items-center gap-3 text-white/70 hover:text-accent transition-colors">
@@ -71,9 +71,9 @@ export function PremiumFooter() {
                     <ul className="flex flex-col gap-4">
                       {section.links.map(link => (
                         <li key={link.label}>
-                          <a href={link.href} className="text-white/60 hover:text-white transition-colors">
+                          <Link to={link.href} className="text-white/60 hover:text-white transition-colors">
                             {link.label}
-                          </a>
+                          </Link>
                         </li>
                       ))}
                     </ul>

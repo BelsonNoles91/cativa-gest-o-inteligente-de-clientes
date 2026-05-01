@@ -9,9 +9,7 @@ import { AnimatePresence, motion } from "framer-motion";
 const NAV_LINKS = [
   { label: "Funcionalidades", href: "/#funcionalidades" },
   { label: "Módulos", href: "/#modulos" },
-  { label: "Métricas", href: "/#metricas" },
-  { label: "Planos", href: "/#planos" },
-  { label: "Demonstração", href: "/demo" },
+  { label: "Preços", href: "/planos" },
   { label: "Dúvidas", href: "/#duvidas" },
 ];
 
@@ -56,11 +54,14 @@ export function PremiumHeader() {
         </nav>
 
         <div className="hidden lg:flex items-center gap-3 xl:gap-4 shrink-0">
-          <Button asChild variant="ghost" className="font-semibold text-sm focus:ring-2 focus:ring-accent">
+          <Button asChild variant="ghost" className="font-semibold text-sm hover:bg-accent/5 focus:ring-2 focus:ring-accent">
             <Link to="/auth/login">Entrar</Link>
           </Button>
-          <Button asChild className="rounded-full bg-primary-dark hover:bg-primary px-4 xl:px-6 shadow-lg shadow-primary/10 transition-all active:scale-95 focus:ring-2 focus:ring-accent focus:ring-offset-2">
+          <Button asChild variant="outline" className="rounded-full border-primary-dark/20 hover:bg-secondary/10 px-4 xl:px-6 transition-all active:scale-95 focus:ring-2 focus:ring-accent">
             <Link to="/demo">Agendar Demo</Link>
+          </Button>
+          <Button asChild className="rounded-full bg-primary-dark hover:bg-primary px-4 xl:px-6 shadow-lg shadow-primary/10 transition-all active:scale-95 focus:ring-2 focus:ring-accent focus:ring-offset-2">
+            <Link to="/onboarding">Teste Grátis</Link>
           </Button>
         </div>
 
@@ -120,8 +121,11 @@ export function PremiumHeader() {
                   <Button asChild variant="outline" size="lg" className="w-full rounded-xl border-primary-dark/10">
                     <Link to="/auth/login" onClick={() => setMobileMenuOpen(false)}>Entrar</Link>
                   </Button>
-                  <Button asChild size="lg" className="w-full rounded-xl bg-primary-dark shadow-xl shadow-primary/10">
+                  <Button asChild variant="outline" size="lg" className="w-full rounded-xl border-primary-dark/10">
                     <Link to="/demo" onClick={() => setMobileMenuOpen(false)}>Agendar Demo</Link>
+                  </Button>
+                  <Button asChild size="lg" className="w-full rounded-xl bg-primary-dark shadow-xl shadow-primary/10">
+                    <Link to="/onboarding" onClick={() => setMobileMenuOpen(false)}>Começar Teste Grátis</Link>
                   </Button>
                 </div>
               </div>

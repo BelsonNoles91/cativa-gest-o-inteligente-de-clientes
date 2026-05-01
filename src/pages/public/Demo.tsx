@@ -13,48 +13,39 @@ import { toast } from "sonner";
 
 export default function DemoPage() {
   const navigate = useNavigate();
-  const [selectedDay, setSelectedDay] = useState<number | null>(null);
-  const [selectedService, setSelectedService] = useState<string | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [demoStep, setDemoStep] = useState<'calendar' | 'service' | 'time' | 'confirm'>('calendar');
   const [selectedPlan, setSelectedPlan] = useState<'basic' | 'pro' | 'enterprise'>('pro');
+  
+  const [formData, setFormData] = useState({
+    name: "",
+    businessName: "",
+    segment: "",
+    phone: "",
+    email: "",
+    teamSize: "",
+    message: ""
+  });
 
-  const services = [
-    { id: 'limpeza', name: 'Limpeza de Pele', price: 'R$ 120' },
-    { id: 'peeling', name: 'Peeling Diamante', price: 'R$ 180' },
-    { id: 'massagem', name: 'Massagem Relaxante', price: 'R$ 150' },
-  ];
-
-  const times = ['09:00', '09:30', '10:00', '11:00', '14:00', '15:30'];
-
-  const handleDaySelect = (day: number, isAvailable: boolean) => {
-    if (!isAvailable) {
-      toast.error("Este dia não possui horários disponíveis no momento.");
-      return;
-    }
-    setSelectedDay(day);
-    setDemoStep('service');
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleServiceSelect = (service: string) => {
-    setSelectedService(service);
-    setDemoStep('time');
-  };
-
-  const handleTimeSelect = (time: string) => {
-    setSelectedTime(time);
-    setDemoStep('confirm');
-  };
-
-  const handleConfirm = () => {
-    setIsConfirmed(true);
-    toast.success("Demonstração agendada com sucesso!");
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
     
+    // Simulação de envio
     setTimeout(() => {
-      navigate(`/onboarding?demo_date=2026-05-${selectedDay}&demo_time=${selectedTime}&demo_service=${selectedService}`);
-    }, 2500);
+      setIsSubmitting(false);
+      setIsConfirmed(true);
+      toast.success("Solicitação de demonstração enviada!");
+      
+      // TODO: Integrar com Supabase ou serviço de e-mail/leads
+      console.log("Lead captured:", formData);
+    }, 1500);
   };
 
   return (
@@ -123,132 +114,104 @@ export default function DemoPage() {
               <AnimatePresence mode="wait">
                 {!isConfirmed ? (
                   <motion.div
-                    key="calendar-view"
+                    key="form-view"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                   >
-                    {demoStep === 'calendar' && (
-                      <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-                        <div className="mb-8 md:mb-10 text-center">
-                          <h3 className="text-3xl lg:text-4xl font-display font-bold text-primary-dark mb-2">Escolha um dia</h3>
-                          <p className="text-sm lg:text-base text-muted-foreground font-light">Selecione uma data disponível para agendar sua demonstração</p>
-                        </div>
+                    <div className="mb-8 text-center">
+                      <h3 className="text-2xl lg:text-3xl font-display font-bold text-primary-dark mb-2">Solicitar Demonstração</h3>
+                      <p className="text-sm text-muted-foreground font-light">Preencha os dados e um especialista entrará em contato.</p>
+                    </div>
 
-                        <div className="grid grid-cols-7 gap-2 lg:gap-3 mb-10">
-                          {["D", "S", "T", "Q", "Q", "S", "S"].map((day, i) => (
-                            <div key={i} className="text-center text-[11px] font-bold text-muted-foreground uppercase py-2">{day}</div>
-                          ))}
-                          {Array.from({ length: 31 }).map((_, i) => {
-                            const day = i + 1;
-                            const isAvailable = day > 10 && day < 25;
-                            const isSelected = day === selectedDay;
-                            return (
-                              <button 
-                                key={i} 
-                                onClick={() => handleDaySelect(day, isAvailable)}
-                                type="button"
-                                aria-label={`Dia ${day}${isSelected ? " - selecionado" : ""}${!isAvailable ? " - indisponível" : ""}`}
-                                className={cn(
-                                  "aspect-square rounded-xl lg:rounded-2xl flex items-center justify-center text-sm lg:text-base font-medium transition-all focus:outline-none focus:ring-2 focus:ring-accent",
-                                  isSelected ? "bg-accent text-white shadow-xl scale-110 z-10" : 
-                                  isAvailable ? "hover:bg-accent/10 cursor-pointer text-primary-dark border border-transparent hover:border-accent/20" : "text-muted-foreground/20 cursor-not-allowed"
-                                )}
-                              >
-                                {day}
-                              </button>
-                            );
-                          })}
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Seu Nome</label>
+                          <input 
+                            required
+                            name="name"
+                            value={formData.name}
+                            onChange={handleInputChange}
+                            className="w-full h-12 px-4 rounded-xl border border-border/40 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all text-sm"
+                            placeholder="Ex: Amanda Silva"
+                          />
                         </div>
-                      </motion.div>
-                    )}
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Nome do Negócio</label>
+                          <input 
+                            required
+                            name="businessName"
+                            value={formData.businessName}
+                            onChange={handleInputChange}
+                            className="w-full h-12 px-4 rounded-xl border border-border/40 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all text-sm"
+                            placeholder="Ex: Clínica Bloom"
+                          />
+                        </div>
+                      </div>
 
-                    {demoStep === 'service' && (
-                      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4 py-4">
-                        <div className="text-center mb-6">
-                          <h3 className="text-2xl font-display font-bold text-primary-dark">Qual o serviço?</h3>
-                          <button onClick={() => setDemoStep('calendar')} className="text-[10px] text-accent font-bold uppercase tracking-widest mt-1 hover:underline">Voltar para o dia</button>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">WhatsApp</label>
+                          <input 
+                            required
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleInputChange}
+                            className="w-full h-12 px-4 rounded-xl border border-border/40 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all text-sm"
+                            placeholder="(11) 99999-9999"
+                          />
                         </div>
-                        {services.map(s => (
-                          <button
-                            key={s.id}
-                            onClick={() => handleServiceSelect(s.name)}
-                            className={cn(
-                              "w-full p-4 rounded-2xl border transition-all text-left flex justify-between items-center group",
-                              selectedService === s.name ? "border-accent bg-accent/5" : "border-border/40 hover:border-accent/30"
-                            )}
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Segmento</label>
+                          <select 
+                            required
+                            name="segment"
+                            value={formData.segment}
+                            onChange={handleInputChange}
+                            className="w-full h-12 px-4 rounded-xl border border-border/40 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all text-sm bg-white"
                           >
-                            <div>
-                              <p className="text-sm font-bold text-primary-dark">{s.name}</p>
-                              <p className="text-[10px] text-muted-foreground">Especialista disponível</p>
-                            </div>
-                            <span className="text-sm font-display font-bold text-accent">{s.price}</span>
-                          </button>
-                        ))}
-                      </motion.div>
-                    )}
+                            <option value="">Selecione...</option>
+                            <option value="estetica">Clínica de Estética</option>
+                            <option value="salao">Salão de Beleza</option>
+                            <option value="barbearia">Barbearia</option>
+                            <option value="outros">Outros</option>
+                          </select>
+                        </div>
+                      </div>
 
-                    {demoStep === 'time' && (
-                      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4 py-4">
-                        <div className="text-center mb-6">
-                          <h3 className="text-2xl font-display font-bold text-primary-dark">Escolha um horário</h3>
-                          <button onClick={() => setDemoStep('service')} className="text-[10px] text-accent font-bold uppercase tracking-widest mt-1 hover:underline">Alterar serviço</button>
-                        </div>
-                        <div className="grid grid-cols-3 gap-3">
-                          {times.map(t => (
-                            <button
-                              key={t}
-                              onClick={() => handleTimeSelect(t)}
-                              className={cn(
-                                "py-3 rounded-xl border text-center text-xs font-bold transition-all",
-                                selectedTime === t ? "bg-accent text-white border-accent shadow-md" : "border-border/40 hover:border-accent/30 text-primary-dark"
-                              )}
-                            >
-                              {t}
-                            </button>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">E-mail Corporativo</label>
+                        <input 
+                          required
+                          type="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          className="w-full h-12 px-4 rounded-xl border border-border/40 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all text-sm"
+                          placeholder="contato@empresa.com"
+                        />
+                      </div>
 
-                    {demoStep === 'confirm' && (
-                      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6 py-4">
-                        <div className="text-center mb-6">
-                          <h3 className="text-2xl font-display font-bold text-primary-dark">Quase lá!</h3>
-                          <p className="text-xs text-muted-foreground">Confirme os detalhes abaixo</p>
-                        </div>
-                        <div className="space-y-3">
-                          <div className="p-4 rounded-2xl bg-[#FAF7F9] border border-border/20 flex items-center gap-4">
-                            <Calendar className="h-5 w-5 text-accent" />
-                            <div className="flex-1">
-                              <p className="text-xs font-bold text-primary-dark">{selectedDay} de Maio, 2026</p>
-                              <p className="text-[10px] text-muted-foreground">Data da demonstração</p>
-                            </div>
-                          </div>
-                          <div className="p-4 rounded-2xl bg-[#FAF7F9] border border-border/20 flex items-center gap-4">
-                            <Clock className="h-5 w-5 text-accent" />
-                            <div className="flex-1">
-                              <p className="text-xs font-bold text-primary-dark">{selectedTime} (15 min)</p>
-                              <p className="text-[10px] text-muted-foreground">Horário selecionado</p>
-                            </div>
-                          </div>
-                          <div className="p-4 rounded-2xl bg-[#FAF7F9] border border-border/20 flex items-center gap-4">
-                            <Sparkles className="h-5 w-5 text-accent" />
-                            <div className="flex-1">
-                              <p className="text-xs font-bold text-primary-dark">{selectedService}</p>
-                              <p className="text-[10px] text-muted-foreground">Serviço de foco</p>
-                            </div>
-                          </div>
-                        </div>
-                        <Button 
-                          onClick={handleConfirm}
-                          className="w-full h-14 mt-4 rounded-2xl bg-primary-dark text-white font-bold tracking-tight hover:scale-[1.02] transition-transform"
-                        >
-                          Agendar Demonstração
-                        </Button>
-                        <button onClick={() => setDemoStep('time')} className="w-full text-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-accent">Voltar e ajustar</button>
-                      </motion.div>
-                    )}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Nº aproximado de profissionais</label>
+                        <input 
+                          name="teamSize"
+                          value={formData.teamSize}
+                          onChange={handleInputChange}
+                          className="w-full h-12 px-4 rounded-xl border border-border/40 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all text-sm"
+                          placeholder="Ex: 5"
+                        />
+                      </div>
+
+                      <Button 
+                        disabled={isSubmitting}
+                        type="submit"
+                        className="w-full h-14 mt-4 rounded-2xl bg-primary-dark text-white font-bold tracking-tight hover:scale-[1.02] transition-transform"
+                      >
+                        {isSubmitting ? "Enviando..." : "Solicitar Demonstração"}
+                      </Button>
+                    </form>
                   </motion.div>
                 ) : (
                   <motion.div
@@ -262,7 +225,7 @@ export default function DemoPage() {
                     </div>
                     <h3 className="text-2xl md:text-3xl font-display font-bold text-primary-dark mb-4">Agendado!</h3>
                     <p className="text-muted-foreground max-w-xs mx-auto mb-8 leading-relaxed">
-                      Sua demonstração foi marcada para o dia <span className="font-bold text-primary-dark">{selectedDay} de Maio às {selectedTime}</span>.
+                      Recebemos sua solicitação. Em breve, um especialista em gestão entrará em contato pelo WhatsApp informado.
                     </p>
                     <div className="inline-flex items-center gap-2 text-accent text-sm font-bold uppercase tracking-widest animate-pulse">
                       Redirecionando para o onboarding...

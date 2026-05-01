@@ -8,12 +8,13 @@ import { ProcessSection } from "@/components/marketing/sections/ProcessSection";
 import { MetricsSection } from "@/components/marketing/sections/MetricsSection";
 import { PremiumSection } from "@/components/marketing/layout/PremiumSection";
 import { PlansSection } from "@/components/marketing/sections/PlansSection";
-import { ArrowRight, CheckCircle2, TrendingUp, Users, Calendar, Star, Quote, ShieldCheck, UserCheck, LayoutDashboard } from "lucide-react";
+import { ArrowRight, CheckCircle2, TrendingUp, Users, Calendar, Star, Quote, ShieldCheck, UserCheck, LayoutDashboard, Sparkles, MessageSquare, PieChart, Smartphone, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 
 export default function PremiumLanding() {
   const { scrollYProgress } = useScroll();
@@ -26,52 +27,91 @@ export default function PremiumLanding() {
   const segments = [
     { 
       name: "Estética", 
-      quote: "A Cativa não é apenas um sistema, é um braço direito.", 
-      author: "Amanda Souza, Clínica Bloom",
+      quote: "A Cativa não é apenas um sistema, é um braço direito para clínicas que querem previsibilidade.", 
+      author: "Resultados comprovados em retenção",
       benefit: "Fidelidade Ativa",
       percentage: "82%",
       beforeAfter: { before: "40% de faltas", after: "8% de faltas", chart: [20, 35, 15, 8] }
     },
     { 
       name: "Salões", 
-      quote: "Recuperamos 30% da agenda perdida apenas com as confirmações automáticas.", 
-      author: "Ricardo Melo, Studio R",
+      quote: "Recuperamos faturamento perdido apenas com as confirmações organizadas.", 
+      author: "Foco total na experiência do cliente",
       benefit: "Ocupação Real",
       percentage: "94%",
-      beforeAfter: { before: "R$ 12k perdidos/mês", after: "R$ 900 perdidos/mês", chart: [40, 45, 10, 5] }
+      beforeAfter: { before: "Horas perdidas em confirmação", after: "Processo em segundos", chart: [40, 45, 10, 5] }
     },
     { 
       name: "Barbearias", 
-      quote: "O portal do cliente deu uma autonomia que nunca tivemos antes.", 
-      author: "Bruno Silva, Barber Shop",
+      quote: "O portal do cliente deu uma autonomia que profissionaliza a marca.", 
+      author: "Gestão mobile-first de verdade",
       benefit: "Retorno Recorrente",
       percentage: "76%",
       beforeAfter: { before: "15 min/agendamento", after: "0 min (automático)", chart: [60, 50, 5, 2] }
     }
   ];
+
+  const [showStickyCTA, setShowStickyCTA] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowStickyCTA(window.scrollY > 800);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background font-sans selection:bg-accent/30 selection:text-primary-dark overflow-x-hidden">
+      <Helmet>
+        <title>Cativa — Sistema para clínicas e salões focado em retenção</title>
+        <meta name="description" content="Organize agenda, clientes, confirmações, protocolos e indicadores com a Cativa. Um sistema premium para clínicas de estética, salões e negócios de beleza que querem reduzir faltas e fazer o cliente voltar." />
+        <link rel="canonical" href="https://cativapp.lovable.app" />
+        <meta property="og:url" content="https://cativapp.lovable.app" />
+        <meta property="og:title" content="Cativa — Sistema para clínicas e salões focado em retenção" />
+        <meta property="og:description" content="A inteligência que fideliza e faz sua clínica ou salão prosperar com organização e previsibilidade." />
+      </Helmet>
       <motion.div className="fixed top-0 left-0 right-0 h-1 bg-accent z-[200] origin-left" style={{ scaleX }} />
       <Navbar />
       
       <main>
         <HeroSection />
 
-        {/* Barra de Diferenciais */}
-        <div className="bg-white border-y border-border/40 py-10 md:py-12 overflow-hidden px-4">
+        {/* Seção de Confiança Institucional */}
+        <div className="bg-white border-y border-border/40 py-20 md:py-32 overflow-hidden px-4">
           <div className="container mx-auto">
-            <div className="flex flex-wrap justify-center lg:justify-between items-center gap-6 md:gap-16">
+            <div className="max-w-4xl mx-auto text-center mb-20">
+              <h2 className="font-display text-4xl md:text-6xl text-primary-dark tracking-tighter leading-none mb-6">
+                Criada para operações que querem <br />
+                <span className="text-accent italic serif font-normal">crescer com mais controle.</span>
+              </h2>
+              <p className="text-lg md:text-xl text-muted-foreground font-light leading-relaxed">
+                A Cativa foi desenhada para negócios de beleza e estética que precisam organizar a rotina, melhorar a retenção e profissionalizar a experiência do cliente sem depender de controles improvisados.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
                {[
-                 { label: "USO NO CELULAR", desc: "Gestão na palma da mão" },
-                 { label: "VÁRIAS UNIDADES", desc: "Controle centralizado" },
-                 { label: "FEITO PARA VOCÊ", desc: "Adaptado ao seu fluxo" },
-                 { label: "SEGURANÇA TOTAL", desc: "Dados protegidos" },
-                 { label: "FOCO EM FIDELIDADE", desc: "O cliente sempre volta" }
+                 { title: "Mobile-first", desc: "Gestão na palma da mão para a rotina real da operação.", icon: Smartphone },
+                 { title: "Personalização", desc: "Adaptado ao seu fluxo e tipo de negócio específico.", icon: Settings },
+                 { title: "Central de Confirmação", desc: "Confirmações sem depender de APIs complexas de WhatsApp.", icon: MessageSquare },
+                 { title: "Foco em Retenção", desc: "Indicadores desenhados para fazer o cliente voltar.", icon: PieChart },
+                 { title: "Arquitetura Moderna", desc: "Preparada para a evolução constante do seu negócio.", icon: ShieldCheck },
+                 { title: "Experiência Premium", desc: "Valor percebido para sua equipe e para seu cliente.", icon: Sparkles }
                ].map((item, i) => (
-                 <div key={i} className="flex flex-col items-center lg:items-start group text-center lg:text-left min-w-[140px]">
-                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-primary-dark/80 group-hover:text-accent transition-colors mb-1">{item.label}</span>
-                    <span className="text-[9px] md:text-[10px] font-semibold text-muted-foreground">{item.desc}</span>
-                 </div>
+                 <motion.div 
+                   key={i}
+                   initial={{ opacity: 0, y: 20 }}
+                   whileInView={{ opacity: 1, y: 0 }}
+                   transition={{ delay: i * 0.1 }}
+                   className="flex flex-col items-center lg:items-start group text-center lg:text-left p-6 rounded-3xl hover:bg-secondary/5 transition-colors"
+                 >
+                    <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center mb-6 text-accent group-hover:scale-110 transition-transform">
+                       <item.icon className="h-6 w-6" />
+                    </div>
+                    <h4 className="text-lg font-bold text-primary-dark mb-2 tracking-tight">{item.title}</h4>
+                    <p className="text-sm text-muted-foreground font-medium leading-relaxed">{item.desc}</p>
+                 </motion.div>
                ))}
             </div>
           </div>
@@ -280,29 +320,29 @@ export default function PremiumLanding() {
             {[
               {
                 role: "Dono do Negócio",
-                title: "Gestão Baseada em Dados",
-                desc: "Relatórios de saúde real, taxa de retorno e previsão de faturamento para tomar as melhores decisões.",
+                title: "Decisão com clareza",
+                desc: "Mais clareza sobre retenção, ocupação e previsibilidade para decidir com menos achismo e mais segurança.",
                 icon: LayoutDashboard,
                 iconBg: "bg-accent/10"
               },
               {
                 role: "Gerente",
-                title: "Controle Total da Equipe",
-                desc: "Visibilidade sobre agendas, fluxo de trabalho e oportunidades de melhoria em tempo real.",
+                title: "Padrão operacional",
+                desc: "Mais controle sobre equipe, confirmações, gargalos e processos que garantem a qualidade da marca.",
                 icon: ShieldCheck,
                 iconBg: "bg-blue-500/10"
               },
               {
                 role: "Recepção",
-                title: "Rapidez no Atendimento",
-                desc: "Organize confirmações e novos agendamentos com poucos cliques e muito mais agilidade.",
+                title: "Agilidade real",
+                desc: "Menos improviso, menos retrabalho e mais agilidade para confirmar, reagendar e organizar a agenda.",
                 icon: Calendar,
                 iconBg: "bg-emerald-500/10"
               },
               {
                 role: "Profissional",
-                title: "Melhor Contexto do Cliente",
-                desc: "Acesse o histórico de quem você atende e ofereça um serviço muito mais personalizado.",
+                title: "Contexto do cliente",
+                desc: "Mais contexto sobre cada cliente, histórico de atendimento e próxima oportunidade de retorno.",
                 icon: UserCheck,
                 iconBg: "bg-purple-500/10"
               }
@@ -337,14 +377,14 @@ export default function PremiumLanding() {
                        </Button>
                     </div>
                  </div>
-                 <div className="lg:w-2/3 space-y-4 px-4 md:px-0">
+                  <div className="lg:w-2/3 space-y-4 px-4 md:px-0">
                     {[
                       { q: "A Cativa serve para o meu tipo de negócio?", a: "Sim. A plataforma foi pensada para clínicas de estética, salões de beleza, barbearias, esmalterias, profissionais de cílios e sobrancelhas, massagem e negócios de bem-estar que buscam um nível superior de gestão." },
                       { q: "Como funciona a demonstração?", a: "Nossa demonstração é um tour guiado por um especialista que entende o seu cenário. Mostramos como a Cativa resolve seus problemas específicos em 20 minutos." },
                       { q: "Posso testar antes de contratar?", a: "Sim. Oferecemos 14 dias de teste grátis com acesso total às principais funcionalidades para que você sinta a diferença na sua rotina real." },
-                      { q: "Vocês ajudam na transferência de dados?", a: "Sim. Temos um processo de acompanhamento inicial para garantir que seu histórico e cadastros sejam transferidos com segurança e rapidez." },
-                      { q: "O sistema funciona em tablets e celulares?", a: "Totalmente. A Cativa é otimizada para celular, permitindo que profissionais e gestores trabalhem com 100% de eficiência de qualquer dispositivo." },
-                      { q: "É possível gerenciar mais de uma unidade?", a: "Com certeza. A estrutura da Cativa foi desenhada para redes e franquias, permitindo visão geral ou individual por unidade com um único login." }
+                      { q: "O sistema usa API de WhatsApp?", a: "Não. A Cativa utiliza uma central de confirmação inteligente baseada em wa.me, o que garante estabilidade e evita bloqueios de números ou taxas abusivas por mensagem." },
+                      { q: "É possível gerenciar mais de uma unidade?", a: "Com certeza. A estrutura da Cativa foi desenhada para redes e franquias, permitindo visão geral ou individual por unidade com um único login." },
+                      { q: "O que acontece depois do teste?", a: "Após os 14 dias, você pode escolher o plano que melhor se adapta ao seu momento e continuar com todos os seus dados e configurações preservados." }
                     ].map((item, i) => (
                       <div key={i} className="p-8 md:p-10 rounded-[2.5rem] bg-[#FAF7F9] border border-border/20 transition-all hover:border-accent/40 group">
                          <h4 className="text-xl font-bold text-primary-dark mb-4 flex items-center justify-between gap-4">
@@ -388,19 +428,25 @@ export default function PremiumLanding() {
               </p>
               
                <div className="flex flex-col sm:flex-row justify-center items-center gap-6 mb-24">
-                  <Button asChild size="lg" variant="premium" className="group relative overflow-hidden" aria-label="Ver demonstração gratuita do sistema">
-                     <Link to="/demo">
-                       <span className="relative z-10 flex items-center gap-3">
-                         Ver demonstração gratuita
-                         <ArrowRight className="h-6 w-6" />
-                       </span>
-                       <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover:translate-y-0" />
-                     </Link>
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button asChild size="lg" variant="premium" className="group relative overflow-hidden h-20 px-12" aria-label="Solicitar demonstração gratuita">
+                       <Link to="/demo">
+                         <span className="relative z-10 flex items-center gap-3 text-xl">
+                           Agendar demonstração
+                           <ArrowRight className="h-6 w-6" />
+                         </span>
+                         <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover:translate-y-0" />
+                       </Link>
+                    </Button>
+                    <span className="text-xs text-white/40 font-bold uppercase tracking-widest">Veja a Cativa aplicada ao seu negócio.</span>
+                  </div>
                   
-                  <Button asChild variant="outlineWhite" size="lg" aria-label="Começar teste gratuito de 14 dias">
-                     <Link to="/onboarding">Começar teste de 14 dias</Link>
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button asChild variant="outlineWhite" size="lg" className="h-20 px-12 rounded-full border-white/20 hover:bg-white/10" aria-label="Começar teste gratuito de 14 dias">
+                       <Link to="/onboarding" className="text-xl">Começar teste grátis</Link>
+                    </Button>
+                    <span className="text-xs text-white/40 font-bold uppercase tracking-widest">Experimente agora sem compromisso.</span>
+                  </div>
                </div>
                
                <div className="grid grid-cols-1 md:grid-cols-3 gap-12 py-16 border-y border-white/10">
@@ -423,6 +469,27 @@ export default function PremiumLanding() {
       </main>
 
       <Footer />
+
+      {/* Sticky CTA Mobile */}
+      <AnimatePresence>
+        {showStickyCTA && (
+          <motion.div 
+            initial={{ y: 100 }}
+            animate={{ y: 0 }}
+            exit={{ y: 100 }}
+            className="fixed bottom-0 left-0 right-0 z-50 p-4 lg:hidden bg-white/80 backdrop-blur-xl border-t border-border/40 pb-safe"
+          >
+            <div className="flex gap-3">
+              <Button asChild variant="outline" className="flex-1 rounded-full border-primary-dark/20 h-12">
+                <Link to="/demo">Agendar Demo</Link>
+              </Button>
+              <Button asChild className="flex-1 rounded-full bg-primary-dark h-12">
+                <Link to="/onboarding">Teste Grátis</Link>
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
