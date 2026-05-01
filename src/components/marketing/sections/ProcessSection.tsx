@@ -1,5 +1,6 @@
 import { PremiumSection } from "../layout/PremiumSection";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 const steps = [
   {
