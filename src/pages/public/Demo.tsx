@@ -12,7 +12,7 @@ import { toast } from "sonner";
 
 export default function DemoPage() {
   const navigate = useNavigate();
-  const [selectedDay, setSelectedDay] = useState(15);
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [isConfirmed, setIsConfirmed] = useState(false);
@@ -60,7 +60,7 @@ export default function DemoPage() {
       <PremiumHeader />
       
       <main className="pt-20">
-        <PremiumSection variant="soft" padding="lg">
+        <PremiumSection variant="soft" padding="none" className="min-h-[calc(100vh-80px)] flex items-center py-12 md:py-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <motion.div 
               initial={{ opacity: 0, x: -30 }}
@@ -114,7 +114,7 @@ export default function DemoPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="bg-white rounded-[2.5rem] border border-border/40 p-6 md:p-8 shadow-2xl relative overflow-hidden"
+              className="bg-white rounded-[2.5rem] border border-border/40 p-6 md:p-10 shadow-2xl relative overflow-hidden min-h-[500px] flex flex-col justify-center"
             >
               <div className="absolute top-0 left-0 w-full h-2 bg-accent" />
               
