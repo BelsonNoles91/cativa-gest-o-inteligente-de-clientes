@@ -204,6 +204,13 @@ export function useAnalytics() {
   const crm = useMemo(() => crmCompleteness(clients), [clients]);
   const avgConfirmHours = useMemo(() => avgHoursToConfirm(filteredAppts), [filteredAppts]);
 
+  const profitabilityByPro = useMemo(
+    () => hourlyProfitability(filteredAppts, (r) => r.professionalId, (k) => labels?.pros.get(k) ?? "—"),
+    [filteredAppts, labels]
+  );
+
+  const ltv = useMemo(() => estimatedLtv(appts, clients), [appts, clients]);
+
   const waitlistConv = useMemo(
     () => waitlistConversionRate(waitlist),
     [waitlist],
