@@ -11,7 +11,14 @@ const mockQuery = {
   order: vi.fn().mockReturnThis(),
 };
 
-// Precisamos que o order resolva o promise
+// Precisamos que o chain retorne o mesmo mockQuery
+Object.keys(mockQuery).forEach(key => {
+  if (key !== 'order') {
+    (mockQuery as any)[key].mockReturnThis();
+  }
+});
+
+// O último da cadeia (esperamos ser order por agora ou o próprio mockQuery)
 mockQuery.order.mockResolvedValue({ data: [], error: null });
 
 vi.mock("@/integrations/supabase/client", () => ({
