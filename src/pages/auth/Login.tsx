@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Mail, Lock, Loader2, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Mail, Lock, Loader2, Eye, EyeOff, ArrowRight, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { AuthLayout } from "@/components/shell/AuthLayout";
 import { Button } from "@/components/ui/button";
@@ -40,140 +40,138 @@ export default function Login() {
 
   return (
     <AuthLayout>
-      <div className="space-y-8">
-        {/* Header */}
-        <header className="space-y-3">
-          <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-secondary/40 px-3 py-1 text-[11px] font-medium uppercase tracking-wider text-primary">
-            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-            Acesso à plataforma
-          </span>
-          <h1 className="font-display text-[2rem] font-semibold leading-tight tracking-tight text-foreground">
+      <div className="space-y-10">
+        {/* Cabeçalho */}
+        <header className="space-y-4">
+          <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent border border-accent/20">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+            Área do Cliente
+          </div>
+          <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-primary-dark">
             Bem-vindo de volta
           </h1>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            Entre com sua conta Cativa para gerenciar agenda, clientes e confirmações.
+          <p className="text-lg font-light leading-relaxed text-muted-foreground">
+            Acesse seu painel para gerenciar sua operação e fidelizar seus clientes.
           </p>
         </header>
 
-        {/* Card form */}
-        <form onSubmit={onSubmit} className="space-y-5" noValidate>
-          {/* Email */}
-          <div className="space-y-1.5">
-            <Label
-              htmlFor="email"
-              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-            >
-              E-mail
-            </Label>
-            <div className="group relative">
-              <Mail
-                aria-hidden="true"
-                className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary"
-              />
-              <Input
-                id="email"
-                type="email"
-                inputMode="email"
-                required
-                autoComplete="email"
-                autoFocus
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="voce@negocio.com"
-                className="h-12 rounded-xl border-border/70 bg-card pl-10 text-[15px] shadow-xs transition-all focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
-              />
-            </div>
-          </div>
-
-          {/* Password */}
-          <div className="space-y-1.5">
-            <Label
-              htmlFor="password"
-              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-            >
-              Senha
-            </Label>
-            <div className="group relative">
-              <Lock
-                aria-hidden="true"
-                className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary"
-              />
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                required
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="h-12 rounded-xl border-border/70 bg-card pl-10 pr-11 text-[15px] shadow-xs transition-all focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
-              />
-              <button
-                type="button"
-                tabIndex={-1}
-                onClick={() => setShowPassword((v) => !v)}
-                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+        {/* Formulário */}
+        <form onSubmit={onSubmit} className="space-y-6" noValidate>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label
+                htmlFor="email"
+                className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1"
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
+                E-mail Profissional
+              </Label>
+              <div className="group relative">
+                <Mail
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-accent"
+                />
+                <Input
+                  id="email"
+                  type="email"
+                  inputMode="email"
+                  required
+                  autoComplete="email"
+                  autoFocus
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="exemplo@estudio.com"
+                  className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] pl-12 text-base shadow-none transition-all focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/5"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between items-end px-1">
+                <Label
+                  htmlFor="password"
+                  className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60"
+                >
+                  Senha de Acesso
+                </Label>
+                <Link
+                  to="/auth/recuperar"
+                  className="text-[10px] font-bold uppercase tracking-widest text-accent hover:text-primary-dark transition-colors"
+                >
+                  Esqueci a senha
+                </Link>
+              </div>
+              <div className="group relative">
+                <Lock
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-accent"
+                />
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] pl-12 pr-12 text-base shadow-none transition-all focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/5"
+                />
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 grid h-10 w-10 place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-white hover:text-accent focus-visible:outline-none"
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Submit */}
           <Button
             type="submit"
             disabled={submitting}
-            className="group h-12 w-full rounded-xl bg-gradient-brand text-[15px] font-medium text-primary-foreground shadow-md transition-all hover:shadow-lg hover:brightness-105 disabled:opacity-70"
+            className="group h-16 w-full rounded-full bg-primary-dark text-lg font-bold text-white shadow-xl transition-all hover:bg-accent disabled:opacity-70 active:scale-[0.98]"
           >
             {submitting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-6 w-6 animate-spin" />
             ) : (
               <span className="inline-flex items-center gap-2">
-                Entrar
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                Entrar no Sistema
+                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
               </span>
             )}
           </Button>
-
-          {/* Forgot password — abaixo do CTA para não interferir no tab order */}
-          <div className="text-center">
-            <Link
-              to="/auth/recuperar"
-              className="text-xs font-medium text-muted-foreground transition-colors hover:text-primary hover:underline"
-            >
-              Esqueci minha senha
-            </Link>
-          </div>
         </form>
 
-        {/* Sign up */}
-        <div className="space-y-4">
+        {/* Rodapé do Form */}
+        <div className="space-y-6 pt-4">
           <div className="relative" aria-hidden="true">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border/60" />
+              <span className="w-full border-t border-border/40" />
             </div>
             <div className="relative flex justify-center">
-              <span className="bg-background px-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                Novo por aqui
+              <span className="bg-white px-4 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
+                Ainda não tem conta?
               </span>
             </div>
           </div>
 
           <Link
             to="/onboarding"
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border/70 bg-card text-[15px] font-medium text-foreground shadow-xs transition-all hover:border-primary/40 hover:bg-secondary/40 hover:text-primary"
+            className="flex h-16 w-full items-center justify-center gap-3 rounded-full border-2 border-primary-dark/10 bg-white text-lg font-bold text-primary-dark transition-all hover:border-accent hover:text-accent group"
           >
-            Criar conta gratuita
+            Criar conta grátis
+            <Sparkles className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-all -translate-y-1 group-hover:translate-y-0" />
           </Link>
 
-          <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
+          <p className="text-center text-[10px] leading-relaxed text-muted-foreground/60 font-medium px-8">
             Ao continuar você concorda com os{" "}
-            <Link to="/termos" className="underline-offset-2 hover:text-foreground hover:underline">
-              Termos
+            <Link to="/termos" className="text-primary-dark hover:underline">
+              Termos de Uso
             </Link>{" "}
             e a{" "}
-            <Link to="/privacidade" className="underline-offset-2 hover:text-foreground hover:underline">
+            <Link to="/privacidade" className="text-primary-dark hover:underline">
               Política de Privacidade
             </Link>
             .
