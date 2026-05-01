@@ -128,9 +128,22 @@ export default function PremiumLanding() {
                        </div>
 
                        <div className="grid grid-cols-2 gap-4">
-                          <div className="h-12 md:h-16 bg-secondary/20 rounded-2xl border border-border/20" />
-                          <div className="h-12 md:h-16 bg-primary-dark rounded-2xl flex items-center justify-center text-white">
-                             <Star className="h-5 w-5 fill-accent text-accent" />
+                          <div className="h-12 md:h-16 bg-secondary/20 rounded-2xl border border-border/20 p-4 flex flex-col justify-center">
+                            <span className="text-[8px] font-bold text-muted-foreground uppercase">Antes: {segments[activeSegment].beforeAfter.before}</span>
+                            <div className="h-1 w-full bg-rose-200 rounded-full mt-1">
+                               <motion.div initial={{ width: "80%" }} animate={{ width: "80%" }} className="h-full bg-rose-500 rounded-full" />
+                            </div>
+                          </div>
+                          <div className="h-12 md:h-16 bg-primary-dark rounded-2xl flex flex-col justify-center p-4 text-white">
+                            <span className="text-[8px] font-bold uppercase opacity-60">Hoje: {segments[activeSegment].beforeAfter.after}</span>
+                            <div className="h-1 w-full bg-white/20 rounded-full mt-1">
+                               <motion.div 
+                                 key={`bar-${activeSegment}`}
+                                 initial={{ width: 0 }} 
+                                 animate={{ width: "100%" }} 
+                                 className="h-full bg-accent rounded-full" 
+                               />
+                            </div>
                           </div>
                        </div>
                     </div>
