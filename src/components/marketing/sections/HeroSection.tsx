@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Star, Play, MousePointer2, TrendingUp, Clock, Calendar, Users } from "lucide-react";
+import { ArrowRight, Star, Clock, Calendar, Users, TrendingUp, MousePointer2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PremiumSection } from "../layout/PremiumSection";
 import { cn } from "@/lib/utils";
