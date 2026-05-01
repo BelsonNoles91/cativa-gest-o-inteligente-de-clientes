@@ -67,7 +67,7 @@ export function PlansSection() {
 
         return (
           <div key={plan.id} className={cn(
-            "group relative p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem] border transition-all duration-700 flex flex-col h-full",
+            "group relative p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem] border transition-all duration-700 flex flex-col h-full min-h-[650px]",
             isHighlight 
               ? "bg-[#1A0F16] text-white border-accent/30 shadow-[0_40px_100px_-20px_rgba(168,76,134,0.3)] md:scale-105 z-10" 
               : "bg-white text-primary-dark border-border/40 hover:border-accent/20 hover:shadow-xl"
