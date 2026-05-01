@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Clock, CheckCircle2, ArrowRight, Play } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { StatusBadge } from "@/components/feedback/StatusBadge";
 
 export default function DemoPage() {
   return (
