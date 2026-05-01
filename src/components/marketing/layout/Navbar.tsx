@@ -16,6 +16,13 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const navLinks = [
+    { label: "Funcionalidades", href: "#features" },
+    { label: "Módulos", href: "#modulos" },
+    { label: "Planos", href: "#planos" },
+    { label: "FAQ", href: "#faq" }
+  ];
+
   return (
     <nav 
       className={cn(
@@ -39,19 +46,19 @@ export function Navbar() {
 
         {/* Desktop Links */}
         <div className="hidden lg:flex items-center gap-12">
-          {["Funcionalidades", "Módulos", "Planos", "FAQ"].map((link) => (
-            <Link 
-              key={link} 
-              to={`#${link.toLowerCase()}`} 
+          {navLinks.map((link) => (
+            <a 
+              key={link.label} 
+              href={link.href} 
               className="text-sm font-bold uppercase tracking-widest text-primary-dark/60 hover:text-accent transition-colors"
             >
-              {link}
-            </Link>
+              {link.label}
+            </a>
           ))}
         </div>
 
         <div className="hidden lg:flex items-center gap-8">
-          <Link to="/login" className="text-sm font-bold uppercase tracking-widest text-primary-dark/60 hover:text-primary-dark transition-colors">
+          <Link to="/auth/login" className="text-sm font-bold uppercase tracking-widest text-primary-dark/60 hover:text-primary-dark transition-colors">
             Entrar
           </Link>
           <Button asChild className="rounded-full px-8 bg-primary-dark hover:bg-accent transition-all duration-500 shadow-lg shadow-primary/10">
@@ -81,15 +88,15 @@ export function Navbar() {
         </div>
         
         <div className="flex flex-col gap-12">
-          {["Funcionalidades", "Módulos", "Planos", "FAQ"].map((link) => (
-            <Link 
-              key={link} 
-              to={`#${link.toLowerCase()}`} 
+          {navLinks.map((link) => (
+            <a 
+              key={link.label} 
+              href={link.href} 
               className="text-4xl font-display font-bold text-primary-dark"
               onClick={() => setMobileMenuOpen(false)}
             >
-              {link}
-            </Link>
+              {link.label}
+            </a>
           ))}
         </div>
 
@@ -98,7 +105,7 @@ export function Navbar() {
               <Link to="/onboarding">Começar Agora</Link>
            </Button>
            <Button variant="ghost" asChild size="lg" className="w-full h-16 rounded-2xl text-xl">
-              <Link to="/login">Entrar</Link>
+              <Link to="/auth/login">Entrar</Link>
            </Button>
         </div>
       </div>
