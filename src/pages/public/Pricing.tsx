@@ -84,7 +84,7 @@ const FALLBACK_PLANS: Array<{
   {
     name: "Empreendedor",
     description: "Para o profissional que quer crescer com controle.",
-    priceCents: 4490,
+    priceCents: 9490,
     billingPeriod: "monthly",
     features: [
       "1 unidade",
@@ -100,7 +100,7 @@ const FALLBACK_PLANS: Array<{
   {
     name: "Studio",
     description: "Gestão completa sem limites de escala.",
-    priceCents: 9490,
+    priceCents: 19490,
     billingPeriod: "monthly",
     features: [
       "Unidades ilimitadas",
