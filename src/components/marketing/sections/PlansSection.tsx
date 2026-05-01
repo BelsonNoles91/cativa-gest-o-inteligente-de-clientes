@@ -67,7 +67,11 @@ export function PlansSection() {
         const features = defaultFeatures[plan.code as keyof typeof defaultFeatures] || ["Consulte nossa equipe"];
 
         return (
-          <div key={plan.id} className={cn(
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: i * 0.1 }}
+            key={plan.id} className={cn(
             "group relative p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem] border transition-all duration-700 flex flex-col h-full",
             isHighlight 
               ? "bg-[#1A0F16] text-white border-accent/30 shadow-[0_40px_100px_-20px_rgba(168,76,134,0.3)] md:scale-105 z-10" 
@@ -143,7 +147,7 @@ export function PlansSection() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         );
       })}
     </div>
