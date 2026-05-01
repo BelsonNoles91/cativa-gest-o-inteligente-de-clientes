@@ -225,10 +225,11 @@ export default function Landing() {
         <div className="container relative grid gap-12 py-16 md:grid-cols-12 md:py-28 lg:py-32">
           <div className="flex flex-col justify-center space-y-8 md:col-span-6 lg:col-span-7">
             <StatusBadge tone="brand" className="w-fit">Plataforma SaaS · Beleza & Wellness</StatusBadge>
-            <h1 className="font-display text-5xl leading-[0.95] tracking-tight md:text-7xl lg:text-[5.5rem]">
+            <h1 className="font-display text-5xl leading-[1.1] tracking-tight md:text-7xl lg:text-[5.5rem]">
               Sua gestão <br className="hidden md:block" />
-              em <span className="text-gradient-brand italic pb-1 pr-1">alta performance</span>.
+              em <span className="text-gradient-brand italic inline-block pr-2 py-1">alta performance</span>.
             </h1>
+
 
             <p className="max-w-xl text-lg text-muted-foreground/90 md:text-xl leading-relaxed">
 
