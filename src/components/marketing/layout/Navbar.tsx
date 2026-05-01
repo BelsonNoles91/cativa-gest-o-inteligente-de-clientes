@@ -21,7 +21,8 @@ export function Navbar() {
     { name: "Funcionalidades", href: "#funcionalidades" },
     { name: "Módulos", href: "#modulos" },
     { name: "Métricas", href: "#metricas" },
-    { name: "Planos", href: "#planos" },
+    { name: "Planos", href: "/planos" },
+    { name: "Demonstração", href: "/demo" },
     { name: "Dúvidas", href: "#duvidas" },
   ];
 
@@ -52,13 +53,23 @@ export function Navbar() {
         {/* Desktop Links */}
         <div className="hidden lg:flex items-center gap-8">
           {navLinks.map((link) => (
-            <a 
-              key={link.name}
-              href={link.href} 
-              className="text-[10px] font-bold uppercase tracking-widest text-primary-dark hover:text-accent transition-colors"
-            >
-              {link.name}
-            </a>
+            link.href.startsWith('/') ? (
+              <Link 
+                key={link.name}
+                to={link.href} 
+                className="text-[10px] font-bold uppercase tracking-widest text-primary-dark hover:text-accent transition-colors"
+              >
+                {link.name}
+              </Link>
+            ) : (
+              <a 
+                key={link.name}
+                href={link.href} 
+                className="text-[10px] font-bold uppercase tracking-widest text-primary-dark hover:text-accent transition-colors"
+              >
+                {link.name}
+              </a>
+            )
           ))}
         </div>
 
@@ -67,7 +78,7 @@ export function Navbar() {
             Entrar
           </Link>
           <Button asChild variant="outline" size="sm" className="px-8 border-primary-dark/20 hover:bg-primary-dark hover:text-white transition-all duration-300">
-            <Link to="/onboarding">Demonstração</Link>
+            <Link to="/demo">Demonstração</Link>
           </Button>
           <Button asChild variant="premium" size="sm" className="px-8 shadow-lg shadow-accent/20">
             <Link to="/onboarding">Começar Agora</Link>
@@ -101,14 +112,14 @@ export function Navbar() {
             
             <div className="flex flex-col gap-10 overflow-y-auto">
               {navLinks.map((link) => (
-                <a 
+                <Link 
                   key={link.name}
-                  href={link.href} 
+                  to={link.href.startsWith('/') ? link.href : `/${link.href}`} 
                   className="text-4xl font-display font-bold text-primary-dark" 
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {link.name}
-                </a>
+                </Link>
               ))}
             </div>
 
@@ -119,9 +130,9 @@ export function Navbar() {
                <Button asChild size="lg" variant="outline" className="w-full h-16 rounded-2xl text-xl">
                   <Link to="/demo">Agendar Demonstração</Link>
                </Button>
-               <Button variant="ghost" asChild size="lg" className="w-full h-16 rounded-2xl text-xl">
-                  <Link to="/auth/login">Entrar</Link>
-               </Button>
+                <Button variant="ghost" asChild size="lg" className="w-full h-16 rounded-2xl text-xl">
+                  <Link to="/auth/login" onClick={() => setMobileMenuOpen(false)}>Entrar</Link>
+                </Button>
             </div>
           </motion.div>
         )}

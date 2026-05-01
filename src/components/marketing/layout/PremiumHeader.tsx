@@ -11,6 +11,7 @@ const NAV_LINKS = [
   { label: "Módulos", href: "#modulos" },
   { label: "Diferenciais", href: "#diferenciais" },
   { label: "Planos", href: "/planos" },
+  { label: "Demonstração", href: "/demo" },
 ];
 
 export function PremiumHeader() {
@@ -61,7 +62,7 @@ export function PremiumHeader() {
             <Link to="/auth/login">Entrar</Link>
           </Button>
           <Button asChild className="rounded-full bg-primary-dark hover:bg-primary px-6 shadow-lg shadow-primary/10">
-            <Link to="/onboarding">Agendar Demo</Link>
+            <Link to="/demo">Agendar Demo</Link>
           </Button>
         </div>
 

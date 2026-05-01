@@ -10,7 +10,7 @@ const FOOTER_LINKS = [
       { label: "Funcionalidades", href: "#modulos" },
       { label: "O Problema", href: "#dor" },
       { label: "Planos e Preços", href: "/planos" },
-      { label: "Demonstração", href: "/onboarding" },
+      { label: "Demonstração", href: "/demo" },
     ],
   },
   {
