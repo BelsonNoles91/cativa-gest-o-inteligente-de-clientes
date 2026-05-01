@@ -3894,7 +3894,6 @@ export type Database = {
         Row: {
           bio: string | null
           color: string | null
-          commission_pct_hidden: number | null
           created_at: string | null
           display_name: string | null
           email: string | null
@@ -3911,7 +3910,6 @@ export type Database = {
         Insert: {
           bio?: string | null
           color?: string | null
-          commission_pct_hidden?: never
           created_at?: string | null
           display_name?: string | null
           email?: string | null
@@ -3928,7 +3926,6 @@ export type Database = {
         Update: {
           bio?: string | null
           color?: string | null
-          commission_pct_hidden?: never
           created_at?: string | null
           display_name?: string | null
           email?: string | null
