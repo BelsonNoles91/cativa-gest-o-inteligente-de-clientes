@@ -53,13 +53,23 @@ export function Navbar() {
         {/* Desktop Links */}
         <div className="hidden lg:flex items-center gap-8">
           {navLinks.map((link) => (
-            <a 
-              key={link.name}
-              href={link.href} 
-              className="text-[10px] font-bold uppercase tracking-widest text-primary-dark hover:text-accent transition-colors"
-            >
-              {link.name}
-            </a>
+            link.href.startsWith('/') ? (
+              <Link 
+                key={link.name}
+                to={link.href} 
+                className="text-[10px] font-bold uppercase tracking-widest text-primary-dark hover:text-accent transition-colors"
+              >
+                {link.name}
+              </Link>
+            ) : (
+              <a 
+                key={link.name}
+                href={link.href} 
+                className="text-[10px] font-bold uppercase tracking-widest text-primary-dark hover:text-accent transition-colors"
+              >
+                {link.name}
+              </a>
+            )
           ))}
         </div>
 
