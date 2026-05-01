@@ -153,6 +153,8 @@ export default function AgendaPage() {
   const [professionalFilter, setProfessionalFilter] = useState("all");
   const [resourceFilter, setResourceFilter] = useState("all");
   const [refreshToken, setRefreshToken] = useState(0);
+  const [quickSearch, setQuickSearch] = useState("");
+
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
