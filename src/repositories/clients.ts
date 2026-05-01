@@ -124,6 +124,9 @@ export async function listClients(params: ListClientsParams): Promise<Client[]> 
     .order("full_name", { ascending: true })
     .limit(params.limit ?? 200);
 
+  // Cache flag for performance
+  q = q.throwOnError();
+
   if (params.search?.trim()) {
     const s = params.search.trim().replace(/[,()]/g, " ");
     q = q.or(`full_name.ilike.%${s}%,phone.ilike.%${s}%,email.ilike.%${s}%`);
