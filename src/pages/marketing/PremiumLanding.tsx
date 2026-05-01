@@ -377,14 +377,14 @@ export default function PremiumLanding() {
                        </Button>
                     </div>
                  </div>
-                 <div className="lg:w-2/3 space-y-4 px-4 md:px-0">
+                  <div className="lg:w-2/3 space-y-4 px-4 md:px-0">
                     {[
                       { q: "A Cativa serve para o meu tipo de negócio?", a: "Sim. A plataforma foi pensada para clínicas de estética, salões de beleza, barbearias, esmalterias, profissionais de cílios e sobrancelhas, massagem e negócios de bem-estar que buscam um nível superior de gestão." },
                       { q: "Como funciona a demonstração?", a: "Nossa demonstração é um tour guiado por um especialista que entende o seu cenário. Mostramos como a Cativa resolve seus problemas específicos em 20 minutos." },
                       { q: "Posso testar antes de contratar?", a: "Sim. Oferecemos 14 dias de teste grátis com acesso total às principais funcionalidades para que você sinta a diferença na sua rotina real." },
-                      { q: "Vocês ajudam na transferência de dados?", a: "Sim. Temos um processo de acompanhamento inicial para garantir que seu histórico e cadastros sejam transferidos com segurança e rapidez." },
-                      { q: "O sistema funciona em tablets e celulares?", a: "Totalmente. A Cativa é otimizada para celular, permitindo que profissionais e gestores trabalhem com 100% de eficiência de qualquer dispositivo." },
-                      { q: "É possível gerenciar mais de uma unidade?", a: "Com certeza. A estrutura da Cativa foi desenhada para redes e franquias, permitindo visão geral ou individual por unidade com um único login." }
+                      { q: "O sistema usa API de WhatsApp?", a: "Não. A Cativa utiliza uma central de confirmação inteligente baseada em wa.me, o que garante estabilidade e evita bloqueios de números ou taxas abusivas por mensagem." },
+                      { q: "É possível gerenciar mais de uma unidade?", a: "Com certeza. A estrutura da Cativa foi desenhada para redes e franquias, permitindo visão geral ou individual por unidade com um único login." },
+                      { q: "O que acontece depois do teste?", a: "Após os 14 dias, você pode escolher o plano que melhor se adapta ao seu momento e continuar com todos os seus dados e configurações preservados." }
                     ].map((item, i) => (
                       <div key={i} className="p-8 md:p-10 rounded-[2.5rem] bg-[#FAF7F9] border border-border/20 transition-all hover:border-accent/40 group">
                          <h4 className="text-xl font-bold text-primary-dark mb-4 flex items-center justify-between gap-4">
@@ -428,19 +428,25 @@ export default function PremiumLanding() {
               </p>
               
                <div className="flex flex-col sm:flex-row justify-center items-center gap-6 mb-24">
-                  <Button asChild size="lg" variant="premium" className="group relative overflow-hidden" aria-label="Ver demonstração gratuita do sistema">
-                     <Link to="/demo">
-                       <span className="relative z-10 flex items-center gap-3">
-                         Ver demonstração gratuita
-                         <ArrowRight className="h-6 w-6" />
-                       </span>
-                       <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover:translate-y-0" />
-                     </Link>
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button asChild size="lg" variant="premium" className="group relative overflow-hidden h-20 px-12" aria-label="Solicitar demonstração gratuita">
+                       <Link to="/demo">
+                         <span className="relative z-10 flex items-center gap-3 text-xl">
+                           Agendar demonstração
+                           <ArrowRight className="h-6 w-6" />
+                         </span>
+                         <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover:translate-y-0" />
+                       </Link>
+                    </Button>
+                    <span className="text-xs text-white/40 font-bold uppercase tracking-widest">Veja a Cativa aplicada ao seu negócio.</span>
+                  </div>
                   
-                  <Button asChild variant="outlineWhite" size="lg" aria-label="Começar teste gratuito de 14 dias">
-                     <Link to="/onboarding">Começar teste de 14 dias</Link>
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button asChild variant="outlineWhite" size="lg" className="h-20 px-12 rounded-full border-white/20 hover:bg-white/10" aria-label="Começar teste gratuito de 14 dias">
+                       <Link to="/onboarding" className="text-xl">Começar teste grátis</Link>
+                    </Button>
+                    <span className="text-xs text-white/40 font-bold uppercase tracking-widest">Experimente agora sem compromisso.</span>
+                  </div>
                </div>
                
                <div className="grid grid-cols-1 md:grid-cols-3 gap-12 py-16 border-y border-white/10">
