@@ -49,8 +49,8 @@ export function FeaturesSection() {
             Funcionalidades Core
           </div>
           <h2 className="text-5xl md:text-7xl font-display font-bold text-primary-dark leading-[0.95] tracking-tight">
-            Menos cliques, <br />
-            <span className="text-accent italic serif font-normal">mais lucros.</span>
+            Pare de perder dinheiro <br />
+            <span className="text-accent italic serif font-normal">com buracos na agenda.</span>
           </h2>
         </div>
         <p className="text-xl text-muted-foreground/80 max-w-md pb-4 font-light leading-relaxed">
@@ -86,8 +86,8 @@ export function FeaturesSection() {
          <div className="grid lg:grid-cols-2 gap-0">
             <div className="p-16 md:p-24 relative z-10">
                <h3 className="text-white text-4xl md:text-6xl font-display font-bold leading-tight mb-10">
-                 A primeira agenda com <br />
-                 <span className="text-accent italic font-normal serif">conciência operacional.</span>
+                 A única agenda que <br />
+                 <span className="text-accent italic font-normal serif">trabalha enquanto você atende.</span>
                </h3>
                <div className="space-y-8">
                   {[

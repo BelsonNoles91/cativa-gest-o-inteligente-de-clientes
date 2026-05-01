@@ -190,10 +190,10 @@ export default function PremiumLanding() {
                  </div>
                  <div className="lg:w-2/3 space-y-4">
                     {[
-                      { q: "A Cativa serve para meu tipo de negócio?", a: "Sim! Somos especialistas em clínicas de estética, salões de beleza, barbearias, esmalterias e profissionais autônomos de wellness que buscam um posicionamento premium." },
-                      { q: "Preciso contratar API oficial do WhatsApp?", a: "Não. A Cativa possui uma Central de Confirmação inteligente que utiliza o WhatsApp de forma organizada, sem custos ocultos de API de terceiros." },
-                      { q: "O sistema funciona no meu celular?", a: "Totalmente. A Cativa é Mobile-First, oferecendo uma experiência nativa e impecável tanto no computador quanto em dispositivos móveis." },
-                      { q: "Como funciona o período de teste?", a: "Você tem 14 dias para usar 100% dos recursos, sem necessidade de cartão de crédito. É o tempo ideal para sentir o impacto na produtividade da sua equipe." }
+                      { q: "A Cativa serve para meu tipo de negócio?", a: "Sim! Somos especialistas em clínicas de estética, salões de beleza, barbearias, esmalterias e profissionais autônomos que desejam profissionalizar sua gestão." },
+                      { q: "Já tenho outro sistema, como faço?", a: "Nós ajudamos na migração! Nossa equipe auxilia na importação de dados para que você não perca seu histórico e comece a lucrar mais já no primeiro dia." },
+                      { q: "O sistema funciona no meu celular?", a: "Totalmente. A Cativa é Mobile-First, oferecendo uma experiência nativa e impecável tanto no computador quanto em qualquer smartphone." },
+                      { q: "Preciso cadastrar cartão de crédito para testar?", a: "Não. Você tem 14 dias de acesso total sem compromisso. Só paga se decidir que a Cativa é essencial para seu crescimento." }
                     ].map((item, i) => (
                       <div key={i} className="p-10 rounded-[2.5rem] bg-[#FAF7F9] border border-border/20 transition-all hover:border-accent/40 group">
                          <h4 className="text-xl font-bold text-primary-dark mb-4 flex items-center justify-between">
