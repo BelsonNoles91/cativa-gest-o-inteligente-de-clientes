@@ -1834,7 +1834,7 @@ function InfoItem({
   return (
     <div className={full ? "sm:col-span-2" : ""}>
       <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className="mt-1 text-sm">{value?.trim() ? value : "—"}</p>
+      <div className="mt-1 text-sm">{typeof value === 'string' ? (value.trim() ? value : "—") : (value ?? "—")}</div>
     </div>
   );
 }
