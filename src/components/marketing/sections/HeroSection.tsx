@@ -9,7 +9,7 @@ export function HeroSection() {
     <PremiumSection
       variant="soft"
       padding="none"
-      className="pt-24 pb-20 md:pt-40 md:pb-40 overflow-visible min-h-[90vh] flex items-center"
+      className="pt-32 pb-20 md:pt-40 md:pb-40 overflow-hidden md:overflow-visible min-h-[90vh] flex items-center"
       containerSize="xl"
     >
       {/* Editorial Background Elements */}
@@ -27,8 +27,8 @@ export function HeroSection() {
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">SaaS Premium para Gestão de Beleza</span>
           </div>
 
-          <h1 className="font-display text-5xl sm:text-7xl md:text-8xl xl:text-[7.5rem] leading-[0.85] tracking-tight text-primary-dark mb-10 animate-fade-in delay-100">
-            A inteligência <br className="hidden sm:block" />
+          <h1 className="font-display text-5xl sm:text-7xl md:text-8xl xl:text-[7.5rem] leading-[0.85] tracking-tight text-primary-dark mb-10 animate-fade-in delay-100 relative">
+            <span className="relative z-10">A inteligência <br className="hidden sm:block" />
             <span className="relative inline-block">
               que retém
               <svg className="absolute -bottom-1 sm:-bottom-2 left-0 w-full h-2 sm:h-3 text-accent/30 -z-10" viewBox="0 0 300 12" fill="none">
@@ -36,7 +36,7 @@ export function HeroSection() {
               </svg>
             </span>
             <br className="hidden sm:block" />
-            {" "}e <span className="italic font-normal serif text-accent">prospera.</span>
+            {" "}e <span className="italic font-normal serif text-accent">prospera.</span></span>
           </h1>
 
           <p className="text-xl md:text-2xl text-muted-foreground/80 leading-relaxed max-w-xl mb-12 animate-fade-in delay-200 font-light">

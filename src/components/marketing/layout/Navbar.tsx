@@ -28,7 +28,7 @@ export function Navbar() {
           "mx-auto max-w-7xl h-20 rounded-full flex items-center justify-between px-10 transition-all duration-500",
           isScrolled 
             ? "bg-white/90 backdrop-blur-xl shadow-[0_20px_50px_-10px_rgba(0,0,0,0.05)] border border-white/40" 
-            : "bg-transparent"
+            : "bg-white/40 backdrop-blur-md border border-white/20 lg:bg-transparent lg:backdrop-blur-none lg:border-none"
         )}
       >
         <Link to="/" className="flex items-center group">
