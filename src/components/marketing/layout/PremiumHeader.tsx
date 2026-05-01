@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, ArrowRight } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
-import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
 
 const NAV_LINKS = [
   { label: "Funcionalidades", href: "/#funcionalidades" },
@@ -75,29 +75,36 @@ export function PremiumHeader() {
       </div>
 
       {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden absolute top-full left-0 right-0 bg-background border-b border-border animate-fade-in shadow-2xl overflow-hidden h-screen flex flex-col">
-          <div className="p-8 flex flex-col gap-6 items-center">
-            {NAV_LINKS.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="text-2xl font-display font-medium text-primary-dark"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {link.label}
-              </a>
-            ))}
-            <hr className="w-full border-border" />
-            <Button asChild variant="outline" size="lg" className="w-full rounded-full">
-              <Link to="/auth/login" onClick={() => setMobileMenuOpen(false)}>Entrar</Link>
-            </Button>
-            <Button asChild size="lg" className="w-full rounded-full bg-primary-dark shadow-xl">
-              <Link to="/onboarding" onClick={() => setMobileMenuOpen(false)}>Começar agora</Link>
-            </Button>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="lg:hidden absolute top-full left-0 right-0 bg-white border-b border-border z-[100] shadow-2xl overflow-hidden flex flex-col"
+          >
+            <div className="p-8 flex flex-col gap-6 items-center">
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.label}
+                  to={link.href}
+                  className="text-2xl font-display font-medium text-primary-dark active:text-accent"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <hr className="w-full border-border" />
+              <Button asChild variant="outline" size="lg" className="w-full rounded-full">
+                <Link to="/auth/login" onClick={() => setMobileMenuOpen(false)}>Entrar</Link>
+              </Button>
+              <Button asChild size="lg" className="w-full rounded-full bg-primary-dark shadow-xl">
+                <Link to="/onboarding" onClick={() => setMobileMenuOpen(false)}>Começar agora</Link>
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
