@@ -553,35 +553,46 @@ export default function Onboarding() {
 
       {/* Step 3 — Equipe */}
       {step === 3 && (
-        <div className="space-y-4 animate-fade-in">
-          <h1 className="text-2xl font-semibold">Convide sua equipe</h1>
-          <p className="text-sm text-muted-foreground">Opcional — você pode adicionar pessoas depois nas Configurações.</p>
+        <div className="space-y-8 animate-fade-in">
+          <header className="space-y-4">
+            <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent border border-accent/20">
+              Passo 03
+            </div>
+            <h1 className="font-display text-4xl font-bold tracking-tight text-primary-dark">
+              Convide sua Equipe
+            </h1>
+            <p className="text-lg font-light leading-relaxed text-muted-foreground">
+              Adicione as pessoas que vão ajudar a operar seu negócio.
+            </p>
+          </header>
 
-          <div className="rounded-xl border border-border/70 p-3 space-y-3">
-            <div className="grid grid-cols-[1fr_140px_auto] gap-2">
-              <Input value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="email@equipe.com" className="h-10 rounded-lg" />
+          <div className="rounded-[2.5rem] border border-border/40 p-6 md:p-8 space-y-6 bg-[#FAF7F9]">
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_160px_auto] gap-3">
+              <Input value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="email@equipe.com" className="h-14 rounded-2xl border-border/40 bg-white text-base shadow-sm focus:ring-4 focus:ring-accent/5" />
               <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as Role)}>
-                <SelectTrigger className="h-10 rounded-lg"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {INVITE_ROLES.map((r) => <SelectItem key={r} value={r}>{roleLabels[r]}</SelectItem>)}
+                <SelectTrigger className="h-14 rounded-2xl border-border/40 bg-white shadow-sm focus:ring-4 focus:ring-accent/5"><SelectValue /></SelectTrigger>
+                <SelectContent className="rounded-2xl border-border/40 shadow-xl">
+                  {INVITE_ROLES.map((r) => <SelectItem key={r} value={r} className="rounded-xl py-3 focus:bg-accent/5">{roleLabels[r]}</SelectItem>)}
                 </SelectContent>
               </Select>
-              <Button type="button" onClick={addInvite} className="h-10 rounded-lg" variant="outline">
-                <UserPlus className="h-4 w-4" />
+              <Button type="button" onClick={addInvite} className="h-14 w-14 rounded-2xl bg-white border border-border/40 text-primary-dark hover:bg-accent hover:text-white transition-all shadow-sm" variant="outline">
+                <UserPlus className="h-6 w-6" />
               </Button>
             </div>
 
             {invites.length === 0 ? (
-              <p className="text-xs text-muted-foreground">Nenhum convite adicionado.</p>
+              <div className="py-8 text-center border-2 border-dashed border-border/40 rounded-3xl">
+                <p className="text-sm text-muted-foreground/60 font-medium italic">Nenhum convite adicionado ainda.</p>
+              </div>
             ) : (
-              <ul className="space-y-1.5">
+              <ul className="space-y-2">
                 {invites.map((i) => (
-                  <li key={i.email} className="flex items-center justify-between rounded-lg bg-muted/60 px-3 py-2 text-sm">
-                    <span className="truncate">{i.email}</span>
-                    <span className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">{roleLabels[i.role]}</span>
-                      <button type="button" onClick={() => setInvites((curr) => curr.filter((x) => x.email !== i.email))} className="text-muted-foreground hover:text-destructive">
-                        <Trash2 className="h-3.5 w-3.5" />
+                  <li key={i.email} className="flex items-center justify-between rounded-2xl bg-white border border-border/20 px-5 py-3 text-sm shadow-sm transition-all hover:border-accent/20 group">
+                    <span className="font-medium text-primary-dark truncate">{i.email}</span>
+                    <span className="flex items-center gap-4">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 px-3 py-1 bg-secondary/30 rounded-full">{roleLabels[i.role]}</span>
+                      <button type="button" onClick={() => setInvites((curr) => curr.filter((x) => x.email !== i.email))} className="text-muted-foreground hover:text-destructive transition-colors">
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </span>
                   </li>
@@ -590,13 +601,54 @@ export default function Onboarding() {
             )}
           </div>
 
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setStep(2)} className="h-11 flex-1 rounded-xl">Voltar</Button>
-            <Button onClick={() => setStep(4)} className="h-11 flex-1 rounded-xl bg-gradient-brand">Continuar</Button>
+          <div className="flex gap-4 pt-4">
+            <Button variant="outline" onClick={() => setStep(2)} className="h-16 flex-1 rounded-full border-2 border-primary-dark/10 font-bold text-primary-dark hover:border-accent hover:text-accent">Voltar</Button>
+            <Button onClick={() => setStep(4)} className="h-16 flex-1 rounded-full bg-primary-dark font-bold text-white shadow-xl hover:bg-accent transition-all">Continuar</Button>
           </div>
         </div>
       )}
 
+      {/* Step 4 — Confirmação / criação */}
+      {step === 4 && (
+        <div className="space-y-10 text-center animate-fade-in">
+          <header className="space-y-6">
+            <div className="mx-auto grid h-24 w-24 place-items-center rounded-[2.5rem] bg-accent/10 border border-accent/20 text-accent shadow-lg shadow-accent/5">
+              <Sparkles className="h-10 w-10 animate-pulse" />
+            </div>
+            <div>
+              <h1 className="font-display text-4xl font-bold tracking-tight text-primary-dark">Tudo pronto!</h1>
+              <p className="mt-2 text-lg font-light leading-relaxed text-muted-foreground px-4">
+                Confira os detalhes antes de criarmos seu workspace profissional.
+              </p>
+            </div>
+          </header>
+
+          <div className="rounded-[2.5rem] border border-border/40 bg-[#FAF7F9] overflow-hidden text-left shadow-sm">
+            <div className="p-6 md:p-8 space-y-4">
+              {[
+                { label: "Estabelecimento", val: bizName },
+                { label: "Segmento", val: segment ? segmentLabels[segment as TenantSegment] : "—" },
+                { label: "Unidade Principal", val: unitName || "Matriz" },
+                { label: "Colaboradores", val: `${invites.length} pessoa(s)` },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center justify-between pb-4 border-b border-border/10 last:border-0 last:pb-0">
+                  <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">{item.label}</span>
+                  <span className="font-bold text-primary-dark text-lg">{item.val}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <Button onClick={handleFinish} disabled={submitting} className="group h-20 w-full rounded-full bg-primary-dark text-xl font-bold text-white shadow-2xl transition-all hover:bg-accent active:scale-[0.98]">
+            {submitting ? <Loader2 className="h-8 w-8 animate-spin" /> : (
+              <span className="flex items-center gap-3">
+                Finalizar e Acessar o Cativa
+                <ArrowRight className="h-6 w-6 transition-transform group-hover:translate-x-1" />
+              </span>
+            )}
+          </Button>
+        </div>
+      )}
       {/* Step 4 — Confirmação / criação */}
       {step === 4 && (
         <div className="space-y-5 text-center animate-fade-in">
