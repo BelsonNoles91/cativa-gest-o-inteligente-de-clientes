@@ -91,7 +91,7 @@ export function HeroSection() {
               </Link>
             </Button>
             
-            <Button asChild variant="outline" size="lg" className="h-14 md:h-16 px-8 md:px-10 rounded-full border-primary-dark/40 text-primary-dark font-bold text-base md:text-lg hover:bg-white hover:border-primary-dark hover:shadow-lg transition-all duration-300 active:scale-[0.98]">
+            <Button asChild variant="outline" size="lg" className="h-14 md:h-16 px-8 md:px-10 rounded-full border-2 border-primary-dark/60 text-primary-dark font-black text-base md:text-lg hover:bg-primary-dark hover:text-white hover:border-primary-dark shadow-md hover:shadow-xl transition-all duration-300 active:scale-[0.95]">
               <Link to="/onboarding">Começar teste de 14 dias</Link>
             </Button>
           </div>
