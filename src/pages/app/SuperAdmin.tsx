@@ -24,7 +24,7 @@ import { MembersTab } from "@/features/admin/MembersTab";
 import { ProvisionTestUsersCard } from "@/features/admin/ProvisionTestUsersCard";
 import { ClientMembershipsTab } from "@/features/admin/ClientMembershipsTab";
 import { AuditLogsTab } from "@/features/admin/AuditLogsTab";
-import { AuditLogsTab } from "@/features/admin/AuditLogsTab";
+import { IncidentsTab } from "@/features/admin/IncidentsTab";
 import { FeatureFlagsConsole } from "@/features/admin/FeatureFlagsConsole";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import { supabase } from "@/integrations/supabase/client";
