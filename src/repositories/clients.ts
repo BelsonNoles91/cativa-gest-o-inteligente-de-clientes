@@ -124,7 +124,7 @@ export async function listClients(params: ListClientsParams): Promise<Client[]> 
     .order("full_name", { ascending: true })
     .limit(params.limit ?? 200);
 
-  // Cache flag for performance
+  // Performance hint
   q = q.throwOnError();
 
   if (params.search?.trim()) {
