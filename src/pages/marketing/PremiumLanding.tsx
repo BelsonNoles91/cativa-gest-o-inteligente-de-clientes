@@ -108,7 +108,7 @@ export default function PremiumLanding() {
               <div className="grid sm:grid-cols-2 gap-8">
                 {[
                   { icon: CheckCircle2, text: "Foco total em LTV e Retenção", desc: "Aumente o valor de cada cliente." },
-                  { icon: CheckCircle2, text: "Foco total em LTV e Retenção", desc: "Aumente o valor de cada cliente." },
+                  { icon: ShieldCheck, text: "Segurança de Dados", desc: "Arquitetura robusta e confiável." },
                   { icon: Users, text: "Experiência do Cliente", desc: "Portal dedicado e personalizado." },
                   { icon: Calendar, text: "Fluxo de 3 cliques", desc: "Rapidez que sua recepção precisa." },
                 ].map((item, i) => (
