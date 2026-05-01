@@ -79,7 +79,7 @@ export function useConfirmationCenter() {
       const r = await generateQueueForTenant(tenantId);
       toast({
         title: "Fila atualizada",
-        description: `${r.created} novos itens • ${r.skipped} já existentes`,
+        description: `${r.created} agendamentos • Tarefas de reativação sincronizadas`,
       });
       await refresh();
     } catch (e) {
