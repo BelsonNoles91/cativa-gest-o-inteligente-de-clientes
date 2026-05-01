@@ -107,7 +107,7 @@ export default function PremiumLanding() {
                    initial={{ opacity: 0, y: 20 }}
                    whileInView={{ opacity: 1, y: 0 }}
                    transition={{ delay: i * 0.1 }}
-                   className="flex flex-col items-center lg:items-start group text-center lg:text-left p-6 rounded-3xl hover:bg-secondary/5 transition-colors"
+                   className="flex flex-col items-center group text-center p-6 rounded-3xl hover:bg-secondary/5 transition-colors"
                  >
                     <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center mb-6 text-accent group-hover:scale-110 transition-transform">
                        <item.icon className="h-6 w-6" />
