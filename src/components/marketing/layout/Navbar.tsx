@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import { Menu, X, ArrowRight } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function Navbar() {
@@ -16,6 +16,14 @@ export function Navbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const navLinks = [
+    { name: "Funcionalidades", href: "#funcionalidades" },
+    { name: "Módulos", href: "#modulos" },
+    { name: "Métricas", href: "#metricas" },
+    { name: "Planos", href: "#planos" },
+    { name: "Dúvidas", href: "#duvidas" },
+  ];
 
   return (
     <nav 
@@ -39,10 +47,16 @@ export function Navbar() {
         </Link>
 
         {/* Desktop Links */}
-        <div className="hidden lg:flex items-center gap-10">
-          <a href="#funcionalidades" className="text-[10px] font-bold uppercase tracking-widest text-primary-dark/60 hover:text-accent transition-colors">Funcionalidades</a>
-          <a href="#modulos" className="text-[10px] font-bold uppercase tracking-widest text-primary-dark/60 hover:text-accent transition-colors">Módulos</a>
-          <a href="#planos" className="text-[10px] font-bold uppercase tracking-widest text-primary-dark/60 hover:text-accent transition-colors">Planos</a>
+        <div className="hidden lg:flex items-center gap-8">
+          {navLinks.map((link) => (
+            <a 
+              key={link.name}
+              href={link.href} 
+              className="text-[10px] font-bold uppercase tracking-widest text-primary-dark/60 hover:text-accent transition-colors"
+            >
+              {link.name}
+            </a>
+          ))}
         </div>
 
         <div className="hidden lg:flex items-center gap-4">
@@ -82,10 +96,17 @@ export function Navbar() {
               </button>
             </div>
             
-            <div className="flex flex-col gap-12">
-              <a href="#funcionalidades" className="text-4xl font-display font-bold text-primary-dark" onClick={() => setMobileMenuOpen(false)}>Funcionalidades</a>
-              <a href="#modulos" className="text-4xl font-display font-bold text-primary-dark" onClick={() => setMobileMenuOpen(false)}>Módulos</a>
-              <a href="#planos" className="text-4xl font-display font-bold text-primary-dark" onClick={() => setMobileMenuOpen(false)}>Planos</a>
+            <div className="flex flex-col gap-10 overflow-y-auto">
+              {navLinks.map((link) => (
+                <a 
+                  key={link.name}
+                  href={link.href} 
+                  className="text-4xl font-display font-bold text-primary-dark" 
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {link.name}
+                </a>
+              ))}
             </div>
 
             <div className="mt-auto space-y-6">
