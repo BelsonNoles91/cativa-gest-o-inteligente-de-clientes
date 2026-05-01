@@ -362,7 +362,7 @@ export default function PremiumLanding() {
         </PremiumSection>
 
         {/* Chamada Final */}
-        <PremiumSection variant="dark" padding="xl" className="text-center overflow-visible">
+        <PremiumSection id="final-cta" variant="dark" padding="xl" className="text-center overflow-visible">
            {/* Fundo sofisticado */}
            <div className="absolute inset-0 bg-[#1A0F16]" />
            <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[140%] bg-accent/5 blur-[120px] rounded-full rotate-12" />
