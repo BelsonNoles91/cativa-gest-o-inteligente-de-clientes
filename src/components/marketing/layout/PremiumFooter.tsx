@@ -55,7 +55,7 @@ export function PremiumFooter() {
                </a>
                <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-white/70 hover:text-accent transition-colors">
                   <Phone className="h-5 w-5" />
-                  <span>Falar com Especialista (WhatsApp)</span>
+                  <span>Falar com Especialista</span>
                </a>
                <div className="flex items-center gap-3 text-white/70">
                   <MapPin className="h-5 w-5" />
