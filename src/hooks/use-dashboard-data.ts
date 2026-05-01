@@ -9,6 +9,7 @@ import { listAppointmentsHydrated } from "@/repositories/scheduling";
 import { countQueueByStage } from "@/repositories/confirmation";
 import { fetchAvailability } from "@/repositories/analytics";
 import { supabase } from "@/integrations/supabase/client";
+import { appConfig } from "@/config/app";
 
 /**
  * @hook useDashboardData
@@ -82,8 +83,9 @@ export function useDashboardData() {
 
     },
     enabled: !!currentTenant,
-    staleTime: 1000 * 60 * 5, // 5 minutes - dashboard data is slightly volatile
-    gcTime: 1000 * 60 * 30, // 30 minutes
+    staleTime: appConfig.offlineMode.enabled ? appConfig.offlineMode.cacheTime : 1000 * 60 * 5,
+    gcTime: appConfig.offlineMode.enabled ? appConfig.offlineMode.cacheTime * 2 : 1000 * 60 * 30,
+
   });
 }
 

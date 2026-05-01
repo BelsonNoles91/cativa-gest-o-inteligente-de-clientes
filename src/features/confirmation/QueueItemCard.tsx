@@ -2,7 +2,7 @@
  * QueueItemCard — cartão de um item da fila de confirmação.
  * Exibe cliente, agendamento e ações rápidas (abrir contato).
  */
-import { Phone, MessageCircle, Mail, Clock, CalendarClock, AlertTriangle, Crown } from "lucide-react";
+import { Phone, MessageCircle, Mail, Clock, CalendarClock, AlertTriangle, Crown, ExternalLink, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
@@ -24,6 +24,7 @@ const toneMap = {
 interface QueueItemCardProps {
   item: QueueItemHydrated;
   onOpen: (item: QueueItemHydrated) => void;
+  onConfirmQuick?: (item: QueueItemHydrated) => void;
 }
 
 function formatStarts(iso: string): { date: string; time: string; relative: string } {
@@ -42,9 +43,11 @@ function formatStarts(iso: string): { date: string; time: string; relative: stri
   };
 }
 
-export function QueueItemCard({ item, onOpen }: QueueItemCardProps) {
+export function QueueItemCard({ item, onOpen, onConfirmQuick }: QueueItemCardProps) {
   const t = formatStarts(item.appointmentStartsAt);
   const tone = toneMap[queueStatusTone(item.status)];
+
+  const phoneDigits = item.clientWhatsapp ? item.clientWhatsapp.replace(/\D/g, "") : null;
 
   return (
     <Card
@@ -78,7 +81,6 @@ export function QueueItemCard({ item, onOpen }: QueueItemCardProps) {
           </div>
           <p className="mt-0.5 truncate text-sm text-muted-foreground">
             {item.serviceName ?? "Serviço"} • {item.professionalName ?? "Sem profissional"}
-            {item.unitName ? ` • ${item.unitName}` : ""}
           </p>
         </div>
         <div className="text-right">
@@ -87,12 +89,12 @@ export function QueueItemCard({ item, onOpen }: QueueItemCardProps) {
         </div>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+      <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground border-b border-border/40 pb-3">
         <span className="inline-flex items-center gap-1.5">
           <CalendarClock className="h-4 w-4" />
           {t.date} • {t.time}
         </span>
-        <span className="inline-flex items-center gap-1.5">
+        <span className="inline-flex items-center gap-1.5 font-medium text-primary">
           <Clock className="h-4 w-4" />
           {t.relative}
         </span>
@@ -103,30 +105,48 @@ export function QueueItemCard({ item, onOpen }: QueueItemCardProps) {
         )}
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-wrap gap-2">
         <Button
           size="sm"
-          variant="default"
+          variant="secondary"
+          className="flex-1 rounded-xl h-10 md:flex-none"
           onClick={(e) => {
             e.stopPropagation();
             onOpen(item);
           }}
         >
-          <MessageCircle className="mr-1.5 h-4 w-4" /> Abrir contato
+          <MessageCircle className="mr-1.5 h-4 w-4" /> Ações
         </Button>
-        {item.clientPhone && (
+        
+        {phoneDigits && (
           <Button
             size="sm"
             variant="outline"
-            asChild
-            onClick={(e) => e.stopPropagation()}
+            className="flex-1 rounded-xl h-10 border-success/30 text-success hover:bg-success/5 md:flex-none"
+            onClick={(e) => {
+              e.stopPropagation();
+              window.open(`https://wa.me/${phoneDigits}`, "_blank", "noopener,noreferrer");
+            }}
           >
-            <a href={`tel:${item.clientPhone}`}>
-              <Phone className="mr-1.5 h-4 w-4" /> Ligar
-            </a>
+            <ExternalLink className="mr-1.5 h-4 w-4" /> WhatsApp
+          </Button>
+        )}
+
+        {onConfirmQuick && (
+          <Button
+            size="sm"
+            variant="default"
+            className="flex-1 rounded-xl h-10 bg-success hover:bg-success/90 text-success-foreground md:flex-none"
+            onClick={(e) => {
+              e.stopPropagation();
+              onConfirmQuick(item);
+            }}
+          >
+            <CheckCircle2 className="mr-1.5 h-4 w-4" /> Confirmar
           </Button>
         )}
       </div>
     </Card>
   );
 }
+

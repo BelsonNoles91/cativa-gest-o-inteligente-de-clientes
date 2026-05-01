@@ -370,9 +370,15 @@ export default function ConfirmationCenter() {
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
             {center.items.map((item) => (
-              <QueueItemCard key={item.id} item={item} onOpen={handleOpen} />
+              <QueueItemCard 
+                key={item.id} 
+                item={item} 
+                onOpen={handleOpen} 
+                onConfirmQuick={(item) => center.setItemStatus(item.id, "confirmed")}
+              />
             ))}
           </div>
+
         )}
       </Tabs>
 

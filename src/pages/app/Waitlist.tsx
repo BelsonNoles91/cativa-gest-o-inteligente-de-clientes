@@ -11,7 +11,9 @@ import {
   Trash2,
   UserRound,
   XCircle,
+  Filter,
 } from "lucide-react";
+
 import { PageHeader } from "@/components/shell/PageHeader";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
@@ -101,6 +103,9 @@ export default function WaitlistPage() {
   const [loading, setLoading] = useState(true);
   const [refreshToken, setRefreshToken] = useState(0);
   const [statusFilter, setStatusFilter] = useState<"all" | WaitlistStatus>("open");
+  const [proFilter, setProFilter] = useState("all");
+  const [serviceFilter, setServiceFilter] = useState("all");
+
 
   const [clients, setClients] = useState<Client[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -121,10 +126,27 @@ export default function WaitlistPage() {
   const [scheduling, setScheduling] = useState(false);
 
   const servicesMap = useMemo(() => new Map(services.map((service) => [service.id, service])), [services]);
-  const filteredEntries = useMemo(
-    () => (statusFilter === "all" ? entries : entries.filter((entry) => entry.entry.status === statusFilter)),
-    [entries, statusFilter],
-  );
+  const filteredEntries = useMemo(() => {
+    let result = entries;
+    if (statusFilter !== "all") {
+      result = result.filter((entry) => entry.entry.status === statusFilter);
+    }
+    if (proFilter !== "all") {
+      result = result.filter((entry) => entry.entry.preferredProfessionalId === proFilter);
+    }
+    if (serviceFilter !== "all") {
+      result = result.filter((entry) => entry.entry.serviceId === serviceFilter);
+    }
+    
+    return result.sort((a, b) => {
+      // Priorização: VIPs primeiro, depois prioridade numérica, depois janela
+      if (a.entry.priority !== b.entry.priority) return b.entry.priority - a.entry.priority;
+      
+      const startA = a.entry.desiredWindowStart ? new Date(a.entry.desiredWindowStart).getTime() : Infinity;
+      const startB = b.entry.desiredWindowStart ? new Date(b.entry.desiredWindowStart).getTime() : Infinity;
+      return startA - startB;
+    });
+  }, [entries, statusFilter, proFilter, serviceFilter]);
 
   useEffect(() => {
     if (!currentTenant) return;
@@ -402,14 +424,42 @@ export default function WaitlistPage() {
 
       <Card>
         <CardContent className="flex flex-col gap-4 pt-6 lg:flex-row lg:items-center lg:justify-between">
-          <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as "all" | WaitlistStatus)}>
-            <TabsList>
+          <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as "all" | WaitlistStatus)} className="w-full lg:w-auto">
+            <TabsList className="w-full justify-start overflow-x-auto">
               <TabsTrigger value="open">Aguardando</TabsTrigger>
               <TabsTrigger value="contacted">Contatados</TabsTrigger>
               <TabsTrigger value="scheduled">Agendados</TabsTrigger>
               <TabsTrigger value="all">Todos</TabsTrigger>
             </TabsList>
           </Tabs>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Select value={proFilter} onValueChange={setProFilter}>
+              <SelectTrigger className="w-[160px] h-9 rounded-lg">
+                <Filter className="mr-2 h-3.5 w-3.5" />
+                <SelectValue placeholder="Profissional" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos prof.</SelectItem>
+                {professionals.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>{p.displayName}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={serviceFilter} onValueChange={setServiceFilter}>
+              <SelectTrigger className="w-[160px] h-9 rounded-lg">
+                <Filter className="mr-2 h-3.5 w-3.5" />
+                <SelectValue placeholder="Serviço" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos serv.</SelectItem>
+                {services.map((s) => (
+                  <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </CardContent>
       </Card>
 
