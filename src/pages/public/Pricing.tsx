@@ -186,7 +186,7 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-background">
-      <PublicHeader />
+      <PremiumHeader />
 
       {/* HERO */}
       <section className="relative overflow-hidden">
