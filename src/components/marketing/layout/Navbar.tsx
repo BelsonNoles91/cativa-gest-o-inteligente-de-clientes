@@ -78,7 +78,7 @@ export function Navbar() {
         </div>
         
         <div className="flex flex-col gap-12">
-          <a href="#features" className="text-4xl font-display font-bold text-primary-dark" onClick={() => setMobileMenuOpen(false)}>Funcionalidades</a>
+          <a href="#funcionalidades" className="text-4xl font-display font-bold text-primary-dark" onClick={() => setMobileMenuOpen(false)}>Funcionalidades</a>
           <a href="#modulos" className="text-4xl font-display font-bold text-primary-dark" onClick={() => setMobileMenuOpen(false)}>Módulos</a>
           <a href="#planos" className="text-4xl font-display font-bold text-primary-dark" onClick={() => setMobileMenuOpen(false)}>Planos</a>
         </div>
