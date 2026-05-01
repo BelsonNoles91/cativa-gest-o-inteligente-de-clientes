@@ -44,7 +44,12 @@ const features = [
 export function FeaturesSection() {
   return (
     <PremiumSection variant="light" padding="lg" id="funcionalidades">
-      <div className="flex flex-col lg:flex-row gap-12 md:gap-20 items-end mb-24 md:mb-32 px-4 md:px-0">
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="flex flex-col lg:flex-row gap-12 md:gap-20 items-end mb-24 md:mb-32 px-4 md:px-0"
+      >
         <div className="max-w-2xl">
           <div className="inline-block px-4 py-1.5 rounded-full bg-secondary/50 text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-8">
             Principais Diferenciais
@@ -57,11 +62,17 @@ export function FeaturesSection() {
         <p className="text-lg md:text-xl text-muted-foreground/80 max-w-md pb-4 font-light leading-relaxed">
           A Cativa organiza o que normalmente fica espalhado entre agenda física, mensagens e decisões de última hora.
         </p>
-      </div>
+      </motion.div>
 
       <PremiumGrid cols="3" gap="lg" className="px-4 md:px-0">
         {features.map((feature, idx) => (
-          <div key={idx} className="group relative">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: idx * 0.1 }}
+            key={idx} className="group relative"
+          >
              <div className="mb-8 md:mb-10 relative inline-block">
                 <div className={`w-16 h-16 md:w-20 md:h-20 rounded-[1.5rem] md:rounded-[2rem] ${feature.color} flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6`}>
                    <feature.icon className="h-8 w-8 md:h-10 md:w-10" />
@@ -77,7 +88,7 @@ export function FeaturesSection() {
                {feature.description}
              </p>
              <div className="mt-8 h-px w-0 bg-accent transition-all duration-700 group-hover:w-full" />
-          </div>
+          </motion.div>
         ))}
       </PremiumGrid>
 
