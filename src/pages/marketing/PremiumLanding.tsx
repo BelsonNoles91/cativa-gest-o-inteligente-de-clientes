@@ -234,17 +234,17 @@ export default function PremiumLanding() {
                  </div>
                  <div className="lg:w-2/3 space-y-4">
                     {[
-                      { q: "A Cativa serve para o meu tipo de negócio?", a: "Sim. A plataforma foi pensada para clínicas de estética, salões de beleza, barbearias, esmalterias, lash/brow, massagem, wellness e negócios correlatos." },
-                      { q: "Preciso usar API de WhatsApp?", a: "Não. A Cativa não depende de API de WhatsApp. O processo foi pensado para funcionar de forma organizada e semiautomatizada, mantendo controle operacional." },
-                      { q: "O sistema é difícil de usar?", a: "Não. A interface foi desenhada para ser intuitiva, rápida e clara, especialmente para quem vive a rotina da recepção e da gestão." },
-                      { q: "Funciona no celular?", a: "Sim. A Cativa foi pensada com abordagem mobile-first, para que a experiência funcione muito bem em diferentes tamanhos de tela." },
-                      { q: "Consigo personalizar para a minha operação?", a: "Sim. Serviços, mensagens, regras, equipe e unidades podem ser ajustados conforme a realidade do seu negócio." },
-                      { q: "A Cativa é apenas uma agenda?", a: "Não. A agenda é apenas uma parte. A proposta é organizar operação, relacionamento, confirmação, protocolos e indicadores para aumentar retenção." }
+                      { q: "A Cativa serve para o meu tipo de negócio?", a: "Sim. A plataforma foi pensada para clínicas de estética, salões de beleza, barbearias, esmalterias, lash/brow, massagem, wellness e negócios correlatos que buscam um nível superior de gestão." },
+                      { q: "Como funciona a demonstração?", a: "Nossa demonstração é um tour guiado por um especialista que entende o seu cenário. Mostramos como a Cativa resolve seus gargalos específicos em 20 minutos." },
+                      { q: "Posso testar antes de contratar?", a: "Sim. Oferecemos 14 dias de teste grátis com acesso total às funcionalidades core para que você sinta a diferença na operação real." },
+                      { q: "Vocês ajudam na migração de dados?", a: "Sim. Temos um processo de onboarding assistido para garantir que seu histórico e cadastros sejam migrados com segurança e rapidez." },
+                      { q: "O sistema funciona em tablets e celulares?", a: "Totalmente. A Cativa é mobile-first, permitindo que profissionais e gestores operem com 100% de eficiência de qualquer dispositivo." },
+                      { q: "É possível gerenciar mais de uma unidade?", a: "Com certeza. A estrutura da Cativa foi desenhada para redes e franquias, permitindo visão consolidada ou isolada por unidade com um único login." }
                     ].map((item, i) => (
-                      <div key={i} className="p-10 rounded-[2.5rem] bg-[#FAF7F9] border border-border/20 transition-all hover:border-accent/40 group">
-                         <h4 className="text-xl font-bold text-primary-dark mb-4 flex items-center justify-between">
+                      <div key={i} className="p-8 md:p-10 rounded-[2.5rem] bg-[#FAF7F9] border border-border/20 transition-all hover:border-accent/40 group">
+                         <h4 className="text-xl font-bold text-primary-dark mb-4 flex items-center justify-between gap-4">
                             {item.q}
-                            <div className="w-8 h-8 rounded-full border border-border/40 flex items-center justify-center group-hover:bg-accent group-hover:border-accent transition-all">
+                            <div className="w-8 h-8 rounded-full border border-border/40 flex items-center justify-center group-hover:bg-accent group-hover:border-accent transition-all shrink-0">
                                <ArrowRight className="h-4 w-4 text-primary-dark group-hover:text-white -rotate-45 group-hover:rotate-0 transition-transform" />
                             </div>
                          </h4>
