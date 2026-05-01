@@ -322,7 +322,9 @@ export default function PremiumLanding() {
                  </Link>
               </div>
               
-              <div className="flex flex-wrap justify-center gap-12 pt-12 border-t border-white/10">
+              <p className="text-white/60 text-lg font-light max-w-2xl mx-auto mb-12">
+                A Cativa ajuda sua operação a sair do improviso, dar mais contexto para a equipe e transformar agenda em crescimento consistente.
+              </p>
                  {["14 dias grátis", "Sem cartão de crédito", "Cancele a qualquer momento"].map((text, i) => (
                    <div key={i} className="flex items-center gap-3">
                       <CheckCircle2 className="h-4 w-4 text-accent" />
