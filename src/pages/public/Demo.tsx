@@ -115,7 +115,7 @@ export default function DemoPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="bg-white rounded-[2.5rem] border border-border/40 p-6 md:p-8 lg:p-12 shadow-2xl relative overflow-hidden min-h-[600px] flex flex-col justify-center w-full max-w-xl mx-auto"
+              className="bg-white rounded-[1.5rem] md:rounded-[2.5rem] border border-border/40 p-4 md:p-8 lg:p-12 shadow-2xl relative overflow-hidden min-h-[500px] md:min-h-[600px] flex flex-col justify-center w-full max-w-xl mx-auto"
             >
               <div className="absolute top-0 left-0 w-full h-2 bg-accent" />
               
@@ -284,7 +284,7 @@ export default function DemoPage() {
               </h2>
             </div>
             
-            <div className="aspect-video bg-[#1A0F16] rounded-[2.5rem] md:rounded-[4rem] shadow-2xl relative overflow-hidden group border border-white/5">
+            <div className="aspect-video bg-[#1A0F16] rounded-[1.5rem] md:rounded-[4rem] shadow-2xl relative overflow-hidden group border border-white/5">
               {!isPlaying ? (
                 <>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
@@ -308,7 +308,7 @@ export default function DemoPage() {
                   </div>
                 </>
               ) : (
-                <div className="absolute inset-0 w-full h-full bg-[#FAF7F9] flex flex-col">
+                <div className="absolute inset-0 w-full h-full bg-[#FAF7F9] flex flex-col z-30">
                   {/* Header do Mockup */}
                   <div className="h-12 bg-white border-b border-border/40 px-6 flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -354,10 +354,10 @@ export default function DemoPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                           {[
-                            { time: "09:00", name: "Ana Paula", service: "Limpeza de Pele", status: "Confirmado", color: "emerald" },
-                            { time: "10:30", name: "Beatriz Silva", service: "Peeling", status: "Aguardando", color: "amber" },
-                            { time: "13:00", name: "Carla Souza", service: "Avaliação", status: "Pendente", color: "blue" },
-                            { time: "14:30", name: "Indisponível", service: "Bloqueio", status: "Ocupado", color: "slate" }
+                            { time: "09:00", name: "Ana Paula", service: "Limpeza de Pele", status: "Confirmado", color: "emerald", bgColor: "bg-emerald-500/10", textColor: "text-emerald-600", dotColor: "bg-emerald-500" },
+                            { time: "10:30", name: "Beatriz Silva", service: "Peeling", status: "Aguardando", color: "amber", bgColor: "bg-amber-500/10", textColor: "text-amber-600", dotColor: "bg-amber-500" },
+                            { time: "13:00", name: "Carla Souza", service: "Avaliação", status: "Pendente", color: "blue", bgColor: "bg-blue-500/10", textColor: "text-blue-600", dotColor: "bg-blue-500" },
+                            { time: "14:30", name: "Indisponível", service: "Bloqueio", status: "Ocupado", color: "slate", bgColor: "bg-slate-500/10", textColor: "text-slate-600", dotColor: "bg-slate-500" }
                           ].map((item, i) => (
                             <motion.div 
                               key={i}
@@ -366,13 +366,13 @@ export default function DemoPage() {
                               transition={{ delay: 0.2 + (i * 0.1) }}
                               className="bg-white p-3 rounded-2xl border border-border/40 shadow-sm flex items-center gap-3"
                             >
-                              <div className={cn("w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs", `bg-${item.color}-500/10 text-${item.color}-600`)}>
+                              <div className={cn("w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs", item.bgColor, item.textColor)}>
                                 {item.name.charAt(0)}
                               </div>
                               <div className="flex-1 overflow-hidden">
                                 <p className="text-xs font-bold text-primary-dark truncate">{item.name}</p>
                                 <div className="flex items-center gap-1">
-                                  <div className={cn("w-1.5 h-1.5 rounded-full", `bg-${item.color}-500`)} />
+                                  <div className={cn("w-1.5 h-1.5 rounded-full", item.dotColor)} />
                                   <p className="text-[9px] text-muted-foreground truncate">{item.status}</p>
                                 </div>
                               </div>

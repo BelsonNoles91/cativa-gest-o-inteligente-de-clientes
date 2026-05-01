@@ -35,8 +35,8 @@ export function PremiumHeader() {
           : "bg-transparent"
       )}
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 md:gap-4">
-        <Link to="/" className="flex items-center group shrink-0 min-w-0" aria-label="Cativa - Home">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+        <Link to="/" className="flex items-center group shrink-0" aria-label="Cativa - Home">
           <Logo size="sm" className="transition-transform group-hover:scale-105 h-8 md:h-10 w-auto" />
         </Link>
 
@@ -77,34 +77,55 @@ export function PremiumHeader() {
       {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="lg:hidden fixed inset-x-0 top-[60px] bottom-0 bg-white/95 backdrop-blur-xl z-[100] shadow-2xl overflow-y-auto flex flex-col"
-          >
-            <div className="p-6 flex flex-col gap-4 items-center justify-center min-h-full">
-              {NAV_LINKS.map((link) => (
-                <Link
-                  key={link.label}
-                  to={link.href}
-                  className="text-xl font-display font-semibold text-primary-dark hover:text-accent transition-colors"
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileMenuOpen(false)}
+              className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-[90]"
+            />
+            <motion.div 
+              initial={{ opacity: 0, x: "100%" }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="lg:hidden fixed inset-y-0 right-0 w-[280px] bg-white z-[100] shadow-2xl flex flex-col"
+            >
+              <div className="flex items-center justify-between p-6 border-b border-border/40">
+                <Logo size="sm" className="h-8 w-auto" />
+                <button 
                   onClick={() => setMobileMenuOpen(false)}
+                  className="p-2 text-primary-dark rounded-full hover:bg-accent/10"
                 >
-                  {link.label}
-                </Link>
-              ))}
-              <hr className="w-12 border-accent/20 my-2" />
-              <div className="flex flex-col gap-3 w-full max-w-xs">
-                <Button asChild variant="outline" size="lg" className="w-full rounded-full border-primary-dark/10">
-                  <Link to="/auth/login" onClick={() => setMobileMenuOpen(false)}>Entrar</Link>
-                </Button>
-                <Button asChild size="lg" className="w-full rounded-full bg-primary-dark shadow-xl shadow-primary/10">
-                  <Link to="/demo" onClick={() => setMobileMenuOpen(false)}>Agendar Demo</Link>
-                </Button>
+                  <X className="w-6 h-6" />
+                </button>
               </div>
-            </div>
-          </motion.div>
+              <div className="p-6 flex flex-col gap-6 overflow-y-auto">
+                <nav className="flex flex-col gap-4">
+                  {NAV_LINKS.map((link) => (
+                    <Link
+                      key={link.label}
+                      to={link.href}
+                      className="text-lg font-medium text-primary-dark hover:text-accent transition-colors py-2"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </nav>
+                <hr className="border-border/40" />
+                <div className="flex flex-col gap-3">
+                  <Button asChild variant="outline" size="lg" className="w-full rounded-xl border-primary-dark/10">
+                    <Link to="/auth/login" onClick={() => setMobileMenuOpen(false)}>Entrar</Link>
+                  </Button>
+                  <Button asChild size="lg" className="w-full rounded-xl bg-primary-dark shadow-xl shadow-primary/10">
+                    <Link to="/demo" onClick={() => setMobileMenuOpen(false)}>Agendar Demo</Link>
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </header>
