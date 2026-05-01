@@ -2,13 +2,37 @@ import { PremiumSection } from "@/components/marketing/layout/PremiumSection";
 import { PremiumHeader } from "@/components/marketing/layout/PremiumHeader";
 import { PremiumFooter } from "@/components/marketing/layout/PremiumFooter";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, CheckCircle2, ArrowRight, Play } from "lucide-react";
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { Calendar, Clock, CheckCircle2, ArrowRight, Play, Check } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function DemoPage() {
+  const navigate = useNavigate();
+  const [selectedDay, setSelectedDay] = useState(15);
+  const [isConfirmed, setIsConfirmed] = useState(false);
+
+  const handleDaySelect = (day: number, isAvailable: boolean) => {
+    if (!isAvailable) {
+      toast.error("Este dia não possui horários disponíveis no momento.");
+      return;
+    }
+    setSelectedDay(day);
+  };
+
+  const handleConfirm = () => {
+    setIsConfirmed(true);
+    toast.success("Demonstração agendada com sucesso!");
+    
+    // Pequeno delay para o usuário ver a confirmação antes de ser redirecionado ou resetar
+    setTimeout(() => {
+      navigate(`/onboarding?demo_date=2026-05-${selectedDay}&demo_time=09:30`);
+    }, 2500);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <PremiumHeader />
@@ -68,58 +92,94 @@ export default function DemoPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="bg-white rounded-[2.5rem] border border-border/40 p-8 shadow-2xl relative overflow-hidden"
+              className="bg-white rounded-[2.5rem] border border-border/40 p-6 md:p-8 shadow-2xl relative overflow-hidden"
             >
               <div className="absolute top-0 left-0 w-full h-2 bg-accent" />
-              <div className="mb-10 text-center">
-                <h3 className="text-2xl font-display font-bold text-primary-dark mb-2">Escolha um horário</h3>
-                <p className="text-sm text-muted-foreground font-light">Selecione o melhor momento para sua demonstração</p>
-              </div>
-
-              {/* Calendário Simulado */}
-              <div className="grid grid-cols-7 gap-2 mb-10">
-                {["D", "S", "T", "Q", "Q", "S", "S"].map((day, i) => (
-                  <div key={i} className="text-center text-[10px] font-bold text-muted-foreground uppercase py-2">{day}</div>
-                ))}
-                {Array.from({ length: 31 }).map((_, i) => {
-                  const day = i + 1;
-                  const isAvailable = day > 10 && day < 25;
-                  const isSelected = day === 15;
-                  return (
-                    <div 
-                      key={i} 
-                      className={cn(
-                        "aspect-square rounded-xl flex items-center justify-center text-sm font-medium transition-all",
-                        isSelected ? "bg-accent text-white shadow-lg" : 
-                        isAvailable ? "hover:bg-accent/10 cursor-pointer text-primary-dark" : "text-muted-foreground/30"
-                      )}
-                    >
-                      {day}
+              
+              <AnimatePresence mode="wait">
+                {!isConfirmed ? (
+                  <motion.div
+                    key="calendar-view"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                  >
+                    <div className="mb-8 md:mb-10 text-center">
+                      <h3 className="text-2xl font-display font-bold text-primary-dark mb-2">Escolha um horário</h3>
+                      <p className="text-sm text-muted-foreground font-light">Selecione o melhor momento para sua demonstração</p>
                     </div>
-                  );
-                })}
-              </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#FAF7F9] border border-border/20">
-                  <Calendar className="h-5 w-5 text-accent" />
-                  <div className="flex-1">
-                    <p className="text-xs font-bold text-primary-dark">Sexta-feira, 15 de Maio</p>
-                    <p className="text-[10px] text-muted-foreground">Dia selecionado</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#FAF7F9] border border-border/20">
-                  <Clock className="h-5 w-5 text-accent" />
-                  <div className="flex-1">
-                    <p className="text-xs font-bold text-primary-dark">09:30 — 10:00 (15 min)</p>
-                    <p className="text-[10px] text-muted-foreground">Horário de Brasília</p>
-                  </div>
-                </div>
-              </div>
+                    <div className="grid grid-cols-7 gap-1 md:gap-2 mb-8 md:mb-10">
+                      {["D", "S", "T", "Q", "Q", "S", "S"].map((day, i) => (
+                        <div key={i} className="text-center text-[10px] font-bold text-muted-foreground uppercase py-2">{day}</div>
+                      ))}
+                      {Array.from({ length: 31 }).map((_, i) => {
+                        const day = i + 1;
+                        const isAvailable = day > 10 && day < 25;
+                        const isSelected = day === selectedDay;
+                        return (
+                          <button 
+                            key={i} 
+                            onClick={() => handleDaySelect(day, isAvailable)}
+                            type="button"
+                            aria-label={`Dia ${day}${isSelected ? " - selecionado" : ""}${!isAvailable ? " - indisponível" : ""}`}
+                            className={cn(
+                              "aspect-square rounded-xl flex items-center justify-center text-xs md:text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-accent",
+                              isSelected ? "bg-accent text-white shadow-lg scale-110 z-10" : 
+                              isAvailable ? "hover:bg-accent/10 cursor-pointer text-primary-dark" : "text-muted-foreground/20 cursor-not-allowed"
+                            )}
+                          >
+                            {day}
+                          </button>
+                        );
+                      })}
+                    </div>
 
-              <Button className="w-full h-14 mt-10 rounded-2xl bg-primary-dark text-white font-bold tracking-tight hover:scale-[1.02] transition-transform">
-                Confirmar Agendamento
-              </Button>
+                    <div className="space-y-3 md:space-y-4">
+                      <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#FAF7F9] border border-border/20">
+                        <Calendar className="h-5 w-5 text-accent" />
+                        <div className="flex-1">
+                          <p className="text-xs font-bold text-primary-dark">{selectedDay} de Maio, 2026</p>
+                          <p className="text-[10px] text-muted-foreground">Dia selecionado</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#FAF7F9] border border-border/20">
+                        <Clock className="h-5 w-5 text-accent" />
+                        <div className="flex-1">
+                          <p className="text-xs font-bold text-primary-dark">09:30 — 09:45 (15 min)</p>
+                          <p className="text-[10px] text-muted-foreground">Horário de Brasília</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button 
+                      onClick={handleConfirm}
+                      className="w-full h-14 mt-8 md:mt-10 rounded-2xl bg-primary-dark text-white font-bold tracking-tight hover:scale-[1.02] transition-transform focus:outline-none focus:ring-4 focus:ring-accent/50"
+                      aria-label="Confirmar agendamento da demonstração"
+                    >
+                      Confirmar Agendamento
+                    </Button>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="success-view"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="py-12 md:py-16 text-center"
+                  >
+                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-8">
+                      <Check className="h-10 w-10 md:h-12 md:w-12 text-emerald-500" />
+                    </div>
+                    <h3 className="text-2xl md:text-3xl font-display font-bold text-primary-dark mb-4">Agendado!</h3>
+                    <p className="text-muted-foreground max-w-xs mx-auto mb-8 leading-relaxed">
+                      Sua demonstração foi marcada para o dia <span className="font-bold text-primary-dark">{selectedDay} de Maio às 09:30</span>.
+                    </p>
+                    <div className="inline-flex items-center gap-2 text-accent text-sm font-bold uppercase tracking-widest animate-pulse">
+                      Redirecionando para o onboarding...
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           </div>
         </PremiumSection>
