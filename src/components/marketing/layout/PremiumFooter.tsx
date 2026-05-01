@@ -41,9 +41,8 @@ export function PremiumFooter() {
         {/* Top Section */}
         <div className="grid lg:grid-cols-12 gap-16 mb-20">
           <div className="lg:col-span-5">
-            <Link to="/" className="flex items-center gap-2 mb-8 group">
-              <Logo showWordmark={false} className="brightness-0 invert" />
-              <span className="font-display text-3xl font-bold tracking-tight">Cativa</span>
+            <Link to="/" className="flex items-center group mb-8">
+              <Logo className="brightness-0 invert" size="md" />
             </Link>
             <p className="text-white/60 text-lg leading-relaxed max-w-md mb-8 italic">
               "Nossa missão é transformar a gestão de negócios de beleza através de tecnologia inteligente e foco implacável na experiência do cliente."

@@ -12,6 +12,7 @@ const NAV_LINKS = [
   { label: "Métricas", href: "/#metricas" },
   { label: "Planos", href: "/#planos" },
   { label: "Demonstração", href: "/demo" },
+  { label: "Dúvidas", href: "/#duvidas" },
 ];
 
 export function PremiumHeader() {
@@ -37,7 +38,7 @@ export function PremiumHeader() {
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         <Link to="/" className="flex items-center group shrink-0" aria-label="Cativa - Home">
-          <Logo size="sm" className="transition-transform group-hover:scale-105 h-8 md:h-10 w-auto" />
+          <Logo size="md" className="transition-transform group-hover:scale-105 h-8 md:h-10 w-auto" />
         </Link>
 
         {/* Desktop Nav */}
