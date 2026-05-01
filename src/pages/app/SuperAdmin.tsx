@@ -24,7 +24,6 @@ import { MembersTab } from "@/features/admin/MembersTab";
 import { ProvisionTestUsersCard } from "@/features/admin/ProvisionTestUsersCard";
 import { ClientMembershipsTab } from "@/features/admin/ClientMembershipsTab";
 import { AuditLogsTab } from "@/features/admin/AuditLogsTab";
-import { IncidentsTab } from "@/features/admin/IncidentsTab";
 import { FeatureFlagsConsole } from "@/features/admin/FeatureFlagsConsole";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -1455,12 +1454,29 @@ function IncidentsTab() {
 
   useEffect(() => { void load() }, []);
 
+  async function updateStatus(id: string, status: string) {
+    const updates: any = { status };
+    if (status === 'resolved') updates.resolved_at = new Date().toISOString();
+    
+    const { error } = await supabase
+      .from('system_incidents')
+      .update(updates)
+      .eq('id', id);
+
+    if (error) {
+      toast({ title: "Erro ao atualizar status", variant: "destructive" });
+    } else {
+      void load();
+    }
+  }
+
   async function save() {
     try {
       const { error } = await supabase.from('system_incidents').insert([form]);
       if (error) throw error;
       toast({ title: "Incidente registrado" });
       setDialogOpen(false);
+      setForm({ title: "", description: "", severity: "medium", status: "investigating" });
       void load();
     } catch (e) {
       toast({ title: "Erro ao salvar", variant: "destructive" });
@@ -1483,13 +1499,24 @@ function IncidentsTab() {
           <ul className="divide-y divide-border/60">
             {incidents.map(inc => (
               <li key={inc.id} className="p-4 flex justify-between items-center">
-                <div>
-                  <p className="font-medium">{inc.title}</p>
-                  <p className="text-xs text-muted-foreground">{inc.description}</p>
+                <div className="flex-1 min-w-0 mr-4">
+                  <p className="font-medium truncate">{inc.title}</p>
+                  <p className="text-xs text-muted-foreground line-clamp-2">{inc.description}</p>
                 </div>
-                <div className="flex gap-2">
-                  <StatusBadge tone={inc.severity === 'critical' ? 'danger' : 'warning'}>{inc.severity}</StatusBadge>
-                  <StatusBadge tone={inc.status === 'resolved' ? 'success' : 'brand'}>{inc.status}</StatusBadge>
+                <div className="flex items-center gap-3">
+                  <div className="flex flex-col items-end gap-1">
+                    <StatusBadge tone={inc.severity === 'critical' ? 'danger' : 'warning'}>{inc.severity}</StatusBadge>
+                    <StatusBadge tone={inc.status === 'resolved' ? 'success' : 'brand'}>{inc.status}</StatusBadge>
+                  </div>
+                  <Select value={inc.status} onValueChange={(v) => updateStatus(inc.id, v)}>
+                    <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="investigating">Investigando</SelectItem>
+                      <SelectItem value="identified">Identificado</SelectItem>
+                      <SelectItem value="monitoring">Monitorando</SelectItem>
+                      <SelectItem value="resolved">Resolvido</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </li>
             ))}
