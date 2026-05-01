@@ -4,6 +4,7 @@ import ClientsPage from "../Clients";
 import { BrowserRouter } from "react-router-dom";
 import { TenantProvider } from "@/features/tenant/TenantProvider";
 import { AuthProvider } from "@/features/auth/AuthProvider";
+import { TenantBillingProvider } from "@/features/billing/TenantBillingProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as clientsRepo from "@/repositories/clients";
 import * as schedulingRepo from "@/repositories/scheduling";
@@ -16,12 +17,15 @@ vi.mock("@/integrations/supabase/client", () => ({
     from: vi.fn(() => ({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
       maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
     })),
     auth: {
       onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
       getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
-    }
+    },
+    rpc: vi.fn().mockResolvedValue({ data: 0, error: null }),
   },
 }));
 
@@ -34,12 +38,15 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TenantProvider>
-          {children}
+          <TenantBillingProvider>
+            {children}
+          </TenantBillingProvider>
         </TenantProvider>
       </AuthProvider>
     </QueryClientProvider>
   </BrowserRouter>
 );
+
 
 describe("ClientsPage Integration", () => {
   beforeEach(() => {
