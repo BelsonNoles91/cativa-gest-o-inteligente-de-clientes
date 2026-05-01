@@ -352,10 +352,10 @@ export default function DemoPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                           {[
-                            { time: "09:00", name: "Ana Paula", service: "Limpeza de Pele", status: "Confirmado" },
-                            { time: "10:30", name: "Beatriz Silva", service: "Peeling", status: "Aguardando" },
-                            { time: "13:00", name: "Carla Souza", service: "Avaliação", status: "Pendente" },
-                            { time: "14:30", name: "Denise Lima", service: "Manicure", status: "Confirmado" }
+                            { time: "09:00", name: "Ana Paula", service: "Limpeza de Pele", status: "Confirmado", color: "emerald" },
+                            { time: "10:30", name: "Beatriz Silva", service: "Peeling", status: "Aguardando", color: "amber" },
+                            { time: "13:00", name: "Carla Souza", service: "Avaliação", status: "Pendente", color: "blue" },
+                            { time: "14:30", name: "Indisponível", service: "Bloqueio", status: "Ocupado", color: "slate" }
                           ].map((item, i) => (
                             <motion.div 
                               key={i}
@@ -364,12 +364,15 @@ export default function DemoPage() {
                               transition={{ delay: 0.2 + (i * 0.1) }}
                               className="bg-white p-3 rounded-2xl border border-border/40 shadow-sm flex items-center gap-3"
                             >
-                              <div className="w-10 h-10 rounded-full bg-accent/5 flex items-center justify-center text-accent font-bold text-xs">
+                              <div className={cn("w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs", `bg-${item.color}-500/10 text-${item.color}-600`)}>
                                 {item.name.charAt(0)}
                               </div>
                               <div className="flex-1 overflow-hidden">
                                 <p className="text-xs font-bold text-primary-dark truncate">{item.name}</p>
-                                <p className="text-[9px] text-muted-foreground truncate">{item.service}</p>
+                                <div className="flex items-center gap-1">
+                                  <div className={cn("w-1.5 h-1.5 rounded-full", `bg-${item.color}-500`)} />
+                                  <p className="text-[9px] text-muted-foreground truncate">{item.status}</p>
+                                </div>
                               </div>
                               <div className="text-[8px] font-bold text-muted-foreground">{item.time}</div>
                             </motion.div>
