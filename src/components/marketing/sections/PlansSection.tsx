@@ -79,7 +79,7 @@ export function PlansSection() {
             )}
             
             <div className="flex flex-col h-full">
-              <div className="mb-8">
+              <div className="flex flex-col">
                 <p className={cn("text-[10px] font-bold uppercase tracking-[0.3em] mb-6", isHighlight ? "text-accent" : "text-muted-foreground")}>
                   {plan.name === 'Studio' ? 'Estúdio' : plan.name}
                 </p>
@@ -93,45 +93,53 @@ export function PlansSection() {
                   {plan.code !== 'free' && <span className="text-sm font-bold opacity-60">/mês</span>}
                 </div>
                 
-                <p className={cn("text-lg font-light leading-relaxed min-h-[80px]", isHighlight ? "text-white/70" : "text-muted-foreground")}>
-                  {plan.description || "A solução ideal para organizar sua rotina."}
-                </p>
+                <div className="min-h-[100px] mb-8">
+                  <p className={cn("text-lg font-light leading-relaxed", isHighlight ? "text-white/70" : "text-muted-foreground")}>
+                    {plan.description || "A solução ideal para organizar sua rotina."}
+                  </p>
+                </div>
               </div>
               
-              <div className="space-y-6 mb-12 flex-grow">
-                 {features.slice(0, 5).map((feat, idx) => (
-                   <div key={idx} className="flex items-start gap-4">
-                      <CheckCircle2 className={cn("h-5 w-5 shrink-0 mt-0.5", isHighlight ? "text-accent" : "text-primary-dark")} />
-                      <span className="font-light tracking-tight text-base">{feat}</span>
-                   </div>
-                 ))}
+              <div className="flex-grow">
+                <div className="space-y-6 mb-12 min-h-[220px]">
+                   {features.slice(0, 5).map((feat, idx) => (
+                     <div key={idx} className="flex items-start gap-4">
+                        <CheckCircle2 className={cn("h-5 w-5 shrink-0 mt-0.5", isHighlight ? "text-accent" : "text-primary-dark")} />
+                        <span className="font-light tracking-tight text-base">{feat}</span>
+                     </div>
+                   ))}
+                </div>
               </div>
 
-              <div className="flex flex-col gap-4 mt-auto">
-                <Button asChild className={cn(
-                  "w-full h-14 md:h-16 rounded-full text-lg font-bold transition-all relative overflow-hidden group/btn shadow-lg",
-                  isHighlight 
-                    ? "bg-accent text-white hover:bg-white hover:text-primary-dark border-none" 
-                    : "bg-primary-dark text-white hover:bg-accent border-none"
-                )}>
-                  <Link to="/onboarding">
-                    <span className="relative z-10">{plan.code === 'free' ? "Começar agora" : "Escolher este plano"}</span>
-                    <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover/btn:translate-y-0" />
-                  </Link>
-                </Button>
-                
-                <Button asChild variant="ghost" className={cn(
-                  "w-full h-12 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all",
-                  isHighlight ? "text-white/60 hover:text-white" : "text-primary-dark/60 hover:text-primary-dark"
-                )}>
-                  <Link to="/demo">Ver demonstração</Link>
-                </Button>
-                
-                {plan.trial_days > 0 && (
-                  <p className={cn("text-center mt-2 text-[9px] font-bold uppercase tracking-widest opacity-40")}>
-                    {plan.trial_days} dias para testar sem compromisso
-                  </p>
-                )}
+              <div className="mt-auto pt-8 border-t border-border/10">
+                <div className="flex flex-col gap-4">
+                  <Button asChild className={cn(
+                    "w-full h-14 md:h-16 rounded-full text-lg font-bold transition-all relative overflow-hidden group/btn shadow-lg",
+                    isHighlight 
+                      ? "bg-accent text-white hover:bg-white hover:text-primary-dark border-none" 
+                      : "bg-primary-dark text-white hover:bg-accent border-none"
+                  )}>
+                    <Link to="/onboarding">
+                      <span className="relative z-10">{plan.code === 'free' ? "Começar agora" : "Escolher este plano"}</span>
+                      <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover/btn:translate-y-0" />
+                    </Link>
+                  </Button>
+                  
+                  <Button asChild variant="ghost" className={cn(
+                    "w-full h-12 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all",
+                    isHighlight ? "text-white/60 hover:text-white" : "text-primary-dark/60 hover:text-primary-dark"
+                  )}>
+                    <Link to="/demo">Ver demonstração</Link>
+                  </Button>
+                  
+                  {plan.trial_days > 0 ? (
+                    <p className={cn("text-center mt-2 text-[9px] font-bold uppercase tracking-widest opacity-40")}>
+                      {plan.trial_days} dias para testar sem compromisso
+                    </p>
+                  ) : (
+                    <div className="h-6" /> // Spacer para manter alinhamento quando não há trial
+                  )}
+                </div>
               </div>
             </div>
           </div>
