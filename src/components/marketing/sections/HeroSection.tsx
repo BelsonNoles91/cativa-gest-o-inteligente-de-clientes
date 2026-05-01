@@ -81,8 +81,8 @@ export function HeroSection() {
           </motion.p>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-4 mb-8">
-            <Button asChild size="lg" className="h-14 md:h-16 px-8 md:px-10 rounded-full bg-primary-dark text-base md:text-lg shadow-2xl shadow-primary/20 group relative overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98]">
-              <Link to="/demo">
+            <Button asChild size="lg" className="h-14 md:h-16 px-8 md:px-10 rounded-full bg-primary-dark text-base md:text-lg shadow-xl shadow-primary/20 group relative overflow-hidden transition-all duration-300 hover:scale-[1.05] hover:shadow-2xl hover:shadow-primary/30 active:scale-[0.98]">
+              <Link to="/onboarding">
                 <span className="relative z-10 flex items-center gap-2">
                   Ver demonstração gratuita
                   <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -91,7 +91,7 @@ export function HeroSection() {
               </Link>
             </Button>
             
-            <Button asChild variant="outline" size="lg" className="h-14 md:h-16 px-8 md:px-10 rounded-full border-primary-dark/40 text-primary-dark font-bold text-base md:text-lg hover:bg-primary-dark hover:text-white hover:border-primary-dark transition-all">
+            <Button asChild variant="outline" size="lg" className="h-14 md:h-16 px-8 md:px-10 rounded-full border-primary-dark/40 text-primary-dark font-bold text-base md:text-lg hover:bg-white hover:border-primary-dark hover:shadow-lg transition-all duration-300 active:scale-[0.98]">
               <Link to="/onboarding">Começar teste de 14 dias</Link>
             </Button>
           </div>
