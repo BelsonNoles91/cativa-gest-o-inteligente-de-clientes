@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Building2,
   CreditCard,
@@ -12,6 +12,9 @@ import {
   Users,
   AlertCircle,
   Activity,
+  Search,
+  Pencil,
+  LogIn,
 } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { TrialLogsTab } from "@/features/admin/TrialLogsTab";
@@ -24,15 +27,63 @@ import { useTenant } from "@/features/tenant/TenantProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { EmptyState } from "@/components/feedback/EmptyState";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import {
   listPlans,
   listAllFeatureFlags,
   listSegmentTemplates,
   listTenantsWithSubscriptions,
+  listSubscriptionEvents,
+  changeSubscriptionPlan,
+  setSubscriptionStatus,
+  setOverrideLimits,
+  setDiscount,
+  extendTrial,
   type TenantWithSub,
 } from "@/repositories/billing";
-import { type Plan, type FeatureFlag, type SegmentTemplate } from "@/domain/billing";
+import { 
+  type Plan, 
+  type FeatureFlag, 
+  type SegmentTemplate,
+  type SubscriptionEvent,
+  subscriptionStatusLabels,
+  subscriptionStatusTone,
+  eventLabels,
+} from "@/domain/billing";
+import { segmentLabels, type TenantSegment } from "@/domain/tenant";
+
+const SUBSCRIPTION_STATUSES = ["trialing", "active", "overdue", "suspended", "canceled"] as const;
+const TENANT_SEGMENTS: TenantSegment[] = [
+  "salao",
+  "barbearia",
+  "clinica_estetica",
+  "lash_brow",
+  "esmalteria",
+  "wellness",
+];
+
+function numberField(v: any) { return v != null ? String(v) : ""; }
+function parseNullableNumber(s: string) { return s.trim() ? parseInt(s, 10) : null; }
 
 export default function SuperAdmin() {
   const [loading, setLoading] = useState(true);
