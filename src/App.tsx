@@ -61,6 +61,8 @@ const ResetPassword = lazyWithReload(() => import("./pages/auth/ResetPassword"))
 const AcceptInvite = lazyWithReload(() => import("./pages/auth/AcceptInvite"));
 const Onboarding = lazyWithReload(() => import("./pages/auth/Onboarding"));
 const Dashboard = lazyWithReload(() => import("./pages/app/Dashboard"));
+const Privacy = lazyWithReload(() => import("./pages/public/Privacy"));
+const Terms = lazyWithReload(() => import("./pages/public/Terms"));
 const Settings = lazyWithReload(() => import("./pages/app/Settings"));
 const Billing = lazyWithReload(() => import("./pages/app/Billing"));
 const Subscription = lazyWithReload(() => import("./pages/app/Subscription"));
@@ -107,6 +109,8 @@ const App = () => (
                   <Route path="/old-landing" element={<Index />} />
                   <Route path="/planos" element={<Pricing />} />
                   <Route path="/pricing" element={<Pricing />} />
+                  <Route path="/privacidade" element={<Privacy />} />
+                  <Route path="/termos" element={<Terms />} />
 
                   {/* Auth */}
                   <Route path="/auth/login" element={<Login />} />

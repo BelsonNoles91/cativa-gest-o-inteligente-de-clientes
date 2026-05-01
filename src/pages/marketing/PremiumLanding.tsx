@@ -69,8 +69,8 @@ export default function PremiumLanding() {
                  { label: "FOCO EM FIDELIDADE", desc: "O cliente sempre volta" }
                ].map((item, i) => (
                  <div key={i} className="flex flex-col items-center lg:items-start group text-center lg:text-left min-w-[140px]">
-                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-primary-dark/40 group-hover:text-accent transition-colors mb-1">{item.label}</span>
-                    <span className="text-[9px] md:text-[10px] font-medium text-muted-foreground/60">{item.desc}</span>
+                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-primary-dark/80 group-hover:text-accent transition-colors mb-1">{item.label}</span>
+                    <span className="text-[9px] md:text-[10px] font-semibold text-muted-foreground">{item.desc}</span>
                  </div>
                ))}
             </div>
@@ -115,7 +115,7 @@ export default function PremiumLanding() {
                        <div className="flex items-center justify-between">
                           <div className="space-y-2">
                              <div className="h-4 w-24 md:w-32 bg-primary-dark/10 rounded-full" />
-                             <div className="h-2 w-16 md:w-20 bg-primary-dark/5 rounded-full" />
+                             <div className="h-2 w-16 md:w-20 bg-primary-dark/10 rounded-full" />
                           </div>
                           <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
                              <TrendingUp className="text-emerald-600 h-5 w-5 md:h-6 md:w-6" />
@@ -143,7 +143,7 @@ export default function PremiumLanding() {
 
                        <div className="grid grid-cols-2 gap-4">
                           <div className="h-12 md:h-16 bg-secondary/20 rounded-2xl border border-border/20 p-4 flex flex-col justify-center">
-                            <span className="text-[8px] font-bold text-muted-foreground uppercase">Antes: {segments[activeSegment].beforeAfter.before}</span>
+                            <span className="text-[8px] font-bold text-slate-700 uppercase">Antes: {segments[activeSegment].beforeAfter.before}</span>
                             <div className="h-1 w-full bg-rose-200 rounded-full mt-1">
                                <motion.div initial={{ width: "80%" }} animate={{ width: "80%" }} className="h-full bg-rose-500 rounded-full" />
                             </div>
@@ -175,7 +175,7 @@ export default function PremiumLanding() {
                  >
                     <Quote className="h-6 w-6 md:h-8 md:w-8 mb-4 opacity-40" />
                     <p className="text-sm md:text-lg font-medium leading-tight mb-2 italic">"{segments[activeSegment].quote}"</p>
-                    <p className="text-[9px] font-bold uppercase tracking-widest opacity-60">— {segments[activeSegment].author}</p>
+                    <p className="text-[9px] font-bold uppercase tracking-widest opacity-90">— {segments[activeSegment].author}</p>
                  </motion.div>
                </AnimatePresence>
             </div>
@@ -196,7 +196,7 @@ export default function PremiumLanding() {
                     O problema não é <br className="hidden md:block" />
                     <span className="italic serif font-normal text-accent">apenas a agenda.</span>
                   </h3>
-                  <p className="text-lg md:text-xl text-muted-foreground/80 leading-relaxed font-light mb-6">
+                  <p className="text-lg md:text-xl text-primary-dark/80 leading-relaxed font-normal mb-6">
                     {activeSegment === 0 && "Para clínicas de estética, cada minuto conta. A Cativa ajuda você a fidelizar melhor, confirmar horários e crescer com segurança."}
                     {activeSegment === 1 && "Salões premium precisam de fluxo constante. Nossa inteligência reduz buracos na agenda e otimiza o trabalho da sua equipe."}
                     {activeSegment === 2 && "Barbearias modernas exigem agilidade total. O portal do cliente e as confirmações rápidas garantem que ninguém perca tempo."}
@@ -221,7 +221,7 @@ export default function PremiumLanding() {
                        <item.icon className="h-5 w-5 text-accent" />
                        <span className="font-bold text-primary-dark tracking-tight">{item.text}</span>
                     </div>
-                    <p className="text-xs md:text-sm text-muted-foreground font-light">{item.desc}</p>
+                    <p className="text-xs md:text-sm text-slate-600 font-medium">{item.desc}</p>
                   </motion.div>
                 ))}
               </div>
@@ -258,7 +258,7 @@ export default function PremiumLanding() {
 
           <PlansSection />
 
-          <p className="text-center mt-16 md:mt-20 text-xs md:text-sm text-muted-foreground font-light italic px-4">
+          <p className="text-center mt-16 md:mt-20 text-xs md:text-sm text-primary-dark/70 font-bold italic px-4">
             * Valores para pagamento mensal. Descontos progressivos para planos anuais. <br />
             Atendimento especializado disponível para todos os planos pagos.
           </p>
@@ -311,9 +311,9 @@ export default function PremiumLanding() {
                 <div className={cn("w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center mb-6 md:mb-8 transition-transform duration-500 group-hover:scale-110", card.iconBg)}>
                    <card.icon className="h-5 w-5 md:h-6 md:w-6 text-white" />
                 </div>
-                <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-4">{card.role}</p>
+                <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-white/80 mb-4">{card.role}</p>
                 <h4 className="text-lg md:text-xl font-display font-bold text-white mb-4 md:mb-6 group-hover:text-accent transition-colors">{card.title}</h4>
-                <p className="text-white/60 leading-relaxed font-light text-sm md:text-base">{card.desc}</p>
+                <p className="text-white/80 leading-relaxed font-normal text-sm md:text-base">{card.desc}</p>
               </div>
             ))}
           </div>
