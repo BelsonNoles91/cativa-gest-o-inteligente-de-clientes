@@ -14,7 +14,7 @@ export function Logo({ className, showWordmark = true, size = "md" }: LogoProps)
   const text = size === "sm" ? "text-lg" : size === "lg" ? "text-3xl" : "text-2xl";
 
   return (
-    <div className={cn("flex items-center gap-3", className)}>
+    <div className={cn("flex items-center gap-3 shrink-0", className)}>
       <div
         className={cn(
           "relative grid place-items-center shadow-lg shadow-accent/20",
@@ -23,10 +23,10 @@ export function Logo({ className, showWordmark = true, size = "md" }: LogoProps)
         )}
         aria-hidden
       >
-        <span className="leading-none select-none">{size === "sm" ? "C" : "C"}</span>
+        <span className="leading-none select-none">C</span>
       </div>
       {showWordmark && (
-        <span className={cn("font-display font-black tracking-tighter text-primary-dark uppercase", text)}>
+        <span className={cn("font-display font-black tracking-tighter text-primary-dark uppercase whitespace-nowrap", text)}>
           Cativa<span className="text-accent">.</span>
         </span>
       )}
