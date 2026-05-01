@@ -173,9 +173,9 @@ export default function PremiumLanding() {
                 <p className={cn("text-xs font-bold uppercase tracking-widest mb-4", plan.highlight ? "text-accent" : "text-muted-foreground")}>
                   {plan.name}
                 </p>
-                <div className="flex items-baseline gap-2 mb-8">
-                  <span className="text-sm font-bold opacity-60">R$</span>
-                  <span className="text-6xl font-display font-bold">{plan.price}</span>
+                <div className="flex items-baseline gap-2 mb-8 text-primary-dark">
+                  <span className="text-xl font-bold opacity-60">R$</span>
+                  <span className="text-7xl font-display font-bold tracking-tighter">{plan.price}</span>
                   <span className="text-sm font-bold opacity-60">/mês</span>
                 </div>
                 <p className={cn("text-lg font-light mb-10 leading-relaxed", plan.highlight ? "text-white/70" : "text-muted-foreground")}>
@@ -303,36 +303,72 @@ export default function PremiumLanding() {
            </div>
         </PremiumSection>
 
-        {/* Final CTA - High Impact */}
-        <PremiumSection variant="accent" padding="xl" className="text-center overflow-visible bg-primary-dark">
-           <div className="max-w-5xl mx-auto relative z-10">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[150%] bg-accent/20 blur-[150px] rounded-full -z-10 animate-pulse" />
-              
-              <h2 className="font-display text-6xl md:text-9xl text-white mb-12 tracking-tighter leading-[0.85]">
-                Sua operação, <br />
-                <span className="italic serif font-normal text-accent">elevada.</span>
-              </h2>
-              
-              <div className="flex flex-col sm:flex-row justify-center items-center gap-8 mb-16">
-                 <Button asChild size="lg" className="h-20 px-16 rounded-none bg-accent text-white text-xl font-bold shadow-2xl hover:bg-white hover:text-primary-dark transition-all duration-500 scale-110 hover:scale-105">
-                    <Link to="/onboarding">Começar Agora</Link>
-                 </Button>
-                 <Link to="/planos" className="text-white/60 hover:text-white font-bold uppercase tracking-widest text-sm transition-colors border-b border-white/20 pb-1">
-                    Ver Planos e Preços
-                 </Link>
+        {/* Final CTA - High Impact Editorial Style */}
+        <PremiumSection variant="dark" padding="xl" className="text-center overflow-visible">
+           {/* Sophisticated background depth */}
+           <div className="absolute inset-0 bg-[#1A0F16]" />
+           <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[140%] bg-accent/5 blur-[120px] rounded-full rotate-12" />
+           <div className="absolute bottom-[-30%] right-[-10%] w-[50%] h-[120%] bg-primary/10 blur-[100px] rounded-full -rotate-12" />
+           
+           <div className="max-w-6xl mx-auto relative z-10">
+              <div className="inline-block px-5 py-2 rounded-full bg-accent/10 text-[11px] font-bold uppercase tracking-[0.3em] text-accent mb-12 border border-accent/20">
+                Pronto para o Próximo Nível?
               </div>
               
-              <p className="text-white/60 text-lg font-light max-w-2xl mx-auto mb-12">
-                A Cativa ajuda sua operação a sair do improviso, dar mais contexto para a equipe e transformar agenda em crescimento consistente.
+              <h2 className="font-display text-5xl sm:text-7xl md:text-[10rem] text-white mb-16 tracking-tighter leading-[0.8] animate-fade-in">
+                Sua operação, <br />
+                <span className="italic serif font-normal text-accent relative inline-block">
+                  elevada.
+                  <svg className="absolute -bottom-4 left-0 w-full h-6 text-accent/20 -z-10" viewBox="0 0 400 24" fill="none">
+                    <path d="M2 20C80 5 280 2 398 20" stroke="currentColor" strokeWidth="8" strokeLinecap="round"/>
+                  </svg>
+                </span>
+              </h2>
+              
+              <p className="text-white/70 text-2xl md:text-3xl font-light max-w-3xl mx-auto mb-20 leading-relaxed tracking-tight">
+                Deixe o improviso para trás. A Cativa é a inteligência que sua marca de beleza merece para crescer com consistência e sofisticação.
               </p>
               
-              <div className="flex flex-wrap justify-center gap-12 pt-12 border-t border-white/10">
-                 {["14 dias grátis", "Sem cartão de crédito", "Cancele a qualquer momento"].map((text, i) => (
-                   <div key={i} className="flex items-center gap-3">
-                      <CheckCircle2 className="h-4 w-4 text-accent" />
-                      <span className="text-xs font-bold uppercase tracking-widest text-white/50">{text}</span>
+              <div className="flex flex-col sm:flex-row justify-center items-center gap-12 mb-24">
+                 <Button asChild size="lg" className="h-24 px-20 rounded-none bg-accent text-white text-2xl font-bold shadow-[0_30px_60px_-15px_rgba(168,76,134,0.5)] hover:bg-white hover:text-primary-dark transition-all duration-700 scale-110 hover:scale-105 group relative overflow-hidden">
+                    <Link to="/onboarding">
+                      <span className="relative z-10">Começar Agora</span>
+                      <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover:translate-y-0" />
+                    </Link>
+                 </Button>
+                 
+                 <div className="flex flex-col items-start gap-2 group cursor-pointer">
+                    <Link to="/planos" className="text-white/90 hover:text-accent font-bold uppercase tracking-[0.2em] text-sm transition-all flex items-center gap-3">
+                       Ver Planos e Preços
+                       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-2" />
+                    </Link>
+                    <div className="h-px w-full bg-white/20 group-hover:bg-accent transition-colors" />
+                 </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-12 py-16 border-y border-white/10">
+                 {[
+                   { text: "14 dias grátis", sub: "Sem compromisso" },
+                   { text: "Sem cartão", sub: "Setup imediato" },
+                   { text: "Suporte VIP", sub: "Implementação guiada" }
+                 ].map((item, i) => (
+                   <div key={i} className="flex flex-col items-center gap-2">
+                      <div className="flex items-center gap-3 mb-1">
+                         <CheckCircle2 className="h-5 w-5 text-accent" />
+                         <span className="text-xl font-bold text-white tracking-tight">{item.text}</span>
+                      </div>
+                      <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/30">{item.sub}</span>
                    </div>
                  ))}
+              </div>
+              
+              <div className="mt-16 flex flex-col items-center gap-6 opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-1000">
+                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Tecnologia Certificada</p>
+                <div className="flex items-center gap-12">
+                   <div className="h-8 w-24 bg-white/10 rounded" />
+                   <div className="h-8 w-32 bg-white/10 rounded" />
+                   <div className="h-8 w-20 bg-white/10 rounded" />
+                </div>
               </div>
            </div>
         </PremiumSection>

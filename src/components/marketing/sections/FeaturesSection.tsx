@@ -80,50 +80,83 @@ export function FeaturesSection() {
         ))}
       </PremiumGrid>
 
-      {/* Feature Highlight Box */}
-      <div className="mt-40 bg-[#1A0F16] rounded-[4rem] overflow-hidden relative">
-         <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-accent/10 to-transparent" />
-         <div className="grid lg:grid-cols-2 gap-0">
-            <div className="p-16 md:p-24 relative z-10">
-               <h3 className="text-white text-4xl md:text-6xl font-display font-bold leading-tight mb-10">
+      {/* Feature Highlight Box - Elevated Editorial Style */}
+      <div className="mt-40 bg-[#1A0F16] rounded-[2.5rem] md:rounded-[4rem] overflow-hidden relative shadow-2xl">
+         <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(168,76,134,0.15),transparent_50%)]" />
+         <div className="grid lg:grid-cols-2 gap-0 relative z-10">
+            <div className="p-16 md:p-24 flex flex-col justify-center">
+               <div className="inline-block px-4 py-1.5 rounded-full bg-accent/20 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-12 border border-accent/20 w-fit">
+                 Visão Estratégica
+               </div>
+               <h3 className="text-white text-4xl md:text-7xl font-display font-bold leading-[0.9] tracking-tighter mb-10">
                  O problema não é só agenda. <br />
-                 <span className="text-accent italic font-normal serif">É falta de controle sobre a jornada.</span>
+                 <span className="text-accent italic font-normal serif">É falta de inteligência sobre a jornada.</span>
                </h3>
-               <div className="space-y-8">
+               <div className="space-y-10">
                   {[
                     "Aumente o faturamento através da retenção ativa",
                     "Reduza no-shows com rotinas de confirmação",
                     "Acompanhe o Índice Cativa de saúde do negócio"
                   ].map((text, i) => (
                     <div key={i} className="flex items-center gap-6 group">
-                       <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center group-hover:border-accent group-hover:bg-accent transition-all duration-500">
-                          <Check className="h-4 w-4 text-white" />
+                       <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center group-hover:border-accent group-hover:bg-accent transition-all duration-500 shrink-0">
+                          <Check className="h-5 w-5 text-white" />
                        </div>
-                       <span className="text-white/80 text-xl font-light">{text}</span>
+                       <span className="text-white/80 text-2xl font-light tracking-tight group-hover:text-white transition-colors">{text}</span>
                     </div>
                   ))}
                </div>
             </div>
-            <div className="bg-[#2A1523] h-full min-h-[400px] relative overflow-hidden flex items-center justify-center">
-               <div className="w-[80%] aspect-square bg-gradient-to-br from-accent/20 to-primary/20 rounded-full blur-[100px] absolute" />
-               <div className="relative z-10 w-[80%] h-[70%] bg-white/5 backdrop-blur-3xl rounded-3xl border border-white/10 p-10 flex flex-col justify-between">
-                  <div className="flex justify-between">
-                     <div className="h-4 w-24 bg-white/20 rounded-full" />
-                     <div className="h-10 w-10 rounded-full bg-accent/40" />
-                  </div>
-                  <div className="space-y-4">
-                     <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full bg-accent w-3/4 animate-pulse" />
+            <div className="bg-[#2A1523] h-full min-h-[500px] relative overflow-hidden flex items-center justify-center border-l border-white/5">
+               <div className="w-[120%] aspect-square bg-[radial-gradient(circle,rgba(168,76,134,0.1)_0%,transparent_70%)] absolute top-[-20%] right-[-20%]" />
+               
+               {/* Abstract Dashboard Component */}
+               <div className="relative z-10 w-[85%] aspect-[4/3] bg-white/5 backdrop-blur-2xl rounded-[3rem] border border-white/10 p-12 flex flex-col justify-between shadow-2xl transform rotate-2">
+                  <div className="flex justify-between items-start">
+                     <div className="space-y-3">
+                        <div className="h-4 w-32 bg-white/20 rounded-full" />
+                        <div className="h-2 w-20 bg-white/10 rounded-full" />
                      </div>
-                     <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full bg-white/20 w-1/2" />
+                     <div className="w-14 h-14 rounded-2xl bg-accent/30 flex items-center justify-center border border-accent/40 shadow-[0_0_30px_rgba(168,76,134,0.3)]">
+                        <BarChart3 className="h-6 w-6 text-white" />
                      </div>
                   </div>
-                  <div className="flex gap-4">
-                     <div className="h-20 flex-1 bg-white/5 rounded-2xl border border-white/5" />
-                     <div className="h-20 flex-1 bg-white/5 rounded-2xl border border-white/5" />
+                  
+                  <div className="flex-1 flex flex-col justify-center gap-10">
+                     <div className="space-y-6">
+                        <div className="flex justify-between items-end">
+                           <div className="h-3 w-1/4 bg-white/10 rounded-full" />
+                           <span className="text-accent font-display text-4xl font-bold">82%</span>
+                        </div>
+                        <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                           <div className="h-full bg-accent w-4/5 shadow-[0_0_20px_rgba(168,76,134,0.5)]" />
+                        </div>
+                     </div>
+                     <div className="space-y-6">
+                        <div className="flex justify-between items-end">
+                           <div className="h-3 w-1/3 bg-white/10 rounded-full" />
+                           <span className="text-white font-display text-4xl font-bold">R$ 42k</span>
+                        </div>
+                        <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                           <div className="h-full bg-white/30 w-3/5" />
+                        </div>
+                     </div>
+                  </div>
+
+                  <div className="flex gap-6">
+                     <div className="h-24 flex-1 bg-white/5 rounded-3xl border border-white/5 p-6 flex flex-col justify-between">
+                        <div className="h-2 w-1/2 bg-white/10 rounded-full" />
+                        <div className="h-6 w-3/4 bg-accent/20 rounded" />
+                     </div>
+                     <div className="h-24 flex-1 bg-white/5 rounded-3xl border border-white/5 p-6 flex flex-col justify-between">
+                        <div className="h-2 w-1/2 bg-white/10 rounded-full" />
+                        <div className="h-6 w-3/4 bg-white/10 rounded" />
+                     </div>
                   </div>
                </div>
+               
+               {/* Decorative dots grid */}
+               <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
             </div>
          </div>
       </div>

@@ -70,41 +70,54 @@ export function ModulesSection() {
         </p>
       </div>
 
-      <div className="space-y-4">
+      <div className="grid gap-6 md:gap-10">
         {modules.map((module, idx) => (
           <div 
             key={idx} 
-            className="group relative bg-white border border-border/40 p-10 md:p-12 transition-all duration-500 hover:border-accent/40 overflow-hidden"
+            className="group relative bg-white rounded-[2rem] md:rounded-[3rem] border border-border/30 p-8 md:p-14 transition-all duration-700 hover:border-accent/40 hover:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.08)] overflow-hidden"
           >
-            <div className="absolute top-0 right-0 p-8 text-8xl font-display font-bold text-primary-dark/5 select-none transition-all duration-700 group-hover:text-accent/10 group-hover:-translate-y-2">
+            {/* Background Identifier - Editorial Detail */}
+            <div className="absolute -top-6 -right-6 text-[12rem] font-display font-bold text-primary-dark/[0.03] select-none pointer-events-none transition-all duration-1000 group-hover:text-accent/[0.08] group-hover:scale-110">
               {module.id}
             </div>
             
-            <div className="grid lg:grid-cols-12 gap-12 items-center relative z-10">
+            <div className="grid lg:grid-cols-12 gap-12 lg:gap-20 items-center relative z-10">
               <div className="lg:col-span-1">
-                <div className="w-16 h-16 rounded-2xl bg-[#FAF7F9] flex items-center justify-center text-primary-dark transition-all duration-500 group-hover:bg-accent group-hover:text-white">
-                  <module.icon className="h-8 w-8" />
+                <div className="w-20 h-20 rounded-[2.5rem] bg-[#FAF7F9] flex items-center justify-center text-primary-dark transition-all duration-700 group-hover:bg-accent group-hover:text-white group-hover:scale-110 group-hover:rotate-6 border border-border/10">
+                  <module.icon className="h-10 w-10" />
                 </div>
               </div>
               
               <div className="lg:col-span-5">
-                <h3 className="text-3xl font-display font-bold text-primary-dark mb-4 group-hover:text-accent transition-colors">
+                <div className="flex items-center gap-3 mb-6">
+                   <span className="text-xs font-bold text-accent tracking-[0.3em] uppercase opacity-60">Módulo {module.id}</span>
+                   <div className="h-px w-8 bg-accent/20" />
+                </div>
+                <h3 className="text-4xl md:text-5xl font-display font-bold text-primary-dark mb-6 group-hover:text-accent transition-colors tracking-tighter">
                   {module.title}
                 </h3>
-                <p className="text-muted-foreground text-lg font-light leading-relaxed">
+                <p className="text-muted-foreground text-xl font-light leading-relaxed max-w-lg">
                   {module.desc}
                 </p>
               </div>
               
-              <div className="lg:col-span-6 bg-[#FAF7F9] p-8 md:p-10 border-l-4 border-accent/20 group-hover:border-accent transition-all duration-500">
-                <div className="flex items-start gap-4">
-                  <CheckCircle2 className="h-6 w-6 text-accent shrink-0 mt-1" />
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-2">Por que isso importa:</p>
-                    <p className="text-primary-dark font-medium leading-relaxed italic text-lg">
-                      "{module.benefit}"
-                    </p>
+              <div className="lg:col-span-6">
+                <div className="bg-[#FAF7F9]/80 backdrop-blur-sm p-10 md:p-12 rounded-[2.5rem] border border-border/40 group-hover:border-accent/30 transition-all duration-700 relative overflow-hidden group/benefit">
+                  <div className="absolute top-0 left-0 w-1.5 h-full bg-accent/10 group-hover:bg-accent transition-all duration-700" />
+                  <div className="flex items-start gap-6">
+                    <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center border border-border/20 shrink-0 shadow-sm transition-transform duration-500 group-hover/benefit:scale-110">
+                       <CheckCircle2 className="h-6 w-6 text-accent" />
+                    </div>
+                    <div className="space-y-4">
+                      <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-accent/80">Vantagem Competitiva</p>
+                      <p className="text-primary-dark font-medium leading-[1.4] italic text-2xl tracking-tight">
+                        "{module.benefit}"
+                      </p>
+                    </div>
                   </div>
+                  
+                  {/* Subtle decorative element */}
+                  <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-accent/5 rounded-full blur-2xl group-hover:bg-accent/10 transition-all duration-700" />
                 </div>
               </div>
             </div>
