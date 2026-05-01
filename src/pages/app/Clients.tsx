@@ -150,6 +150,17 @@ export default function ClientsPage() {
   const { toast } = useToast();
 
   const [filters, setFilters] = useState<FiltersState>(DEFAULT_FILTERS);
+  const [debouncedSearch, setDebouncedSearch] = useState(filters.search);
+
+  const updateDebouncedSearch = useCallback(
+    debounce((val: string) => setDebouncedSearch(val), 300),
+    []
+  );
+
+  useEffect(() => {
+    updateDebouncedSearch(filters.search);
+  }, [filters.search, updateDebouncedSearch]);
+
   const [clients, setClients] = useState<Client[]>([]);
   const [loadingList, setLoadingList] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
