@@ -317,13 +317,23 @@ export default function AgendaPage() {
     return { total, confirmed, arrived, completed };
   }, [appointments, groupMode, resourceFilter]);
 
-  const visibleAppointments = useMemo(
-    () =>
-      groupMode === "resource" && resourceFilter !== "all"
-        ? appointments.filter((item) => (item.appointment.resourceId ?? "__none__") === resourceFilter)
-        : appointments,
-    [appointments, groupMode, resourceFilter],
-  );
+  const visibleAppointments = useMemo(() => {
+    let result = appointments;
+    if (groupMode === "resource" && resourceFilter !== "all") {
+      result = result.filter((item) => (item.appointment.resourceId ?? "__none__") === resourceFilter);
+    }
+    
+    if (quickSearch.trim()) {
+      const s = quickSearch.toLowerCase();
+      result = result.filter(item => 
+        item.clientName?.toLowerCase().includes(s) || 
+        item.serviceName?.toLowerCase().includes(s) || 
+        item.professionalName?.toLowerCase().includes(s)
+      );
+    }
+    
+    return result;
+  }, [appointments, groupMode, resourceFilter, quickSearch]);
 
   const groupedAppointments = useMemo(() => {
     const groups = new Map<string, HydratedAppointment[]>();
