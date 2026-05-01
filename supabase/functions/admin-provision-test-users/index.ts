@@ -78,14 +78,26 @@ Deno.serve(async (req) => {
     return json({ error: "JSON inválido" }, 400);
   }
   const tenantId = body.tenant_id;
-  const password = (body.password ?? "Cativa@2026").trim();
-  const domain = (body.email_domain ?? "cativa.test").trim();
+  const rawPassword = typeof body.password === "string" ? body.password.trim() : "";
+  const domain = (body.email_domain ?? "cativa.test").trim().toLowerCase();
   if (!tenantId || !/^[0-9a-f-]{36}$/i.test(tenantId)) {
     return json({ error: "tenant_id inválido" }, 400);
   }
-  if (password.length < 8) {
-    return json({ error: "senha precisa ter ao menos 8 caracteres" }, 400);
+  if (!rawPassword) {
+    return json({ error: "password é obrigatório no corpo da requisição" }, 400);
   }
+  if (rawPassword.length < 12) {
+    return json({ error: "senha precisa ter ao menos 12 caracteres" }, 400);
+  }
+  // Guarda contra uso acidental em produção: só aceita domínios de teste reconhecidos
+  const allowedDomainSuffixes = [".test", ".local", ".example"];
+  if (!allowedDomainSuffixes.some((s) => domain.endsWith(s))) {
+    return json(
+      { error: "email_domain deve terminar em .test, .local ou .example" },
+      400,
+    );
+  }
+  const password = rawPassword;
 
   // 3) Tenant + unidade default
   const { data: tenant } = await admin
@@ -266,10 +278,11 @@ Deno.serve(async (req) => {
     });
   }
 
+  // Não retornamos a senha — quem chamou já a forneceu.
+  const safeAccounts = results.map(({ ...rest }) => rest);
   return json({
     tenant: { id: tenant.id, slug: tenant.slug, name: tenant.name },
-    password,
-    accounts: results,
+    accounts: safeAccounts,
   });
 });
 
