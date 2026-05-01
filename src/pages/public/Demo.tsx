@@ -14,6 +14,7 @@ export default function DemoPage() {
   const navigate = useNavigate();
   const [selectedDay, setSelectedDay] = useState(15);
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const handleDaySelect = (day: number, isAvailable: boolean) => {
     if (!isAvailable) {
@@ -196,21 +197,37 @@ export default function DemoPage() {
             </div>
             
             <div className="aspect-video bg-[#1A0F16] rounded-[2.5rem] md:rounded-[4rem] shadow-2xl relative overflow-hidden group border border-white/5">
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <button className="w-20 h-20 md:w-32 md:h-32 rounded-full bg-accent/90 flex items-center justify-center text-white shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:bg-accent group-hover:shadow-[0_0_40px_rgba(168,76,134,0.5)]">
-                  <Play className="h-8 w-8 md:h-12 md:h-12 fill-current ml-1" />
-                </button>
-              </div>
-              <div className="absolute bottom-10 left-10 right-10 flex justify-between items-end">
-                <div className="space-y-2">
-                  <p className="text-white font-display text-xl md:text-3xl font-bold">Tour da Plataforma</p>
-                  <p className="text-white/60 text-xs md:text-sm font-light tracking-wide uppercase">Cativa v2.0 · Estética e Beleza</p>
-                </div>
-                <div className="px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white text-[10px] font-bold">
-                  02:14
-                </div>
-              </div>
+              {!isPlaying ? (
+                <>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <button 
+                      onClick={() => setIsPlaying(true)}
+                      className="w-20 h-20 md:w-32 md:h-32 rounded-full bg-accent/90 flex items-center justify-center text-white shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:bg-accent group-hover:shadow-[0_0_40px_rgba(168,76,134,0.5)] z-20"
+                      aria-label="Play video demonstration"
+                    >
+                      <Play className="h-8 w-8 md:h-12 md:h-12 fill-current ml-1" />
+                    </button>
+                  </div>
+                  <div className="absolute bottom-10 left-10 right-10 flex justify-between items-end z-10">
+                    <div className="space-y-2">
+                      <p className="text-white font-display text-xl md:text-3xl font-bold">Tour da Plataforma</p>
+                      <p className="text-white/60 text-xs md:text-sm font-light tracking-wide uppercase">Cativa v2.0 · Estética e Beleza</p>
+                    </div>
+                    <div className="px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white text-[10px] font-bold">
+                      02:14
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <iframe
+                  src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
+                  title="Cativa Platform Tour"
+                  className="absolute inset-0 w-full h-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              )}
             </div>
           </div>
         </PremiumSection>
