@@ -80,6 +80,14 @@ export default function Dashboard() {
         icon: Users,
         tone: "info" as const,
       },
+      {
+        label: "LTV Médio (Anual)",
+        value: snapshot.ltvEstimate.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+        delta: "Valor futuro estimado",
+        icon: TrendingUp,
+        tone: "brand" as const,
+      },
+
     ],
     [snapshot, upcoming.length],
   );
