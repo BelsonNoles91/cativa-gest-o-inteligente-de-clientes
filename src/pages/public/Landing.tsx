@@ -226,10 +226,11 @@ export default function Landing() {
           <div className="flex flex-col justify-center space-y-8 md:col-span-6 lg:col-span-7">
             <StatusBadge tone="brand" className="w-fit">Plataforma SaaS · Beleza & Wellness</StatusBadge>
             <h1 className="font-display text-5xl leading-[0.95] tracking-tight md:text-7xl lg:text-[5.5rem]">
-              Gestão que faz o{" "}
-              <span className="text-gradient-brand italic">cliente voltar</span>.
+              Sua gestão <br className="hidden md:block" />
+              em <span className="text-gradient-brand italic">alta performance</span>.
             </h1>
             <p className="max-w-xl text-lg text-muted-foreground/90 md:text-xl leading-relaxed">
+
               Cativa centraliza agenda, clientes, pacotes, confirmações e portal
               de autoatendimento — para você focar em atender enquanto o sistema
               cuida da retenção, do rebooking e do no-show.
