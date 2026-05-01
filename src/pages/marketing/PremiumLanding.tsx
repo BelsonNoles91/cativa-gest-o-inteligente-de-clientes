@@ -171,7 +171,7 @@ export default function PremiumLanding() {
                     initial={{ opacity: 0, scale: 0.8, rotate: 5 }}
                     animate={{ opacity: 1, scale: 1, rotate: 3 }}
                     exit={{ opacity: 0, scale: 0.8, rotate: 5 }}
-                    className="absolute -bottom-4 -right-2 md:-bottom-10 md:-left-10 bg-accent text-white p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl z-20 max-w-[220px] md:max-w-xs"
+                    className="absolute -bottom-10 right-0 md:-bottom-10 md:-left-10 bg-accent text-white p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl z-20 max-w-[240px] md:max-w-xs"
                  >
                     <Quote className="h-6 w-6 md:h-8 md:w-8 mb-4 opacity-40" />
                     <p className="text-sm md:text-lg font-medium leading-tight mb-2 italic">"{segments[activeSegment].quote}"</p>
@@ -192,7 +192,7 @@ export default function PremiumLanding() {
                   <div className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-6 md:mb-8">
                     Foco em {segments[activeSegment].name}
                   </div>
-                  <h3 className="font-display text-4xl md:text-7xl text-primary-dark tracking-tighter leading-[0.9] mb-6 md:mb-8">
+                  <h3 className="font-display text-[2.5rem] md:text-7xl text-primary-dark tracking-tighter leading-[0.95] mb-6 md:mb-8">
                     O problema não é <br className="hidden md:block" />
                     <span className="italic serif font-normal text-accent">apenas a agenda.</span>
                   </h3>
@@ -250,7 +250,7 @@ export default function PremiumLanding() {
             <div className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-8">
               Investimento
             </div>
-            <h3 className="font-display text-4xl md:text-8xl text-primary-dark tracking-tighter leading-[0.9]">
+            <h3 className="font-display text-[2.5rem] md:text-8xl text-primary-dark tracking-tighter leading-[0.95]">
               Planos que <br className="hidden md:block" />
               <span className="italic serif font-normal text-accent">crescem com você.</span>
             </h3>
@@ -270,7 +270,7 @@ export default function PremiumLanding() {
             <div className="inline-block px-4 py-1.5 rounded-full bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-8 border border-white/10">
               Ecossistema Cativa
             </div>
-            <h3 className="font-display text-4xl md:text-8xl text-white tracking-tighter leading-[0.9]">
+            <h3 className="font-display text-[2.5rem] md:text-8xl text-white tracking-tighter leading-[0.95]">
               Um sistema, <br className="hidden md:block" />
               <span className="italic serif font-normal text-accent">muitas possibilidades.</span>
             </h3>
@@ -373,7 +373,7 @@ export default function PremiumLanding() {
                 Pronto para o Próximo Nível?
               </div>
               
-              <h2 className="font-display text-5xl sm:text-7xl md:text-[9rem] text-white mb-16 tracking-tighter leading-[0.8] animate-fade-in">
+              <h2 className="font-display text-[2.5rem] sm:text-7xl md:text-[9rem] text-white mb-12 md:mb-16 tracking-tighter leading-[0.9] animate-fade-in">
                 Sua operação, <br />
                 <span className="italic serif font-normal text-accent relative inline-block">
                   elevada.
@@ -388,7 +388,7 @@ export default function PremiumLanding() {
               </p>
               
                <div className="flex flex-col sm:flex-row justify-center items-center gap-6 mb-24">
-                  <Button asChild size="lg" className="h-20 px-12 rounded-full bg-accent text-white text-xl font-bold shadow-[0_30px_60px_-15px_rgba(168,76,134,0.5)] hover:bg-white hover:text-primary-dark transition-all duration-700 scale-110 hover:scale-105 group relative overflow-hidden">
+                  <Button asChild size="lg" className="h-16 md:h-20 px-8 md:px-12 rounded-full bg-accent text-white text-lg md:text-xl font-bold shadow-[0_30px_60px_-15px_rgba(168,76,134,0.5)] hover:bg-white hover:text-primary-dark transition-all duration-700 md:scale-110 hover:scale-105 group relative overflow-hidden">
                      <Link to="/demo">
                        <span className="relative z-10 flex items-center gap-3">
                          Ver demonstração gratuita
@@ -398,7 +398,7 @@ export default function PremiumLanding() {
                      </Link>
                   </Button>
                   
-                  <Button asChild variant="outline" size="lg" className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border bg-background h-20 px-12 rounded-full border-white/20 text-xl hover:bg-white transition-all duration-500 text-secondary-foreground">
+                  <Button asChild variant="outline" size="lg" className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border bg-background h-16 md:h-20 px-8 md:px-12 rounded-full border-white/20 text-lg md:text-xl hover:bg-white transition-all duration-500 text-secondary-foreground">
                      <Link to="/onboarding">Começar teste de 14 dias</Link>
                   </Button>
                </div>
@@ -412,7 +412,7 @@ export default function PremiumLanding() {
                     <div key={i} className="flex flex-col items-center gap-2">
                        <div className="flex items-center gap-3 mb-1">
                           <CheckCircle2 className="h-5 w-5 text-accent" />
-                          <span className="text-xl font-bold text-white tracking-tight">{item.text}</span>
+                          <span className="text-lg md:text-xl font-bold text-white tracking-tight">{item.text}</span>
                        </div>
                        <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/30">{item.sub}</span>
                     </div>
