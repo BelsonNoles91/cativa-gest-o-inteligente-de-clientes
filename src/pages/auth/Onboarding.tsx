@@ -388,49 +388,60 @@ export default function Onboarding() {
 
       {/* Step 1 — Negócio */}
       {step === 1 && (
-        <div className="space-y-4 animate-fade-in">
-          <h1 className="text-2xl font-semibold">Vamos conhecer seu negócio</h1>
-          <p className="text-sm text-muted-foreground">Personalizamos o Cativa a partir destas informações.</p>
+        <div className="space-y-8 animate-fade-in">
+          <header className="space-y-4">
+            <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent border border-accent/20">
+              Passo 01
+            </div>
+            <h1 className="font-display text-4xl font-bold tracking-tight text-primary-dark">
+              Sobre seu negócio
+            </h1>
+            <p className="text-lg font-light leading-relaxed text-muted-foreground">
+              Personalizamos o Cativa a partir das informações do seu estabelecimento.
+            </p>
+          </header>
 
-          <div className="space-y-2">
-            <Label htmlFor="bn">Nome do estabelecimento</Label>
-            <Input id="bn" required value={bizName} onChange={(e) => setBizName(e.target.value)} className="h-11 rounded-xl" placeholder="Ex.: Studio Aurora" />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Segmento</Label>
-            <Select value={segment} onValueChange={(v) => setSegment(v as TenantSegment)}>
-              <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Selecione um segmento" /></SelectTrigger>
-              <SelectContent>
-                {(Object.keys(segmentLabels) as TenantSegment[]).map((seg) => (
-                  <SelectItem key={seg} value={seg}>{segmentLabels[seg]}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-6">
             <div className="space-y-2">
-              <Label>Fuso horário</Label>
-              <Select value={timezone} onValueChange={setTimezone}>
-                <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
-                <SelectContent>{TIMEZONES.map((tz) => <SelectItem key={tz} value={tz}>{tz}</SelectItem>)}</SelectContent>
+              <Label htmlFor="bn" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">Nome do Estabelecimento</Label>
+              <Input id="bn" required value={bizName} onChange={(e) => setBizName(e.target.value)} className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] text-base shadow-none transition-all focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/5" placeholder="Ex.: Studio Aurora" />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">Segmento Principal</Label>
+              <Select value={segment} onValueChange={(v) => setSegment(v as TenantSegment)}>
+                <SelectTrigger className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] shadow-none focus:ring-4 focus:ring-accent/5"><SelectValue placeholder="O que você faz?" /></SelectTrigger>
+                <SelectContent className="rounded-2xl border-border/40 shadow-xl">
+                  {(Object.keys(segmentLabels) as TenantSegment[]).map((seg) => (
+                    <SelectItem key={seg} value={seg} className="rounded-xl py-3 focus:bg-accent/5">{segmentLabels[seg]}</SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Moeda</Label>
-              <Select value={currency} onValueChange={setCurrency}>
-                <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
-                <SelectContent>{CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-              </Select>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">Fuso Horário</Label>
+                <Select value={timezone} onValueChange={setTimezone}>
+                  <SelectTrigger className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] shadow-none focus:ring-4 focus:ring-accent/5"><SelectValue /></SelectTrigger>
+                  <SelectContent className="rounded-2xl border-border/40 shadow-xl">{TIMEZONES.map((tz) => <SelectItem key={tz} value={tz} className="rounded-xl py-3 focus:bg-accent/5">{tz.split("/").pop()?.replace("_", " ")}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">Moeda</Label>
+                <Select value={currency} onValueChange={setCurrency}>
+                  <SelectTrigger className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] shadow-none focus:ring-4 focus:ring-accent/5"><SelectValue /></SelectTrigger>
+                  <SelectContent className="rounded-2xl border-border/40 shadow-xl">{CURRENCIES.map((c) => <SelectItem key={c} value={c} className="rounded-xl py-3 focus:bg-accent/5">{c}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
           <Button onClick={() => {
-            if (!bizName.trim() || !segment) { toast.error("Preencha nome e segmento."); return; }
+            if (!bizName.trim() || !segment) { toast.error("Preencha o nome e o segmento."); return; }
             setStep(2);
-          }} className="h-11 w-full rounded-xl bg-gradient-brand">
-            Continuar <ArrowRight className="ml-2 h-4 w-4" />
+          }} className="group h-16 w-full rounded-full bg-primary-dark text-lg font-bold text-white shadow-xl transition-all hover:bg-accent active:scale-[0.98]">
+            Continuar para Identidade <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
           </Button>
         </div>
       )}
