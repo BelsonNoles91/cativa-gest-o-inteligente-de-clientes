@@ -232,30 +232,53 @@ export default function Onboarding() {
         }
       }
 
-      // Criar profissionais e serviços rascunhados
-      for (const proName of proDrafts) {
-        await supabase.from("professionals").insert({
-          tenant_id: result.tenantId,
-          display_name: proName,
-          is_active: true
-        });
+      // Criar profissionais e serviços rascunhados em lote
+      if (proDrafts.length > 0) {
+        await supabase.from("professionals").insert(
+          proDrafts.map(proName => ({
+            tenant_id: result.tenantId,
+            display_name: proName,
+            is_active: true
+          }))
+        );
       }
 
-      for (const svc of serviceDrafts) {
-        const { data: svcData } = await supabase.from("services").insert({
-          tenant_id: result.tenantId,
-          name: svc.name,
-          duration_minutes: 30,
-          is_active: true
-        }).select("id").single();
-
-        if (svcData) {
-          await supabase.from("service_prices").insert({
+      if (serviceDrafts.length > 0) {
+        for (const svc of serviceDrafts) {
+          const { data: svcData } = await supabase.from("services").insert({
             tenant_id: result.tenantId,
-            service_id: svcData.id,
-            amount_cents: parseInt(svc.price) * 100,
-            currency: currency || 'BRL',
-            is_default: true
+            name: svc.name,
+            duration_minutes: 30,
+            is_active: true
+          }).select("id").single();
+
+          if (svcData) {
+            await supabase.from("service_prices").insert({
+              tenant_id: result.tenantId,
+              service_id: svcData.id,
+              amount_cents: Math.round(parseFloat(svc.price) * 100),
+              currency: currency || 'BRL',
+              is_default: true
+            });
+          }
+        }
+      }
+
+      // Criar agendamento de teste se houver profissional e serviço
+      if (proDrafts.length > 0 && serviceDrafts.length > 0) {
+        const { data: pros } = await supabase.from("professionals").select("id").eq("tenant_id", result.tenantId).limit(1);
+        const { data: svcs } = await supabase.from("services").select("id").eq("tenant_id", result.tenantId).limit(1);
+        
+        if (pros?.[0] && svcs?.[0]) {
+          await supabase.from("appointments").insert({
+            tenant_id: result.tenantId,
+            unit_id: result.unitId,
+            professional_id: pros[0].id,
+            service_id: svcs[0].id,
+            start_time: new Date(new Date().getTime() + 2 * 60 * 60 * 1000).toISOString(),
+            status: 'confirmed',
+            client_name: 'Cliente de Teste',
+            client_phone: '11999999999'
           });
         }
       }
