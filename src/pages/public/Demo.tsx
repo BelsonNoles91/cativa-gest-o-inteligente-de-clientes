@@ -2,7 +2,7 @@ import { PremiumSection } from "@/components/marketing/layout/PremiumSection";
 import { PremiumHeader } from "@/components/marketing/layout/PremiumHeader";
 import { PremiumFooter } from "@/components/marketing/layout/PremiumFooter";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, CheckCircle2, ArrowRight, Play, Check } from "lucide-react";
+import { Calendar, Clock, CheckCircle2, ArrowRight, Play, Check, Users, TrendingUp, Shield, Settings } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
