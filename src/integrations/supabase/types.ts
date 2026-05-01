@@ -2521,6 +2521,50 @@ export type Database = {
           },
         ]
       }
+      reactivation_campaigns: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          max_days_inactive: number | null
+          min_ltv_cents: number | null
+          name: string
+          status: string | null
+          tenant_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          max_days_inactive?: number | null
+          min_ltv_cents?: number | null
+          name: string
+          status?: string | null
+          tenant_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          max_days_inactive?: number | null
+          min_ltv_cents?: number | null
+          name?: string
+          status?: string | null
+          tenant_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reactivation_campaigns_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recurring_blocks: {
         Row: {
           created_at: string
@@ -4251,6 +4295,10 @@ export type Database = {
         Args: { _tenant_id: string }
         Returns: Json
       }
+      generate_reactivation_tasks: {
+        Args: { _tenant_id: string }
+        Returns: number
+      }
       get_available_slots: {
         Args: {
           _day: string
@@ -4356,6 +4404,15 @@ export type Database = {
           role: Database["public"]["Enums"]["app_role"]
           status: Database["public"]["Enums"]["team_invitation_status"]
           tenant_id: string
+        }[]
+      }
+      process_client_reactivation: {
+        Args: { _tenant_id: string }
+        Returns: {
+          client_id: string
+          days_inactive: number
+          estimated_ltv: number
+          full_name: string
         }[]
       }
       revoke_team_invitation: {
