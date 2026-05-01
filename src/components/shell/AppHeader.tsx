@@ -135,6 +135,7 @@ export function AppHeader() {
 
 
 
+
       </div>
 
       {/* CommandDialog de busca controlado pelo botão mobile */}
