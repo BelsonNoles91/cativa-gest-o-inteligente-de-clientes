@@ -73,6 +73,7 @@ export function AuditLogsTab({
   const [search, setSearch] = useState("");
   const [limit, setLimit] = useState<string>("50");
   const [page, setPage] = useState(0);
+  const [cursors, setCursors] = useState<Array<{ id: string; timestamp: string } | null>>([null]);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [periodPreset, setPeriodPreset] = useState<string>("all");
@@ -102,6 +103,7 @@ export function AuditLogsTab({
     try {
       const range = resolveRange();
       const currentLimit = parseInt(limit, 10);
+      const cursor = cursors[page];
       
       const { data, error } = await supabase.rpc("get_audit_logs_advanced", {
         _tenant_id: tenantFilter === "all" ? null : tenantFilter,
@@ -109,7 +111,8 @@ export function AuditLogsTab({
         _from: range.from,
         _to: range.to,
         _limit: currentLimit,
-        _offset: page * currentLimit,
+        _cursor_id: cursor?.id ?? null,
+        _cursor_timestamp: cursor?.timestamp ?? null,
         _sort_order: sortOrder
       });
 
@@ -117,7 +120,7 @@ export function AuditLogsTab({
       
       const results = (data ?? []) as AuditRow[];
       setRows(results);
-      setTotalCount(results[0]?.total_count ?? 0);
+      setTotalCount(Number(results[0]?.total_count ?? 0));
     } catch (err) {
       toast({
         title: "Erro ao carregar auditoria",
@@ -128,6 +131,11 @@ export function AuditLogsTab({
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    setPage(0);
+    setCursors([null]);
+  }, [tenantFilter, actionFilter, limit, periodPreset, fromDate, toDate, sortOrder]);
 
   useEffect(() => {
     void load();
