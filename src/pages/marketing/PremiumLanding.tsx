@@ -50,7 +50,8 @@ export default function PremiumLanding() {
     }
   ];
   return (
-    <div className="min-h-screen bg-background font-sans selection:bg-accent/30 selection:text-primary-dark">
+    <div className="min-h-screen bg-background font-sans selection:bg-accent/30 selection:text-primary-dark overflow-x-hidden">
+      <motion.div className="fixed top-0 left-0 right-0 h-1 bg-accent z-[200] origin-left" style={{ scaleX }} />
       <Navbar />
       
       <main>
