@@ -28,26 +28,26 @@ export function HeroSection() {
           </div>
 
           <h1 className="font-display text-6xl md:text-8xl xl:text-[7.5rem] leading-[0.9] tracking-[-0.03em] text-primary-dark mb-10 animate-fade-in delay-100">
-            Design que <br />
+            Pare de apenas <br />
             <span className="relative inline-block">
-              converte
+              agendar
               <svg className="absolute -bottom-2 left-0 w-full h-3 text-accent/30 -z-10" viewBox="0 0 300 12" fill="none">
                 <path d="M1 10.5C50 4 150 1 299 10.5" stroke="currentColor" strokeWidth="6" strokeLinecap="round"/>
               </svg>
             </span>
             <br />
-            em <span className="italic font-normal serif">lealdade</span>.
+            e comece a <span className="italic font-normal serif">lucrar</span>.
           </h1>
 
           <p className="text-xl md:text-2xl text-muted-foreground/80 leading-relaxed max-w-xl mb-12 animate-fade-in delay-200 font-light">
-            A Cativa não é apenas uma agenda. É a <span className="text-primary-dark font-medium">arquitetura operacional</span> das clínicas e estúdios mais desejados do país.
+            A Cativa automatiza sua recepção e recupera clientes inativos, transformando sua agenda em uma <span className="text-primary-dark font-medium">máquina de faturamento previsível</span>.
           </p>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-6 mb-16 animate-fade-in delay-300">
             <Button asChild size="lg" className="h-18 px-10 rounded-none bg-primary-dark text-lg shadow-2xl shadow-primary/20 group relative overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98]">
               <Link to="/onboarding">
                 <span className="relative z-10 flex items-center gap-2">
-                  Agendar Demonstração
+                  Testar Grátis por 14 Dias
                   <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </span>
                 <div className="absolute inset-0 bg-accent translate-y-full transition-transform group-hover:translate-y-0" />
