@@ -11,6 +11,7 @@ const NAV_LINKS = [
   { label: "Módulos", href: "#modulos" },
   { label: "Diferenciais", href: "#diferenciais" },
   { label: "Planos", href: "/planos" },
+  { label: "Demonstração", href: "/demo" },
 ];
 
 export function PremiumHeader() {
