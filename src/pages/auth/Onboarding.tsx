@@ -487,63 +487,83 @@ export default function Onboarding() {
         </div>
       )}
 
-      {/* Step 2 — Branding + unidade */}
+      {/* Step 2 — Equipe & Serviços */}
       {step === 2 && (
         <div className="space-y-8 animate-fade-in">
-          <header className="space-y-4">
+          <header className="space-y-4 text-center">
             <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent border border-accent/20">
               Passo 02
             </div>
-            <h1 className="font-display text-4xl font-bold tracking-tight text-primary-dark">
-              Identidade & Unidade
+            <h1 className="font-display text-3xl font-bold tracking-tight text-primary-dark">
+              Equipe & Serviços
             </h1>
             <p className="text-lg font-light leading-relaxed text-muted-foreground">
-              Escolha suas cores e cadastre a unidade principal do seu negócio.
+              Vamos cadastrar os primeiros profissionais e serviços para sua agenda.
             </p>
           </header>
 
-          <div className="space-y-6">
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { v: brandPrimary, set: setBrandPrimary, l: "Primária" },
-                { v: brandSecondary, set: setBrandSecondary, l: "Secundária" },
-                { v: brandAccent, set: setBrandAccent, l: "Acento" },
-              ].map((c) => (
-                <div key={c.l} className="space-y-2">
-                  <Label className="text-[10px] font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">{c.l}</Label>
-                  <div className="flex items-center gap-2 rounded-2xl border border-border/40 bg-[#FAF7F9] px-2 h-14">
-                    <input type="color" value={c.v} onChange={(e) => c.set(e.target.value)} className="h-8 w-8 cursor-pointer rounded-lg border-none bg-transparent" />
-                    <Input value={c.v} onChange={(e) => c.set(e.target.value)} className="h-9 border-0 px-1 text-xs shadow-none focus-visible:ring-0 bg-transparent font-mono" />
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="surface-card p-5 space-y-4">
+              <h3 className="flex items-center gap-2 font-display text-lg font-semibold">
+                <UserPlus className="h-5 w-5 text-primary" /> Equipe
+              </h3>
+              <div className="flex gap-2">
+                <Input 
+                  id="pro-input" 
+                  placeholder="Nome do profissional" 
+                  className="rounded-xl h-11" 
+                  onKeyDown={(e) => { if (e.key === 'Enter') { addProDraft((e.target as any).value); (e.target as any).value = ''; } }}
+                />
+                <Button variant="outline" size="icon" onClick={() => { 
+                  const el = document.getElementById('pro-input') as HTMLInputElement;
+                  addProDraft(el.value);
+                  el.value = '';
+                }}>
+                  <PlusCircle className="h-4 w-4" />
+                </Button>
+              </div>
+              <ul className="space-y-2">
+                {proDrafts.map(pro => (
+                  <li key={pro} className="flex justify-between items-center bg-muted/30 px-3 py-2 rounded-lg text-sm">
+                    {pro}
+                    <button onClick={() => setProDrafts(curr => curr.filter(p => p !== pro))}><Trash2 className="h-3.5 w-3.5 text-muted-foreground" /></button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="surface-card p-5 space-y-4">
+              <h3 className="flex items-center gap-2 font-display text-lg font-semibold">
+                <Scissors className="h-5 w-5 text-primary" /> Serviços
+              </h3>
+              <div className="space-y-2">
+                <Input id="svc-name" placeholder="Ex.: Corte Masculino" className="rounded-xl h-11" />
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input id="svc-price" placeholder="Preço" className="rounded-xl h-11 pl-9" type="number" />
                   </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="un" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">Nome da Unidade Principal</Label>
-              <Input id="un" value={unitName} onChange={(e) => setUnitName(e.target.value)} className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] text-base shadow-none transition-all focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/5" placeholder="Ex.: Unidade Matriz" />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="up" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">Telefone de Contato</Label>
-                <div className="relative group">
-                  <Phone className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground group-focus-within:text-accent" />
-                  <Input id="up" value={unitPhone} onChange={(e) => setUnitPhone(e.target.value)} className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] pl-12 text-base shadow-none transition-all focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/5" placeholder="(11) 9999-9999" />
+                  <Button variant="outline" onClick={() => {
+                    const n = document.getElementById('svc-name') as HTMLInputElement;
+                    const p = document.getElementById('svc-price') as HTMLInputElement;
+                    addServiceDraft(n.value, p.value);
+                    n.value = ''; p.value = '';
+                  }}>Add</Button>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="wp" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">WhatsApp Business</Label>
-                <div className="relative group">
-                  <Phone className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground group-focus-within:text-accent" />
-                  <Input id="wp" value={whatsappPhone} onChange={(e) => setWhatsappPhone(e.target.value)} className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] pl-12 text-base shadow-none transition-all focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/5" placeholder="(11) 99999-9999" />
-                </div>
-              </div>
+              <ul className="space-y-2">
+                {serviceDrafts.map(svc => (
+                  <li key={svc.name} className="flex justify-between items-center bg-muted/30 px-3 py-2 rounded-lg text-sm">
+                    <span>{svc.name} · R$ {svc.price}</span>
+                    <button onClick={() => setServiceDrafts(curr => curr.filter(s => s.name !== svc.name))}><Trash2 className="h-3.5 w-3.5 text-muted-foreground" /></button>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
 
           <div className="flex gap-4 pt-4">
-            <Button variant="outline" onClick={() => setStep(1)} className="h-16 flex-1 rounded-full border-2 border-primary-dark/10 font-bold text-primary-dark hover:border-accent hover:text-accent">Voltar</Button>
+            <Button variant="outline" onClick={() => setStep(1)} className="h-16 flex-1 rounded-full border-2 border-primary-dark/10 font-bold text-primary-dark">Voltar</Button>
             <Button onClick={() => setStep(3)} className="h-16 flex-1 rounded-full bg-primary-dark font-bold text-white shadow-xl hover:bg-accent transition-all">Continuar</Button>
           </div>
         </div>
