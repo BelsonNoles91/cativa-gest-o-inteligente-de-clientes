@@ -96,7 +96,7 @@ export function HeroSection() {
             </div>
             
             <div className="flex flex-col gap-2">
-              <Button asChild variant="outline" size="lg" className="h-16 px-8 rounded-full border-primary-dark/20 hover:bg-secondary/10" aria-label="Agendar demonstração personalizada">
+              <Button asChild variant="outline" size="lg" className="h-16 px-8 rounded-full border-primary-dark/20 bg-primary text-primary-dark hover:text-white hover:border-primary-dark" aria-label="Agendar demonstração personalizada">
                 <Link to="/demo">Agendar demonstração</Link>
               </Button>
               <span className="text-[10px] text-muted-foreground font-medium text-center lg:text-left px-2">Veja a Cativa aplicada ao seu tipo de negócio.</span>
