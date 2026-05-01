@@ -14,7 +14,9 @@ import {
   AlarmClock,
   Stethoscope,
   Hourglass,
+  Search,
 } from "lucide-react";
+
 import { PageHeader } from "@/components/shell/PageHeader";
 import { PageActionCluster, PrimaryAction } from "@/components/shell/PageActionCluster";
 import { EmptyState } from "@/components/feedback/EmptyState";
@@ -153,6 +155,8 @@ export default function AgendaPage() {
   const [professionalFilter, setProfessionalFilter] = useState("all");
   const [resourceFilter, setResourceFilter] = useState("all");
   const [refreshToken, setRefreshToken] = useState(0);
+  const [quickSearch, setQuickSearch] = useState("");
+
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -315,13 +319,23 @@ export default function AgendaPage() {
     return { total, confirmed, arrived, completed };
   }, [appointments, groupMode, resourceFilter]);
 
-  const visibleAppointments = useMemo(
-    () =>
-      groupMode === "resource" && resourceFilter !== "all"
-        ? appointments.filter((item) => (item.appointment.resourceId ?? "__none__") === resourceFilter)
-        : appointments,
-    [appointments, groupMode, resourceFilter],
-  );
+  const visibleAppointments = useMemo(() => {
+    let result = appointments;
+    if (groupMode === "resource" && resourceFilter !== "all") {
+      result = result.filter((item) => (item.appointment.resourceId ?? "__none__") === resourceFilter);
+    }
+    
+    if (quickSearch.trim()) {
+      const s = quickSearch.toLowerCase();
+      result = result.filter(item => 
+        item.clientName?.toLowerCase().includes(s) || 
+        item.serviceName?.toLowerCase().includes(s) || 
+        item.professionalName?.toLowerCase().includes(s)
+      );
+    }
+    
+    return result;
+  }, [appointments, groupMode, resourceFilter, quickSearch]);
 
   const groupedAppointments = useMemo(() => {
     const groups = new Map<string, HydratedAppointment[]>();
@@ -647,6 +661,19 @@ export default function AgendaPage() {
           icon={<Hourglass className="h-5 w-5" />}
         />
       </div>
+      <Card className="mb-6">
+        <CardContent className="pt-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input 
+              placeholder="Busca rápida: cliente, serviço ou profissional..." 
+              className="pl-9 h-11 rounded-xl bg-muted/30 border-border/60"
+              value={quickSearch}
+              onChange={(e) => setQuickSearch(e.target.value)}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardContent className="pt-6">

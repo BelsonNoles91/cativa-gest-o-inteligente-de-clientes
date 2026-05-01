@@ -2,10 +2,11 @@
  * QueueItemCard — cartão de um item da fila de confirmação.
  * Exibe cliente, agendamento e ações rápidas (abrir contato).
  */
-import { Phone, MessageCircle, Mail, Clock, CalendarClock, AlertTriangle, Crown, ExternalLink, CheckCircle2 } from "lucide-react";
+import { Phone, MessageCircle, Mail, Clock, CalendarClock, AlertTriangle, Crown, ExternalLink, CheckCircle2, CheckSquare, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
+import { cn } from "@/lib/utils";
 import {
   queueStatusLabels,
   queueStatusTone,
@@ -21,10 +22,16 @@ const toneMap = {
   muted: "neutral",
 } as const;
 
+interface SelectionContext {
+  selectedIds: Set<string>;
+  toggleSelection: (id: string) => void;
+}
+
 interface QueueItemCardProps {
   item: QueueItemHydrated;
   onOpen: (item: QueueItemHydrated) => void;
   onConfirmQuick?: (item: QueueItemHydrated) => void;
+  selection?: SelectionContext;
 }
 
 function formatStarts(iso: string): { date: string; time: string; relative: string } {
@@ -43,9 +50,15 @@ function formatStarts(iso: string): { date: string; time: string; relative: stri
   };
 }
 
-export function QueueItemCard({ item, onOpen, onConfirmQuick }: QueueItemCardProps) {
+export function QueueItemCard({ 
+  item, 
+  onOpen, 
+  onConfirmQuick, 
+  selection 
+}: QueueItemCardProps) {
   const t = formatStarts(item.appointmentStartsAt);
   const tone = toneMap[queueStatusTone(item.status)];
+  const isSelected = selection?.selectedIds.has(item.id);
 
   const phoneDigits = item.clientWhatsapp ? item.clientWhatsapp.replace(/\D/g, "") : null;
 
@@ -53,35 +66,49 @@ export function QueueItemCard({ item, onOpen, onConfirmQuick }: QueueItemCardPro
     <Card
       role="button"
       tabIndex={0}
-      onClick={() => onOpen(item)}
+      onClick={() => selection ? selection.toggleSelection(item.id) : onOpen(item)}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          onOpen(item);
+          selection ? selection.toggleSelection(item.id) : onOpen(item);
         }
       }}
-      className="cursor-pointer p-4 transition hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className={cn(
+        "cursor-pointer p-4 transition hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        isSelected && "border-primary bg-primary/5 ring-1 ring-primary"
+      )}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="truncate text-base font-semibold text-foreground">
-              {item.clientName}
-            </h3>
-            {item.clientIsVip && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2 py-0.5 text-xs font-medium text-primary">
-                <Crown className="h-3 w-3" /> VIP
-              </span>
-            )}
-            {item.clientRiskLevel === "high" && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-destructive/15 px-2 py-0.5 text-xs font-medium text-destructive">
-                <AlertTriangle className="h-3 w-3" /> Alto risco
-              </span>
-            )}
+        <div className="flex items-start gap-3 min-w-0 flex-1">
+          {selection && (
+            <div className="mt-1 shrink-0">
+              {isSelected ? (
+                <CheckSquare className="h-5 w-5 text-primary" />
+              ) : (
+                <Square className="h-5 w-5 text-muted-foreground/40" />
+              )}
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="truncate text-base font-semibold text-foreground">
+                {item.clientName}
+              </h3>
+              {item.clientIsVip && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2 py-0.5 text-xs font-medium text-primary">
+                  <Crown className="h-3 w-3" /> VIP
+                </span>
+              )}
+              {item.clientRiskLevel === "high" && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-destructive/15 px-2 py-0.5 text-xs font-medium text-destructive">
+                  <AlertTriangle className="h-3 w-3" /> Alto risco
+                </span>
+              )}
+            </div>
+            <p className="mt-0.5 truncate text-sm text-muted-foreground">
+              {item.serviceName ?? "Serviço"} • {item.professionalName ?? "Sem profissional"}
+            </p>
           </div>
-          <p className="mt-0.5 truncate text-sm text-muted-foreground">
-            {item.serviceName ?? "Serviço"} • {item.professionalName ?? "Sem profissional"}
-          </p>
         </div>
         <div className="text-right">
           <StatusBadge tone={tone}>{queueStatusLabels[item.status]}</StatusBadge>
@@ -106,19 +133,21 @@ export function QueueItemCard({ item, onOpen, onConfirmQuick }: QueueItemCardPro
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        <Button
-          size="sm"
-          variant="secondary"
-          className="flex-1 rounded-xl h-10 md:flex-none"
-          onClick={(e) => {
-            e.stopPropagation();
-            onOpen(item);
-          }}
-        >
-          <MessageCircle className="mr-1.5 h-4 w-4" /> Ações
-        </Button>
+        {!selection && (
+          <Button
+            size="sm"
+            variant="secondary"
+            className="flex-1 rounded-xl h-10 md:flex-none"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpen(item);
+            }}
+          >
+            <MessageCircle className="mr-1.5 h-4 w-4" /> Ações
+          </Button>
+        )}
         
-        {phoneDigits && (
+        {phoneDigits && !selection && (
           <Button
             size="sm"
             variant="outline"
@@ -132,7 +161,7 @@ export function QueueItemCard({ item, onOpen, onConfirmQuick }: QueueItemCardPro
           </Button>
         )}
 
-        {onConfirmQuick && (
+        {onConfirmQuick && !selection && (
           <Button
             size="sm"
             variant="default"
@@ -145,8 +174,13 @@ export function QueueItemCard({ item, onOpen, onConfirmQuick }: QueueItemCardPro
             <CheckCircle2 className="mr-1.5 h-4 w-4" /> Confirmar
           </Button>
         )}
+        
+        {selection && (
+          <p className="text-xs text-muted-foreground italic">
+            {isSelected ? "Item selecionado para ação em lote" : "Toque para selecionar"}
+          </p>
+        )}
       </div>
     </Card>
   );
 }
-

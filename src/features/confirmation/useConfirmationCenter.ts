@@ -46,6 +46,9 @@ export function useConfirmationCenter() {
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
 
+  // Seleção múltipla para ações em lote
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
   const tenantId = currentTenant?.id ?? null;
 
   const refresh = useCallback(async () => {
@@ -60,6 +63,8 @@ export function useConfirmationCenter() {
       setItems(list);
       setCounts((prev) => ({ ...prev, ...c }));
       setTemplates(tmpls);
+      // Limpa seleção ao trocar de etapa ou atualizar
+      setSelectedIds(new Set());
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Erro ao carregar fila";
       toast({ title: "Erro", description: msg, variant: "destructive" });
@@ -89,6 +94,39 @@ export function useConfirmationCenter() {
       setGenerating(false);
     }
   }, [tenantId, refresh, toast]);
+
+  const toggleSelection = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const selectAll = useCallback(() => {
+    setSelectedIds(new Set(items.map((i) => i.id)));
+  }, [items]);
+
+  const clearSelection = useCallback(() => {
+    setSelectedIds(new Set());
+  }, []);
+
+  const setBatchStatus = useCallback(async (status: ConfirmationQueueStatus) => {
+    if (selectedIds.size === 0) return;
+    setLoading(true);
+    try {
+      await Promise.all(
+        Array.from(selectedIds).map((id) => updateQueueStatus(id, status))
+      );
+      toast({ title: `${selectedIds.size} itens atualizados com sucesso` });
+      await refresh();
+    } catch (e) {
+      toast({ title: "Erro ao atualizar lote", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedIds, refresh, toast]);
 
   const logAttempt = useCallback(
     async (input: {
@@ -198,6 +236,11 @@ export function useConfirmationCenter() {
     loading,
     generating,
     totalOpen,
+    selectedIds,
+    toggleSelection,
+    selectAll,
+    clearSelection,
+    setBatchStatus,
     refresh,
     generate,
     logAttempt,
@@ -205,3 +248,4 @@ export function useConfirmationCenter() {
     setItemStatus,
   };
 }
+
