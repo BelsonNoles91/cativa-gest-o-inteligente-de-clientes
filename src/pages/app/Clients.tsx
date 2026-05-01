@@ -1067,8 +1067,8 @@ export default function ClientsPage() {
                         </CardContent>
                       </Card>
                     </div>
-                    </div>
-                  </Card>
+                  </div>
+                </TabsContent>
 
                   <Card>
                     <CardHeader>
