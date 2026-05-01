@@ -21,16 +21,22 @@ export default function PremiumLanding() {
       <main>
         <HeroSection />
 
-        {/* Brand Bar - Editorial Style */}
-        <div className="bg-white border-y border-border/40 py-16 overflow-hidden">
+        {/* Trust/Benefits Bar - Premium & Realistic */}
+        <div className="bg-white border-y border-border/40 py-12 overflow-hidden">
           <div className="container mx-auto px-6">
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-center text-muted-foreground/60 mb-12">Empoderando marcas que ditam o padrão do mercado</p>
-            <div className="flex flex-wrap justify-center md:justify-between items-center gap-12 opacity-30 grayscale hover:grayscale-0 transition-all duration-700">
-               <span className="text-2xl font-display font-black tracking-tighter">ESTÉTICA HUB</span>
-               <span className="text-2xl font-display font-black tracking-tighter">BEAUTY TECH</span>
-               <span className="text-2xl font-display font-black tracking-tighter">SPA RELAX</span>
-               <span className="text-2xl font-display font-black tracking-tighter">LUXE SALON</span>
-               <span className="text-2xl font-display font-black tracking-tighter">WELLNESS PRO</span>
+            <div className="flex flex-wrap justify-center lg:justify-between items-center gap-8 md:gap-16">
+               {[
+                 { label: "MOBILE-FIRST", desc: "Gestão na palma da mão" },
+                 { label: "MULTIUNIDADE", desc: "Controle centralizado" },
+                 { label: "PERSONALIZÁVEL", desc: "Adaptado ao seu fluxo" },
+                 { label: "ARQUITETURA ROBUSTA", desc: "Segurança de dados" },
+                 { label: "FOCO EM RETENÇÃO", desc: "LTV como prioridade" }
+               ].map((item, i) => (
+                 <div key={i} className="flex flex-col items-center lg:items-start group">
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary-dark/40 group-hover:text-accent transition-colors mb-1">{item.label}</span>
+                    <span className="text-[10px] font-medium text-muted-foreground/60">{item.desc}</span>
+                 </div>
+               ))}
             </div>
           </div>
         </div>
