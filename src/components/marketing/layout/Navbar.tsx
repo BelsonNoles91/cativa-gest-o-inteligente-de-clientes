@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Menu, X, ArrowRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -65,36 +66,42 @@ export function Navbar() {
         </button>
       </div>
 
-      {/* Mobile Menu */}
-      <div className={cn(
-        "fixed inset-0 bg-white z-[110] p-12 flex flex-col transition-all duration-700 ease-in-out lg:hidden",
-        mobileMenuOpen ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
-      )}>
-        <div className="flex justify-between items-center mb-24">
-          <span className="text-2xl font-display font-black tracking-tighter text-primary-dark">CATIVA.</span>
-          <button onClick={() => setMobileMenuOpen(false)} className="w-12 h-12 flex items-center justify-center">
-            <X className="h-8 w-8" />
-          </button>
-        </div>
-        
-        <div className="flex flex-col gap-12">
-          <a href="#funcionalidades" className="text-4xl font-display font-bold text-primary-dark" onClick={() => setMobileMenuOpen(false)}>Funcionalidades</a>
-          <a href="#modulos" className="text-4xl font-display font-bold text-primary-dark" onClick={() => setMobileMenuOpen(false)}>Módulos</a>
-          <a href="#planos" className="text-4xl font-display font-bold text-primary-dark" onClick={() => setMobileMenuOpen(false)}>Planos</a>
-        </div>
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div 
+            initial={{ y: "-100%", opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: "-100%", opacity: 0 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed inset-0 bg-white z-[110] p-12 flex flex-col lg:hidden"
+          >
+            <div className="flex justify-between items-center mb-24">
+              <span className="text-2xl font-display font-black tracking-tighter text-primary-dark">CATIVA.</span>
+              <button onClick={() => setMobileMenuOpen(false)} className="w-12 h-12 flex items-center justify-center">
+                <X className="h-8 w-8" />
+              </button>
+            </div>
+            
+            <div className="flex flex-col gap-12">
+              <a href="#funcionalidades" className="text-4xl font-display font-bold text-primary-dark" onClick={() => setMobileMenuOpen(false)}>Funcionalidades</a>
+              <a href="#modulos" className="text-4xl font-display font-bold text-primary-dark" onClick={() => setMobileMenuOpen(false)}>Módulos</a>
+              <a href="#planos" className="text-4xl font-display font-bold text-primary-dark" onClick={() => setMobileMenuOpen(false)}>Planos</a>
+            </div>
 
-        <div className="mt-auto space-y-6">
-           <Button asChild size="lg" className="w-full h-16 rounded-2xl bg-accent text-xl">
-              <Link to="/onboarding">Começar Teste</Link>
-           </Button>
-           <Button asChild size="lg" variant="outline" className="w-full h-16 rounded-2xl text-xl">
-              <Link to="/demo">Agendar Demonstração</Link>
-           </Button>
-           <Button variant="ghost" asChild size="lg" className="w-full h-16 rounded-2xl text-xl">
-              <Link to="/auth/login">Entrar</Link>
-           </Button>
-        </div>
-      </div>
+            <div className="mt-auto space-y-6">
+               <Button asChild size="lg" className="w-full h-16 rounded-2xl bg-accent text-xl">
+                  <Link to="/onboarding">Começar Agora</Link>
+               </Button>
+               <Button asChild size="lg" variant="outline" className="w-full h-16 rounded-2xl text-xl">
+                  <Link to="/demo">Agendar Demonstração</Link>
+               </Button>
+               <Button variant="ghost" asChild size="lg" className="w-full h-16 rounded-2xl text-xl">
+                  <Link to="/auth/login">Entrar</Link>
+               </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 }

@@ -1,5 +1,6 @@
 import { PremiumSection } from "../layout/PremiumSection";
 import { TrendingUp, Users, CalendarX, Clock, UserPlus, DollarSign, Activity } from "lucide-react";
+import { motion } from "framer-motion";
 
 const metrics = [
   {
@@ -70,17 +71,25 @@ export function MetricsSection() {
         <div className="lg:col-span-7 px-4 md:px-0">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
             {metrics.map((metric, idx) => (
-              <div key={idx} className="group p-8 md:p-10 bg-white border border-border/20 rounded-[2rem] md:rounded-[2.5rem] transition-all duration-500 hover:border-accent/40 hover:shadow-xl">
-                <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-[#FAF7F9] flex items-center justify-center text-primary-dark mb-6 md:mb-8 transition-transform group-hover:scale-110 group-hover:rotate-3 border border-border/10">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: idx * 0.05 }}
+                key={idx} className="group p-8 md:p-10 bg-white border border-border/20 rounded-[2rem] md:rounded-[2.5rem] transition-all duration-500 hover:border-accent/40 hover:shadow-xl"
+              >
+                <motion.div 
+                  whileHover={{ rotate: 5, scale: 1.1 }}
+                  className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-[#FAF7F9] flex items-center justify-center text-primary-dark mb-6 md:mb-8 transition-transform border border-border/10"
+                >
                   <metric.icon className="h-5 w-5 md:h-6 md:w-6" />
-                </div>
+                </motion.div>
                 <h4 className="text-lg md:text-xl font-bold text-primary-dark mb-4 tracking-tight group-hover:text-accent transition-colors">
                   {metric.title}
                 </h4>
                 <p className="text-muted-foreground leading-relaxed font-light text-sm md:text-base">
                   {metric.desc}
                 </p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>

@@ -3,6 +3,7 @@ import { ArrowRight, Star, Clock, Calendar, Users, TrendingUp, MousePointer2 } f
 import { Button } from "@/components/ui/button";
 import { PremiumSection } from "../layout/PremiumSection";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 export function HeroSection() {
   return (
@@ -20,30 +21,54 @@ export function HeroSection() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 xl:gap-24 items-center">
-        {/* Lado do Conteúdo */}
-        <div className="relative z-10 px-4 md:px-0 text-center lg:text-left">
-          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white border border-secondary shadow-sm mb-8 animate-fade-in group cursor-default">
+        <motion.div 
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="relative z-10 px-4 md:px-0 text-center lg:text-left"
+        >
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white border border-secondary shadow-sm mb-8 group cursor-default"
+          >
             <span className="flex h-2 w-2 rounded-full bg-accent animate-pulse" />
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Gestão Inteligente para Estética e Beleza</span>
-          </div>
+          </motion.div>
 
-          <h1 className="font-display text-4xl sm:text-6xl md:text-7xl xl:text-[7rem] leading-[0.9] tracking-tight text-primary-dark mb-8 animate-fade-in delay-100 relative">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="font-display text-4xl sm:text-6xl md:text-7xl xl:text-[7rem] leading-[0.9] tracking-tight text-primary-dark mb-8 relative"
+          >
             <span className="relative z-10">A inteligência <br className="hidden sm:block" />
             <span className="relative inline-block">
               que fideliza
-              <svg className="absolute -bottom-1 sm:-bottom-2 left-0 w-full h-2 sm:h-3 text-accent/30 -z-10" viewBox="0 0 300 12" fill="none">
+              <motion.svg 
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 1 }}
+                transition={{ duration: 1, delay: 1 }}
+                className="absolute -bottom-1 sm:-bottom-2 left-0 w-full h-2 sm:h-3 text-accent/30 -z-10" viewBox="0 0 300 12" fill="none"
+              >
                 <path d="M1 10.5C50 4 150 1 299 10.5" stroke="currentColor" strokeWidth="6" strokeLinecap="round"/>
-              </svg>
+              </motion.svg>
             </span>
             <br className="hidden sm:block" />
             {" "}e faz <span className="italic font-normal serif text-accent">prosperar.</span></span>
-          </h1>
+          </motion.h1>
 
-          <p className="text-lg md:text-xl text-muted-foreground/80 leading-relaxed max-w-xl mx-auto lg:mx-0 mb-10 animate-fade-in delay-200 font-light">
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="text-lg md:text-xl text-muted-foreground/80 leading-relaxed max-w-xl mx-auto lg:mx-0 mb-10 font-light"
+          >
             A Cativa centraliza clientes, agendamentos, confirmações e relatórios em um único sistema pensado para quem quer crescer com organização e <span className="text-primary-dark font-medium">fazer o cliente voltar sempre.</span>
-          </p>
+          </motion.p>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-4 mb-6 animate-fade-in delay-300">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-4 mb-6">
             <Button asChild size="lg" className="h-16 px-10 rounded-full bg-primary-dark text-lg shadow-2xl shadow-primary/20 group relative overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98]">
               <Link to="/demo">
                 <span className="relative z-10 flex items-center gap-2">
@@ -59,12 +84,10 @@ export function HeroSection() {
             </Button>
           </div>
 
-          <div className="flex items-center justify-center lg:justify-start gap-2 mb-10 animate-fade-in delay-350 px-2">
+          <div className="flex items-center justify-center lg:justify-start gap-2 mb-10 px-2">
              <div className="flex -space-x-2">
                 {[1,2,3].map(i => (
-                  <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-secondary flex items-center justify-center overflow-hidden">
-                    <img src={`https://i.pravatar.cc/100?u=${i}`} alt="usuário" className="w-full h-full object-cover" />
-                  </div>
+                  <img key={i} src={`https://i.pravatar.cc/100?u=${i}`} alt="usuário" className="w-6 h-6 rounded-full border-2 border-white object-cover" />
                 ))}
              </div>
              <p className="text-[10px] font-medium text-muted-foreground tracking-tight">
@@ -72,7 +95,7 @@ export function HeroSection() {
              </p>
           </div>
 
-          <div className="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-3 mb-12 animate-fade-in delay-400">
+          <div className="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-3 mb-12">
             {["Tudo em um só lugar", "Funciona no celular", "Fácil de usar"].map((item, i) => (
               <div key={i} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary-dark/40">
                 <div className="w-1.5 h-1.5 rounded-full bg-accent" />
@@ -80,13 +103,20 @@ export function HeroSection() {
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
-        {/* Lado Visual - Painel de Demonstração */}
-        <div className="relative animate-scale-in delay-200 perspective-1000 px-4 md:px-0">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          className="relative perspective-1000 px-4 md:px-0"
+        >
           <div className="relative z-20 group">
              {/* Janela Principal do Aplicativo */}
-             <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(75,36,61,0.2)] border border-white/50 p-2 md:p-3 transition-all duration-1000 group-hover:rotate-x-2 group-hover:rotate-y-[-1deg] group-hover:translate-y-[-5px]">
+             <motion.div 
+               whileHover={{ rotateX: 2, rotateY: -1, y: -5 }}
+               className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(75,36,61,0.2)] border border-white/50 p-2 md:p-3 transition-all duration-700"
+             >
                 <div className="bg-[#FAF7F9] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden border border-border/20 aspect-[16/11] md:aspect-[16/10] relative group/mockup">
                    {/* Interface do Sistema */}
                    <div className="h-12 md:h-14 border-b border-border/40 bg-white/80 backdrop-blur-md px-4 md:px-6 flex items-center justify-between">
@@ -111,7 +141,12 @@ export function HeroSection() {
                            { label: "Agendas", val: "142", icon: Calendar, color: "text-blue-500 bg-blue-500/10" },
                            { label: "Clientes", val: "24", icon: Users, color: "text-accent bg-accent/10" }
                          ].map((stat, i) => (
-                           <div key={i} className="bg-white rounded-xl md:rounded-2xl border border-border/40 p-3 md:p-5 shadow-sm">
+                           <motion.div 
+                             initial={{ opacity: 0, y: 10 }}
+                             whileInView={{ opacity: 1, y: 0 }}
+                             transition={{ delay: 0.5 + (i * 0.1) }}
+                             key={i} className="bg-white rounded-xl md:rounded-2xl border border-border/40 p-3 md:p-5 shadow-sm"
+                           >
                               <div className="flex items-center justify-between mb-2">
                                  <span className="text-[8px] md:text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{stat.label}</span>
                                  <div className={cn("w-5 h-5 md:w-6 md:h-6 rounded-lg flex items-center justify-center", stat.color)}>
@@ -119,11 +154,16 @@ export function HeroSection() {
                                  </div>
                               </div>
                               <div className="text-sm md:text-xl font-display font-bold text-primary-dark">{stat.val}</div>
-                           </div>
+                           </motion.div>
                          ))}
                       </div>
                       
-                      <div className="bg-white rounded-[1.5rem] md:rounded-[2rem] border border-border/40 p-4 md:p-6 shadow-sm relative overflow-hidden">
+                      <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.8 }}
+                        className="bg-white rounded-[1.5rem] md:rounded-[2rem] border border-border/40 p-4 md:p-6 shadow-sm relative overflow-hidden"
+                      >
                          <div className="flex justify-between items-center mb-4 md:mb-6">
                             <div className="flex items-center gap-2">
                                <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-accent animate-pulse" />
@@ -154,13 +194,18 @@ export function HeroSection() {
                               </div>
                             ))}
                          </div>
-                      </div>
+                      </motion.div>
                    </div>
                 </div>
-             </div>
+             </motion.div>
 
              {/* Badge Flutuante de Estatística */}
-             <div className="absolute -top-12 -right-4 md:-right-8 bg-white/95 backdrop-blur-xl rounded-2xl md:rounded-[2.5rem] shadow-xl p-4 md:p-8 border border-white/50 max-w-[180px] md:max-w-[260px] transform rotate-3 hidden sm:block z-40">
+             <motion.div 
+               initial={{ opacity: 0, x: 20, rotate: 10 }}
+               whileInView={{ opacity: 1, x: 0, rotate: 3 }}
+               transition={{ duration: 1, delay: 1 }}
+               className="absolute -top-12 -right-4 md:-right-8 bg-white/95 backdrop-blur-xl rounded-2xl md:rounded-[2.5rem] shadow-xl p-4 md:p-8 border border-white/50 max-w-[180px] md:max-w-[260px] hidden sm:block z-40"
+             >
                 <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
                   <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
                     <TrendingUp className="h-3 w-3 md:h-4 md:w-4 text-emerald-600" />
@@ -172,15 +217,20 @@ export function HeroSection() {
                    <span className="text-[8px] md:text-[10px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 md:px-2 py-0.5 rounded-full">+6%</span>
                 </div>
                 <div className="w-full h-1 bg-secondary/20 rounded-full overflow-hidden mb-4 md:mb-6">
-                   <div className="w-[94%] h-full bg-accent" />
+                   <motion.div 
+                     initial={{ width: 0 }}
+                     whileInView={{ width: "94%" }}
+                     transition={{ duration: 1.5, delay: 1.5 }}
+                     className="h-full bg-accent" 
+                   />
                 </div>
                 <p className="text-[9px] md:text-[11px] text-muted-foreground/80 leading-relaxed font-light">"A Cativa reduziu nossas faltas em 40% no primeiro mês."</p>
-             </div>
+             </motion.div>
           </div>
 
           {/* Brilho de Fundo Decoraivo */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] bg-accent/5 blur-[100px] rounded-full -z-10" />
-        </div>
+        </motion.div>
       </div>
     </PremiumSection>
   );

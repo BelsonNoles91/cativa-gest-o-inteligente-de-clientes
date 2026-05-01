@@ -1,5 +1,6 @@
 import { PremiumSection } from "../layout/PremiumSection";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 const steps = [
   {
@@ -32,7 +33,12 @@ const steps = [
 export function ProcessSection() {
   return (
     <PremiumSection variant="dark" padding="lg" id="processo">
-      <div className="max-w-4xl mx-auto text-center mb-24">
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="max-w-4xl mx-auto text-center mb-24"
+      >
         <div className="inline-block px-4 py-1.5 rounded-full bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-8 border border-white/10">
           Como Funciona
         </div>
@@ -40,16 +46,27 @@ export function ProcessSection() {
           Entenda em minutos como a <br />
           <span className="text-accent italic serif font-normal">Cativa funciona no dia a dia.</span>
         </h2>
-      </div>
+      </motion.div>
 
-      <div className="grid lg:grid-cols-5 gap-8 max-w-7xl mx-auto">
+      <div className="grid lg:grid-cols-5 gap-8 max-w-7xl mx-auto px-4 md:px-0">
         {steps.map((step, idx) => (
-          <div key={idx} className="relative group">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: idx * 0.1 }}
+            key={idx} className="relative group"
+          >
             <div className="mb-10 text-8xl font-display font-bold text-white/5 transition-all duration-700 group-hover:text-accent/10">
               {step.step}
             </div>
             <div className="h-px w-full bg-white/10 mb-8 relative">
-              <div className="absolute top-0 left-0 w-4 h-4 rounded-full bg-accent -translate-y-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-500" />
+              <motion.div 
+                initial={{ width: 0 }}
+                whileInView={{ width: "100%" }}
+                transition={{ duration: 1, delay: idx * 0.1 }}
+                className="absolute top-0 left-0 h-px bg-accent/30"
+              />
+              <div className="absolute top-0 left-0 w-4 h-4 rounded-full bg-accent -translate-y-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-500 shadow-[0_0_15px_rgba(168,76,134,0.5)]" />
             </div>
             <h4 className="text-white text-xl font-bold mb-4 group-hover:text-accent transition-colors">
               {step.title}
@@ -57,7 +74,7 @@ export function ProcessSection() {
             <p className="text-white/40 font-light leading-relaxed">
               {step.desc}
             </p>
-          </div>
+          </motion.div>
         ))}
       </div>
       
