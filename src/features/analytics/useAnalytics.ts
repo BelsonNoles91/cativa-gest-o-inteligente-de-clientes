@@ -34,11 +34,14 @@ import {
   visitConversion,
   waitlistConversionRate,
   packageCompletionRate,
+  hourlyProfitability,
+  estimatedLtv,
   type AnalyticsFilters,
   type AnalyticsPreset,
   type ApptFact,
   type ClientFact,
 } from "@/domain/analytics";
+
 import {
   fetchAppointments,
   fetchAvailability,
@@ -204,6 +207,13 @@ export function useAnalytics() {
   const crm = useMemo(() => crmCompleteness(clients), [clients]);
   const avgConfirmHours = useMemo(() => avgHoursToConfirm(filteredAppts), [filteredAppts]);
 
+  const profitabilityByPro = useMemo(
+    () => hourlyProfitability(filteredAppts, (r) => r.professionalId, (k) => labels?.pros.get(k) ?? "—"),
+    [filteredAppts, labels]
+  );
+
+  const ltv = useMemo(() => estimatedLtv(appts, clients), [appts, clients]);
+
   const waitlistConv = useMemo(
     () => waitlistConversionRate(waitlist),
     [waitlist],
@@ -347,7 +357,10 @@ export function useAnalytics() {
       packageCompletion,
       pendingPackages,
       highValueUnconfirmed,
+      profitabilityByPro,
+      ltv,
     },
+
     cativa,
     nba,
   };

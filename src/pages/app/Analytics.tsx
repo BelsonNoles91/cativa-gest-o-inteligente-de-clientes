@@ -9,7 +9,9 @@ import {
   ListChecks,
   RefreshCcw,
   ShieldAlert,
+  TrendingUp,
 } from "lucide-react";
+
 import { PageHeader } from "@/components/shell/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -145,12 +147,13 @@ export default function AnalyticsPage() {
               tone="brand"
             />
             <KpiCard
-              label="Receita futura em risco"
-              value={formatCurrency(metrics.futureRisk.value)}
-              hint={`${metrics.futureRisk.count} agendamento(s) sem confirmação`}
-              icon={ShieldAlert}
-              tone={metrics.futureRisk.count > 0 ? "danger" : "success"}
+              label="LTV (Anual)"
+              value={formatCurrency(metrics.ltv)}
+              hint="Potencial médio por cliente"
+              icon={TrendingUp}
+              tone="info"
             />
+
           </div>
 
           <div className="grid gap-6 xl:grid-cols-[1.3fr_0.9fr]">
@@ -246,6 +249,42 @@ export default function AnalyticsPage() {
                   helper: `${item.visits} visita(s) · ticket ${formatCurrency(item.ticket)}`,
                 }))}
               />
+            </div>
+            <div className="grid gap-6 xl:grid-cols-2">
+              <SectionCard
+                title="Rentabilidade por Profissional"
+                description="Receita gerada por hora trabalhada (concluídos)."
+              >
+                {metrics.profitabilityByPro.length === 0 ? (
+                  <EmptyMiniState text="Sem dados de atendimentos concluídos." />
+                ) : (
+                  <div className="space-y-3">
+                    {metrics.profitabilityByPro.slice(0, 5).map((item) => (
+                      <MetricRow
+                        key={item.label}
+                        label={item.label}
+                        value={`${formatCurrency(item.hourlyRate)}/h`}
+                        helper="Média de faturamento por hora"
+                      />
+                    ))}
+                  </div>
+                )}
+              </SectionCard>
+
+              <SectionCard
+                title="Potencial de Valor (LTV)"
+                description="Estimativa de valor do cliente em 12 meses baseado no comportamento atual."
+              >
+                <div className="flex flex-col items-center justify-center py-6 text-center">
+                  <p className="text-sm text-muted-foreground italic mb-2">LTV Estimado (Médio)</p>
+                  <p className="text-4xl font-display font-bold text-primary">
+                    {formatCurrency(metrics.ltv)}
+                  </p>
+                  <p className="mt-4 text-xs text-muted-foreground max-w-xs">
+                    Cálculo: Ticket Médio × Frequência de Visitas × 12 meses. Ajuda a definir quanto você pode investir para adquirir um novo cliente.
+                  </p>
+                </div>
+              </SectionCard>
             </div>
           </TabsContent>
 
