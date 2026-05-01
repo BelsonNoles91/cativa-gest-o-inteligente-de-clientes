@@ -39,7 +39,7 @@ export function Navbar() {
 
         {/* Desktop Links */}
         <div className="hidden lg:flex items-center gap-12">
-          {["Funcionalidades", "Planos", "Diferenciais", "FAQ"].map((link) => (
+          {["Funcionalidades", "Módulos", "Planos", "FAQ"].map((link) => (
             <Link 
               key={link} 
               to={`#${link.toLowerCase()}`} 
@@ -81,7 +81,7 @@ export function Navbar() {
         </div>
         
         <div className="flex flex-col gap-12">
-          {["Funcionalidades", "Planos", "Diferenciais", "FAQ"].map((link) => (
+          {["Funcionalidades", "Módulos", "Planos", "FAQ"].map((link) => (
             <Link 
               key={link} 
               to={`#${link.toLowerCase()}`} 
