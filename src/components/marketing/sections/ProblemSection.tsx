@@ -3,10 +3,10 @@ import { XCircle, ChevronRight } from "lucide-react";
 
 export function ProblemSection() {
   const problems = [
-    "No-show excessivo e falta de confirmações organizadas.",
-    "Perda de tempo em tarefas repetitivas na recepção.",
-    "Dificuldade em visualizar o lucro real por profissional.",
-    "Falta de um histórico detalhado para decisões de marketing."
+    { title: "Clientes não retornam no tempo ideal", desc: "Você atende bem hoje, mas não consegue acompanhar quem deveria voltar e quem está saindo da sua base." },
+    { title: "Faltas e cancelamentos desorganizam a operação", desc: "Sem rotina clara de confirmação, a agenda perde eficiência e o negócio absorve o prejuízo silenciosamente." },
+    { title: "A recepção trabalha no improviso", desc: "Decisões dependem de memória e conversas soltas, gerando retrabalho, falhas e pouca visibilidade." },
+    { title: "Você tem dados, mas não tem direção", desc: "Quase nunca há uma visão consolidada de retenção, rebooking, ocupação e risco de perda de receita." }
   ];
 
   return (
@@ -17,20 +17,23 @@ export function ProblemSection() {
             O Status Quo
           </div>
           <h2 className="text-5xl md:text-7xl font-display font-bold text-white leading-[0.95] tracking-tight mb-12">
-            Gestão genérica <br />
-            gera <span className="text-accent italic serif font-normal">resultados genéricos.</span>
+            Seu negócio pode estar <br />
+            <span className="text-accent italic serif font-normal">perdendo receita todos os dias.</span>
           </h2>
           <p className="text-xl text-white/60 font-light leading-relaxed max-w-xl mb-12">
-            A maioria dos softwares de agendamento foca na transação, não na experiência. Isso cria gargalos que custam caro ao seu faturamento mensal.
+            Muitos negócios de estética acreditam que o desafio está apenas em “preencher a agenda”. Mas o que mais compromete o crescimento é a falta de controle sobre a previsibilidade da operação.
           </p>
           
           <div className="space-y-6">
             {problems.map((problem, i) => (
-              <div key={i} className="flex items-start gap-4 group">
-                <div className="mt-1">
-                  <XCircle className="h-5 w-5 text-accent/50 group-hover:text-accent transition-colors" />
+              <div key={i} className="flex items-start gap-6 group">
+                <div className="mt-1 w-10 h-10 rounded-full border border-white/10 flex items-center justify-center shrink-0 group-hover:border-accent transition-colors">
+                  <XCircle className="h-4 w-4 text-accent/50 group-hover:text-accent transition-colors" />
                 </div>
-                <p className="text-lg text-white/80 font-light">{problem}</p>
+                <div className="space-y-1">
+                  <h4 className="text-white font-bold tracking-tight">{problem.title}</h4>
+                  <p className="text-base text-white/50 font-light leading-snug">{problem.desc}</p>
+                </div>
               </div>
             ))}
           </div>

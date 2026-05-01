@@ -3,39 +3,39 @@ import { Check, Layers, Zap, Heart, ShieldCheck, BarChart3, Users2, Sparkles } f
 
 const features = [
   {
-    title: "Agenda de Alta Performance",
-    description: "Visualização editorial, arraste e solte inteligente e bloqueio antecipado de conflitos.",
-    icon: Layers,
+    title: "CRM focado em Retenção",
+    description: "Centralize histórico, preferências, protocolos e status de retorno em um só lugar para agir na hora certa.",
+    icon: Users2,
     color: "bg-accent/10 text-accent",
   },
   {
-    title: "Conversão em 1 Toque",
-    description: "Confirmações automáticas via WhatsApp que reduzem o no-show em até 85%.",
-    icon: Zap,
+    title: "Agenda Operacional Real",
+    description: "Visualize a rotina por profissional e unidade, reagende com agilidade e reduza conflitos de horários.",
+    icon: Layers,
     color: "bg-blue-100 text-blue-600",
   },
   {
-    title: "Inteligência de Retenção",
-    description: "O sistema detecta clientes 'em risco' e sugere ações de reativação automáticas.",
-    icon: Heart,
-    color: "bg-rose-100 text-rose-600",
-  },
-  {
-    title: "Isolamento Multi-Tenant",
-    description: "Arquitetura de segurança bancária para garantir a privacidade total dos seus dados.",
-    icon: ShieldCheck,
+    title: "Central de Confirmação",
+    description: "Trabalhe com filas, templates e rotinas claras de contato, mantendo o processo seguro e previsível.",
+    icon: Zap,
     color: "bg-emerald-100 text-emerald-600",
   },
   {
-    title: "BI & Dashboards Reais",
-    description: "Relatórios gerenciais que mostram o lucro real, não apenas o faturamento bruto.",
-    icon: BarChart3,
+    title: "Pacotes e Protocolos",
+    description: "Acompanhe jornadas de tratamento, consumo de sessões e oportunidades de retorno com clareza.",
+    icon: Sparkles,
+    color: "bg-rose-100 text-rose-600",
+  },
+  {
+    title: "Portal do Cliente",
+    description: "Dê autonomia para agendar, confirmar e acompanhar informações de forma profissional.",
+    icon: Heart,
     color: "bg-amber-100 text-amber-600",
   },
   {
-    title: "Gestão de Colaboradores",
-    description: "Cálculo de comissões, metas e performance individual em uma única tela.",
-    icon: Users2,
+    title: "Indicadores Decisivos",
+    description: "Saiba quem voltou, quem não voltou, onde estão os gargalos e o que fazer para melhorar o faturamento.",
+    icon: BarChart3,
     color: "bg-indigo-100 text-indigo-600",
   },
 ];
@@ -49,12 +49,12 @@ export function FeaturesSection() {
             Funcionalidades Core
           </div>
           <h2 className="text-5xl md:text-7xl font-display font-bold text-primary-dark leading-[0.95] tracking-tight">
-            Pare de perder dinheiro <br />
-            <span className="text-accent italic serif font-normal">com buracos na agenda.</span>
+            Uma plataforma pensada para <br />
+            <span className="text-accent italic serif font-normal">transformar rotina em resultado.</span>
           </h2>
         </div>
         <p className="text-xl text-muted-foreground/80 max-w-md pb-4 font-light leading-relaxed">
-          Projetado para eliminar a fadiga operacional da recepção e focar no que realmente importa: a experiência do cliente.
+          A Cativa organiza o que normalmente fica espalhado entre agenda, mensagens e decisões improvisadas.
         </p>
       </div>
 
@@ -86,14 +86,14 @@ export function FeaturesSection() {
          <div className="grid lg:grid-cols-2 gap-0">
             <div className="p-16 md:p-24 relative z-10">
                <h3 className="text-white text-4xl md:text-6xl font-display font-bold leading-tight mb-10">
-                 A única agenda que <br />
-                 <span className="text-accent italic font-normal serif">trabalha enquanto você atende.</span>
+                 O problema não é só agenda. <br />
+                 <span className="text-accent italic font-normal serif">É falta de controle sobre a jornada.</span>
                </h3>
                <div className="space-y-8">
                   {[
-                    "Previsão de cancelamento baseada em comportamento",
-                    "Ajuste dinâmico de tempo por profissional",
-                    "Integração direta com estoque de produtos"
+                    "Aumente o faturamento através da retenção ativa",
+                    "Reduza no-shows com rotinas de confirmação",
+                    "Acompanhe o Índice Cativa de saúde do negócio"
                   ].map((text, i) => (
                     <div key={i} className="flex items-center gap-6 group">
                        <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center group-hover:border-accent group-hover:bg-accent transition-all duration-500">
