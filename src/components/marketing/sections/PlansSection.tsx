@@ -4,6 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { motion } from "framer-motion";
+import { CheckCircle2, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 export function PlansSection() {
   const [plans, setPlans] = useState<any[]>([]);
