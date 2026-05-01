@@ -43,9 +43,9 @@ export function HeroSection() {
             A Cativa centraliza clientes, agendamentos, confirmações, protocolos e indicadores em um único sistema pensado para clínicas de estética, salões e negócios de beleza que querem crescer com organização e <span className="text-primary-dark font-medium">fazer o cliente voltar.</span>
           </p>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-6 mb-8 animate-fade-in delay-300">
-            <Button asChild size="lg" className="h-18 px-10 rounded-none bg-primary-dark text-lg shadow-2xl shadow-primary/20 group relative overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98]">
-              <Link to="/onboarding">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-6 animate-fade-in delay-300">
+            <Button asChild size="lg" className="h-16 px-10 rounded-full bg-primary-dark text-lg shadow-2xl shadow-primary/20 group relative overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98]">
+              <Link to="/demo">
                 <span className="relative z-10 flex items-center gap-2">
                   Agendar demonstração
                   <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -54,9 +54,22 @@ export function HeroSection() {
               </Link>
             </Button>
             
-            <Button asChild variant="outline" size="lg" className="h-18 px-10 rounded-none border-primary-dark/20 text-lg hover:bg-primary-dark hover:text-white transition-all">
-              <Link to="/onboarding">Começar teste</Link>
+            <Button asChild variant="outline" size="lg" className="h-16 px-10 rounded-full border-primary-dark/20 text-lg hover:bg-accent hover:text-white hover:border-accent transition-all">
+              <Link to="/onboarding">Começar teste grátis</Link>
             </Button>
+          </div>
+
+          <div className="flex items-center gap-2 mb-10 animate-fade-in delay-350 px-2">
+             <div className="flex -space-x-2">
+                {[1,2,3].map(i => (
+                  <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-secondary flex items-center justify-center overflow-hidden">
+                    <img src={`https://i.pravatar.cc/100?u=${i}`} alt="user" className="w-full h-full object-cover" />
+                  </div>
+                ))}
+             </div>
+             <p className="text-[10px] font-medium text-muted-foreground tracking-tight">
+               <span className="text-primary-dark font-bold">14 dias grátis</span>. Sem cartão de crédito.
+             </p>
           </div>
 
           <div className="flex flex-wrap gap-x-8 gap-y-2 mb-16 animate-fade-in delay-400">
