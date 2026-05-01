@@ -56,9 +56,9 @@ export function HeroSection() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="font-display text-[2.5rem] sm:text-6xl md:text-7xl xl:text-[7rem] leading-[0.95] tracking-tight text-primary-dark mb-8 relative"
           >
-            <span className="relative z-10">Faça seus clientes <br className="hidden sm:block" />
+            <span className="relative z-10">Fidelize seus clientes <br className="hidden sm:block" />
             <span className="relative inline-block">
-              voltarem mais
+              com mais retorno
               <motion.svg 
                 initial={{ pathLength: 0, opacity: 0 }}
                 animate={{ pathLength: 1, opacity: 1 }}
@@ -68,7 +68,7 @@ export function HeroSection() {
                 <path d="M1 10.5C50 4 150 1 299 10.5" stroke="currentColor" strokeWidth="6" strokeLinecap="round"/>
               </motion.svg>
             </span>
-            {" "}vezes — com <br className="hidden sm:block" />
+            {" "}— através de <br className="hidden sm:block" />
             uma <span className="italic font-normal serif text-accent">operação organizada.</span></span>
           </motion.h1>
 
@@ -109,9 +109,10 @@ export function HeroSection() {
                   <img key={i} src={`https://i.pravatar.cc/100?u=${i}`} alt="usuário" className="w-6 h-6 rounded-full border-2 border-white object-cover" />
                 ))}
              </div>
-             <p className="text-[10px] font-medium text-muted-foreground tracking-tight">
-               <span className="text-primary-dark font-bold">14 dias grátis</span>. Sem necessidade de cartão.
-             </p>
+              <p className="text-[10px] font-medium text-muted-foreground tracking-tight">
+                <span className="text-primary-dark font-bold">14 dias grátis</span>. Sem necessidade de cartão. <br />
+                Veja em poucos minutos como a Cativa se adapta à sua rotina.
+              </p>
           </div>
 
           <div className="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-3 mb-12">

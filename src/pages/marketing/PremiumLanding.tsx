@@ -127,7 +127,7 @@ export default function PremiumLanding() {
                 key={i}
                 onClick={() => setActiveSegment(i)}
                 className={cn(
-                  "px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-500",
+                  "px-8 py-3 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-500",
                   activeSegment === i 
                     ? "bg-primary-dark text-white shadow-xl scale-105" 
                     : "bg-white text-muted-foreground border border-border/40 hover:border-accent/40"
@@ -372,19 +372,19 @@ export default function PremiumLanding() {
                     <div className="sticky top-32">
                        <h2 className="font-display text-5xl md:text-6xl text-primary-dark tracking-tighter leading-none mb-8">Dúvidas <br />Comuns.</h2>
                        <p className="text-muted-foreground font-light text-lg mb-10">Tudo o que você precisa saber para elevar seu negócio hoje.</p>
-                       <Button asChild variant="link" className="p-0 text-accent font-bold uppercase tracking-widest text-xs gap-2 hover:gap-4 transition-all">
-                          <Link to="/demo" className="flex items-center gap-2">Falar com Especialista <ArrowRight className="h-4 w-4" /></Link>
+                       <Button asChild size="lg" className="rounded-full bg-primary-dark text-white px-8 py-6 h-auto text-sm font-bold uppercase tracking-widest gap-2 hover:scale-[1.02] transition-all shadow-lg">
+                          <Link to="/demo" className="flex items-center gap-2">Agendar demonstração <ArrowRight className="h-4 w-4" /></Link>
                        </Button>
                     </div>
                  </div>
                   <div className="lg:w-2/3 space-y-4 px-4 md:px-0">
                     {[
                       { q: "A Cativa serve para o meu tipo de negócio?", a: "Sim. A plataforma foi pensada para clínicas de estética, salões de beleza, barbearias, esmalterias, profissionais de cílios e sobrancelhas, massagem e negócios de bem-estar que buscam um nível superior de gestão." },
-                      { q: "Como funciona a demonstração?", a: "Nossa demonstração é um tour guiado por um especialista que entende o seu cenário. Mostramos como a Cativa resolve seus problemas específicos em 20 minutos." },
-                      { q: "Posso testar antes de contratar?", a: "Sim. Oferecemos 14 dias de teste grátis com acesso total às principais funcionalidades para que você sinta a diferença na sua rotina real." },
-                      { q: "O sistema usa API de WhatsApp?", a: "Não. A Cativa utiliza uma central de confirmação inteligente baseada em wa.me, o que garante estabilidade e evita bloqueios de números ou taxas abusivas por mensagem." },
-                      { q: "É possível gerenciar mais de uma unidade?", a: "Com certeza. A estrutura da Cativa foi desenhada para redes e franquias, permitindo visão geral ou individual por unidade com um único login." },
-                      { q: "O que acontece depois do teste?", a: "Após os 14 dias, você pode escolher o plano que melhor se adapta ao seu momento e continuar com todos os seus dados e configurações preservados." }
+                      { q: "Como funciona a demonstração?", a: "Nossa demonstração é um tour guiado por um especialista que entende o seu cenário. Mostramos como a Cativa resolve seus problemas específicos em 15 minutos, sem compromisso." },
+                      { q: "Posso testar antes de contratar?", a: "Com certeza. Oferecemos 14 dias de teste grátis com acesso total às principais funcionalidades para que você sinta a diferença na sua rotina real antes de decidir." },
+                      { q: "O sistema usa API de WhatsApp?", a: "Não. A Cativa utiliza uma central de confirmação inteligente baseada em wa.me (links diretos), o que garante estabilidade, evita bloqueios de números e elimina taxas abusivas por mensagem." },
+                      { q: "Funciona para quem tem mais de uma unidade?", a: "Sim. A estrutura da Cativa foi desenhada para crescer com você, permitindo a gestão de múltiplas unidades com visão consolidada ou individualizada por local." },
+                      { q: "Consigo acessar pelo celular?", a: "A Cativa é mobile-first. Isso significa que você e sua equipe têm uma experiência completa e fluida diretamente pelo navegador do celular, sem precisar baixar aplicativos pesados." }
                     ].map((item, i) => (
                       <div key={i} className="p-8 md:p-10 rounded-[2.5rem] bg-[#FAF7F9] border border-border/20 transition-all hover:border-accent/40 group">
                          <h4 className="text-xl font-bold text-primary-dark mb-4 flex items-center justify-between gap-4">

@@ -9,8 +9,9 @@ const FOOTER_LINKS = [
     links: [
       { label: "Funcionalidades", href: "/#funcionalidades" },
       { label: "Módulos", href: "/#modulos" },
-      { label: "Preços", href: "/planos" },
-      { label: "Demonstração", href: "/demo" },
+      { label: "Preços", href: "/#planos" },
+      { label: "Agendar demonstração", href: "/demo" },
+      { label: "Começar teste grátis", href: "/onboarding" },
     ],
   },
   {
@@ -87,19 +88,29 @@ export function PremiumFooter() {
         <div className="p-8 md:p-12 rounded-[40px] bg-white text-primary-dark flex flex-col md:flex-row items-center justify-between gap-8 mb-20 relative overflow-hidden group">
            <div className="absolute inset-0 bg-secondary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
            <div className="relative z-10 text-center md:text-left">
-              <h3 className="text-2xl md:text-3xl font-display font-bold mb-2">Pronta para transformar sua clínica?</h3>
-              <p className="text-muted-foreground">Experimente por 14 dias sem compromisso.</p>
+              <h3 className="text-2xl md:text-3xl font-display font-bold mb-2">Pronta para profissionalizar sua clínica?</h3>
+              <p className="text-muted-foreground">Experimente por 14 dias sem compromisso ou agende uma demo.</p>
            </div>
-           <Button asChild size="lg" className="h-16 px-10 rounded-full bg-primary-dark text-white shadow-xl relative z-10">
-              <Link to="/onboarding">Começar Trial Grátis</Link>
-           </Button>
+           <div className="flex flex-col sm:flex-row gap-4 relative z-10 w-full md:w-auto">
+             <Button asChild variant="outline" size="lg" className="h-16 px-8 rounded-full border-primary-dark/20 hover:bg-secondary/10">
+                <Link to="/demo">Agendar demonstração</Link>
+             </Button>
+             <Button asChild size="lg" className="h-16 px-10 rounded-full bg-primary-dark text-white shadow-xl">
+                <Link to="/onboarding">Começar teste grátis</Link>
+             </Button>
+           </div>
         </div>
 
         {/* Bottom Section */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-8 border-t border-white/10">
-          <p className="text-white/40 text-sm">
-            © 2026 Cativa Gestão Inteligente. Todos os direitos reservados.
-          </p>
+          <div className="flex flex-col md:flex-row items-center gap-8 text-white/40 text-sm">
+            <p>© 2026 Cativa Gestão Inteligente. Todos os direitos reservados.</p>
+            <div className="flex gap-6">
+              <Link to="/termos" className="hover:text-white transition-colors">Termos de Uso</Link>
+              <Link to="/privacidade" className="hover:text-white transition-colors">Privacidade</Link>
+              <Link to="/status" className="hover:text-white transition-colors">Status</Link>
+            </div>
+          </div>
           <div className="flex items-center gap-6">
             <a href="#" className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:text-accent hover:border-accent transition-all">
               <Instagram className="h-5 w-5" />
