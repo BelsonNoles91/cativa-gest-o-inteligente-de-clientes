@@ -53,15 +53,15 @@ export function PremiumHeader() {
           ))}
         </nav>
 
-        <div className="hidden lg:flex items-center gap-3 xl:gap-4 shrink-0">
-          <Button asChild variant="ghost" className="font-semibold text-sm hover:bg-accent/5 focus:ring-2 focus:ring-accent p-0">
-            <Link to="/auth/login" className="w-full h-full flex items-center px-4">Entrar</Link>
+        <div className="hidden lg:flex items-center gap-2 xl:gap-3 shrink-0">
+          <Button asChild variant="ghost" className="text-sm px-4">
+            <Link to="/auth/login">Entrar</Link>
           </Button>
-          <Button asChild variant="outline" className="rounded-full border-primary-dark/20 hover:bg-secondary/10 transition-all active:scale-95 focus:ring-2 focus:ring-accent p-0">
-            <Link to="/demo" className="w-full h-full flex items-center px-4 xl:px-6">Demonstração</Link>
+          <Button asChild variant="outline" className="rounded-xl h-10 px-5 text-sm font-bold">
+            <Link to="/demo">Demo</Link>
           </Button>
-          <Button asChild className="rounded-full bg-primary-dark hover:bg-primary shadow-lg shadow-primary/10 transition-all active:scale-95 focus:ring-2 focus:ring-accent focus:ring-offset-2 p-0">
-            <Link to="/onboarding" className="w-full h-full flex items-center px-4 xl:px-6">Teste grátis</Link>
+          <Button asChild variant="premium" className="rounded-xl h-10 px-5 text-sm">
+            <Link to="/onboarding">Teste grátis</Link>
           </Button>
         </div>
 
@@ -118,14 +118,14 @@ export function PremiumHeader() {
                 </nav>
                 <hr className="border-border/40" />
                 <div className="flex flex-col gap-3">
-                  <Button asChild variant="outline" size="lg" className="w-full rounded-xl border-primary-dark/10 p-0">
-                    <Link to="/auth/login" className="w-full h-full flex items-center justify-center" onClick={() => setMobileMenuOpen(false)}>Entrar</Link>
+                  <Button asChild variant="outline" size="lg" className="w-full rounded-xl">
+                    <Link to="/auth/login" onClick={() => setMobileMenuOpen(false)}>Entrar</Link>
                   </Button>
-                  <Button asChild variant="outline" size="lg" className="w-full rounded-xl border-primary-dark/10 p-0">
-                    <Link to="/demo" className="w-full h-full flex items-center justify-center" onClick={() => setMobileMenuOpen(false)}>Agendar Demo</Link>
+                  <Button asChild variant="outline" size="lg" className="w-full rounded-xl">
+                    <Link to="/demo" onClick={() => setMobileMenuOpen(false)}>Agendar Demo</Link>
                   </Button>
-                  <Button asChild size="lg" className="w-full rounded-xl bg-primary-dark shadow-xl shadow-primary/10 p-0">
-                    <Link to="/onboarding" className="w-full h-full flex items-center justify-center" onClick={() => setMobileMenuOpen(false)}>Começar Teste Grátis</Link>
+                  <Button asChild variant="premium" size="lg" className="w-full rounded-xl">
+                    <Link to="/onboarding" onClick={() => setMobileMenuOpen(false)}>Começar Teste Grátis</Link>
                   </Button>
                 </div>
               </div>
