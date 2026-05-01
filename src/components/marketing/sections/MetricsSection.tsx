@@ -144,7 +144,10 @@ export function MetricsSection() {
                     activeMetric === idx ? "bg-accent text-white border-accent" : "bg-[#FAF7F9] text-primary-dark border-border/10"
                   )}
                 >
-                  <metric.icon className="h-5 w-5 md:h-6 md:w-6" />
+                  {(() => {
+                    const Icon = metric.icon;
+                    return <Icon className="h-5 w-5 md:h-6 md:w-6" />;
+                  })()}
                 </motion.div>
                 <h4 className="text-lg md:text-xl font-bold text-primary-dark mb-4 tracking-tight group-hover:text-accent transition-colors">
                   {metric.title}
