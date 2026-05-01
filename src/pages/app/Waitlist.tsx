@@ -103,6 +103,9 @@ export default function WaitlistPage() {
   const [loading, setLoading] = useState(true);
   const [refreshToken, setRefreshToken] = useState(0);
   const [statusFilter, setStatusFilter] = useState<"all" | WaitlistStatus>("open");
+  const [proFilter, setProFilter] = useState("all");
+  const [serviceFilter, setServiceFilter] = useState("all");
+
 
   const [clients, setClients] = useState<Client[]>([]);
   const [services, setServices] = useState<Service[]>([]);
