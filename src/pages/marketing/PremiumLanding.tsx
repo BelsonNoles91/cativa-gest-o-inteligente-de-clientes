@@ -23,21 +23,24 @@ export default function PremiumLanding() {
       quote: "A Cativa não é apenas um sistema, é um braço direito.", 
       author: "Amanda Souza, Clínica Bloom",
       benefit: "Fidelidade Ativa",
-      percentage: "82%"
+      percentage: "82%",
+      beforeAfter: { before: "40% de faltas", after: "8% de faltas", chart: [20, 35, 15, 8] }
     },
     { 
       name: "Salões", 
       quote: "Recuperamos 30% da agenda perdida apenas com as confirmações automáticas.", 
       author: "Ricardo Melo, Studio R",
       benefit: "Ocupação Real",
-      percentage: "94%"
+      percentage: "94%",
+      beforeAfter: { before: "R$ 12k perdidos/mês", after: "R$ 900 perdidos/mês", chart: [40, 45, 10, 5] }
     },
     { 
       name: "Barbearias", 
       quote: "O portal do cliente deu uma autonomia que nunca tivemos antes.", 
       author: "Bruno Silva, Barber Shop",
       benefit: "Retorno Recorrente",
-      percentage: "76%"
+      percentage: "76%",
+      beforeAfter: { before: "15 min/agendamento", after: "0 min (automático)", chart: [60, 50, 5, 2] }
     }
   ];
   return (
