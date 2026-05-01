@@ -51,16 +51,8 @@ export const navItems: NavItem[] = [
     group: "operacao",
   },
   {
-    to: "/app/clientes",
-    label: "Clientes",
-    icon: Users,
-    roles: ["owner", "manager", "frontdesk"],
-    showInBottomNav: true,
-    group: "operacao",
-  },
-  {
     to: "/app/confirmacoes",
-    label: "Confirmações",
+    label: "Confirmar",
     icon: CheckCircle2,
     roles: ["owner", "manager", "frontdesk"],
     featureKey: "confirmation_center",
@@ -68,13 +60,20 @@ export const navItems: NavItem[] = [
     group: "operacao",
   },
   {
+    to: "/app/clientes",
+    label: "Clientes",
+    icon: Users,
+    roles: ["owner", "manager", "frontdesk"],
+    group: "operacao",
+  },
+  {
     to: "/app/lista-de-espera",
     label: "Espera",
     icon: Hourglass,
     roles: ["owner", "manager", "frontdesk"],
-    showInBottomNav: true,
     group: "operacao",
   },
+
   {
     to: "/app/servicos",
     label: "Serviços",
