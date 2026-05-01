@@ -121,10 +121,20 @@ export default function WaitlistPage() {
   const [scheduling, setScheduling] = useState(false);
 
   const servicesMap = useMemo(() => new Map(services.map((service) => [service.id, service])), [services]);
-  const filteredEntries = useMemo(
-    () => (statusFilter === "all" ? entries : entries.filter((entry) => entry.entry.status === statusFilter)),
-    [entries, statusFilter],
-  );
+  const filteredEntries = useMemo(() => {
+    let result = entries;
+    if (statusFilter !== "all") {
+      result = result.filter((entry) => entry.entry.status === statusFilter);
+    }
+    // Adicionar filtros por profissional e serviço aqui no futuro
+    return result.sort((a, b) => {
+      // Priorização por urgência de janela e prioridade numérica
+      if (a.entry.priority !== b.entry.priority) return b.entry.priority - a.entry.priority;
+      const startA = a.entry.desiredWindowStart ? new Date(a.entry.desiredWindowStart).getTime() : Infinity;
+      const startB = b.entry.desiredWindowStart ? new Date(b.entry.desiredWindowStart).getTime() : Infinity;
+      return startA - startB;
+    });
+  }, [entries, statusFilter]);
 
   useEffect(() => {
     if (!currentTenant) return;
