@@ -81,9 +81,9 @@ export function HeroSection() {
             A Cativa centraliza agenda, clientes, confirmações, protocolos e indicadores para clínicas e salões que querem reduzir faltas, melhorar o rebooking e crescer com mais previsibilidade.
           </motion.p>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4 mb-8">
-            <div className="flex flex-col gap-2">
-              <Button asChild size="lg" variant="premium" className="group relative overflow-hidden h-16 px-8 flex-1" aria-label="Começar teste gratuito de 14 dias">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+            <div className="flex flex-col gap-2 w-full sm:w-auto">
+              <Button asChild size="lg" variant="premium" className="group relative overflow-hidden h-16 px-8 w-full sm:w-[280px]" aria-label="Começar teste gratuito de 14 dias">
                 <Link to="/onboarding" className="w-full h-full flex items-center justify-center">
                   <span className="relative z-10 flex items-center gap-2">
                     Começar teste grátis
@@ -95,8 +95,8 @@ export function HeroSection() {
               <span className="text-[10px] text-muted-foreground font-medium text-center px-2">Experimente os principais fluxos sem compromisso.</span>
             </div>
             
-            <div className="flex flex-col gap-2 flex-1">
-              <Button asChild variant="outline" size="lg" className="h-16 px-8 rounded-full border-primary-dark/20 bg-primary text-primary-dark hover:text-white hover:border-primary-dark flex-1" aria-label="Agendar demonstração personalizada">
+            <div className="flex flex-col gap-2 w-full sm:w-auto">
+              <Button asChild variant="outline" size="lg" className="h-16 px-8 rounded-full border-primary-dark/20 bg-primary text-primary-dark hover:text-white hover:border-primary-dark w-full sm:w-[280px]" aria-label="Agendar demonstração personalizada">
                 <Link to="/demo" className="w-full h-full flex items-center justify-center">Agendar demonstração</Link>
               </Button>
               <span className="text-[10px] text-muted-foreground font-medium text-center px-2">Veja a Cativa aplicada ao seu tipo de negócio.</span>
