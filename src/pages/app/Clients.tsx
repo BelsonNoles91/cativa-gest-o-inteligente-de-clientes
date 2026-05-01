@@ -1068,8 +1068,6 @@ export default function ClientsPage() {
                       </Card>
                     </div>
                   </div>
-                </TabsContent>
-
                   <Card>
                     <CardHeader>
                       <CardTitle>Inteligência de Retenção</CardTitle>
