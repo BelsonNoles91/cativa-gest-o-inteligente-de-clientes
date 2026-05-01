@@ -90,10 +90,16 @@ export default function AnalyticsPage() {
     );
   }
 
+  const formatCurrency = (val: number) =>
+    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(val);
+
   const exportToCsv = () => {
+    // Mapeia client_id para full_name para exportação
+    const clientMap = new Map(analytics.clients.map((c) => [c.id, c.fullName]));
+
     const data = analytics.appts.map((a) => ({
       Data: formatDateForExport(a.startsAt),
-      Cliente: a.clientId, // No ApptFact, temos o clientId. Em um cenário real, o clientName viria via join.
+      Cliente: clientMap.get(a.clientId) ?? "—",
       Serviço: labels?.services.get(a.serviceId ?? "") ?? "—",
       Profissional: labels?.pros.get(a.professionalId) ?? "—",
       Unidade: labels?.units.get(a.unitId) ?? "—",
@@ -105,7 +111,6 @@ export default function AnalyticsPage() {
     const fileName = `relatorio-cativa-${new Date().toISOString().split("T")[0]}.csv`;
     downloadFile(csv, fileName, "text/csv;charset=utf-8;");
   };
-
 
   const exportSummaryToCsv = () => {
     const summary = [
@@ -121,6 +126,7 @@ export default function AnalyticsPage() {
     const fileName = `resumo-gerencial-${new Date().toISOString().split("T")[0]}.csv`;
     downloadFile(csv, fileName, "text/csv;charset=utf-8;");
   };
+
 
   return (
     <div className="space-y-6">
