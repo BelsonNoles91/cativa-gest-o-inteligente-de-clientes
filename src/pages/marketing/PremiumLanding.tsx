@@ -8,10 +8,12 @@ import { ProcessSection } from "@/components/marketing/sections/ProcessSection";
 import { MetricsSection } from "@/components/marketing/sections/MetricsSection";
 import { PremiumSection } from "@/components/marketing/layout/PremiumSection";
 import { PlansSection } from "@/components/marketing/sections/PlansSection";
-import { ArrowRight, CheckCircle2, TrendingUp, Users, Calendar, Star, Quote, ShieldCheck, UserCheck, LayoutDashboard } from "lucide-react";
+import { ArrowRight, CheckCircle2, TrendingUp, Users, Calendar, Star, Quote, ShieldCheck, UserCheck, LayoutDashboard, ChevronLeft, ChevronRight as ChevronRightIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
 
 export default function PremiumLanding() {
   return (
