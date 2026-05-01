@@ -89,6 +89,7 @@ type FiltersState = {
   preferredUnitId: string;
   preferredProfessionalId: string;
   origin: string;
+  churnRiskScore: string;
 };
 
 const DEFAULT_FILTERS: FiltersState = {
@@ -102,6 +103,7 @@ const DEFAULT_FILTERS: FiltersState = {
   preferredUnitId: "all",
   preferredProfessionalId: "all",
   origin: "all",
+  churnRiskScore: "all",
 };
 
 type ClientFormState = {
@@ -271,6 +273,7 @@ export default function ClientsPage() {
           preferredUnitId: filters.preferredUnitId === "all" ? undefined : filters.preferredUnitId,
           preferredProfessionalId: filters.preferredProfessionalId === "all" ? undefined : filters.preferredProfessionalId,
           origin: filters.origin === "all" ? undefined : filters.origin,
+          churnRiskScoreMin: filters.churnRiskScore === "high" ? 70 : undefined,
           limit: 300,
         });
         if (ignore) return;

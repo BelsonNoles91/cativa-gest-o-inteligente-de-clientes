@@ -109,6 +109,7 @@ export interface ListClientsParams {
   preferredProfessionalId?: string;
   origin?: string;
   tagId?: string;
+  churnRiskScoreMin?: number;
   limit?: number;
 }
 
@@ -135,6 +136,7 @@ export async function listClients(params: ListClientsParams): Promise<Client[]> 
   if (params.preferredUnitId) q = q.eq("preferred_unit_id", params.preferredUnitId);
   if (params.preferredProfessionalId) q = q.eq("preferred_professional_id", params.preferredProfessionalId);
   if (params.origin) q = q.eq("origin", params.origin);
+  if (params.churnRiskScoreMin !== undefined) q = q.gte("churn_risk_score", params.churnRiskScoreMin);
 
   const { data, error } = await q;
   if (error) throw error;
