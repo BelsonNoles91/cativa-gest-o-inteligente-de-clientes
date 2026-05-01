@@ -127,15 +127,15 @@ export default function DemoPage() {
                     exit={{ opacity: 0, scale: 0.95 }}
                   >
                     {demoStep === 'calendar' && (
-                      <>
+                      <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
                         <div className="mb-8 md:mb-10 text-center">
-                          <h3 className="text-2xl font-display font-bold text-primary-dark mb-2">Escolha um dia</h3>
-                          <p className="text-sm text-muted-foreground font-light">Selecione uma data disponível</p>
+                          <h3 className="text-3xl lg:text-4xl font-display font-bold text-primary-dark mb-2">Escolha um dia</h3>
+                          <p className="text-sm lg:text-base text-muted-foreground font-light">Selecione uma data disponível para agendar sua demonstração</p>
                         </div>
 
-                        <div className="grid grid-cols-7 gap-1 md:gap-2 mb-8 md:mb-10">
+                        <div className="grid grid-cols-7 gap-2 lg:gap-3 mb-10">
                           {["D", "S", "T", "Q", "Q", "S", "S"].map((day, i) => (
-                            <div key={i} className="text-center text-[10px] font-bold text-muted-foreground uppercase py-2">{day}</div>
+                            <div key={i} className="text-center text-[11px] font-bold text-muted-foreground uppercase py-2">{day}</div>
                           ))}
                           {Array.from({ length: 31 }).map((_, i) => {
                             const day = i + 1;
@@ -148,9 +148,9 @@ export default function DemoPage() {
                                 type="button"
                                 aria-label={`Dia ${day}${isSelected ? " - selecionado" : ""}${!isAvailable ? " - indisponível" : ""}`}
                                 className={cn(
-                                  "aspect-square rounded-xl flex items-center justify-center text-xs md:text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-accent",
-                                  isSelected ? "bg-accent text-white shadow-lg scale-110 z-10" : 
-                                  isAvailable ? "hover:bg-accent/10 cursor-pointer text-primary-dark" : "text-muted-foreground/20 cursor-not-allowed"
+                                  "aspect-square rounded-xl lg:rounded-2xl flex items-center justify-center text-sm lg:text-base font-medium transition-all focus:outline-none focus:ring-2 focus:ring-accent",
+                                  isSelected ? "bg-accent text-white shadow-xl scale-110 z-10" : 
+                                  isAvailable ? "hover:bg-accent/10 cursor-pointer text-primary-dark border border-transparent hover:border-accent/20" : "text-muted-foreground/20 cursor-not-allowed"
                                 )}
                               >
                                 {day}
@@ -158,7 +158,7 @@ export default function DemoPage() {
                             );
                           })}
                         </div>
-                      </>
+                      </motion.div>
                     )}
 
                     {demoStep === 'service' && (
