@@ -10,25 +10,24 @@ interface LogoProps {
 }
 
 export function Logo({ className, showWordmark = true, size = "md" }: LogoProps) {
-  const dot = size === "sm" ? "h-7 w-7" : size === "lg" ? "h-10 w-10" : "h-9 w-9";
-  const text = size === "sm" ? "text-lg" : size === "lg" ? "text-2xl" : "text-xl";
+  const dot = size === "sm" ? "h-8 w-8 rounded-lg" : size === "lg" ? "h-12 w-12 rounded-2xl" : "h-10 w-10 rounded-xl";
+  const text = size === "sm" ? "text-lg" : size === "lg" ? "text-3xl" : "text-2xl";
 
   return (
-    <div className={cn("flex items-center gap-2.5", className)}>
+    <div className={cn("flex items-center gap-3", className)}>
       <div
         className={cn(
-          "relative grid place-items-center rounded-xl shadow-sm",
-          "bg-gradient-brand text-primary-foreground font-display font-semibold",
+          "relative grid place-items-center shadow-lg shadow-accent/20",
+          "bg-accent text-white font-display font-black",
           dot,
         )}
         aria-hidden
       >
-        <span className="leading-none">C</span>
-        <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-accent ring-2 ring-background" />
+        <span className="leading-none select-none">{size === "sm" ? "C" : "C"}</span>
       </div>
       {showWordmark && (
-        <span className={cn("font-display font-semibold tracking-tight text-foreground", text)}>
-          Cativa
+        <span className={cn("font-display font-black tracking-tighter text-primary-dark uppercase", text)}>
+          Cativa<span className="text-accent">.</span>
         </span>
       )}
     </div>

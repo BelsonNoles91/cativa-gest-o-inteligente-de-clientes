@@ -119,7 +119,7 @@ export function HeroSection() {
 
         <motion.div 
           style={{ y: mockupY, rotate: mockupRotate }}
-          className="relative perspective-1000 px-4 md:px-0 z-0"
+          className="relative perspective-1000 px-4 md:px-0 z-0 pt-12 md:pt-20"
         >
           <div className="relative z-20 group">
              {/* Janela Principal do Aplicativo */}
@@ -128,11 +128,20 @@ export function HeroSection() {
                className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(75,36,61,0.2)] border border-white/50 p-2 md:p-3 transition-all duration-700"
              >
                 <div className="bg-[#FAF7F9] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden border border-border/20 aspect-[16/11] md:aspect-[16/10] relative group/mockup">
-                   {/* Interface do Sistema */}
+                   {/* Interface do Sistema - Header Simulado com Logo */}
                    <div className="h-12 md:h-14 border-b border-border/40 bg-white/80 backdrop-blur-md px-4 md:px-6 flex items-center justify-between">
-                      <div className="flex gap-2 md:gap-3">
-                        <div className="h-2 w-12 md:w-16 bg-primary-dark/10 rounded-full" />
-                        <div className="h-2 w-8 md:w-12 bg-primary-dark/5 rounded-full" />
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1">
+                          <div className="w-5 h-5 rounded-lg bg-accent flex items-center justify-center">
+                            <span className="text-[10px] font-black text-white">C</span>
+                          </div>
+                          <span className="text-xs font-display font-black tracking-tighter text-primary-dark">CATIVA</span>
+                        </div>
+                        <div className="h-4 w-px bg-border/40 mx-1 hidden sm:block" />
+                        <div className="hidden sm:flex gap-4">
+                          <div className="h-2 w-12 bg-primary-dark/10 rounded-full" />
+                          <div className="h-2 w-12 bg-primary-dark/5 rounded-full" />
+                        </div>
                       </div>
                       <div className="flex items-center gap-2 md:gap-4">
                         <div className="w-6 h-6 rounded-full bg-accent/10 flex items-center justify-center">
@@ -145,17 +154,29 @@ export function HeroSection() {
                    </div>
                    
                    <div className="p-4 md:p-8">
+                      {/* Título da Página no Mockup */}
+                      <div className="flex justify-between items-end mb-6">
+                        <div>
+                          <h2 className="text-xs md:text-sm font-bold text-primary-dark">Visão Geral</h2>
+                          <p className="text-[8px] md:text-[10px] text-muted-foreground">Bem-vinda de volta, Amanda.</p>
+                        </div>
+                        <div className="flex gap-2">
+                           <div className="px-2 py-1 rounded-md bg-white border border-border/40 text-[8px] font-bold text-primary-dark">Hoje</div>
+                           <div className="px-2 py-1 rounded-md bg-accent text-[8px] font-bold text-white shadow-sm">Nova Agenda</div>
+                        </div>
+                      </div>
+
                       <div className="grid grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8">
                          {[
-                           { label: "Receita", val: "R$ 12.4k", icon: TrendingUp, color: "text-emerald-500 bg-emerald-500/10" },
-                           { label: "Agendas", val: "142", icon: Calendar, color: "text-blue-500 bg-blue-500/10" },
-                           { label: "Clientes", val: "24", icon: Users, color: "text-accent bg-accent/10" }
+                           { label: "Receita", val: "R$ 12.4k", icon: TrendingUp, color: "text-emerald-500 bg-emerald-500/10", trend: "+12%" },
+                           { label: "Agendas", val: "142", icon: Calendar, color: "text-blue-500 bg-blue-500/10", trend: "+5%" },
+                           { label: "Clientes", val: "24", icon: Users, color: "text-accent bg-accent/10", trend: "+8%" }
                          ].map((stat, i) => (
                            <motion.div 
                              initial={{ opacity: 0, y: 10 }}
                              whileInView={{ opacity: 1, y: 0 }}
                              transition={{ delay: 0.5 + (i * 0.1) }}
-                             key={i} className="bg-white rounded-xl md:rounded-2xl border border-border/40 p-3 md:p-5 shadow-sm"
+                             key={i} className="bg-white rounded-xl md:rounded-2xl border border-border/40 p-3 md:p-5 shadow-sm hover:shadow-md transition-shadow"
                            >
                               <div className="flex items-center justify-between mb-2">
                                  <span className="text-[8px] md:text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{stat.label}</span>
@@ -163,48 +184,75 @@ export function HeroSection() {
                                     <stat.icon className="h-2.5 w-2.5 md:h-3 md:w-3" />
                                  </div>
                               </div>
-                              <div className="text-sm md:text-xl font-display font-bold text-primary-dark">{stat.val}</div>
+                              <div className="flex items-baseline gap-1">
+                                <div className="text-sm md:text-xl font-display font-bold text-primary-dark">{stat.val}</div>
+                                <span className="text-[7px] md:text-[8px] font-bold text-emerald-500">{stat.trend}</span>
+                              </div>
                            </motion.div>
                          ))}
                       </div>
                       
-                      <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.8 }}
-                        className="bg-white rounded-[1.5rem] md:rounded-[2rem] border border-border/40 p-4 md:p-6 shadow-sm relative overflow-hidden"
-                      >
-                         <div className="flex justify-between items-center mb-4 md:mb-6">
-                            <div className="flex items-center gap-2">
-                               <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-accent animate-pulse" />
-                               <span className="text-[9px] md:text-xs font-bold text-primary-dark uppercase tracking-widest">Agenda de Hoje</span>
-                            </div>
-                            <Button variant="ghost" size="sm" className="h-6 md:h-8 px-2 md:px-3 text-[8px] md:text-[10px] font-bold uppercase tracking-widest text-accent">Ver tudo</Button>
-                         </div>
-                         <div className="space-y-3 md:space-y-4">
-                            {[
-                              { time: "09:00", name: "Ana Paula", service: "Procedimento", status: "Confirmado" },
-                              { time: "10:30", name: "Beatriz Silva", service: "Avaliação", status: "Em espera" }
-                            ].map((item, i) => (
-                              <div key={i} className="flex items-center gap-3 md:gap-4 p-2 md:p-3 rounded-xl hover:bg-secondary/10">
-                                 <div className="text-[10px] md:text-xs font-bold text-muted-foreground w-10 md:w-12">{item.time}</div>
-                                 <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-secondary/30 flex items-center justify-center text-[10px] font-bold text-primary-dark/40">
-                                    {item.name.charAt(0)}
-                                 </div>
-                                 <div className="flex-1">
-                                    <div className="text-xs md:text-sm font-bold text-primary-dark">{item.name}</div>
-                                    <div className="text-[8px] md:text-[10px] text-muted-foreground">{item.service}</div>
-                                 </div>
-                                 <div className={cn(
-                                   "text-[7px] md:text-[8px] font-black uppercase tracking-widest px-1.5 md:px-2 py-0.5 md:py-1 rounded-full border",
-                                   item.status === 'Confirmado' ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" : "bg-blue-500/10 text-blue-600 border-blue-500/20"
-                                 )}>
-                                   {item.status}
-                                 </div>
+                      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 md:gap-6">
+                        <motion.div 
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.8 }}
+                          className="md:col-span-3 bg-white rounded-[1.5rem] md:rounded-[2rem] border border-border/40 p-4 md:p-6 shadow-sm relative overflow-hidden"
+                        >
+                           <div className="flex justify-between items-center mb-4 md:mb-6">
+                              <div className="flex items-center gap-2">
+                                 <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-accent animate-pulse" />
+                                 <span className="text-[9px] md:text-xs font-bold text-primary-dark uppercase tracking-widest">Próximos Atendimentos</span>
                               </div>
-                            ))}
-                         </div>
-                      </motion.div>
+                              <Button variant="ghost" size="sm" className="h-6 md:h-8 px-2 md:px-3 text-[8px] md:text-[10px] font-bold uppercase tracking-widest text-accent">Agenda Completa</Button>
+                           </div>
+                           <div className="space-y-3 md:space-y-4">
+                              {[
+                                { time: "09:00", name: "Ana Paula", service: "Limpeza de Pele", status: "Confirmado", avatar: "A" },
+                                { time: "10:30", name: "Beatriz Silva", service: "Peeling Diamante", status: "Confirmado", avatar: "B" },
+                                { time: "13:00", name: "Carla Souza", service: "Avaliação", status: "Pendente", avatar: "C" }
+                              ].map((item, i) => (
+                                <div key={i} className="flex items-center gap-3 md:gap-4 p-2 md:p-3 rounded-xl hover:bg-secondary/10 transition-colors">
+                                   <div className="text-[10px] md:text-xs font-bold text-muted-foreground w-10 md:w-12">{item.time}</div>
+                                   <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-accent/5 border border-accent/10 flex items-center justify-center text-[10px] font-bold text-accent">
+                                      {item.avatar}
+                                   </div>
+                                   <div className="flex-1">
+                                      <div className="text-xs md:text-sm font-bold text-primary-dark">{item.name}</div>
+                                      <div className="text-[8px] md:text-[10px] text-muted-foreground">{item.service}</div>
+                                   </div>
+                                   <div className={cn(
+                                     "text-[7px] md:text-[8px] font-black uppercase tracking-widest px-1.5 md:px-2 py-0.5 md:py-1 rounded-full border",
+                                     item.status === 'Confirmado' ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" : "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                                   )}>
+                                     {item.status}
+                                   </div>
+                                </div>
+                              ))}
+                           </div>
+                        </motion.div>
+
+                        <div className="md:col-span-2 space-y-4 md:space-y-6">
+                           <div className="bg-white rounded-2xl border border-border/40 p-4 shadow-sm">
+                             <h3 className="text-[9px] md:text-xs font-bold text-primary-dark mb-4 uppercase tracking-widest">Atalhos</h3>
+                             <div className="grid grid-cols-2 gap-2">
+                               <div className="aspect-square rounded-xl bg-secondary/20 flex flex-col items-center justify-center gap-1 group/btn cursor-pointer">
+                                  <Users className="h-4 w-4 text-primary-dark group-hover/btn:scale-110 transition-transform" />
+                                  <span className="text-[8px] font-bold text-primary-dark">Clientes</span>
+                               </div>
+                               <div className="aspect-square rounded-xl bg-accent/10 flex flex-col items-center justify-center gap-1 group/btn cursor-pointer">
+                                  <TrendingUp className="h-4 w-4 text-accent group-hover/btn:scale-110 transition-transform" />
+                                  <span className="text-[8px] font-bold text-accent">Relatórios</span>
+                               </div>
+                             </div>
+                           </div>
+                           <div className="bg-primary-dark text-white rounded-2xl p-4 shadow-xl relative overflow-hidden group/card">
+                             <div className="absolute top-0 right-0 w-20 h-20 bg-accent/20 blur-2xl rounded-full translate-x-10 -translate-y-10 group-hover/card:scale-150 transition-transform duration-700" />
+                             <p className="text-[8px] font-bold uppercase tracking-widest opacity-60 mb-2">Dica do dia</p>
+                             <p className="text-[10px] md:text-xs font-medium leading-relaxed">Confirme as agendas de amanhã agora para reduzir faltas.</p>
+                           </div>
+                        </div>
+                      </div>
                    </div>
                 </div>
              </motion.div>

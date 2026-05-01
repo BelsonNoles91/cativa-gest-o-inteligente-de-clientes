@@ -40,8 +40,11 @@ export function Navbar() {
             : "bg-white/40 backdrop-blur-md border border-white/20 lg:bg-transparent lg:backdrop-blur-none lg:border-none"
         )}
       >
-        <Link to="/" className="flex items-center group">
-          <span className="text-2xl font-display font-black tracking-tighter text-primary-dark">
+        <Link to="/" className="flex items-center gap-2 group transition-transform hover:scale-[1.02]">
+          <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-accent flex items-center justify-center shadow-lg shadow-accent/20">
+             <span className="text-white font-black text-lg md:text-xl font-display">C</span>
+          </div>
+          <span className="text-xl md:text-2xl font-display font-black tracking-tighter text-primary-dark">
             CATIVA<span className="text-accent group-hover:animate-pulse">.</span>
           </span>
         </Link>
