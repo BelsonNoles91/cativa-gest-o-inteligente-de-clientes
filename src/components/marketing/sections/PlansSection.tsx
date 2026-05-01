@@ -53,18 +53,17 @@ export function PlansSection() {
         const isHighlight = plan.code === 'pro' || plan.code === 'entrepreneur' || plan.name === 'Empreendedor';
         const price = plan.price_cents / 100;
         
-        // Definição de funcionalidades em português claro, sem termos técnicos
+        // Benefícios claros e em português para cada plano
         const defaultFeatures: Record<string, string[]> = {
-          free: ["Até 50 clientes", "Agendas básicas", "1 profissional", "Gestão de horários"],
-          starter: ["Até 50 clientes", "Agendas básicas", "1 profissional", "Gestão de horários"],
-          pro: ["Clientes ilimitados", "Agendas sem limites", "Até 2 profissionais", "Relatórios de vendas", "Acompanhamento prioritário"],
-          entrepreneur: ["Clientes ilimitados", "Agendas sem limites", "Até 2 profissionais", "Relatórios de vendas", "Acompanhamento prioritário"],
+          free: ["Agenda básica", "Até 50 clientes", "1 profissional", "Gestão de horários"],
+          starter: ["Agenda básica", "Até 50 clientes", "1 profissional", "Gestão de horários"],
+          pro: ["Clientes ilimitados", "Agendas sem limites", "Até 2 profissionais", "Relatórios de vendas", "Acompanhamento de fidelidade"],
+          entrepreneur: ["Clientes ilimitados", "Agendas sem limites", "Até 2 profissionais", "Relatórios de vendas", "Acompanhamento de fidelidade"],
           studio: ["Tudo ilimitado", "Várias unidades", "Relatórios inteligentes", "Gestão de equipe", "Atendimento exclusivo"],
         };
 
-        const features = plan.features && Object.keys(plan.features).length > 0 
-          ? Object.entries(plan.features).map(([key, val]) => `${key.replace(/_/g, ' ')}: ${val}`)
-          : (defaultFeatures[plan.code as keyof typeof defaultFeatures] || ["Consulte nossa equipe"]);
+        // Forçar uso dos benefícios padronizados para evitar termos técnicos do banco
+        const features = defaultFeatures[plan.code as keyof typeof defaultFeatures] || ["Consulte nossa equipe"];
 
         return (
           <div key={plan.id} className={cn(
@@ -83,12 +82,13 @@ export function PlansSection() {
               {plan.name === 'Studio' ? 'Estúdio' : plan.name}
             </p>
             
-            <div className="flex items-baseline gap-2 mb-8">
+            <div className="flex items-baseline gap-1 mb-8">
               <span className="text-xl font-bold opacity-60">R$</span>
               <span className="text-6xl md:text-7xl font-display font-bold tracking-tighter">
-                {price === 0 ? "Grátis" : Math.floor(price)}
+                {plan.code === 'free' ? "Grátis" : 
+                 plan.code === 'pro' || plan.code === 'entrepreneur' ? "47,90" : "87,90"}
               </span>
-              {price > 0 && <span className="text-sm font-bold opacity-60">/mês</span>}
+              {plan.code !== 'free' && <span className="text-sm font-bold opacity-60">/mês</span>}
             </div>
             
             <p className={cn("text-lg font-light mb-10 leading-relaxed min-h-[60px]", isHighlight ? "text-white/70" : "text-muted-foreground")}>
@@ -106,13 +106,13 @@ export function PlansSection() {
 
             <div className="flex flex-col gap-4 mt-auto">
               <Button asChild className={cn(
-                "w-full h-16 rounded-full text-lg font-bold transition-all relative overflow-hidden group/btn shadow-lg",
+                "w-full h-14 md:h-16 rounded-full text-lg font-bold transition-all relative overflow-hidden group/btn shadow-lg",
                 isHighlight 
                   ? "bg-accent text-white hover:bg-white hover:text-primary-dark border-none" 
                   : "bg-primary-dark text-white hover:bg-accent border-none"
               )}>
                 <Link to="/onboarding">
-                  <span className="relative z-10">{price === 0 ? "Começar agora" : "Escolher este plano"}</span>
+                  <span className="relative z-10">{plan.code === 'free' ? "Começar agora" : "Escolher este plano"}</span>
                   <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover/btn:translate-y-0" />
                 </Link>
               </Button>
