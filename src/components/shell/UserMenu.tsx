@@ -1,7 +1,8 @@
 /**
- * UserMenu — perfil + signOut real.
+ * UserMenu — perfil + signOut real + Notificações.
  */
-import { LogOut, Settings, User } from "lucide-react";
+import { useEffect, useState } from "react";
+import { LogOut, Settings, User, Bell, BellOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -13,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { roleLabels } from "@/domain/roles";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { useIsMobile } from "@/hooks/use-mobile";
+
 
 export function UserMenu() {
   const navigate = useNavigate();
