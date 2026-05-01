@@ -55,8 +55,8 @@ export function PlansSection() {
         
         // Benefícios claros e em português para cada plano
         const defaultFeatures: Record<string, string[]> = {
-          free: ["Agenda básica", "Até 50 clientes", "1 profissional", "Gestão de horários"],
-          starter: ["Agenda básica", "Até 50 clientes", "1 profissional", "Gestão de horários"],
+          free: ["Até 25 agendamentos", "Até 50 clientes", "1 profissional", "Gestão de horários"],
+          starter: ["Até 25 agendamentos", "Até 50 clientes", "1 profissional", "Gestão de horários"],
           pro: ["Clientes ilimitados", "Agendas sem limites", "Até 2 profissionais", "Relatórios de vendas", "Acompanhamento de fidelidade"],
           entrepreneur: ["Clientes ilimitados", "Agendas sem limites", "Até 2 profissionais", "Relatórios de vendas", "Acompanhamento de fidelidade"],
           studio: ["Tudo ilimitado", "Várias unidades", "Relatórios inteligentes", "Gestão de equipe", "Atendimento exclusivo"],
