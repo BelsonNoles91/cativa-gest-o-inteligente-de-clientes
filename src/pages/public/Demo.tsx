@@ -1,6 +1,7 @@
 import { PremiumSection } from "@/components/marketing/layout/PremiumSection";
 import { PremiumHeader } from "@/components/marketing/layout/PremiumHeader";
 import { PremiumFooter } from "@/components/marketing/layout/PremiumFooter";
+import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, CheckCircle2, ArrowRight, Play, Check, Users, TrendingUp, Shield, Settings, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -312,10 +313,7 @@ export default function DemoPage() {
                   {/* Header do Mockup */}
                   <div className="h-12 bg-white border-b border-border/40 px-6 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-lg bg-accent flex items-center justify-center">
-                        <span className="text-white font-black text-[10px]">C</span>
-                      </div>
-                      <span className="text-xs font-black tracking-tighter text-primary-dark">CATIVA</span>
+                      <Logo size="sm" className="scale-75 origin-left" />
                     </div>
                     <div className="flex gap-2">
                       <div className="w-2 h-2 rounded-full bg-red-400" />

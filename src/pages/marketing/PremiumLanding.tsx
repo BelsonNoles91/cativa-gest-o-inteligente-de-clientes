@@ -1,5 +1,5 @@
-import { Navbar } from "@/components/marketing/layout/Navbar";
-import { Footer } from "@/components/marketing/layout/Footer";
+import { PremiumHeader as Navbar } from "@/components/marketing/layout/PremiumHeader";
+import { PremiumFooter as Footer } from "@/components/marketing/layout/PremiumFooter";
 import { HeroSection } from "@/components/marketing/sections/HeroSection";
 import { ProblemSection } from "@/components/marketing/sections/ProblemSection";
 import { FeaturesSection } from "@/components/marketing/sections/FeaturesSection";
