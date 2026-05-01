@@ -1,5 +1,5 @@
 import { PremiumSection } from "../layout/PremiumSection";
-import { TrendingUp, Users, CalendarX, Clock, UserPlus, DollarSign, Activity } from "lucide-react";
+import { TrendingUp, Users, CalendarX, Clock, UserPlus, DollarSign } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
