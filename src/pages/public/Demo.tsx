@@ -16,6 +16,7 @@ export default function DemoPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<'basic' | 'pro' | 'enterprise'>('pro');
   
   const [formData, setFormData] = useState({
     name: "",
