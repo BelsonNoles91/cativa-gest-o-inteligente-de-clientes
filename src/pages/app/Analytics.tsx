@@ -5,6 +5,9 @@ import {
   CalendarClock,
   CircleDollarSign,
   Clock3,
+  Download,
+  FileSpreadsheet,
+  FileText,
   Gauge,
   ListChecks,
   RefreshCcw,
@@ -19,12 +22,22 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { AnalyticsFiltersBar } from "@/features/analytics/AnalyticsFiltersBar";
 import { CativaIndexCard } from "@/features/analytics/CativaIndexCard";
 import { KpiCard } from "@/features/analytics/KpiCard";
 import { NextBestActions } from "@/features/analytics/NextBestActions";
 import { useAnalytics } from "@/features/analytics/useAnalytics";
 import { cn } from "@/lib/utils";
+import { jsonToCsv, downloadFile, formatCurrencyForExport, formatDateForExport } from "@/lib/export-utils";
+
 
 const SOURCE_LABELS: Record<string, string> = {
   frontdesk: "Recepção",
