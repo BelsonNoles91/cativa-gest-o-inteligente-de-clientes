@@ -118,23 +118,17 @@ export function PlansSection() {
 
               <div className="mt-auto pt-8 border-t border-border/10">
                 <div className="flex flex-col gap-4">
-                  <Button asChild className={cn(
-                    "w-full h-14 md:h-16 rounded-full text-lg font-bold transition-all relative overflow-hidden group/btn shadow-lg",
-                    isHighlight 
-                      ? "bg-accent text-white hover:bg-white hover:text-primary-dark border-none" 
-                      : "bg-primary-dark text-white hover:bg-accent border-none"
-                  )}>
-                    <Link to="/onboarding" className="w-full h-full flex items-center justify-center">
-                      <span className="relative z-10">{plan.code === 'free' ? "Começar agora" : "Escolher este plano"}</span>
-                      <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover/btn:translate-y-0" />
+                  <Button asChild variant={isHighlight ? "premium" : "default"} className="w-full h-14 md:h-16 rounded-2xl text-lg font-bold">
+                    <Link to="/onboarding">
+                      {plan.code === 'free' ? "Começar agora" : "Escolher este plano"}
                     </Link>
                   </Button>
                   
                   <Button asChild variant="ghost" className={cn(
-                    "w-full h-12 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all",
+                    "w-full h-12 rounded-xl text-xs font-bold transition-all",
                     isHighlight ? "text-white/60 hover:text-white" : "text-primary-dark/60 hover:text-primary-dark"
                   )}>
-                    <Link to="/demo" className="w-full h-full flex items-center justify-center">Ver demonstração</Link>
+                    <Link to="/demo">Ver demonstração</Link>
                   </Button>
                   
                   {plan.trial_days > 0 ? (

@@ -270,13 +270,10 @@ export default function PremiumLanding() {
               </div>
 
               <div className="pt-6 md:pt-8">
-                <Button asChild size="lg" className="w-full md:w-auto rounded-full bg-primary-dark h-16 px-10 group relative overflow-hidden transition-all hover:scale-[1.02]">
-                  <Link to="/onboarding">
-                    <span className="relative z-10 flex items-center justify-center">
-                      Começar agora como {segments[activeSegment].name}
-                      <ArrowRight className="ml-3 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                    </span>
-                    <div className="absolute inset-0 bg-accent translate-y-full transition-transform group-hover:translate-y-0" />
+                <Button asChild size="lg" variant="premium" className="w-full md:w-auto h-16 px-10 rounded-2xl group">
+                  <Link to="/onboarding" className="flex items-center justify-center gap-2">
+                    Começar agora como {segments[activeSegment].name}
+                    <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                   </Link>
                 </Button>
               </div>
