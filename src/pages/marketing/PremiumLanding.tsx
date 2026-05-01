@@ -241,8 +241,8 @@ export default function PremiumLanding() {
           </div>
         </PremiumSection>
 
-        <FeaturesSection />
-        <ModulesSection />
+        <div id="funcionalidades"><FeaturesSection /></div>
+        <div id="modulos"><ModulesSection /></div>
 
         {/* Seção de Planos */}
         <PremiumSection id="planos" variant="soft" padding="lg">
