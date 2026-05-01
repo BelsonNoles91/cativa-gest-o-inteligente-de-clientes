@@ -153,7 +153,6 @@ export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loadingList, setLoadingList] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-
   const [professionals, setProfessionals] = useState<ProfessionalLite[]>([]);
   const [tags, setTags] = useState<ClientTag[]>([]);
   const [ownProfessional, setOwnProfessional] = useState<{ id: string; name: string } | null>(null);
