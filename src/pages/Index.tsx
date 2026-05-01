@@ -2,8 +2,8 @@
  * Rota raiz "/" — landing pública da Cativa.
  * O dashboard autenticado vive em /app.
  */
-import Landing from "@/pages/public/Landing";
+import PremiumLanding from "@/pages/marketing/PremiumLanding";
 
-const Index = () => <Landing />;
+const Index = () => <PremiumLanding />;
 
 export default Index;
