@@ -2,13 +2,37 @@ import { PremiumSection } from "@/components/marketing/layout/PremiumSection";
 import { PremiumHeader } from "@/components/marketing/layout/PremiumHeader";
 import { PremiumFooter } from "@/components/marketing/layout/PremiumFooter";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, CheckCircle2, ArrowRight, Play } from "lucide-react";
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { Calendar, Clock, CheckCircle2, ArrowRight, Play, Check } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function DemoPage() {
+  const navigate = useNavigate();
+  const [selectedDay, setSelectedDay] = useState(15);
+  const [isConfirmed, setIsConfirmed] = useState(false);
+
+  const handleDaySelect = (day: number, isAvailable: boolean) => {
+    if (!isAvailable) {
+      toast.error("Este dia não possui horários disponíveis no momento.");
+      return;
+    }
+    setSelectedDay(day);
+  };
+
+  const handleConfirm = () => {
+    setIsConfirmed(true);
+    toast.success("Demonstração agendada com sucesso!");
+    
+    // Pequeno delay para o usuário ver a confirmação antes de ser redirecionado ou resetar
+    setTimeout(() => {
+      navigate(`/onboarding?demo_date=2026-05-${selectedDay}&demo_time=09:30`);
+    }, 2500);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <PremiumHeader />
