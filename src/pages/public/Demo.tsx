@@ -108,18 +108,21 @@ export default function DemoPage() {
                 {Array.from({ length: 31 }).map((_, i) => {
                   const day = i + 1;
                   const isAvailable = day > 10 && day < 25;
-                  const isSelected = day === 15;
+                  const isSelected = day === selectedDay;
                   return (
-                    <div 
+                    <button 
                       key={i} 
+                      onClick={() => handleDaySelect(day, isAvailable)}
+                      type="button"
+                      aria-label={`Dia ${day}${isSelected ? " - selecionado" : ""}${!isAvailable ? " - indisponível" : ""}`}
                       className={cn(
-                        "aspect-square rounded-xl flex items-center justify-center text-sm font-medium transition-all",
-                        isSelected ? "bg-accent text-white shadow-lg" : 
-                        isAvailable ? "hover:bg-accent/10 cursor-pointer text-primary-dark" : "text-muted-foreground/30"
+                        "aspect-square rounded-xl flex items-center justify-center text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-accent",
+                        isSelected ? "bg-accent text-white shadow-lg scale-110 z-10" : 
+                        isAvailable ? "hover:bg-accent/10 cursor-pointer text-primary-dark" : "text-muted-foreground/20 cursor-not-allowed"
                       )}
                     >
                       {day}
-                    </div>
+                    </button>
                   );
                 })}
               </div>
