@@ -347,7 +347,7 @@ export async function listAppointments(params: ListAppointmentsParams): Promise<
 
 export async function listAppointmentsHydrated(params: ListAppointmentsParams): Promise<HydratedAppointment[]> {
   const { tenantId, rangeStart, rangeEnd, unitId, professionalId, clientId, excludeStatuses } = params;
-  let q = supabase
+  const query = supabase
     .from("appointments")
     .select(`
       *,
@@ -365,6 +365,7 @@ export async function listAppointmentsHydrated(params: ListAppointmentsParams): 
     .lt("starts_at", rangeEnd)
     .order("starts_at");
 
+  let q = query;
   if (unitId) q = q.eq("unit_id", unitId);
   if (professionalId) q = q.eq("professional_id", professionalId);
   if (clientId) q = q.eq("client_id", clientId);
