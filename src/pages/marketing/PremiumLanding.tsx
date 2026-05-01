@@ -8,7 +8,7 @@ import { ProcessSection } from "@/components/marketing/sections/ProcessSection";
 import { MetricsSection } from "@/components/marketing/sections/MetricsSection";
 import { PremiumSection } from "@/components/marketing/layout/PremiumSection";
 import { PlansSection } from "@/components/marketing/sections/PlansSection";
-import { ArrowRight, CheckCircle2, TrendingUp, Users, Calendar, Star, Quote, ShieldCheck, UserCheck, LayoutDashboard, Smartphone } from "lucide-react";
+import { ArrowRight, CheckCircle2, TrendingUp, Users, Calendar, Star, Quote, ShieldCheck, UserCheck, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -21,16 +21,22 @@ export default function PremiumLanding() {
       <main>
         <HeroSection />
 
-        {/* Brand Bar - Editorial Style */}
-        <div className="bg-white border-y border-border/40 py-16 overflow-hidden">
+        {/* Trust/Benefits Bar - Premium & Realistic */}
+        <div className="bg-white border-y border-border/40 py-12 overflow-hidden">
           <div className="container mx-auto px-6">
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-center text-muted-foreground/60 mb-12">Empoderando marcas que ditam o padrão do mercado</p>
-            <div className="flex flex-wrap justify-center md:justify-between items-center gap-12 opacity-30 grayscale hover:grayscale-0 transition-all duration-700">
-               <span className="text-2xl font-display font-black tracking-tighter">ESTÉTICA HUB</span>
-               <span className="text-2xl font-display font-black tracking-tighter">BEAUTY TECH</span>
-               <span className="text-2xl font-display font-black tracking-tighter">SPA RELAX</span>
-               <span className="text-2xl font-display font-black tracking-tighter">LUXE SALON</span>
-               <span className="text-2xl font-display font-black tracking-tighter">WELLNESS PRO</span>
+            <div className="flex flex-wrap justify-center lg:justify-between items-center gap-8 md:gap-16">
+               {[
+                 { label: "MOBILE-FIRST", desc: "Gestão na palma da mão" },
+                 { label: "MULTIUNIDADE", desc: "Controle centralizado" },
+                 { label: "PERSONALIZÁVEL", desc: "Adaptado ao seu fluxo" },
+                 { label: "ARQUITETURA ROBUSTA", desc: "Segurança de dados" },
+                 { label: "FOCO EM RETENÇÃO", desc: "LTV como prioridade" }
+               ].map((item, i) => (
+                 <div key={i} className="flex flex-col items-center lg:items-start group">
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary-dark/40 group-hover:text-accent transition-colors mb-1">{item.label}</span>
+                    <span className="text-[10px] font-medium text-muted-foreground/60">{item.desc}</span>
+                 </div>
+               ))}
             </div>
           </div>
         </div>
@@ -102,7 +108,7 @@ export default function PremiumLanding() {
               <div className="grid sm:grid-cols-2 gap-8">
                 {[
                   { icon: CheckCircle2, text: "Foco total em LTV e Retenção", desc: "Aumente o valor de cada cliente." },
-                  { icon: Smartphone, text: "Mobile-First de verdade", desc: "Gestão completa na palma da mão." },
+                  { icon: CheckCircle2, text: "Foco total em LTV e Retenção", desc: "Aumente o valor de cada cliente." },
                   { icon: Users, text: "Experiência do Cliente", desc: "Portal dedicado e personalizado." },
                   { icon: Calendar, text: "Fluxo de 3 cliques", desc: "Rapidez que sua recepção precisa." },
                 ].map((item, i) => (
@@ -228,17 +234,17 @@ export default function PremiumLanding() {
                  </div>
                  <div className="lg:w-2/3 space-y-4">
                     {[
-                      { q: "A Cativa serve para o meu tipo de negócio?", a: "Sim. A plataforma foi pensada para clínicas de estética, salões de beleza, barbearias, esmalterias, lash/brow, massagem, wellness e negócios correlatos." },
-                      { q: "Preciso usar API de WhatsApp?", a: "Não. A Cativa não depende de API de WhatsApp. O processo foi pensado para funcionar de forma organizada e semiautomatizada, mantendo controle operacional." },
-                      { q: "O sistema é difícil de usar?", a: "Não. A interface foi desenhada para ser intuitiva, rápida e clara, especialmente para quem vive a rotina da recepção e da gestão." },
-                      { q: "Funciona no celular?", a: "Sim. A Cativa foi pensada com abordagem mobile-first, para que a experiência funcione muito bem em diferentes tamanhos de tela." },
-                      { q: "Consigo personalizar para a minha operação?", a: "Sim. Serviços, mensagens, regras, equipe e unidades podem ser ajustados conforme a realidade do seu negócio." },
-                      { q: "A Cativa é apenas uma agenda?", a: "Não. A agenda é apenas uma parte. A proposta é organizar operação, relacionamento, confirmação, protocolos e indicadores para aumentar retenção." }
+                      { q: "A Cativa serve para o meu tipo de negócio?", a: "Sim. A plataforma foi pensada para clínicas de estética, salões de beleza, barbearias, esmalterias, lash/brow, massagem, wellness e negócios correlatos que buscam um nível superior de gestão." },
+                      { q: "Como funciona a demonstração?", a: "Nossa demonstração é um tour guiado por um especialista que entende o seu cenário. Mostramos como a Cativa resolve seus gargalos específicos em 20 minutos." },
+                      { q: "Posso testar antes de contratar?", a: "Sim. Oferecemos 14 dias de teste grátis com acesso total às funcionalidades core para que você sinta a diferença na operação real." },
+                      { q: "Vocês ajudam na migração de dados?", a: "Sim. Temos um processo de onboarding assistido para garantir que seu histórico e cadastros sejam migrados com segurança e rapidez." },
+                      { q: "O sistema funciona em tablets e celulares?", a: "Totalmente. A Cativa é mobile-first, permitindo que profissionais e gestores operem com 100% de eficiência de qualquer dispositivo." },
+                      { q: "É possível gerenciar mais de uma unidade?", a: "Com certeza. A estrutura da Cativa foi desenhada para redes e franquias, permitindo visão consolidada ou isolada por unidade com um único login." }
                     ].map((item, i) => (
-                      <div key={i} className="p-10 rounded-[2.5rem] bg-[#FAF7F9] border border-border/20 transition-all hover:border-accent/40 group">
-                         <h4 className="text-xl font-bold text-primary-dark mb-4 flex items-center justify-between">
+                      <div key={i} className="p-8 md:p-10 rounded-[2.5rem] bg-[#FAF7F9] border border-border/20 transition-all hover:border-accent/40 group">
+                         <h4 className="text-xl font-bold text-primary-dark mb-4 flex items-center justify-between gap-4">
                             {item.q}
-                            <div className="w-8 h-8 rounded-full border border-border/40 flex items-center justify-center group-hover:bg-accent group-hover:border-accent transition-all">
+                            <div className="w-8 h-8 rounded-full border border-border/40 flex items-center justify-center group-hover:bg-accent group-hover:border-accent transition-all shrink-0">
                                <ArrowRight className="h-4 w-4 text-primary-dark group-hover:text-white -rotate-45 group-hover:rotate-0 transition-transform" />
                             </div>
                          </h4>
@@ -276,22 +282,28 @@ export default function PremiumLanding() {
                 Deixe o improviso para trás. A Cativa é a inteligência que sua marca de beleza merece para crescer com consistência e sofisticação.
               </p>
               
-              <div className="flex flex-col sm:flex-row justify-center items-center gap-12 mb-24">
-                 <Button asChild size="lg" className="h-24 px-20 rounded-none bg-accent text-white text-2xl font-bold shadow-[0_30px_60px_-15px_rgba(168,76,134,0.5)] hover:bg-white hover:text-primary-dark transition-all duration-700 scale-110 hover:scale-105 group relative overflow-hidden">
-                    <Link to="/onboarding">
-                      <span className="relative z-10">Começar Agora</span>
-                      <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover:translate-y-0" />
-                    </Link>
-                 </Button>
-                 
-                 <div className="flex flex-col items-start gap-2 group cursor-pointer">
-                    <Link to="/planos" className="text-white/90 hover:text-accent font-bold uppercase tracking-[0.2em] text-sm transition-all flex items-center gap-3">
-                       Ver Planos e Preços
-                       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-2" />
-                    </Link>
-                    <div className="h-px w-full bg-white/20 group-hover:bg-accent transition-colors" />
-                 </div>
-              </div>
+               <div className="flex flex-col sm:flex-row justify-center items-center gap-6 mb-24">
+                  <Button asChild size="lg" className="h-20 px-12 rounded-full bg-accent text-white text-xl font-bold shadow-[0_30px_60px_-15px_rgba(168,76,134,0.5)] hover:bg-white hover:text-primary-dark transition-all duration-700 scale-110 hover:scale-105 group relative overflow-hidden">
+                     <Link to="/demo">
+                       <span className="relative z-10 flex items-center gap-3">
+                         Agendar minha demonstração
+                         <ArrowRight className="h-6 w-6" />
+                       </span>
+                       <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover:translate-y-0" />
+                     </Link>
+                  </Button>
+                  
+                  <Button asChild variant="outline" size="lg" className="h-20 px-12 rounded-full border-white/20 text-white text-xl hover:bg-white hover:text-primary-dark transition-all duration-500">
+                     <Link to="/onboarding">Começar teste de 14 dias</Link>
+                  </Button>
+               </div>
+               <div className="flex flex-col items-center gap-2 group cursor-pointer mb-24">
+                  <Link to="#planos" className="text-white/90 hover:text-accent font-bold uppercase tracking-[0.2em] text-sm transition-all flex items-center gap-3">
+                     Ver Planos e Preços
+                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-2" />
+                  </Link>
+                  <div className="h-px w-40 bg-white/20 group-hover:bg-accent transition-colors" />
+               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-12 py-16 border-y border-white/10">
                  {[

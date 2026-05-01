@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Star, Play, MousePointer2, TrendingUp, Clock, Calendar, Users } from "lucide-react";
+import { ArrowRight, Star, Clock, Calendar, Users, TrendingUp, MousePointer2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PremiumSection } from "../layout/PremiumSection";
 import { cn } from "@/lib/utils";
@@ -27,25 +27,25 @@ export function HeroSection() {
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">SaaS Premium para Gestão de Beleza</span>
           </div>
 
-          <h1 className="font-display text-5xl sm:text-7xl md:text-8xl xl:text-[7.5rem] leading-[0.9] tracking-[-0.03em] text-primary-dark mb-10 animate-fade-in delay-100">
-            Transforme sua <br className="hidden sm:block" />
+          <h1 className="font-display text-5xl sm:text-7xl md:text-8xl xl:text-[7.5rem] leading-[0.85] tracking-tight text-primary-dark mb-10 animate-fade-in delay-100">
+            A inteligência <br className="hidden sm:block" />
             <span className="relative inline-block">
-              agenda
+              que retém
               <svg className="absolute -bottom-1 sm:-bottom-2 left-0 w-full h-2 sm:h-3 text-accent/30 -z-10" viewBox="0 0 300 12" fill="none">
                 <path d="M1 10.5C50 4 150 1 299 10.5" stroke="currentColor" strokeWidth="6" strokeLinecap="round"/>
               </svg>
             </span>
             <br className="hidden sm:block" />
-            {" "}em <span className="italic font-normal serif text-accent">retenção.</span>
+            {" "}e <span className="italic font-normal serif text-accent">prospera.</span>
           </h1>
 
           <p className="text-xl md:text-2xl text-muted-foreground/80 leading-relaxed max-w-xl mb-12 animate-fade-in delay-200 font-light">
             A Cativa centraliza clientes, agendamentos, confirmações, protocolos e indicadores em um único sistema pensado para clínicas de estética, salões e negócios de beleza que querem crescer com organização e <span className="text-primary-dark font-medium">fazer o cliente voltar.</span>
           </p>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-6 mb-8 animate-fade-in delay-300">
-            <Button asChild size="lg" className="h-18 px-10 rounded-none bg-primary-dark text-lg shadow-2xl shadow-primary/20 group relative overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98]">
-              <Link to="/onboarding">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-6 animate-fade-in delay-300">
+            <Button asChild size="lg" className="h-16 px-10 rounded-full bg-primary-dark text-lg shadow-2xl shadow-primary/20 group relative overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98]">
+              <Link to="/demo">
                 <span className="relative z-10 flex items-center gap-2">
                   Agendar demonstração
                   <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -54,9 +54,22 @@ export function HeroSection() {
               </Link>
             </Button>
             
-            <Button asChild variant="outline" size="lg" className="h-18 px-10 rounded-none border-primary-dark/20 text-lg hover:bg-primary-dark hover:text-white transition-all">
-              <Link to="/onboarding">Começar teste</Link>
+            <Button asChild variant="outline" size="lg" className="h-16 px-10 rounded-full border-primary-dark/20 text-lg hover:bg-accent hover:text-white hover:border-accent transition-all">
+              <Link to="/onboarding">Começar teste grátis</Link>
             </Button>
+          </div>
+
+          <div className="flex items-center gap-2 mb-10 animate-fade-in delay-350 px-2">
+             <div className="flex -space-x-2">
+                {[1,2,3].map(i => (
+                  <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-secondary flex items-center justify-center overflow-hidden">
+                    <img src={`https://i.pravatar.cc/100?u=${i}`} alt="user" className="w-full h-full object-cover" />
+                  </div>
+                ))}
+             </div>
+             <p className="text-[10px] font-medium text-muted-foreground tracking-tight">
+               <span className="text-primary-dark font-bold">14 dias grátis</span>. Sem cartão de crédito.
+             </p>
           </div>
 
           <div className="flex flex-wrap gap-x-8 gap-y-2 mb-16 animate-fade-in delay-400">
@@ -168,18 +181,43 @@ export function HeroSection() {
                 </div>
              </div>
 
-             {/* Floating Mobile App */}
-             <div className="absolute -bottom-12 -left-12 w-60 aspect-[9/19] bg-[#1A0F16] rounded-[3rem] p-3 shadow-2xl border-[4px] border-[#2A1523] transform -rotate-6 transition-all duration-1000 group-hover:-rotate-3 group-hover:translate-y-6 hidden md:block z-30">
-                <div className="w-full h-full bg-[#FAF7F9] rounded-[2.2rem] overflow-hidden p-5 relative">
-                   <div className="w-10 h-1 bg-primary/10 rounded-full mx-auto mb-6" />
-                   <div className="h-3 w-3/4 bg-primary-dark/10 rounded-full mb-8" />
-                   <div className="space-y-3">
-                      {[1,2,3,4,5].map(i => (
-                        <div key={i} className="h-14 bg-white rounded-xl shadow-sm border border-primary/5" />
-                      ))}
+             {/* Floating Mobile App - High Fidelity Simulation */}
+             <div className="absolute -bottom-12 -left-12 w-60 aspect-[9/19] bg-[#1A0F16] rounded-[3rem] p-3 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border-[4px] border-[#2A1523] transform -rotate-6 transition-all duration-1000 group-hover:-rotate-3 group-hover:translate-y-6 hidden md:block z-30">
+                <div className="w-full h-full bg-white rounded-[2.2rem] overflow-hidden flex flex-col relative">
+                   <div className="h-6 w-full flex justify-center items-end pb-1 shrink-0">
+                      <div className="w-10 h-1 bg-black/5 rounded-full" />
                    </div>
-                   <div className="absolute bottom-8 left-5 right-5 h-10 bg-accent rounded-xl flex items-center justify-center">
-                      <div className="w-6 h-0.5 bg-white/40 rounded-full" />
+                   
+                   <div className="p-4 flex-1">
+                      <div className="flex justify-between items-center mb-6">
+                         <div className="w-8 h-8 rounded-full bg-accent/10" />
+                         <div className="h-2 w-16 bg-black/5 rounded-full" />
+                      </div>
+                      
+                      <div className="space-y-4">
+                         <div className="h-32 bg-secondary/20 rounded-2xl flex flex-col justify-between p-4 overflow-hidden relative">
+                            <div className="flex justify-between items-start">
+                               <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                               <div className="h-2 w-12 bg-black/5 rounded-full" />
+                            </div>
+                            <div className="text-xl font-display font-black text-primary-dark">82%</div>
+                         </div>
+                         
+                         <div className="space-y-2">
+                            {[1,2,3,4].map(i => (
+                               <div key={i} className="h-12 bg-white rounded-xl shadow-sm border border-black/5 flex items-center px-3 gap-3">
+                                  <div className="w-6 h-6 rounded-full bg-secondary/50 shrink-0" />
+                                  <div className="h-1.5 w-full bg-black/5 rounded-full" />
+                               </div>
+                            ))}
+                         </div>
+                      </div>
+                   </div>
+                   
+                   <div className="h-16 bg-white border-t border-black/5 flex items-center justify-around px-4">
+                      <div className="w-1 h-1 rounded-full bg-accent" />
+                      <div className="w-1 h-1 rounded-full bg-black/10" />
+                      <div className="w-1 h-1 rounded-full bg-black/10" />
                    </div>
                 </div>
              </div>

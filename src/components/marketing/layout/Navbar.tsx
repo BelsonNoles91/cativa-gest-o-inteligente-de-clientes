@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ArrowRight } from "lucide-react";
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -16,13 +16,6 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navLinks = [
-    { label: "Funcionalidades", href: "#features" },
-    { label: "Módulos", href: "#modulos" },
-    { label: "Planos", href: "#planos" },
-    { label: "FAQ", href: "#faq" }
-  ];
-
   return (
     <nav 
       className={cn(
@@ -34,7 +27,7 @@ export function Navbar() {
         className={cn(
           "mx-auto max-w-7xl h-20 rounded-full flex items-center justify-between px-10 transition-all duration-500",
           isScrolled 
-            ? "bg-white/80 backdrop-blur-xl shadow-[0_20px_50px_-10px_rgba(0,0,0,0.05)] border border-white/40" 
+            ? "bg-white/90 backdrop-blur-xl shadow-[0_20px_50px_-10px_rgba(0,0,0,0.05)] border border-white/40" 
             : "bg-transparent"
         )}
       >
@@ -45,24 +38,21 @@ export function Navbar() {
         </Link>
 
         {/* Desktop Links */}
-        <div className="hidden lg:flex items-center gap-12">
-          {navLinks.map((link) => (
-            <a 
-              key={link.label} 
-              href={link.href} 
-              className="text-sm font-bold uppercase tracking-widest text-primary-dark/60 hover:text-accent transition-colors"
-            >
-              {link.label}
-            </a>
-          ))}
+        <div className="hidden lg:flex items-center gap-10">
+          <a href="#features" className="text-[10px] font-bold uppercase tracking-widest text-primary-dark/60 hover:text-accent transition-colors">Funcionalidades</a>
+          <a href="#modulos" className="text-[10px] font-bold uppercase tracking-widest text-primary-dark/60 hover:text-accent transition-colors">Módulos</a>
+          <a href="#planos" className="text-[10px] font-bold uppercase tracking-widest text-primary-dark/60 hover:text-accent transition-colors">Planos</a>
         </div>
 
-        <div className="hidden lg:flex items-center gap-8">
-          <Link to="/auth/login" className="text-sm font-bold uppercase tracking-widest text-primary-dark/60 hover:text-primary-dark transition-colors">
+        <div className="hidden lg:flex items-center gap-4">
+          <Link to="/auth/login" className="text-[10px] font-bold uppercase tracking-widest text-primary-dark/60 hover:text-primary-dark transition-colors px-6">
             Entrar
           </Link>
-          <Button asChild className="rounded-full px-8 bg-primary-dark hover:bg-accent transition-all duration-500 shadow-lg shadow-primary/10">
-            <Link to="/onboarding">Começar Agora</Link>
+          <Button asChild variant="outline" className="rounded-full px-8 text-[10px] font-bold uppercase tracking-widest border-primary-dark/10 hover:bg-primary-dark hover:text-white transition-all duration-300">
+            <Link to="/demo">Demonstração</Link>
+          </Button>
+          <Button asChild className="rounded-full px-8 text-[10px] font-bold uppercase tracking-widest bg-accent hover:bg-accent/90 text-white transition-all duration-300 shadow-lg shadow-accent/20">
+            <Link to="/onboarding">Começar Teste</Link>
           </Button>
         </div>
 
@@ -88,21 +78,17 @@ export function Navbar() {
         </div>
         
         <div className="flex flex-col gap-12">
-          {navLinks.map((link) => (
-            <a 
-              key={link.label} 
-              href={link.href} 
-              className="text-4xl font-display font-bold text-primary-dark"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              {link.label}
-            </a>
-          ))}
+          <a href="#features" className="text-4xl font-display font-bold text-primary-dark" onClick={() => setMobileMenuOpen(false)}>Funcionalidades</a>
+          <a href="#modulos" className="text-4xl font-display font-bold text-primary-dark" onClick={() => setMobileMenuOpen(false)}>Módulos</a>
+          <a href="#planos" className="text-4xl font-display font-bold text-primary-dark" onClick={() => setMobileMenuOpen(false)}>Planos</a>
         </div>
 
         <div className="mt-auto space-y-6">
-           <Button asChild size="lg" className="w-full h-16 rounded-2xl bg-primary-dark text-xl">
-              <Link to="/onboarding">Começar Agora</Link>
+           <Button asChild size="lg" className="w-full h-16 rounded-2xl bg-accent text-xl">
+              <Link to="/onboarding">Começar Teste</Link>
+           </Button>
+           <Button asChild size="lg" variant="outline" className="w-full h-16 rounded-2xl text-xl">
+              <Link to="/demo">Agendar Demonstração</Link>
            </Button>
            <Button variant="ghost" asChild size="lg" className="w-full h-16 rounded-2xl text-xl">
               <Link to="/auth/login">Entrar</Link>

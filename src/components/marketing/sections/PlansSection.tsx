@@ -101,17 +101,26 @@ export function PlansSection() {
                ))}
             </div>
 
-            <Button asChild className={cn(
-              "w-full h-20 rounded-none text-xl font-bold transition-all relative overflow-hidden group/btn",
-              isHighlight 
-                ? "bg-accent text-white hover:bg-white hover:text-primary-dark" 
-                : "bg-primary-dark text-white hover:bg-accent"
-            )}>
-              <Link to="/onboarding">
-                <span className="relative z-10">{price === 0 ? "Começar Agora" : "Selecionar Plano"}</span>
-                <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover/btn:translate-y-0" />
-              </Link>
-            </Button>
+            <div className="flex flex-col gap-3">
+              <Button asChild className={cn(
+                "w-full h-16 rounded-full text-lg font-bold transition-all relative overflow-hidden group/btn shadow-lg",
+                isHighlight 
+                  ? "bg-accent text-white hover:bg-white hover:text-primary-dark" 
+                  : "bg-primary-dark text-white hover:bg-accent"
+              )}>
+                <Link to="/onboarding">
+                  <span className="relative z-10">{price === 0 ? "Começar Agora" : "Selecionar Plano"}</span>
+                  <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover/btn:translate-y-0" />
+                </Link>
+              </Button>
+              
+              <Button asChild variant="ghost" className={cn(
+                "w-full h-12 rounded-full text-xs font-bold uppercase tracking-widest transition-all",
+                isHighlight ? "text-white/60 hover:text-white" : "text-primary-dark/60 hover:text-primary-dark"
+              )}>
+                <Link to="/demo">Agendar demonstração</Link>
+              </Button>
+            </div>
             
             {plan.trial_days > 0 && (
               <p className={cn("text-center mt-6 text-[10px] font-bold uppercase tracking-widest opacity-40")}>
