@@ -131,7 +131,8 @@ export default function PremiumLanding() {
                           </div>
                        </div>
                     </div>
-                 </AnimatePresence>
+                 </motion.div>
+               </AnimatePresence>
                
                {/* Badge flutuante dinâmico */}
                <AnimatePresence mode="wait">
