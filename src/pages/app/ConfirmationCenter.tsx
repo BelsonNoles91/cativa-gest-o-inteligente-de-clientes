@@ -322,6 +322,22 @@ export default function ConfirmationCenter() {
         <MetricCard label="Em andamento / retorno" value={String(metrics.inProgress + metrics.followUp)} helper="Operação já tocando" />
       </div>
 
+      {center.selectedIds.size > 0 && (
+        <div className="sticky top-14 z-20 -mx-4 mb-4 flex items-center justify-between bg-primary px-4 py-3 text-primary-foreground shadow-lg animate-in slide-in-from-top-4 md:mx-0 md:rounded-xl">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-semibold">{center.selectedIds.size} selecionados</span>
+            <Button variant="ghost" size="sm" className="h-8 text-xs text-primary-foreground hover:bg-white/10" onClick={() => center.clearSelection()}>
+              Limpar
+            </Button>
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" variant="secondary" className="h-8 text-xs bg-white text-primary hover:bg-white/90" onClick={() => center.setBatchStatus("confirmed")}>
+              Confirmar todos
+            </Button>
+          </div>
+        </div>
+      )}
+
       <Tabs
         value={center.stage}
         onValueChange={(v) => center.setStage(v as ConfirmationStage)}
