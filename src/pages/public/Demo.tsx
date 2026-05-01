@@ -131,14 +131,14 @@ export default function DemoPage() {
                 <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#FAF7F9] border border-border/20">
                   <Calendar className="h-5 w-5 text-accent" />
                   <div className="flex-1">
-                    <p className="text-xs font-bold text-primary-dark">Sexta-feira, 15 de Maio</p>
+                    <p className="text-xs font-bold text-primary-dark">{selectedDay} de Maio, 2026</p>
                     <p className="text-[10px] text-muted-foreground">Dia selecionado</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#FAF7F9] border border-border/20">
                   <Clock className="h-5 w-5 text-accent" />
                   <div className="flex-1">
-                    <p className="text-xs font-bold text-primary-dark">09:30 — 10:00 (15 min)</p>
+                    <p className="text-xs font-bold text-primary-dark">09:30 — 09:45 (15 min)</p>
                     <p className="text-[10px] text-muted-foreground">Horário de Brasília</p>
                   </div>
                 </div>
