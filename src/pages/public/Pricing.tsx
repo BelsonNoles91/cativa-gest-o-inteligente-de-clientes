@@ -14,8 +14,8 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Check, HelpCircle, Loader2, Sparkles, RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
-import { PublicHeader } from "@/components/public/PublicHeader";
-import { PublicFooter } from "@/components/public/PublicFooter";
+import { PremiumHeader } from "@/components/marketing/layout/PremiumHeader";
+import { PremiumFooter } from "@/components/marketing/layout/PremiumFooter";
 import { listPlans, listPlanFeatures } from "@/repositories/billing";
 import {
   billingPeriodLabels,
