@@ -49,15 +49,15 @@ export function PremiumFooter() {
               Gestão que faz o cliente voltar. Sistema para clínicas e salões que querem organizar agenda, clientes, confirmações e indicadores com foco em retenção.
             </p>
             <div className="flex flex-col gap-4">
-               <div className="flex items-center gap-3 text-white/70 hover:text-accent transition-colors">
+               <a href="mailto:contato@cativagestao.com.br" className="flex items-center gap-3 text-white/70 hover:text-accent transition-colors">
                   <Mail className="h-5 w-5" />
                   <span>contato@cativagestao.com.br</span>
-               </div>
-               <div className="flex items-center gap-3 text-white/70 hover:text-accent transition-colors">
+               </a>
+               <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-white/70 hover:text-accent transition-colors">
                   <Phone className="h-5 w-5" />
-                  <span>(11) 99999-9999</span>
-               </div>
-               <div className="flex items-center gap-3 text-white/70 hover:text-accent transition-colors">
+                  <span>Falar com Especialista (WhatsApp)</span>
+               </a>
+               <div className="flex items-center gap-3 text-white/70">
                   <MapPin className="h-5 w-5" />
                   <span>São Paulo, SP - Brasil</span>
                </div>
@@ -112,10 +112,10 @@ export function PremiumFooter() {
             </div>
           </div>
           <div className="flex items-center gap-6">
-            <a href="#" className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:text-accent hover:border-accent transition-all">
+            <a href="https://instagram.com/cativagestao" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:text-accent hover:border-accent transition-all">
               <Instagram className="h-5 w-5" />
             </a>
-            <a href="#" className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:text-accent hover:border-accent transition-all">
+            <a href="https://linkedin.com/company/cativagestao" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:text-accent hover:border-accent transition-all">
               <Linkedin className="h-5 w-5" />
             </a>
           </div>
