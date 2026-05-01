@@ -649,29 +649,6 @@ export default function Onboarding() {
           </Button>
         </div>
       )}
-      {/* Step 4 — Confirmação / criação */}
-      {step === 4 && (
-        <div className="space-y-5 text-center animate-fade-in">
-          <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-gradient-brand text-primary-foreground">
-            <Sparkles className="h-7 w-7" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-semibold">Tudo pronto para criar!</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Vamos preparar seu workspace agora.</p>
-          </div>
-
-          <ul className="rounded-xl border border-border/70 bg-card text-left text-sm divide-y divide-border/60">
-            <li className="flex items-center justify-between p-3"><span className="text-muted-foreground">Estabelecimento</span><span className="font-medium">{bizName}</span></li>
-            <li className="flex items-center justify-between p-3"><span className="text-muted-foreground">Segmento</span><span className="font-medium">{segment ? segmentLabels[segment as TenantSegment] : "—"}</span></li>
-            <li className="flex items-center justify-between p-3"><span className="text-muted-foreground">Unidade</span><span className="font-medium">{unitName || "Matriz"}</span></li>
-            <li className="flex items-center justify-between p-3"><span className="text-muted-foreground">Convites</span><span className="font-medium">{invites.length}</span></li>
-          </ul>
-
-          <Button onClick={handleFinish} disabled={submitting} className="h-11 w-full rounded-xl bg-gradient-brand">
-            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (<>Criar e acessar o Cativa <ArrowRight className="ml-2 h-4 w-4" /></>)}
-          </Button>
-        </div>
-      )}
     </AuthLayout>
   );
 }
