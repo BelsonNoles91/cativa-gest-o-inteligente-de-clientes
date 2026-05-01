@@ -2,10 +2,11 @@
  * QueueItemCard — cartão de um item da fila de confirmação.
  * Exibe cliente, agendamento e ações rápidas (abrir contato).
  */
-import { Phone, MessageCircle, Mail, Clock, CalendarClock, AlertTriangle, Crown, ExternalLink, CheckCircle2 } from "lucide-react";
+import { Phone, MessageCircle, Mail, Clock, CalendarClock, AlertTriangle, Crown, ExternalLink, CheckCircle2, CheckSquare, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
+import { cn } from "@/lib/utils";
 import {
   queueStatusLabels,
   queueStatusTone,
@@ -21,10 +22,16 @@ const toneMap = {
   muted: "neutral",
 } as const;
 
+interface SelectionContext {
+  selectedIds: Set<string>;
+  toggleSelection: (id: string) => void;
+}
+
 interface QueueItemCardProps {
   item: QueueItemHydrated;
   onOpen: (item: QueueItemHydrated) => void;
   onConfirmQuick?: (item: QueueItemHydrated) => void;
+  selection?: SelectionContext;
 }
 
 function formatStarts(iso: string): { date: string; time: string; relative: string } {
