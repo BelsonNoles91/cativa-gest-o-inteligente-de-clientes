@@ -325,7 +325,7 @@ export default function Pricing() {
         </div>
       </section>
 
-      <PublicFooter />
+      <PremiumFooter />
     </div>
   );
 }
