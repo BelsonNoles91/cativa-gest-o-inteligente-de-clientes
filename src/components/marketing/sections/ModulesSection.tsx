@@ -62,7 +62,7 @@ export function ModulesSection() {
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="max-w-4xl mb-16 md:mb-24 px-4 md:px-0"
+        className="max-w-4xl mx-auto text-center mb-16 md:mb-24 px-4 md:px-0"
       >
         <div className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-6 md:mb-8">
           Módulos do Sistema
@@ -71,7 +71,7 @@ export function ModulesSection() {
           Tudo o que sua operação precisa, <br className="hidden md:block" />
           <span className="text-accent italic serif font-normal">em um único sistema.</span>
         </h2>
-        <p className="text-lg md:text-xl text-muted-foreground/80 font-light leading-relaxed max-w-2xl">
+        <p className="text-lg md:text-xl text-muted-foreground/80 font-light leading-relaxed max-w-2xl mx-auto">
           Cada parte da Cativa foi desenhada para resolver um problema real do dia a dia e, ao mesmo tempo, fortalecer a fidelidade dos seus clientes.
         </p>
       </motion.div>

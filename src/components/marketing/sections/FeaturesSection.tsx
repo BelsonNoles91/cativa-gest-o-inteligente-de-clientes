@@ -48,7 +48,7 @@ export function FeaturesSection() {
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="flex flex-col lg:flex-row gap-12 md:gap-20 items-end mb-24 md:mb-32 px-4 md:px-0"
+        className="flex flex-col items-center text-center gap-12 md:gap-16 mb-24 md:mb-32 px-4 md:px-0"
       >
         <div className="max-w-2xl">
           <div className="inline-block px-4 py-1.5 rounded-full bg-secondary/50 text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-8">
@@ -59,7 +59,7 @@ export function FeaturesSection() {
             <span className="text-accent italic serif font-normal">transformar rotina em resultado.</span>
           </h2>
         </div>
-        <p className="text-lg md:text-xl text-muted-foreground/80 max-w-md pb-4 font-light leading-relaxed">
+        <p className="text-lg md:text-xl text-muted-foreground/80 max-w-xl font-light leading-relaxed">
           A Cativa organiza o que normalmente fica espalhado entre agenda física, mensagens e decisões de última hora.
         </p>
       </motion.div>

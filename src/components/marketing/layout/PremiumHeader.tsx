@@ -57,16 +57,12 @@ export function PremiumHeader() {
           <Button asChild variant="ghost" className="font-semibold text-sm hover:bg-accent/5 focus:ring-2 focus:ring-accent">
             <Link to="/auth/login">Entrar</Link>
           </Button>
-          <div className="flex flex-col items-center">
-            <Button asChild variant="outline" className="rounded-full border-primary-dark/20 hover:bg-secondary/10 px-4 xl:px-6 transition-all active:scale-95 focus:ring-2 focus:ring-accent">
-              <Link to="/demo">Demonstração</Link>
-            </Button>
-          </div>
-          <div className="flex flex-col items-center">
-            <Button asChild className="rounded-full bg-primary-dark hover:bg-primary px-4 xl:px-6 shadow-lg shadow-primary/10 transition-all active:scale-95 focus:ring-2 focus:ring-accent focus:ring-offset-2">
-              <Link to="/onboarding">Teste grátis</Link>
-            </Button>
-          </div>
+          <Button asChild variant="outline" className="rounded-full border-primary-dark/20 hover:bg-secondary/10 px-4 xl:px-6 transition-all active:scale-95 focus:ring-2 focus:ring-accent">
+            <Link to="/demo">Demonstração</Link>
+          </Button>
+          <Button asChild className="rounded-full bg-primary-dark hover:bg-primary px-4 xl:px-6 shadow-lg shadow-primary/10 transition-all active:scale-95 focus:ring-2 focus:ring-accent focus:ring-offset-2">
+            <Link to="/onboarding">Teste grátis</Link>
+          </Button>
         </div>
 
         {/* Mobile Toggle */}

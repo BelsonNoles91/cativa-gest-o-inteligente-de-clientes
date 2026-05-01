@@ -38,7 +38,7 @@ export function HeroSection() {
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="relative z-10 px-4 md:px-0 text-center lg:text-left"
+          className="relative z-10 px-4 md:px-0 text-center"
         >
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
@@ -76,12 +76,12 @@ export function HeroSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className="text-lg md:text-xl text-muted-foreground/80 leading-relaxed max-w-xl mx-auto lg:mx-0 mb-10 font-light"
+            className="text-lg md:text-xl text-muted-foreground/80 leading-relaxed max-w-xl mx-auto mb-10 font-light"
           >
             A Cativa centraliza agenda, clientes, confirmações, protocolos e indicadores para clínicas e salões que querem reduzir faltas, melhorar o rebooking e crescer com mais previsibilidade.
           </motion.p>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-4 mb-8">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4 mb-8">
             <div className="flex flex-col gap-2">
               <Button asChild size="lg" variant="premium" className="group relative overflow-hidden h-16 px-8" aria-label="Começar teste gratuito de 14 dias">
                 <Link to="/onboarding">
@@ -92,18 +92,18 @@ export function HeroSection() {
                   <div className="absolute inset-0 bg-white translate-y-full transition-transform group-hover:translate-y-0" />
                 </Link>
               </Button>
-              <span className="text-[10px] text-muted-foreground font-medium text-center lg:text-left px-2">Experimente os principais fluxos sem compromisso.</span>
+              <span className="text-[10px] text-muted-foreground font-medium text-center px-2">Experimente os principais fluxos sem compromisso.</span>
             </div>
             
             <div className="flex flex-col gap-2">
               <Button asChild variant="outline" size="lg" className="h-16 px-8 rounded-full border-primary-dark/20 bg-primary text-primary-dark hover:text-white hover:border-primary-dark" aria-label="Agendar demonstração personalizada">
                 <Link to="/demo">Agendar demonstração</Link>
               </Button>
-              <span className="text-[10px] text-muted-foreground font-medium text-center lg:text-left px-2">Veja a Cativa aplicada ao seu tipo de negócio.</span>
+              <span className="text-[10px] text-muted-foreground font-medium text-center px-2">Veja a Cativa aplicada ao seu tipo de negócio.</span>
             </div>
           </div>
 
-          <div className="flex items-center justify-center lg:justify-start gap-2 mb-10 px-2">
+          <div className="flex items-center justify-center gap-2 mb-10 px-2">
              <div className="flex -space-x-2">
                 {[1,2,3].map(i => (
                   <img key={i} src={`https://i.pravatar.cc/100?u=${i}`} alt="usuário" className="w-6 h-6 rounded-full border-2 border-white object-cover" />
@@ -115,7 +115,7 @@ export function HeroSection() {
               </p>
           </div>
 
-          <div className="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-3 mb-12">
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 mb-12">
             {["Sem API de WhatsApp", "Mobile-first", "Foco em Retenção"].map((item, i) => (
               <div key={i} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary-dark/40">
                 <div className="w-1.5 h-1.5 rounded-full bg-accent" />
