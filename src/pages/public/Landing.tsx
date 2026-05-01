@@ -227,8 +227,9 @@ export default function Landing() {
             <StatusBadge tone="brand" className="w-fit">Plataforma SaaS · Beleza & Wellness</StatusBadge>
             <h1 className="font-display text-5xl leading-[0.95] tracking-tight md:text-7xl lg:text-[5.5rem]">
               Sua gestão <br className="hidden md:block" />
-              em <span className="text-gradient-brand italic">alta performance</span>.
+              em <span className="text-gradient-brand italic pb-1 pr-1">alta performance</span>.
             </h1>
+
             <p className="max-w-xl text-lg text-muted-foreground/90 md:text-xl leading-relaxed">
 
               Cativa centraliza agenda, clientes, pacotes, confirmações e portal
