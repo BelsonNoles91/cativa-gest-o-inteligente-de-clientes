@@ -386,6 +386,7 @@ export default function PremiumLanding() {
                       { q: "Como funciona a demonstração?", a: "Nossa demonstração é um tour guiado por um especialista que entende o seu cenário. Mostramos como a Cativa resolve seus problemas específicos em 15 minutos, sem compromisso." },
                       { q: "Posso testar antes de contratar?", a: "Com certeza. Oferecemos 14 dias de teste grátis com acesso total às principais funcionalidades para que você sinta a diferença na sua rotina real antes de decidir." },
                       { q: "O sistema usa API de WhatsApp?", a: "Não. A Cativa utiliza uma central de confirmação inteligente baseada em wa.me (links diretos), o que garante estabilidade, evita bloqueios de números e elimina taxas abusivas por mensagem." },
+                      { q: "Consigo falar com um especialista agora?", a: "Sim! Você pode clicar no botão de WhatsApp em nosso rodapé ou agendar uma demonstração completa para tirar dúvidas específicas sobre o seu negócio." },
                       { q: "Funciona para quem tem mais de uma unidade?", a: "Sim. A estrutura da Cativa foi desenhada para crescer com você, permitindo a gestão de múltiplas unidades com visão consolidada ou individualizada por local." },
                       { q: "Consigo acessar pelo celular?", a: "A Cativa é mobile-first. Isso significa que você e sua equipe têm uma experiência completa e fluida diretamente pelo navegador do celular, sem precisar baixar aplicativos pesados." }
                     ].map((item, i) => (

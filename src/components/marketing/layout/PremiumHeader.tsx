@@ -9,7 +9,7 @@ import { AnimatePresence, motion } from "framer-motion";
 const NAV_LINKS = [
   { label: "Funcionalidades", href: "/#funcionalidades" },
   { label: "Módulos", href: "/#modulos" },
-  { label: "Preços", href: "/planos" },
+  { label: "Preços", href: "/#planos" },
   { label: "Dúvidas", href: "/#duvidas" },
 ];
 
@@ -59,15 +59,13 @@ export function PremiumHeader() {
           </Button>
           <div className="flex flex-col items-center">
             <Button asChild variant="outline" className="rounded-full border-primary-dark/20 hover:bg-secondary/10 px-4 xl:px-6 transition-all active:scale-95 focus:ring-2 focus:ring-accent">
-              <Link to="/demo">Agendar demonstração</Link>
+              <Link to="/demo">Demonstração</Link>
             </Button>
-            <span className="text-[9px] text-muted-foreground mt-1.5 font-medium">Veja a Cativa no seu negócio</span>
           </div>
           <div className="flex flex-col items-center">
             <Button asChild className="rounded-full bg-primary-dark hover:bg-primary px-4 xl:px-6 shadow-lg shadow-primary/10 transition-all active:scale-95 focus:ring-2 focus:ring-accent focus:ring-offset-2">
-              <Link to="/onboarding">Começar teste grátis</Link>
+              <Link to="/onboarding">Teste grátis</Link>
             </Button>
-            <span className="text-[9px] text-muted-foreground mt-1.5 font-medium">Experimente sem compromisso</span>
           </div>
         </div>
 
