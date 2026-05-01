@@ -43,8 +43,19 @@ function formatStarts(iso: string): { date: string; time: string; relative: stri
   };
 }
 
-export function QueueItemCard({ item, onOpen, onConfirmQuick }: QueueItemCardProps) {
+interface SelectionContext {
+  selectedIds: Set<string>;
+  toggleSelection: (id: string) => void;
+}
+
+export function QueueItemCard({ 
+  item, 
+  onOpen, 
+  onConfirmQuick, 
+  selection 
+}: QueueItemCardProps & { selection?: SelectionContext }) {
   const t = formatStarts(item.appointmentStartsAt);
+
   const tone = toneMap[queueStatusTone(item.status)];
 
   const phoneDigits = item.clientWhatsapp ? item.clientWhatsapp.replace(/\D/g, "") : null;
