@@ -257,19 +257,19 @@ export default function PremiumLanding() {
            </div>
         </PremiumSection>
 
-        {/* Final CTA - High Impact Editorial Style */}
+        {/* Chamada Final */}
         <PremiumSection variant="dark" padding="xl" className="text-center overflow-visible">
-           {/* Sophisticated background depth */}
+           {/* Fundo sofisticado */}
            <div className="absolute inset-0 bg-[#1A0F16]" />
            <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[140%] bg-accent/5 blur-[120px] rounded-full rotate-12" />
            <div className="absolute bottom-[-30%] right-[-10%] w-[50%] h-[120%] bg-primary/10 blur-[100px] rounded-full -rotate-12" />
            
-           <div className="max-w-6xl mx-auto relative z-10">
+           <div className="max-w-6xl mx-auto relative z-10 px-4">
               <div className="inline-block px-5 py-2 rounded-full bg-accent/10 text-[11px] font-bold uppercase tracking-[0.3em] text-accent mb-12 border border-accent/20">
                 Pronto para o Próximo Nível?
               </div>
               
-              <h2 className="font-display text-5xl sm:text-7xl md:text-[10rem] text-white mb-16 tracking-tighter leading-[0.8] animate-fade-in">
+              <h2 className="font-display text-5xl sm:text-7xl md:text-[9rem] text-white mb-16 tracking-tighter leading-[0.8] animate-fade-in">
                 Sua operação, <br />
                 <span className="italic serif font-normal text-accent relative inline-block">
                   elevada.
@@ -279,7 +279,7 @@ export default function PremiumLanding() {
                 </span>
               </h2>
               
-              <p className="text-white/70 text-2xl md:text-3xl font-light max-w-3xl mx-auto mb-20 leading-relaxed tracking-tight">
+              <p className="text-white/70 text-xl md:text-3xl font-light max-w-3xl mx-auto mb-20 leading-relaxed tracking-tight">
                 Deixe o improviso para trás. A Cativa é a inteligência que sua marca de beleza merece para crescer com consistência e sofisticação.
               </p>
               
@@ -287,7 +287,7 @@ export default function PremiumLanding() {
                   <Button asChild size="lg" className="h-20 px-12 rounded-full bg-accent text-white text-xl font-bold shadow-[0_30px_60px_-15px_rgba(168,76,134,0.5)] hover:bg-white hover:text-primary-dark transition-all duration-700 scale-110 hover:scale-105 group relative overflow-hidden">
                      <Link to="/demo">
                        <span className="relative z-10 flex items-center gap-3">
-                         Agendar minha demonstração
+                         Ver demonstração gratuita
                          <ArrowRight className="h-6 w-6" />
                        </span>
                        <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover:translate-y-0" />
@@ -298,39 +298,23 @@ export default function PremiumLanding() {
                      <Link to="/onboarding">Começar teste de 14 dias</Link>
                   </Button>
                </div>
-               <div className="flex flex-col items-center gap-2 group cursor-pointer mb-24">
-                  <Link to="#planos" className="text-white/90 hover:text-accent font-bold uppercase tracking-[0.2em] text-sm transition-all flex items-center gap-3">
-                     Ver Planos e Preços
-                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-2" />
-                  </Link>
-                  <div className="h-px w-40 bg-white/20 group-hover:bg-accent transition-colors" />
+               
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-12 py-16 border-y border-white/10">
+                  {[
+                    { text: "14 dias grátis", sub: "Sem compromisso" },
+                    { text: "Sem cartão", sub: "Acesso imediato" },
+                    { text: "Atendimento Exclusivo", sub: "Acompanhamento guiado" }
+                  ].map((item, i) => (
+                    <div key={i} className="flex flex-col items-center gap-2">
+                       <div className="flex items-center gap-3 mb-1">
+                          <CheckCircle2 className="h-5 w-5 text-accent" />
+                          <span className="text-xl font-bold text-white tracking-tight">{item.text}</span>
+                       </div>
+                       <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/30">{item.sub}</span>
+                    </div>
+                  ))}
                </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-12 py-16 border-y border-white/10">
-                 {[
-                   { text: "14 dias grátis", sub: "Sem compromisso" },
-                   { text: "Sem cartão", sub: "Setup imediato" },
-                   { text: "Suporte VIP", sub: "Implementação guiada" }
-                 ].map((item, i) => (
-                   <div key={i} className="flex flex-col items-center gap-2">
-                      <div className="flex items-center gap-3 mb-1">
-                         <CheckCircle2 className="h-5 w-5 text-accent" />
-                         <span className="text-xl font-bold text-white tracking-tight">{item.text}</span>
-                      </div>
-                      <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/30">{item.sub}</span>
-                   </div>
-                 ))}
-              </div>
-              
-              <div className="mt-16 flex flex-col items-center gap-6 opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-1000">
-                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Tecnologia Certificada</p>
-                <div className="flex items-center gap-12">
-                   <div className="h-8 w-24 bg-white/10 rounded" />
-                   <div className="h-8 w-32 bg-white/10 rounded" />
-                   <div className="h-8 w-20 bg-white/10 rounded" />
-                </div>
-              </div>
-           </div>
+            </div>
         </PremiumSection>
       </main>
 
