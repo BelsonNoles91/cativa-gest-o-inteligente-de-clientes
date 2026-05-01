@@ -282,13 +282,21 @@ export default function PremiumLanding() {
                 Deixe o improviso para trás. A Cativa é a inteligência que sua marca de beleza merece para crescer com consistência e sofisticação.
               </p>
               
-              <div className="flex flex-col sm:flex-row justify-center items-center gap-12 mb-24">
-                 <Button asChild size="lg" className="h-24 px-20 rounded-none bg-accent text-white text-2xl font-bold shadow-[0_30px_60px_-15px_rgba(168,76,134,0.5)] hover:bg-white hover:text-primary-dark transition-all duration-700 scale-110 hover:scale-105 group relative overflow-hidden">
-                    <Link to="/onboarding">
-                      <span className="relative z-10">Começar Agora</span>
-                      <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover:translate-y-0" />
-                    </Link>
-                 </Button>
+               <div className="flex flex-col sm:flex-row justify-center items-center gap-6 mb-24">
+                  <Button asChild size="lg" className="h-20 px-12 rounded-full bg-accent text-white text-xl font-bold shadow-[0_30px_60px_-15px_rgba(168,76,134,0.5)] hover:bg-white hover:text-primary-dark transition-all duration-700 scale-110 hover:scale-105 group relative overflow-hidden">
+                     <Link to="/demo">
+                       <span className="relative z-10 flex items-center gap-3">
+                         Agendar minha demonstração
+                         <ArrowRight className="h-6 w-6" />
+                       </span>
+                       <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover:translate-y-0" />
+                     </Link>
+                  </Button>
+                  
+                  <Button asChild variant="outline" size="lg" className="h-20 px-12 rounded-full border-white/20 text-white text-xl hover:bg-white hover:text-primary-dark transition-all duration-500">
+                     <Link to="/onboarding">Começar teste de 14 dias</Link>
+                  </Button>
+               </div>
                  
                  <div className="flex flex-col items-start gap-2 group cursor-pointer">
                     <Link to="/planos" className="text-white/90 hover:text-accent font-bold uppercase tracking-[0.2em] text-sm transition-all flex items-center gap-3">
