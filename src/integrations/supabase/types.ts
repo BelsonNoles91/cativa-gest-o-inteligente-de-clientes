@@ -4362,6 +4362,33 @@ export type Database = {
         Args: { _tenant_id: string }
         Returns: number
       }
+      get_audit_logs_advanced: {
+        Args: {
+          _action_prefix?: string
+          _actor_id?: string
+          _entity?: string
+          _from?: string
+          _limit?: number
+          _offset?: number
+          _sort_order?: string
+          _tenant_id?: string
+          _to?: string
+        }
+        Returns: {
+          action: string
+          actor_email: string
+          actor_id: string
+          actor_name: string
+          created_at: string
+          entity: string
+          entity_id: string
+          id: string
+          metadata: Json
+          tenant_id: string
+          tenant_name: string
+          total_count: number
+        }[]
+      }
       get_available_slots: {
         Args: {
           _day: string
