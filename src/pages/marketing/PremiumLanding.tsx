@@ -325,8 +325,8 @@ export default function PremiumLanding() {
                     <div className="sticky top-32">
                        <h2 className="font-display text-5xl md:text-6xl text-primary-dark tracking-tighter leading-none mb-8">Dúvidas <br />Comuns.</h2>
                        <p className="text-muted-foreground font-light text-lg mb-10">Tudo o que você precisa saber para elevar seu negócio hoje.</p>
-                       <Button variant="link" className="p-0 text-accent font-bold uppercase tracking-widest text-xs gap-2 hover:gap-4 transition-all">
-                          Falar com Especialista <ArrowRight className="h-4 w-4" />
+                       <Button asChild variant="link" className="p-0 text-accent font-bold uppercase tracking-widest text-xs gap-2 hover:gap-4 transition-all">
+                          <Link to="/demo" className="flex items-center gap-2">Falar com Especialista <ArrowRight className="h-4 w-4" /></Link>
                        </Button>
                     </div>
                  </div>
