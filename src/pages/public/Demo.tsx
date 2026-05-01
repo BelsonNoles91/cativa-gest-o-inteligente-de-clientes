@@ -146,6 +146,7 @@ export default function DemoPage() {
                                 key={i} 
                                 onClick={() => handleDaySelect(day, isAvailable)}
                                 type="button"
+                                aria-label={`Dia ${day}${isSelected ? " - selecionado" : ""}${!isAvailable ? " - indisponível" : ""}`}
                                 className={cn(
                                   "aspect-square rounded-xl flex items-center justify-center text-xs md:text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-accent",
                                   isSelected ? "bg-accent text-white shadow-lg scale-110 z-10" : 
