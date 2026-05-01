@@ -273,7 +273,7 @@ export default function ClientsPage() {
       try {
         const list = await listClients({
           tenantId: currentTenant.id,
-          search: filters.search || undefined,
+          search: debouncedSearch || undefined,
           status: filters.status,
           vipOnly: filters.vipOnly,
           inactiveOnly: filters.inactiveOnly,
