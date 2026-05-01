@@ -44,6 +44,7 @@ export default function Dashboard() {
     occupancyToday: data?.occupancyToday ?? 0,
     pendingConfirmations: data?.pendingConfirmations ?? 0,
     newClientsWeek: data?.newClientsWeek ?? 0,
+    ltvEstimate: data?.ltvEstimate ?? 0,
   }), [data]);
 
   const upcoming = data?.upcoming ?? [];
