@@ -1,10 +1,10 @@
-import { PremiumHeader } from "@/components/marketing/layout/PremiumHeader";
-import { PremiumFooter } from "@/components/marketing/layout/PremiumFooter";
+import { Navbar } from "@/components/marketing/layout/Navbar";
+import { Footer } from "@/components/marketing/layout/Footer";
 import { HeroSection } from "@/components/marketing/sections/HeroSection";
 import { ProblemSection } from "@/components/marketing/sections/ProblemSection";
 import { FeaturesSection } from "@/components/marketing/sections/FeaturesSection";
 import { PremiumSection } from "@/components/marketing/layout/PremiumSection";
-import { ArrowRight, CheckCircle2, TrendingUp, Users, Calendar, Smartphone } from "lucide-react";
+import { ArrowRight, CheckCircle2, TrendingUp, Users, Calendar, Smartphone, Star, Quote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
