@@ -31,17 +31,17 @@ export function Footer() {
           <div className="lg:col-span-3">
             <h4 className="font-bold text-xs uppercase tracking-[0.2em] text-primary-dark mb-10">Plataforma</h4>
             <ul className="space-y-6">
-              <li><a href="#features" className="text-muted-foreground hover:text-accent transition-colors font-light">Funcionalidades</a></li>
+              <li><a href="#funcionalidades" className="text-muted-foreground hover:text-accent transition-colors font-light">Funcionalidades</a></li>
               <li><a href="#modulos" className="text-muted-foreground hover:text-accent transition-colors font-light">Módulos</a></li>
               <li><a href="#planos" className="text-muted-foreground hover:text-accent transition-colors font-light">Planos</a></li>
-              <li><Link to="/demo" className="text-muted-foreground hover:text-accent transition-colors font-light">Agendar Demo</Link></li>
+              <li><Link to="/demo" className="text-muted-foreground hover:text-accent transition-colors font-light">Agendar Demonstração</Link></li>
             </ul>
           </div>
 
           <div className="lg:col-span-3">
             <h4 className="font-bold text-xs uppercase tracking-[0.2em] text-primary-dark mb-10">Suporte</h4>
             <ul className="space-y-6">
-              <li><a href="#faq" className="text-muted-foreground hover:text-accent transition-colors font-light">Central de Ajuda</a></li>
+              <li><a href="#duvidas" className="text-muted-foreground hover:text-accent transition-colors font-light">Dúvidas Frequentes</a></li>
               <li><Link to="/auth/login" className="text-muted-foreground hover:text-accent transition-colors font-light">Área do Cliente</Link></li>
               <li><Link to="#" className="text-muted-foreground hover:text-accent transition-colors font-light">Privacidade</Link></li>
               <li><Link to="#" className="text-muted-foreground hover:text-accent transition-colors font-light">Termos de Uso</Link></li>
@@ -50,11 +50,11 @@ export function Footer() {
         </div>
 
         <div className="pt-16 border-t border-border/40 flex flex-col md:flex-row justify-between items-center gap-8">
-          <p className="text-[10px] text-muted-foreground/60 font-bold uppercase tracking-widest">
+          <p className="text-[10px] text-muted-foreground/60 font-bold uppercase tracking-widest text-center md:text-left">
             © {currentYear} Cativa. Inteligência para Negócios de Beleza.
           </p>
           <div className="flex gap-12">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">Made for Excellence</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">Desenvolvido com excelência</span>
           </div>
         </div>
       </div>

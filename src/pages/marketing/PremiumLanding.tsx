@@ -21,20 +21,20 @@ export default function PremiumLanding() {
       <main>
         <HeroSection />
 
-        {/* Trust/Benefits Bar - Premium & Realistic */}
-        <div className="bg-white border-y border-border/40 py-12 overflow-hidden">
-          <div className="container mx-auto px-6">
-            <div className="flex flex-wrap justify-center lg:justify-between items-center gap-8 md:gap-16">
+        {/* Barra de Diferenciais */}
+        <div className="bg-white border-y border-border/40 py-10 md:py-12 overflow-hidden px-4">
+          <div className="container mx-auto">
+            <div className="flex flex-wrap justify-center lg:justify-between items-center gap-6 md:gap-16">
                {[
-                 { label: "MOBILE-FIRST", desc: "Gestão na palma da mão" },
-                 { label: "MULTIUNIDADE", desc: "Controle centralizado" },
-                 { label: "PERSONALIZÁVEL", desc: "Adaptado ao seu fluxo" },
-                 { label: "ARQUITETURA ROBUSTA", desc: "Segurança de dados" },
-                 { label: "FOCO EM RETENÇÃO", desc: "LTV como prioridade" }
+                 { label: "USO NO CELULAR", desc: "Gestão na palma da mão" },
+                 { label: "VÁRIAS UNIDADES", desc: "Controle centralizado" },
+                 { label: "FEITO PARA VOCÊ", desc: "Adaptado ao seu fluxo" },
+                 { label: "SEGURANÇA TOTAL", desc: "Dados protegidos" },
+                 { label: "FOCO EM FIDELIDADE", desc: "O cliente sempre volta" }
                ].map((item, i) => (
-                 <div key={i} className="flex flex-col items-center lg:items-start group">
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary-dark/40 group-hover:text-accent transition-colors mb-1">{item.label}</span>
-                    <span className="text-[10px] font-medium text-muted-foreground/60">{item.desc}</span>
+                 <div key={i} className="flex flex-col items-center lg:items-start group text-center lg:text-left min-w-[140px]">
+                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-primary-dark/40 group-hover:text-accent transition-colors mb-1">{item.label}</span>
+                    <span className="text-[9px] md:text-[10px] font-medium text-muted-foreground/60">{item.desc}</span>
                  </div>
                ))}
             </div>
@@ -43,89 +43,89 @@ export default function PremiumLanding() {
 
         <ProblemSection />
 
-        {/* Solution Narrative Section */}
+        {/* Seção de Solução */}
         <PremiumSection id="solucao" variant="soft" padding="lg">
-          <div className="grid lg:grid-cols-2 gap-24 items-center">
-            <div className="relative group">
-               <div className="aspect-square rounded-[4rem] bg-white shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] flex items-center justify-center p-16 relative overflow-hidden border border-border/40 transition-transform duration-700 group-hover:scale-[1.02]">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-24 items-center">
+            <div className="relative group px-4 md:px-0">
+               <div className="aspect-square rounded-[3rem] md:rounded-[4rem] bg-white shadow-xl flex items-center justify-center p-8 md:p-16 relative overflow-hidden border border-border/40 transition-transform duration-700">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full -translate-y-1/2 translate-x-1/2" />
                   
                   <div className="relative z-10 w-full h-full flex flex-col justify-between">
                      <div className="flex items-center justify-between">
                         <div className="space-y-2">
-                           <div className="h-4 w-32 bg-primary-dark/10 rounded-full" />
-                           <div className="h-2 w-20 bg-primary-dark/5 rounded-full" />
+                           <div className="h-4 w-24 md:w-32 bg-primary-dark/10 rounded-full" />
+                           <div className="h-2 w-16 md:w-20 bg-primary-dark/5 rounded-full" />
                         </div>
-                        <div className="w-12 h-12 rounded-2xl bg-success/10 flex items-center justify-center">
-                           <TrendingUp className="text-success h-6 w-6" />
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+                           <TrendingUp className="text-emerald-600 h-5 w-5 md:h-6 md:w-6" />
                         </div>
                      </div>
 
-                     <div className="py-12 flex-1 flex items-center justify-center">
+                     <div className="py-8 md:py-12 flex-1 flex items-center justify-center">
                         <div className="relative">
-                           <div className="text-[12rem] font-display font-bold text-primary-dark/5 leading-none select-none">82</div>
+                           <div className="text-8xl md:text-[12rem] font-display font-bold text-primary-dark/5 leading-none select-none">82</div>
                            <div className="absolute inset-0 flex flex-col items-center justify-center">
-                              <span className="text-7xl font-display font-bold text-primary-dark">82%</span>
-                              <span className="text-xs font-bold uppercase tracking-widest text-success">Retenção Ativa</span>
+                              <span className="text-5xl md:text-7xl font-display font-bold text-primary-dark">82%</span>
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Fidelidade Ativa</span>
                            </div>
                         </div>
                      </div>
 
                      <div className="grid grid-cols-2 gap-4">
-                        <div className="h-16 bg-secondary/20 rounded-2xl border border-border/20" />
-                        <div className="h-16 bg-primary-dark rounded-2xl flex items-center justify-center text-white">
+                        <div className="h-12 md:h-16 bg-secondary/20 rounded-2xl border border-border/20" />
+                        <div className="h-12 md:h-16 bg-primary-dark rounded-2xl flex items-center justify-center text-white">
                            <Star className="h-5 w-5 fill-accent text-accent" />
                         </div>
                      </div>
                   </div>
                </div>
                
-               {/* Decorative floating badge */}
-               <div className="absolute -bottom-6 -right-6 md:-bottom-10 md:-left-10 bg-accent text-white p-6 md:p-8 rounded-[2.5rem] shadow-2xl transform rotate-3 transition-transform duration-700 group-hover:rotate-0 z-20 max-w-[280px] md:max-w-none">
+               {/* Badge flutuante */}
+               <div className="absolute -bottom-4 -right-2 md:-bottom-10 md:-left-10 bg-accent text-white p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl transform rotate-3 z-20 max-w-[220px] md:max-w-xs">
                   <Quote className="h-6 w-6 md:h-8 md:w-8 mb-4 opacity-40" />
-                  <p className="text-base md:text-lg font-medium leading-tight mb-2">"A Cativa não é um software, é um consultor silencioso."</p>
-                  <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">— Amanda Souza, Clínica Bloom</p>
+                  <p className="text-sm md:text-lg font-medium leading-tight mb-2">"A Cativa não é apenas um sistema, é um braço direito."</p>
+                  <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest opacity-60">— Amanda Souza, Clínica Bloom</p>
                </div>
             </div>
 
-            <div className="space-y-12">
+            <div className="space-y-10 md:space-y-12 px-4 md:px-0">
               <div>
-                <div className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-8">
+                <div className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-6 md:mb-8">
                   Estratégia & Controle
                 </div>
-                <h3 className="font-display text-5xl md:text-7xl text-primary-dark tracking-tighter leading-[0.9] mb-8">
-                  O problema não é <br />
-                  <span className="italic serif font-normal text-accent">só agenda.</span>
+                <h3 className="font-display text-4xl md:text-7xl text-primary-dark tracking-tighter leading-[0.9] mb-6 md:mb-8">
+                  O problema não é <br className="hidden md:block" />
+                  <span className="italic serif font-normal text-accent">apenas a agenda.</span>
                 </h3>
-                <p className="text-xl text-muted-foreground/80 leading-relaxed font-light mb-6">
-                  A maioria dos sistemas ajuda a marcar horários. A Cativa foi criada para ajudar seu negócio a reter melhor, confirmar melhor, operar melhor e crescer com mais previsibilidade.
+                <p className="text-lg md:text-xl text-muted-foreground/80 leading-relaxed font-light mb-6">
+                  A maioria dos sistemas apenas marca horários. A Cativa foi criada para ajudar seu negócio a fidelizar melhor, confirmar horários e crescer com segurança.
                 </p>
-                <p className="text-2xl font-display italic serif text-primary-dark/60">
-                  "Porque crescer com consistência exige mais do que agenda. Exige inteligência operacional."
+                <p className="text-xl md:text-2xl font-display italic serif text-primary-dark/60">
+                  "Porque crescer com consistência exige inteligência operacional."
                 </p>
               </div>
               
-              <div className="grid sm:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
                 {[
-                  { icon: CheckCircle2, text: "Foco total em LTV e Retenção", desc: "Aumente o valor de cada cliente." },
-                  { icon: ShieldCheck, text: "Segurança de Dados", desc: "Arquitetura robusta e confiável." },
-                  { icon: Users, text: "Experiência do Cliente", desc: "Portal dedicado e personalizado." },
-                  { icon: Calendar, text: "Fluxo de 3 cliques", desc: "Rapidez que sua recepção precisa." },
+                  { icon: CheckCircle2, text: "Foco total na Fidelidade", desc: "Aumente o valor de cada cliente." },
+                  { icon: ShieldCheck, text: "Segurança de Dados", desc: "Proteção total das suas informações." },
+                  { icon: Users, text: "Espaço do Cliente", desc: "Área exclusiva para quem você atende." },
+                  { icon: Calendar, text: "Agendamento em 3 cliques", desc: "Rapidez que sua recepção precisa." },
                 ].map((item, i) => (
-                  <div key={i} className="space-y-3">
+                  <div key={i} className="space-y-2">
                     <div className="flex items-center gap-3">
                        <item.icon className="h-5 w-5 text-accent" />
                        <span className="font-bold text-primary-dark tracking-tight">{item.text}</span>
                     </div>
-                    <p className="text-sm text-muted-foreground font-light">{item.desc}</p>
+                    <p className="text-xs md:text-sm text-muted-foreground font-light">{item.desc}</p>
                   </div>
                 ))}
               </div>
 
-              <div className="pt-8">
-                <Button asChild size="lg" className="rounded-none bg-primary-dark h-16 px-10 group relative overflow-hidden transition-all hover:scale-[1.02]">
+              <div className="pt-6 md:pt-8">
+                <Button asChild size="lg" className="w-full md:w-auto rounded-full bg-primary-dark h-16 px-10 group relative overflow-hidden transition-all hover:scale-[1.02]">
                   <Link to="/onboarding">
-                    <span className="relative z-10 flex items-center">
+                    <span className="relative z-10 flex items-center justify-center">
                       Conhecer a solução completa
                       <ArrowRight className="ml-3 h-5 w-5 transition-transform group-hover:translate-x-1" />
                     </span>
@@ -140,87 +140,88 @@ export default function PremiumLanding() {
         <FeaturesSection />
         <ModulesSection />
 
-        {/* Plans Section */}
+        {/* Seção de Planos */}
         <PremiumSection id="planos" variant="soft" padding="lg">
-          <div className="max-w-4xl mx-auto text-center mb-24">
+          <div className="max-w-4xl mx-auto text-center mb-16 md:mb-24 px-4">
             <div className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-8">
               Investimento
             </div>
-            <h3 className="font-display text-5xl md:text-8xl text-primary-dark tracking-tighter leading-[0.9]">
-              Planos que <br />
-              <span className="italic serif font-normal text-accent">escalam com você.</span>
+            <h3 className="font-display text-4xl md:text-8xl text-primary-dark tracking-tighter leading-[0.9]">
+              Planos que <br className="hidden md:block" />
+              <span className="italic serif font-normal text-accent">crescem com você.</span>
             </h3>
           </div>
 
           <PlansSection />
 
-          <p className="text-center mt-20 text-sm text-muted-foreground font-light italic">
+          <p className="text-center mt-16 md:mt-20 text-xs md:text-sm text-muted-foreground font-light italic px-4">
             * Valores para pagamento mensal. Descontos progressivos para planos anuais. <br />
-            Suporte especializado disponível para todos os planos pagos.
+            Atendimento especializado disponível para todos os planos pagos.
           </p>
         </PremiumSection>
 
-        {/* Roles Section - Elevated Visuals */}
+        {/* Seção de Perfis */}
         <PremiumSection variant="dark" padding="lg">
-          <div className="max-w-4xl mx-auto text-center mb-24">
+          <div className="max-w-4xl mx-auto text-center mb-16 md:mb-24 px-4">
             <div className="inline-block px-4 py-1.5 rounded-full bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-8 border border-white/10">
               Ecossistema Cativa
             </div>
-            <h3 className="font-display text-5xl md:text-8xl text-white tracking-tighter leading-[0.9]">
-              Um sistema, <br />
-              <span className="italic serif font-normal text-accent">múltiplas jornadas.</span>
+            <h3 className="font-display text-4xl md:text-8xl text-white tracking-tighter leading-[0.9]">
+              Um sistema, <br className="hidden md:block" />
+              <span className="italic serif font-normal text-accent">muitas possibilidades.</span>
             </h3>
           </div>
 
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 px-4 md:px-0">
             {[
               {
-                role: "Proprietário",
-                title: "O Fim da Gestão por 'Feeling'",
-                desc: "Indicadores de saúde real, taxa de retorno por profissional e previsibilidade de faturamento para os próximos 30 dias.",
+                role: "Dono do Negócio",
+                title: "Gestão Baseada em Dados",
+                desc: "Relatórios de saúde real, taxa de retorno e previsão de faturamento para tomar as melhores decisões.",
                 icon: LayoutDashboard,
                 iconBg: "bg-accent/10"
               },
               {
                 role: "Gerente",
-                title: "Controle da Rotina e Equipe",
-                desc: "Visibilidade sobre agenda, fluxo operacional, confirmações, gargalos e oportunidades de melhoria em tempo real.",
+                title: "Controle Total da Equipe",
+                desc: "Visibilidade sobre agendas, fluxo de trabalho e oportunidades de melhoria em tempo real.",
                 icon: ShieldCheck,
                 iconBg: "bg-blue-500/10"
               },
               {
                 role: "Recepção",
-                title: "Agilidade e Menos Retrabalho",
-                desc: "Organize confirmações, cadastros e reagendamentos com poucos cliques e muito mais previsibilidade.",
+                title: "Rapidez no Atendimento",
+                desc: "Organize confirmações e novos agendamentos com poucos cliques e muito mais agilidade.",
                 icon: Calendar,
                 iconBg: "bg-emerald-500/10"
               },
               {
                 role: "Profissional",
-                title: "Mais Contexto para Atender",
-                desc: "Acesse informações importantes do cliente, acompanhe histórico e atue com continuidade na jornada.",
+                title: "Melhor Contexto do Cliente",
+                desc: "Acesse o histórico de quem você atende e ofereça um serviço muito mais personalizado.",
                 icon: UserCheck,
                 iconBg: "bg-purple-500/10"
               }
             ].map((card, i) => (
-              <div key={i} className="group p-10 rounded-[3rem] bg-white/5 border border-white/10 backdrop-blur-xl transition-all duration-700 hover:bg-white/10 hover:-translate-y-2">
-                <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center mb-8 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3", card.iconBg)}>
-                   <card.icon className="h-6 w-6 text-white" />
+              <div key={i} className="group p-8 md:p-10 rounded-[2.5rem] md:rounded-[3rem] bg-white/5 border border-white/10 backdrop-blur-xl transition-all duration-700 hover:bg-white/10">
+                <div className={cn("w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center mb-6 md:mb-8 transition-transform duration-500 group-hover:scale-110", card.iconBg)}>
+                   <card.icon className="h-5 w-5 md:h-6 md:w-6 text-white" />
                 </div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-4">{card.role}</p>
-                <h4 className="text-xl font-display font-bold text-white mb-6 group-hover:text-accent transition-colors">{card.title}</h4>
-                <p className="text-white/60 leading-relaxed font-light text-base">{card.desc}</p>
+                <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-4">{card.role}</p>
+                <h4 className="text-lg md:text-xl font-display font-bold text-white mb-4 md:mb-6 group-hover:text-accent transition-colors">{card.title}</h4>
+                <p className="text-white/60 leading-relaxed font-light text-sm md:text-base">{card.desc}</p>
               </div>
             ))}
           </div>
         </PremiumSection>
+...
 
         <ProcessSection />
 
         <MetricsSection />
 
-        {/* FAQ Section - Clean & Sophisticated */}
-        <PremiumSection variant="light" padding="lg" id="faq">
+        {/* Seção de Dúvidas Frequentes */}
+        <PremiumSection variant="light" padding="lg" id="duvidas">
            <div className="max-w-5xl mx-auto">
               <div className="flex flex-col lg:flex-row gap-20">
                  <div className="lg:w-1/3">
@@ -232,14 +233,14 @@ export default function PremiumLanding() {
                        </Button>
                     </div>
                  </div>
-                 <div className="lg:w-2/3 space-y-4">
+                 <div className="lg:w-2/3 space-y-4 px-4 md:px-0">
                     {[
-                      { q: "A Cativa serve para o meu tipo de negócio?", a: "Sim. A plataforma foi pensada para clínicas de estética, salões de beleza, barbearias, esmalterias, lash/brow, massagem, wellness e negócios correlatos que buscam um nível superior de gestão." },
-                      { q: "Como funciona a demonstração?", a: "Nossa demonstração é um tour guiado por um especialista que entende o seu cenário. Mostramos como a Cativa resolve seus gargalos específicos em 20 minutos." },
-                      { q: "Posso testar antes de contratar?", a: "Sim. Oferecemos 14 dias de teste grátis com acesso total às funcionalidades core para que você sinta a diferença na operação real." },
-                      { q: "Vocês ajudam na migração de dados?", a: "Sim. Temos um processo de onboarding assistido para garantir que seu histórico e cadastros sejam migrados com segurança e rapidez." },
-                      { q: "O sistema funciona em tablets e celulares?", a: "Totalmente. A Cativa é mobile-first, permitindo que profissionais e gestores operem com 100% de eficiência de qualquer dispositivo." },
-                      { q: "É possível gerenciar mais de uma unidade?", a: "Com certeza. A estrutura da Cativa foi desenhada para redes e franquias, permitindo visão consolidada ou isolada por unidade com um único login." }
+                      { q: "A Cativa serve para o meu tipo de negócio?", a: "Sim. A plataforma foi pensada para clínicas de estética, salões de beleza, barbearias, esmalterias, profissionais de cílios e sobrancelhas, massagem e negócios de bem-estar que buscam um nível superior de gestão." },
+                      { q: "Como funciona a demonstração?", a: "Nossa demonstração é um tour guiado por um especialista que entende o seu cenário. Mostramos como a Cativa resolve seus problemas específicos em 20 minutos." },
+                      { q: "Posso testar antes de contratar?", a: "Sim. Oferecemos 14 dias de teste grátis com acesso total às principais funcionalidades para que você sinta a diferença na sua rotina real." },
+                      { q: "Vocês ajudam na transferência de dados?", a: "Sim. Temos um processo de acompanhamento inicial para garantir que seu histórico e cadastros sejam transferidos com segurança e rapidez." },
+                      { q: "O sistema funciona em tablets e celulares?", a: "Totalmente. A Cativa é otimizada para celular, permitindo que profissionais e gestores trabalhem com 100% de eficiência de qualquer dispositivo." },
+                      { q: "É possível gerenciar mais de uma unidade?", a: "Com certeza. A estrutura da Cativa foi desenhada para redes e franquias, permitindo visão geral ou individual por unidade com um único login." }
                     ].map((item, i) => (
                       <div key={i} className="p-8 md:p-10 rounded-[2.5rem] bg-[#FAF7F9] border border-border/20 transition-all hover:border-accent/40 group">
                          <h4 className="text-xl font-bold text-primary-dark mb-4 flex items-center justify-between gap-4">
@@ -256,19 +257,19 @@ export default function PremiumLanding() {
            </div>
         </PremiumSection>
 
-        {/* Final CTA - High Impact Editorial Style */}
+        {/* Chamada Final */}
         <PremiumSection variant="dark" padding="xl" className="text-center overflow-visible">
-           {/* Sophisticated background depth */}
+           {/* Fundo sofisticado */}
            <div className="absolute inset-0 bg-[#1A0F16]" />
            <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[140%] bg-accent/5 blur-[120px] rounded-full rotate-12" />
            <div className="absolute bottom-[-30%] right-[-10%] w-[50%] h-[120%] bg-primary/10 blur-[100px] rounded-full -rotate-12" />
            
-           <div className="max-w-6xl mx-auto relative z-10">
+           <div className="max-w-6xl mx-auto relative z-10 px-4">
               <div className="inline-block px-5 py-2 rounded-full bg-accent/10 text-[11px] font-bold uppercase tracking-[0.3em] text-accent mb-12 border border-accent/20">
                 Pronto para o Próximo Nível?
               </div>
               
-              <h2 className="font-display text-5xl sm:text-7xl md:text-[10rem] text-white mb-16 tracking-tighter leading-[0.8] animate-fade-in">
+              <h2 className="font-display text-5xl sm:text-7xl md:text-[9rem] text-white mb-16 tracking-tighter leading-[0.8] animate-fade-in">
                 Sua operação, <br />
                 <span className="italic serif font-normal text-accent relative inline-block">
                   elevada.
@@ -278,7 +279,7 @@ export default function PremiumLanding() {
                 </span>
               </h2>
               
-              <p className="text-white/70 text-2xl md:text-3xl font-light max-w-3xl mx-auto mb-20 leading-relaxed tracking-tight">
+              <p className="text-white/70 text-xl md:text-3xl font-light max-w-3xl mx-auto mb-20 leading-relaxed tracking-tight">
                 Deixe o improviso para trás. A Cativa é a inteligência que sua marca de beleza merece para crescer com consistência e sofisticação.
               </p>
               
@@ -286,7 +287,7 @@ export default function PremiumLanding() {
                   <Button asChild size="lg" className="h-20 px-12 rounded-full bg-accent text-white text-xl font-bold shadow-[0_30px_60px_-15px_rgba(168,76,134,0.5)] hover:bg-white hover:text-primary-dark transition-all duration-700 scale-110 hover:scale-105 group relative overflow-hidden">
                      <Link to="/demo">
                        <span className="relative z-10 flex items-center gap-3">
-                         Agendar minha demonstração
+                         Ver demonstração gratuita
                          <ArrowRight className="h-6 w-6" />
                        </span>
                        <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover:translate-y-0" />
@@ -297,39 +298,23 @@ export default function PremiumLanding() {
                      <Link to="/onboarding">Começar teste de 14 dias</Link>
                   </Button>
                </div>
-               <div className="flex flex-col items-center gap-2 group cursor-pointer mb-24">
-                  <Link to="#planos" className="text-white/90 hover:text-accent font-bold uppercase tracking-[0.2em] text-sm transition-all flex items-center gap-3">
-                     Ver Planos e Preços
-                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-2" />
-                  </Link>
-                  <div className="h-px w-40 bg-white/20 group-hover:bg-accent transition-colors" />
+               
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-12 py-16 border-y border-white/10">
+                  {[
+                    { text: "14 dias grátis", sub: "Sem compromisso" },
+                    { text: "Sem cartão", sub: "Acesso imediato" },
+                    { text: "Atendimento Exclusivo", sub: "Acompanhamento guiado" }
+                  ].map((item, i) => (
+                    <div key={i} className="flex flex-col items-center gap-2">
+                       <div className="flex items-center gap-3 mb-1">
+                          <CheckCircle2 className="h-5 w-5 text-accent" />
+                          <span className="text-xl font-bold text-white tracking-tight">{item.text}</span>
+                       </div>
+                       <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/30">{item.sub}</span>
+                    </div>
+                  ))}
                </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-12 py-16 border-y border-white/10">
-                 {[
-                   { text: "14 dias grátis", sub: "Sem compromisso" },
-                   { text: "Sem cartão", sub: "Setup imediato" },
-                   { text: "Suporte VIP", sub: "Implementação guiada" }
-                 ].map((item, i) => (
-                   <div key={i} className="flex flex-col items-center gap-2">
-                      <div className="flex items-center gap-3 mb-1">
-                         <CheckCircle2 className="h-5 w-5 text-accent" />
-                         <span className="text-xl font-bold text-white tracking-tight">{item.text}</span>
-                      </div>
-                      <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/30">{item.sub}</span>
-                   </div>
-                 ))}
-              </div>
-              
-              <div className="mt-16 flex flex-col items-center gap-6 opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-1000">
-                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Tecnologia Certificada</p>
-                <div className="flex items-center gap-12">
-                   <div className="h-8 w-24 bg-white/10 rounded" />
-                   <div className="h-8 w-32 bg-white/10 rounded" />
-                   <div className="h-8 w-20 bg-white/10 rounded" />
-                </div>
-              </div>
-           </div>
+            </div>
         </PremiumSection>
       </main>
 
