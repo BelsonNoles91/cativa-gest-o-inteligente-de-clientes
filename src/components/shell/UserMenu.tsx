@@ -21,6 +21,27 @@ export function UserMenu() {
   const navigate = useNavigate();
   const { currentRole, isSuperAdmin } = useTenant();
   const { user, signOut } = useAuth();
+  const isMobile = useIsMobile();
+  const [pushStatus, setPushStatus] = useState<"granted" | "denied" | "default" | "unsupported">("default");
+
+  useEffect(() => {
+    if (!("Notification" in window)) {
+      setPushStatus("unsupported");
+    } else {
+      setPushStatus(Notification.permission as any);
+    }
+  }, []);
+
+  const requestPush = async () => {
+    if (!("Notification" in window)) return;
+    const permission = await Notification.requestPermission();
+    setPushStatus(permission as any);
+    if (permission === "granted") {
+      toast.success("Notificações habilitadas com sucesso!");
+    } else {
+      toast.error("Permissão de notificação negada.");
+    }
+  };
 
   const initials = (user?.user_metadata?.full_name as string | undefined)
     ?.split(" ").slice(0, 2).map((p) => p[0]).join("").toUpperCase()
@@ -29,6 +50,7 @@ export function UserMenu() {
 
   // Super admin sempre é exibido como tal, mesmo que tenha membership como owner.
   const role = isSuperAdmin ? "super_admin" : currentRole;
+
 
   return (
     <DropdownMenu>
