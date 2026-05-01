@@ -6,10 +6,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
-  { label: "O Problema", href: "#dor" },
-  { label: "Solução", href: "#solucao" },
-  { label: "Módulos", href: "#modulos" },
-  { label: "Diferenciais", href: "#diferenciais" },
+  { label: "Funcionalidades", href: "/#funcionalidades" },
+  { label: "Módulos", href: "/#modulos" },
+  { label: "Métricas", href: "/#metricas" },
   { label: "Planos", href: "/planos" },
   { label: "Demonstração", href: "/demo" },
 ];
