@@ -3,6 +3,7 @@ import { ArrowRight, Star, Clock, Calendar, Users, TrendingUp, MousePointer2 } f
 import { Button } from "@/components/ui/button";
 import { PremiumSection } from "../layout/PremiumSection";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 export function HeroSection() {
   return (
@@ -20,30 +21,54 @@ export function HeroSection() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 xl:gap-24 items-center">
-        {/* Lado do Conteúdo */}
-        <div className="relative z-10 px-4 md:px-0 text-center lg:text-left">
-          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white border border-secondary shadow-sm mb-8 animate-fade-in group cursor-default">
+        <motion.div 
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="relative z-10 px-4 md:px-0 text-center lg:text-left"
+        >
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white border border-secondary shadow-sm mb-8 group cursor-default"
+          >
             <span className="flex h-2 w-2 rounded-full bg-accent animate-pulse" />
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Gestão Inteligente para Estética e Beleza</span>
-          </div>
+          </motion.div>
 
-          <h1 className="font-display text-4xl sm:text-6xl md:text-7xl xl:text-[7rem] leading-[0.9] tracking-tight text-primary-dark mb-8 animate-fade-in delay-100 relative">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="font-display text-4xl sm:text-6xl md:text-7xl xl:text-[7rem] leading-[0.9] tracking-tight text-primary-dark mb-8 relative"
+          >
             <span className="relative z-10">A inteligência <br className="hidden sm:block" />
             <span className="relative inline-block">
               que fideliza
-              <svg className="absolute -bottom-1 sm:-bottom-2 left-0 w-full h-2 sm:h-3 text-accent/30 -z-10" viewBox="0 0 300 12" fill="none">
+              <motion.svg 
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 1 }}
+                transition={{ duration: 1, delay: 1 }}
+                className="absolute -bottom-1 sm:-bottom-2 left-0 w-full h-2 sm:h-3 text-accent/30 -z-10" viewBox="0 0 300 12" fill="none"
+              >
                 <path d="M1 10.5C50 4 150 1 299 10.5" stroke="currentColor" strokeWidth="6" strokeLinecap="round"/>
-              </svg>
+              </motion.svg>
             </span>
             <br className="hidden sm:block" />
             {" "}e faz <span className="italic font-normal serif text-accent">prosperar.</span></span>
-          </h1>
+          </motion.h1>
 
-          <p className="text-lg md:text-xl text-muted-foreground/80 leading-relaxed max-w-xl mx-auto lg:mx-0 mb-10 animate-fade-in delay-200 font-light">
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="text-lg md:text-xl text-muted-foreground/80 leading-relaxed max-w-xl mx-auto lg:mx-0 mb-10 font-light"
+          >
             A Cativa centraliza clientes, agendamentos, confirmações e relatórios em um único sistema pensado para quem quer crescer com organização e <span className="text-primary-dark font-medium">fazer o cliente voltar sempre.</span>
-          </p>
+          </motion.p>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-4 mb-6 animate-fade-in delay-300">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-4 mb-6">
             <Button asChild size="lg" className="h-16 px-10 rounded-full bg-primary-dark text-lg shadow-2xl shadow-primary/20 group relative overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98]">
               <Link to="/demo">
                 <span className="relative z-10 flex items-center gap-2">
@@ -59,12 +84,10 @@ export function HeroSection() {
             </Button>
           </div>
 
-          <div className="flex items-center justify-center lg:justify-start gap-2 mb-10 animate-fade-in delay-350 px-2">
+          <div className="flex items-center justify-center lg:justify-start gap-2 mb-10 px-2">
              <div className="flex -space-x-2">
                 {[1,2,3].map(i => (
-                  <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-secondary flex items-center justify-center overflow-hidden">
-                    <img src={`https://i.pravatar.cc/100?u=${i}`} alt="usuário" className="w-full h-full object-cover" />
-                  </div>
+                  <img key={i} src={`https://i.pravatar.cc/100?u=${i}`} alt="usuário" className="w-6 h-6 rounded-full border-2 border-white object-cover" />
                 ))}
              </div>
              <p className="text-[10px] font-medium text-muted-foreground tracking-tight">
@@ -72,7 +95,7 @@ export function HeroSection() {
              </p>
           </div>
 
-          <div className="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-3 mb-12 animate-fade-in delay-400">
+          <div className="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-3 mb-12">
             {["Tudo em um só lugar", "Funciona no celular", "Fácil de usar"].map((item, i) => (
               <div key={i} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary-dark/40">
                 <div className="w-1.5 h-1.5 rounded-full bg-accent" />
@@ -80,7 +103,7 @@ export function HeroSection() {
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Lado Visual - Painel de Demonstração */}
         <div className="relative animate-scale-in delay-200 perspective-1000 px-4 md:px-0">
