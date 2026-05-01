@@ -275,10 +275,10 @@ export default function Onboarding() {
             unit_id: result.unitId,
             professional_id: pros[0].id,
             service_id: svcs[0].id,
-            start_time: new Date(new Date().getTime() + 2 * 60 * 60 * 1000).toISOString(),
+            starts_at: new Date(new Date().getTime() + 2 * 60 * 60 * 1000).toISOString(),
+            ends_at: new Date(new Date().getTime() + 3 * 60 * 60 * 1000).toISOString(),
             status: 'confirmed',
-            client_name: 'Cliente de Teste',
-            client_phone: '11999999999'
+            notes: 'Agendamento de teste do onboarding'
           });
         }
       }
