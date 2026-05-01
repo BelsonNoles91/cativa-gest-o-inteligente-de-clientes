@@ -297,15 +297,13 @@ export default function PremiumLanding() {
                      <Link to="/onboarding">Começar teste de 14 dias</Link>
                   </Button>
                </div>
-                 
-                 <div className="flex flex-col items-start gap-2 group cursor-pointer">
-                    <Link to="/planos" className="text-white/90 hover:text-accent font-bold uppercase tracking-[0.2em] text-sm transition-all flex items-center gap-3">
-                       Ver Planos e Preços
-                       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-2" />
-                    </Link>
-                    <div className="h-px w-full bg-white/20 group-hover:bg-accent transition-colors" />
-                 </div>
-              </div>
+               <div className="flex flex-col items-center gap-2 group cursor-pointer mb-24">
+                  <Link to="#planos" className="text-white/90 hover:text-accent font-bold uppercase tracking-[0.2em] text-sm transition-all flex items-center gap-3">
+                     Ver Planos e Preços
+                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-2" />
+                  </Link>
+                  <div className="h-px w-40 bg-white/20 group-hover:bg-accent transition-colors" />
+               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-12 py-16 border-y border-white/10">
                  {[
