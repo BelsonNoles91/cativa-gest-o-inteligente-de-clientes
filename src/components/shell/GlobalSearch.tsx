@@ -154,6 +154,7 @@ export function GlobalSearch({
           <kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 select-none items-center gap-1 rounded border border-border/70 bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline-flex">
             ⌘K
           </kbd>
+
         </div>
       )}
 
