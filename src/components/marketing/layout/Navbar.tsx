@@ -67,7 +67,7 @@ export function Navbar() {
             Entrar
           </Link>
           <Button asChild variant="outline" size="sm" className="px-8 border-primary-dark/20 hover:bg-primary-dark hover:text-white transition-all duration-300">
-            <Link to="/onboarding">Demonstração</Link>
+            <Link to="/demo">Demonstração</Link>
           </Button>
           <Button asChild variant="premium" size="sm" className="px-8 shadow-lg shadow-accent/20">
             <Link to="/onboarding">Começar Agora</Link>
