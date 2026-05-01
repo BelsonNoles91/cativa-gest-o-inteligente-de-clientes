@@ -14,7 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Building2, Sparkles, Rocket, ArrowRight, Check, Mail, Lock, User,
-  Palette, Loader2, UserPlus, Trash2, Phone, ImagePlus, UploadCloud,
+  Palette, Loader2, UserPlus, Trash2, Phone, ImagePlus, UploadCloud, Scissors, PlusCircle, DollarSign,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AuthLayout } from "@/components/shell/AuthLayout";
@@ -120,8 +120,8 @@ export default function Onboarding() {
   const steps = useMemo(
     () => [
       { id: 1, title: "Negócio", icon: Building2 },
-      { id: 2, title: "Branding & Unidade", icon: Palette },
-      { id: 3, title: "Equipe", icon: UserPlus },
+      { id: 2, title: "Equipe & Serviços", icon: Palette },
+      { id: 3, title: "Branding", icon: Sparkles },
       { id: 4, title: "Pronto", icon: Rocket },
     ],
     [],
@@ -232,6 +232,34 @@ export default function Onboarding() {
         }
       }
 
+      // Criar profissionais e serviços rascunhados
+      for (const proName of proDrafts) {
+        await supabase.from("professionals").insert({
+          tenant_id: result.tenantId,
+          display_name: proName,
+          is_active: true
+        });
+      }
+
+      for (const svc of serviceDrafts) {
+        const { data: svcData } = await supabase.from("services").insert({
+          tenant_id: result.tenantId,
+          name: svc.name,
+          duration_minutes: 30,
+          is_active: true
+        }).select("id").single();
+
+        if (svcData) {
+          await supabase.from("service_prices").insert({
+            tenant_id: result.tenantId,
+            service_id: svcData.id,
+            amount_cents: parseInt(svc.price) * 100,
+            currency: currency || 'BRL',
+            is_default: true
+          });
+        }
+      }
+
       setCurrentTenantId(result.tenantId);
       setCurrentUnitId(result.unitId);
       await refresh();
@@ -245,6 +273,19 @@ export default function Onboarding() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const [serviceDrafts, setServiceDrafts] = useState<Array<{ name: string, price: string }>>([]);
+  const [proDrafts, setProDrafts] = useState<string[]>([]);
+
+  const addServiceDraft = (name: string, price: string) => {
+    if (!name.trim()) return;
+    setServiceDrafts([...serviceDrafts, { name, price }]);
+  };
+
+  const addProDraft = (name: string) => {
+    if (!name.trim()) return;
+    setProDrafts([...proDrafts, name]);
   };
 
   // ----- Render -----
@@ -446,18 +487,100 @@ export default function Onboarding() {
         </div>
       )}
 
-      {/* Step 2 — Branding + unidade */}
+      {/* Step 2 — Equipe & Serviços */}
       {step === 2 && (
         <div className="space-y-8 animate-fade-in">
-          <header className="space-y-4">
+          <header className="space-y-4 text-center">
             <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent border border-accent/20">
               Passo 02
             </div>
-            <h1 className="font-display text-4xl font-bold tracking-tight text-primary-dark">
-              Identidade & Unidade
+            <h1 className="font-display text-3xl font-bold tracking-tight text-primary-dark">
+              Equipe & Serviços
             </h1>
             <p className="text-lg font-light leading-relaxed text-muted-foreground">
-              Escolha suas cores e cadastre a unidade principal do seu negócio.
+              Vamos cadastrar os primeiros profissionais e serviços para sua agenda.
+            </p>
+          </header>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="surface-card p-5 space-y-4">
+              <h3 className="flex items-center gap-2 font-display text-lg font-semibold">
+                <UserPlus className="h-5 w-5 text-primary" /> Equipe
+              </h3>
+              <div className="flex gap-2">
+                <Input 
+                  id="pro-input" 
+                  placeholder="Nome do profissional" 
+                  className="rounded-xl h-11" 
+                  onKeyDown={(e) => { if (e.key === 'Enter') { addProDraft((e.target as any).value); (e.target as any).value = ''; } }}
+                />
+                <Button variant="outline" size="icon" onClick={() => { 
+                  const el = document.getElementById('pro-input') as HTMLInputElement;
+                  addProDraft(el.value);
+                  el.value = '';
+                }}>
+                  <PlusCircle className="h-4 w-4" />
+                </Button>
+              </div>
+              <ul className="space-y-2">
+                {proDrafts.map(pro => (
+                  <li key={pro} className="flex justify-between items-center bg-muted/30 px-3 py-2 rounded-lg text-sm">
+                    {pro}
+                    <button onClick={() => setProDrafts(curr => curr.filter(p => p !== pro))}><Trash2 className="h-3.5 w-3.5 text-muted-foreground" /></button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="surface-card p-5 space-y-4">
+              <h3 className="flex items-center gap-2 font-display text-lg font-semibold">
+                <Scissors className="h-5 w-5 text-primary" /> Serviços
+              </h3>
+              <div className="space-y-2">
+                <Input id="svc-name" placeholder="Ex.: Corte Masculino" className="rounded-xl h-11" />
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input id="svc-price" placeholder="Preço" className="rounded-xl h-11 pl-9" type="number" />
+                  </div>
+                  <Button variant="outline" onClick={() => {
+                    const n = document.getElementById('svc-name') as HTMLInputElement;
+                    const p = document.getElementById('svc-price') as HTMLInputElement;
+                    addServiceDraft(n.value, p.value);
+                    n.value = ''; p.value = '';
+                  }}>Add</Button>
+                </div>
+              </div>
+              <ul className="space-y-2">
+                {serviceDrafts.map(svc => (
+                  <li key={svc.name} className="flex justify-between items-center bg-muted/30 px-3 py-2 rounded-lg text-sm">
+                    <span>{svc.name} · R$ {svc.price}</span>
+                    <button onClick={() => setServiceDrafts(curr => curr.filter(s => s.name !== svc.name))}><Trash2 className="h-3.5 w-3.5 text-muted-foreground" /></button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="flex gap-4 pt-4">
+            <Button variant="outline" onClick={() => setStep(1)} className="h-16 flex-1 rounded-full border-2 border-primary-dark/10 font-bold text-primary-dark">Voltar</Button>
+            <Button onClick={() => setStep(3)} className="h-16 flex-1 rounded-full bg-primary-dark font-bold text-white shadow-xl hover:bg-accent transition-all">Continuar</Button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 3 — Branding */}
+      {step === 3 && (
+        <div className="space-y-8 animate-fade-in">
+          <header className="space-y-4 text-center">
+            <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent border border-accent/20">
+              Passo 03
+            </div>
+            <h1 className="font-display text-4xl font-bold tracking-tight text-primary-dark">
+              Cores & Marca
+            </h1>
+            <p className="text-lg font-light leading-relaxed text-muted-foreground">
+              A identidade visual que seus clientes verão ao agendar.
             </p>
           </header>
 
@@ -472,94 +595,23 @@ export default function Onboarding() {
                   <Label className="text-[10px] font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">{c.l}</Label>
                   <div className="flex items-center gap-2 rounded-2xl border border-border/40 bg-[#FAF7F9] px-2 h-14">
                     <input type="color" value={c.v} onChange={(e) => c.set(e.target.value)} className="h-8 w-8 cursor-pointer rounded-lg border-none bg-transparent" />
-                    <Input value={c.v} onChange={(e) => c.set(e.target.value)} className="h-9 border-0 px-1 text-xs shadow-none focus-visible:ring-0 bg-transparent font-mono" />
+                    <Input value={c.v} onChange={(e) => c.set(e.target.value)} className="h-9 border-0 px-1 text-xs shadow-none bg-transparent font-mono" />
                   </div>
                 </div>
               ))}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="un" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">Nome da Unidade Principal</Label>
-              <Input id="un" value={unitName} onChange={(e) => setUnitName(e.target.value)} className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] text-base shadow-none transition-all focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/5" placeholder="Ex.: Unidade Matriz" />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="up" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">Telefone de Contato</Label>
-                <div className="relative group">
-                  <Phone className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground group-focus-within:text-accent" />
-                  <Input id="up" value={unitPhone} onChange={(e) => setUnitPhone(e.target.value)} className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] pl-12 text-base shadow-none transition-all focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/5" placeholder="(11) 9999-9999" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="wp" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">WhatsApp Business</Label>
-                <div className="relative group">
-                  <Phone className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground group-focus-within:text-accent" />
-                  <Input id="wp" value={whatsappPhone} onChange={(e) => setWhatsappPhone(e.target.value)} className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] pl-12 text-base shadow-none transition-all focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/5" placeholder="(11) 99999-9999" />
-                </div>
+              <Label htmlFor="un" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">WhatsApp Business</Label>
+              <div className="relative group">
+                <Phone className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                <Input id="wp" value={whatsappPhone} onChange={(e) => setWhatsappPhone(e.target.value)} className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] pl-12 text-base shadow-none transition-all" placeholder="(11) 99999-9999" />
               </div>
             </div>
           </div>
 
           <div className="flex gap-4 pt-4">
-            <Button variant="outline" onClick={() => setStep(1)} className="h-16 flex-1 rounded-full border-2 border-primary-dark/10 font-bold text-primary-dark hover:border-accent hover:text-accent">Voltar</Button>
-            <Button onClick={() => setStep(3)} className="h-16 flex-1 rounded-full bg-primary-dark font-bold text-white shadow-xl hover:bg-accent transition-all">Continuar</Button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 3 — Equipe */}
-      {step === 3 && (
-        <div className="space-y-8 animate-fade-in">
-          <header className="space-y-4">
-            <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent border border-accent/20">
-              Passo 03
-            </div>
-            <h1 className="font-display text-4xl font-bold tracking-tight text-primary-dark">
-              Convide sua Equipe
-            </h1>
-            <p className="text-lg font-light leading-relaxed text-muted-foreground">
-              Adicione as pessoas que vão ajudar a operar seu negócio.
-            </p>
-          </header>
-
-          <div className="rounded-[2.5rem] border border-border/40 p-6 md:p-8 space-y-6 bg-[#FAF7F9]">
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_160px_auto] gap-3">
-              <Input value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="email@equipe.com" className="h-14 rounded-2xl border-border/40 bg-white text-base shadow-sm focus:ring-4 focus:ring-accent/5" />
-              <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as Role)}>
-                <SelectTrigger className="h-14 rounded-2xl border-border/40 bg-white shadow-sm focus:ring-4 focus:ring-accent/5"><SelectValue /></SelectTrigger>
-                <SelectContent className="rounded-2xl border-border/40 shadow-xl">
-                  {INVITE_ROLES.map((r) => <SelectItem key={r} value={r} className="rounded-xl py-3 focus:bg-accent/5">{roleLabels[r]}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <Button type="button" onClick={addInvite} className="h-14 w-14 rounded-2xl bg-white border border-border/40 text-primary-dark hover:bg-accent hover:text-white transition-all shadow-sm" variant="outline">
-                <UserPlus className="h-6 w-6" />
-              </Button>
-            </div>
-
-            {invites.length === 0 ? (
-              <div className="py-8 text-center border-2 border-dashed border-border/40 rounded-3xl">
-                <p className="text-sm text-muted-foreground/60 font-medium italic">Nenhum convite adicionado ainda.</p>
-              </div>
-            ) : (
-              <ul className="space-y-2">
-                {invites.map((i) => (
-                  <li key={i.email} className="flex items-center justify-between rounded-2xl bg-white border border-border/20 px-5 py-3 text-sm shadow-sm transition-all hover:border-accent/20 group">
-                    <span className="font-medium text-primary-dark truncate">{i.email}</span>
-                    <span className="flex items-center gap-4">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 px-3 py-1 bg-secondary/30 rounded-full">{roleLabels[i.role]}</span>
-                      <button type="button" onClick={() => setInvites((curr) => curr.filter((x) => x.email !== i.email))} className="text-muted-foreground hover:text-destructive transition-colors">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div className="flex gap-4 pt-4">
-            <Button variant="outline" onClick={() => setStep(2)} className="h-16 flex-1 rounded-full border-2 border-primary-dark/10 font-bold text-primary-dark hover:border-accent hover:text-accent">Voltar</Button>
+            <Button variant="outline" onClick={() => setStep(2)} className="h-16 flex-1 rounded-full border-2 border-primary-dark/10 font-bold text-primary-dark">Voltar</Button>
             <Button onClick={() => setStep(4)} className="h-16 flex-1 rounded-full bg-primary-dark font-bold text-white shadow-xl hover:bg-accent transition-all">Continuar</Button>
           </div>
         </div>
@@ -586,7 +638,8 @@ export default function Onboarding() {
                 { label: "Estabelecimento", val: bizName },
                 { label: "Segmento", val: segment ? segmentLabels[segment as TenantSegment] : "—" },
                 { label: "Unidade Principal", val: unitName || "Matriz" },
-                { label: "Colaboradores", val: `${invites.length} pessoa(s)` },
+                { label: "Colaboradores", val: `${proDrafts.length} profissional(is)` },
+                { label: "Serviços", val: `${serviceDrafts.length} item(ns)` },
               ].map((item, i) => (
                 <div key={i} className="flex items-center justify-between pb-4 border-b border-border/10 last:border-0 last:pb-0">
                   <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">{item.label}</span>

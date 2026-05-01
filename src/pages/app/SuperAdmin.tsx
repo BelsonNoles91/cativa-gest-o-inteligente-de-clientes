@@ -15,6 +15,8 @@ import {
   SlidersHorizontal,
   Trash2,
   Users,
+  AlertCircle,
+  PlusCircle,
 } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { TrialLogsTab } from "@/features/admin/TrialLogsTab";
@@ -250,6 +252,7 @@ export default function SuperAdmin() {
             <TabsTrigger value="flags"><Flag className="mr-1.5 h-3.5 w-3.5" />Flags</TabsTrigger>
             <TabsTrigger value="templates"><FileStack className="mr-1.5 h-3.5 w-3.5" />Templates</TabsTrigger>
             <TabsTrigger value="audit" data-testid="tab-audit"><ScrollText className="mr-1.5 h-3.5 w-3.5" />Auditoria</TabsTrigger>
+            <TabsTrigger value="incidents"><AlertCircle className="mr-1.5 h-3.5 w-3.5" />Incidentes</TabsTrigger>
             <TabsTrigger value="trial-logs" data-testid="tab-trial-logs"><CreditCard className="mr-1.5 h-3.5 w-3.5" />Trial</TabsTrigger>
           </TabsList>
 
@@ -284,6 +287,10 @@ export default function SuperAdmin() {
 
           <TabsContent value="audit">
             <AuditLogsTab tenants={tenants.map((t) => ({ id: t.id, name: t.name }))} />
+          </TabsContent>
+
+          <TabsContent value="incidents">
+            <IncidentsTab />
           </TabsContent>
 
           <TabsContent value="trial-logs">
@@ -1407,8 +1414,132 @@ function formatDateTime(iso: string) {
   return new Date(iso).toLocaleString("pt-BR", {
     day: "2-digit",
     month: "2-digit",
-    year: "numeric",
+    year: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function formatVal(v: unknown): string {
+  if (v === null || v === undefined) return "—";
+  if (typeof v === "string") return v;
+  if (typeof v === "boolean") return v ? "sim" : "não";
+  if (typeof v === "number") return String(v);
+  return JSON.stringify(v);
+}
+
+function IncidentsTab() {
+  const { toast } = useToast();
+  const [incidents, setIncidents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    severity: "medium",
+    status: "investigating"
+  });
+
+  async function load() {
+    setLoading(true);
+    try {
+      const { data } = await supabase.from('system_incidents').select('*').order('created_at', { ascending: false });
+      setIncidents(data || []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { void load() }, []);
+
+  async function save() {
+    try {
+      const { error } = await supabase.from('system_incidents').insert([form]);
+      if (error) throw error;
+      toast({ title: "Incidente registrado" });
+      setDialogOpen(false);
+      void load();
+    } catch (e) {
+      toast({ title: "Erro ao salvar", variant: "destructive" });
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="font-display text-lg font-semibold text-primary">Gestão de Incidentes</h3>
+        <Button onClick={() => setDialogOpen(true)} className="rounded-xl">
+          <PlusCircle className="mr-2 h-4 w-4" /> Novo Incidente
+        </Button>
+      </div>
+
+      <div className="surface-card">
+        {loading ? <div className="p-8 text-center"><Loader2 className="animate-spin inline mr-2" /> Carregando...</div> : incidents.length === 0 ? (
+          <EmptyState icon={<AlertCircle className="h-6 w-6" />} title="Nenhum incidente" description="O sistema está operando normalmente." />
+        ) : (
+          <ul className="divide-y divide-border/60">
+            {incidents.map(inc => (
+              <li key={inc.id} className="p-4 flex justify-between items-center">
+                <div>
+                  <p className="font-medium">{inc.title}</p>
+                  <p className="text-xs text-muted-foreground">{inc.description}</p>
+                </div>
+                <div className="flex gap-2">
+                  <StatusBadge tone={inc.severity === 'critical' ? 'danger' : 'warning'}>{inc.severity}</StatusBadge>
+                  <StatusBadge tone={inc.status === 'resolved' ? 'success' : 'brand'}>{inc.status}</StatusBadge>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Registrar Incidente</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label>Título</Label>
+              <Input value={form.title} onChange={e => setForm({...form, title: e.target.value})} />
+            </div>
+            <div className="space-y-2">
+              <Label>Descrição</Label>
+              <Textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Severidade</Label>
+                <Select value={form.severity} onValueChange={v => setForm({...form, severity: v})}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Baixa</SelectItem>
+                    <SelectItem value="medium">Média</SelectItem>
+                    <SelectItem value="high">Alta</SelectItem>
+                    <SelectItem value="critical">Crítica</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select value={form.status} onValueChange={v => setForm({...form, status: v})}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="investigating">Investigando</SelectItem>
+                    <SelectItem value="identified">Identificado</SelectItem>
+                    <SelectItem value="monitoring">Monitorando</SelectItem>
+                    <SelectItem value="resolved">Resolvido</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <Button onClick={() => void save()} className="w-full rounded-xl bg-gradient-brand">Salvar Incidente</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 }

@@ -56,6 +56,7 @@ const Pricing = lazyWithReload(() => import("./pages/public/Pricing"));
 const NotFound = lazyWithReload(() => import("./pages/NotFound"));
 const PremiumLanding = lazyWithReload(() => import("./pages/marketing/PremiumLanding"));
 const Demo = lazyWithReload(() => import("./pages/public/Demo"));
+const StatusPage = lazyWithReload(() => import("./pages/public/Status"));
 const Login = lazyWithReload(() => import("./pages/auth/Login"));
 const ForgotPassword = lazyWithReload(() => import("./pages/auth/ForgotPassword"));
 const ResetPassword = lazyWithReload(() => import("./pages/auth/ResetPassword"));
@@ -113,6 +114,7 @@ const App = () => (
                   <Route path="/privacidade" element={<Privacy />} />
                   <Route path="/termos" element={<Terms />} />
                   <Route path="/demo" element={<Demo />} />
+                  <Route path="/status" element={<StatusPage />} />
 
                   {/* Auth */}
                   <Route path="/auth/login" element={<Login />} />
