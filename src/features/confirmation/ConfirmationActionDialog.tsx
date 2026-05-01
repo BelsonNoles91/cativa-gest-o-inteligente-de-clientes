@@ -365,22 +365,27 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
               </TabsContent>
 
               {/* STATUS */}
-              <TabsContent value="status" className="space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  Atualize o status final deste item da fila.
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Status atual: {queueStatusLabels[item.status]}
-                </p>
+              <TabsContent value="status" className="space-y-4">
+                <div className="rounded-xl bg-muted/40 p-4">
+                  <p className="text-sm font-medium text-foreground">
+                    Atualizar status do agendamento
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Status atual na fila: {queueStatusLabels[item.status]}
+                  </p>
+                </div>
+
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                   <Button
                     variant="default"
+                    className="bg-success hover:bg-success/90"
                     onClick={() => center.setItemStatus(item.id, "confirmed")}
                   >
                     <CheckCircle2 className="mr-1.5 h-4 w-4" /> Confirmado
                   </Button>
                   <Button
                     variant="outline"
+                    className="border-warning/30 text-warning hover:bg-warning/5"
                     onClick={() => center.setItemStatus(item.id, "reschedule_requested")}
                   >
                     <CalendarPlus className="mr-1.5 h-4 w-4" /> Pediu reagendar
@@ -410,6 +415,21 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
                     Encerrar
                   </Button>
                 </div>
+
+                {(item.status === "reschedule_requested" || item.status === "canceled") && (
+                  <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4 animate-in fade-in slide-in-from-top-2">
+                    <p className="text-sm font-semibold text-primary flex items-center gap-2">
+                      <CalendarPlus className="h-4 w-4" /> Sugestão: Rebooking
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      O cliente não virá. Deseja registrar as opções de horários propostas para garantir a volta dele?
+                    </p>
+                    <div className="mt-3 flex gap-2">
+                      <Button size="sm" variant="outline" className="h-8 text-[11px] rounded-lg">Registrar opções</Button>
+                      <Button size="sm" variant="ghost" className="h-8 text-[11px] rounded-lg">Ignorar</Button>
+                    </div>
+                  </div>
+                )}
               </TabsContent>
 
               <TabsContent value="prefs" className="space-y-4">
