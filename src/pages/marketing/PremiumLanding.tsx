@@ -69,82 +69,129 @@ export default function PremiumLanding() {
 
         <ProblemSection />
 
-        {/* Seção de Solução */}
+        {/* Seção de Solução Dinâmica */}
         <PremiumSection id="solucao" variant="soft" padding="lg">
+          <div className="flex flex-wrap justify-center gap-4 mb-16 px-4">
+            {segments.map((s, i) => (
+              <button 
+                key={i}
+                onClick={() => setActiveSegment(i)}
+                className={cn(
+                  "px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-500",
+                  activeSegment === i 
+                    ? "bg-primary-dark text-white shadow-xl scale-105" 
+                    : "bg-white text-muted-foreground border border-border/40 hover:border-accent/40"
+                )}
+              >
+                {s.name}
+              </button>
+            ))}
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-24 items-center">
             <div className="relative group px-4 md:px-0">
-               <div className="aspect-square rounded-[3rem] md:rounded-[4rem] bg-white shadow-xl flex items-center justify-center p-8 md:p-16 relative overflow-hidden border border-border/40 transition-transform duration-700">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-                  
-                  <div className="relative z-10 w-full h-full flex flex-col justify-between">
-                     <div className="flex items-center justify-between">
-                        <div className="space-y-2">
-                           <div className="h-4 w-24 md:w-32 bg-primary-dark/10 rounded-full" />
-                           <div className="h-2 w-16 md:w-20 bg-primary-dark/5 rounded-full" />
-                        </div>
-                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
-                           <TrendingUp className="text-emerald-600 h-5 w-5 md:h-6 md:w-6" />
-                        </div>
-                     </div>
+               <AnimatePresence mode="wait">
+                 <motion.div 
+                   key={activeSegment}
+                   initial={{ opacity: 0, x: -20 }}
+                   animate={{ opacity: 1, x: 0 }}
+                   exit={{ opacity: 0, x: 20 }}
+                   transition={{ duration: 0.5 }}
+                   className="aspect-square rounded-[3rem] md:rounded-[4rem] bg-white shadow-xl flex items-center justify-center p-8 md:p-16 relative overflow-hidden border border-border/40"
+                 >
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+                    
+                    <div className="relative z-10 w-full h-full flex flex-col justify-between">
+                       <div className="flex items-center justify-between">
+                          <div className="space-y-2">
+                             <div className="h-4 w-24 md:w-32 bg-primary-dark/10 rounded-full" />
+                             <div className="h-2 w-16 md:w-20 bg-primary-dark/5 rounded-full" />
+                          </div>
+                          <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+                             <TrendingUp className="text-emerald-600 h-5 w-5 md:h-6 md:w-6" />
+                          </div>
+                       </div>
 
-                     <div className="py-8 md:py-12 flex-1 flex items-center justify-center">
-                        <div className="relative">
-                           <div className="text-8xl md:text-[12rem] font-display font-bold text-primary-dark/5 leading-none select-none">82</div>
-                           <div className="absolute inset-0 flex flex-col items-center justify-center">
-                              <span className="text-5xl md:text-7xl font-display font-bold text-primary-dark">82%</span>
-                              <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Fidelidade Ativa</span>
-                           </div>
-                        </div>
-                     </div>
+                       <div className="py-8 md:py-12 flex-1 flex items-center justify-center">
+                          <div className="relative">
+                             <div className="text-8xl md:text-[12rem] font-display font-bold text-primary-dark/5 leading-none select-none">
+                                {segments[activeSegment].percentage.replace('%', '')}
+                             </div>
+                             <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                                <span className="text-5xl md:text-7xl font-display font-bold text-primary-dark">{segments[activeSegment].percentage}</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">{segments[activeSegment].benefit}</span>
+                             </div>
+                          </div>
+                       </div>
 
-                     <div className="grid grid-cols-2 gap-4">
-                        <div className="h-12 md:h-16 bg-secondary/20 rounded-2xl border border-border/20" />
-                        <div className="h-12 md:h-16 bg-primary-dark rounded-2xl flex items-center justify-center text-white">
-                           <Star className="h-5 w-5 fill-accent text-accent" />
-                        </div>
-                     </div>
-                  </div>
-               </div>
+                       <div className="grid grid-cols-2 gap-4">
+                          <div className="h-12 md:h-16 bg-secondary/20 rounded-2xl border border-border/20" />
+                          <div className="h-12 md:h-16 bg-primary-dark rounded-2xl flex items-center justify-center text-white">
+                             <Star className="h-5 w-5 fill-accent text-accent" />
+                          </div>
+                       </div>
+                    </div>
+                 </AnimatePresence>
                
-               {/* Badge flutuante */}
-               <div className="absolute -bottom-4 -right-2 md:-bottom-10 md:-left-10 bg-accent text-white p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl transform rotate-3 z-20 max-w-[220px] md:max-w-xs">
-                  <Quote className="h-6 w-6 md:h-8 md:w-8 mb-4 opacity-40" />
-                  <p className="text-sm md:text-lg font-medium leading-tight mb-2">"A Cativa não é apenas um sistema, é um braço direito."</p>
-                  <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest opacity-60">— Amanda Souza, Clínica Bloom</p>
-               </div>
+               {/* Badge flutuante dinâmico */}
+               <AnimatePresence mode="wait">
+                 <motion.div 
+                    key={`quote-${activeSegment}`}
+                    initial={{ opacity: 0, scale: 0.8, rotate: 5 }}
+                    animate={{ opacity: 1, scale: 1, rotate: 3 }}
+                    exit={{ opacity: 0, scale: 0.8, rotate: 5 }}
+                    className="absolute -bottom-4 -right-2 md:-bottom-10 md:-left-10 bg-accent text-white p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl z-20 max-w-[220px] md:max-w-xs"
+                 >
+                    <Quote className="h-6 w-6 md:h-8 md:w-8 mb-4 opacity-40" />
+                    <p className="text-sm md:text-lg font-medium leading-tight mb-2 italic">"{segments[activeSegment].quote}"</p>
+                    <p className="text-[9px] font-bold uppercase tracking-widest opacity-60">— {segments[activeSegment].author}</p>
+                 </motion.div>
+               </AnimatePresence>
             </div>
 
             <div className="space-y-10 md:space-y-12 px-4 md:px-0">
-              <div>
-                <div className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-6 md:mb-8">
-                  Estratégia & Controle
-                </div>
-                <h3 className="font-display text-4xl md:text-7xl text-primary-dark tracking-tighter leading-[0.9] mb-6 md:mb-8">
-                  O problema não é <br className="hidden md:block" />
-                  <span className="italic serif font-normal text-accent">apenas a agenda.</span>
-                </h3>
-                <p className="text-lg md:text-xl text-muted-foreground/80 leading-relaxed font-light mb-6">
-                  A maioria dos sistemas apenas marca horários. A Cativa foi criada para ajudar seu negócio a fidelizar melhor, confirmar horários e crescer com segurança.
-                </p>
-                <p className="text-xl md:text-2xl font-display italic serif text-primary-dark/60">
-                  "Porque crescer com consistência exige inteligência operacional."
-                </p>
-              </div>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`content-${activeSegment}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <div className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-6 md:mb-8">
+                    Foco em {segments[activeSegment].name}
+                  </div>
+                  <h3 className="font-display text-4xl md:text-7xl text-primary-dark tracking-tighter leading-[0.9] mb-6 md:mb-8">
+                    O problema não é <br className="hidden md:block" />
+                    <span className="italic serif font-normal text-accent">apenas a agenda.</span>
+                  </h3>
+                  <p className="text-lg md:text-xl text-muted-foreground/80 leading-relaxed font-light mb-6">
+                    {activeSegment === 0 && "Para clínicas de estética, cada minuto conta. A Cativa ajuda você a fidelizar melhor, confirmar horários e crescer com segurança."}
+                    {activeSegment === 1 && "Salões premium precisam de fluxo constante. Nossa inteligência reduz buracos na agenda e otimiza o trabalho da sua equipe."}
+                    {activeSegment === 2 && "Barbearias modernas exigem agilidade total. O portal do cliente e as confirmações rápidas garantem que ninguém perca tempo."}
+                  </p>
+                </motion.div>
+              </AnimatePresence>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
                 {[
-                  { icon: CheckCircle2, text: "Foco total na Fidelidade", desc: "Aumente o valor de cada cliente." },
-                  { icon: ShieldCheck, text: "Segurança de Dados", desc: "Proteção total das suas informações." },
-                  { icon: Users, text: "Espaço do Cliente", desc: "Área exclusiva para quem você atende." },
-                  { icon: Calendar, text: "Agendamento em 3 cliques", desc: "Rapidez que sua recepção precisa." },
+                  { icon: CheckCircle2, text: "Fidelidade Total", desc: "Aumente o retorno médio." },
+                  { icon: ShieldCheck, text: "Dados Blindados", desc: "Segurança total das informações." },
+                  { icon: Users, text: "Espaço do Cliente", desc: "Autonomia para quem você atende." },
+                  { icon: Calendar, text: "Fluxo Inteligente", desc: "Rapidez que o dia a dia exige." },
                 ].map((item, i) => (
-                  <div key={i} className="space-y-2">
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    key={i} className="space-y-2"
+                  >
                     <div className="flex items-center gap-3">
                        <item.icon className="h-5 w-5 text-accent" />
                        <span className="font-bold text-primary-dark tracking-tight">{item.text}</span>
                     </div>
                     <p className="text-xs md:text-sm text-muted-foreground font-light">{item.desc}</p>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
 
@@ -152,7 +199,7 @@ export default function PremiumLanding() {
                 <Button asChild size="lg" className="w-full md:w-auto rounded-full bg-primary-dark h-16 px-10 group relative overflow-hidden transition-all hover:scale-[1.02]">
                   <Link to="/onboarding">
                     <span className="relative z-10 flex items-center justify-center">
-                      Conhecer a solução completa
+                      Começar agora como {segments[activeSegment].name}
                       <ArrowRight className="ml-3 h-5 w-5 transition-transform group-hover:translate-x-1" />
                     </span>
                     <div className="absolute inset-0 bg-accent translate-y-full transition-transform group-hover:translate-y-0" />
