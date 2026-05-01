@@ -88,7 +88,10 @@ export function MetricsSection() {
                 >
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
-                      {metrics[activeMetric] && <metrics[activeMetric].icon className="h-4 w-4 text-accent" />}
+                      {(() => {
+                        const Icon = metrics[activeMetric].icon;
+                        return <Icon className="h-4 w-4 text-accent" />;
+                      })()}
                     </div>
                     <span className="text-[10px] font-bold uppercase tracking-widest text-accent">Resultado Real</span>
                   </div>
