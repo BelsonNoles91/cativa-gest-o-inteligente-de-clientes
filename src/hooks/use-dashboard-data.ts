@@ -77,7 +77,9 @@ export function useDashboardData() {
         pendingConfirmations,
         newClientsWeek: newClients.count ?? 0,
         upcoming,
+        ltvEstimate: ltvQuery.data ?? 0,
       };
+
     },
     enabled: !!currentTenant,
     staleTime: 1000 * 60 * 5, // 5 minutes - dashboard data is slightly volatile
