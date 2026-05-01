@@ -9,7 +9,9 @@ import {
   ListChecks,
   RefreshCcw,
   ShieldAlert,
+  TrendingUp,
 } from "lucide-react";
+
 import { PageHeader } from "@/components/shell/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
