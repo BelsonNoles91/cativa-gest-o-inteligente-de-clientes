@@ -81,25 +81,26 @@ export function HeroSection() {
             A Cativa centraliza agenda, clientes, confirmações, protocolos e indicadores para clínicas e salões que querem reduzir faltas, melhorar o rebooking e crescer com mais previsibilidade.
           </motion.p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-            <div className="flex flex-col gap-2 w-full sm:w-auto">
-              <Button asChild size="lg" variant="premium" className="group relative overflow-hidden h-16 px-8 w-full sm:w-[280px]" aria-label="Começar teste gratuito de 14 dias">
-                <Link to="/onboarding" className="w-full h-full flex items-center justify-center">
-                  <span className="relative z-10 flex items-center gap-2">
-                    Começar teste grátis
-                    <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-                  </span>
-                  <div className="absolute inset-0 bg-white translate-y-full transition-transform group-hover:translate-y-0" />
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-5 mb-10">
+            <div className="flex flex-col gap-3 w-full sm:w-auto">
+              <Button asChild size="lg" variant="premium" className="group h-16 px-10 w-full sm:w-[300px] text-lg rounded-2xl" aria-label="Começar teste gratuito de 14 dias">
+                <Link to="/onboarding" className="flex items-center justify-center gap-2">
+                  Começar teste grátis
+                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
-              <span className="text-[10px] text-muted-foreground font-medium text-center px-2">Experimente os principais fluxos sem compromisso.</span>
+              <p className="text-[11px] text-muted-foreground/70 font-medium text-center px-4 leading-tight">
+                Experimente os principais fluxos <br className="hidden sm:block" /> sem compromisso.
+              </p>
             </div>
             
-            <div className="flex flex-col gap-2 w-full sm:w-auto">
-              <Button asChild variant="outline" size="lg" className="h-16 px-8 rounded-full border-primary-dark/20 bg-primary text-primary-dark hover:text-white hover:border-primary-dark w-full sm:w-[280px]" aria-label="Agendar demonstração personalizada">
-                <Link to="/demo" className="w-full h-full flex items-center justify-center">Agendar demonstração</Link>
+            <div className="flex flex-col gap-3 w-full sm:w-auto">
+              <Button asChild variant="outline" size="lg" className="h-16 px-10 rounded-2xl w-full sm:w-[300px] text-lg font-bold" aria-label="Agendar demonstração personalizada">
+                <Link to="/demo">Agendar demonstração</Link>
               </Button>
-              <span className="text-[10px] text-muted-foreground font-medium text-center px-2">Veja a Cativa aplicada ao seu tipo de negócio.</span>
+              <p className="text-[11px] text-muted-foreground/70 font-medium text-center px-4 leading-tight">
+                Veja a Cativa aplicada <br className="hidden sm:block" /> ao seu tipo de negócio.
+              </p>
             </div>
           </div>
 
