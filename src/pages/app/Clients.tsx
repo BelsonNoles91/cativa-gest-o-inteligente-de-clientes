@@ -1828,7 +1828,7 @@ function InfoItem({
   full = false,
 }: {
   label: string;
-  value: string | null | undefined;
+  value: React.ReactNode;
   full?: boolean;
 }) {
   return (
