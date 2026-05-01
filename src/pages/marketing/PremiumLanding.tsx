@@ -7,6 +7,7 @@ import { PremiumSection } from "@/components/marketing/layout/PremiumSection";
 import { ArrowRight, CheckCircle2, TrendingUp, Users, Calendar, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 export default function PremiumLanding() {
   return (
