@@ -18,6 +18,7 @@ export default function DemoPage() {
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [demoStep, setDemoStep] = useState<'calendar' | 'service' | 'time' | 'confirm'>('calendar');
+  const [selectedPlan, setSelectedPlan] = useState<'basic' | 'pro' | 'enterprise'>('pro');
 
   const services = [
     { id: 'limpeza', name: 'Limpeza de Pele', price: 'R$ 120' },
@@ -399,33 +400,47 @@ export default function DemoPage() {
                           </div>
                         </div>
                         {/* Seletor de Plano Simulado */}
-                        <div className="flex gap-4">
-                          <div className="flex-1 bg-white p-3 rounded-2xl border border-accent/20 shadow-sm relative overflow-hidden group/plan">
-                            <div className="absolute top-0 right-0 w-8 h-8 bg-accent/10 rounded-bl-2xl flex items-center justify-center">
-                              <CheckCircle2 className="w-3 h-3 text-accent" />
-                            </div>
-                            <p className="text-[7px] font-black uppercase text-accent mb-1 tracking-widest">Plano Pro</p>
-                            <p className="text-[10px] font-bold text-primary-dark mb-2">Multitenant Ativo</p>
-                            <div className="space-y-1">
-                              <div className="flex justify-between text-[7px] font-bold text-muted-foreground">
-                                <span>Agendamentos</span>
-                                <span>Ilimitado</span>
-                              </div>
-                              <div className="h-1 w-full bg-accent/10 rounded-full overflow-hidden">
-                                <div className="h-full bg-accent w-full" />
-                              </div>
-                            </div>
+                        <div className="space-y-3">
+                          <div className="flex gap-2 p-1 bg-gray-100 rounded-xl">
+                            {(['basic', 'pro', 'enterprise'] as const).map((plan) => (
+                              <button
+                                key={plan}
+                                onClick={() => setSelectedPlan(plan)}
+                                className={cn(
+                                  "flex-1 py-1.5 text-[9px] font-bold uppercase rounded-lg transition-all",
+                                  selectedPlan === plan ? "bg-white shadow-sm text-accent" : "text-muted-foreground"
+                                )}
+                              >
+                                {plan}
+                              </button>
+                            ))}
                           </div>
-                          <div className="flex-1 bg-[#1A0F16] p-3 rounded-2xl shadow-lg relative overflow-hidden">
-                            <p className="text-[7px] font-black uppercase text-accent/60 mb-1 tracking-widest">Feature Gate</p>
-                            <p className="text-[10px] font-bold text-white mb-2">Limite por Tenant</p>
-                            <div className="space-y-1">
-                              <div className="flex justify-between text-[7px] font-bold text-white/40">
-                                <span>Equipe</span>
-                                <span>08/10</span>
+                          
+                          <div className="flex gap-4">
+                            <div className="flex-1 bg-white p-3 rounded-2xl border border-accent/20 shadow-sm relative overflow-hidden">
+                              <p className="text-[7px] font-black uppercase text-accent mb-1 tracking-widest capitalize">{selectedPlan} Plan</p>
+                              <p className="text-[10px] font-bold text-primary-dark mb-2">Multitenant Ativo</p>
+                              <div className="space-y-1">
+                                <div className="flex justify-between text-[7px] font-bold text-muted-foreground">
+                                  <span>Agendamentos</span>
+                                  <span>{selectedPlan === 'basic' ? '10/mês' : selectedPlan === 'pro' ? 'Ilimitado' : 'Enterprise'}</span>
+                                </div>
+                                <div className="h-1 w-full bg-accent/10 rounded-full overflow-hidden">
+                                  <div className={cn("h-full bg-accent transition-all duration-500", selectedPlan === 'basic' ? 'w-1/3' : 'w-full')} />
+                                </div>
                               </div>
-                              <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                                <motion.div initial={{ width: 0 }} animate={{ width: '80%' }} transition={{ delay: 1, duration: 1.5 }} className="h-full bg-accent" />
+                            </div>
+                            <div className="flex-1 bg-[#1A0F16] p-3 rounded-2xl shadow-lg relative overflow-hidden">
+                              <p className="text-[7px] font-black uppercase text-accent/60 mb-1 tracking-widest">Feature Gate</p>
+                              <p className="text-[10px] font-bold text-white mb-2">Limite por Tenant</p>
+                              <div className="space-y-1">
+                                <div className="flex justify-between text-[7px] font-bold text-white/40">
+                                  <span>Equipe</span>
+                                  <span>{selectedPlan === 'basic' ? '02/03' : selectedPlan === 'pro' ? '08/10' : 'Ilimitado'}</span>
+                                </div>
+                                <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                                  <motion.div initial={{ width: 0 }} animate={{ width: selectedPlan === 'basic' ? '66%' : '80%' }} transition={{ delay: 0.5, duration: 1.5 }} className="h-full bg-accent" />
+                                </div>
                               </div>
                             </div>
                           </div>
