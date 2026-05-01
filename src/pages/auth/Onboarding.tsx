@@ -569,58 +569,49 @@ export default function Onboarding() {
         </div>
       )}
 
-      {/* Step 3 — Equipe */}
+      {/* Step 3 — Branding */}
       {step === 3 && (
         <div className="space-y-8 animate-fade-in">
-          <header className="space-y-4">
+          <header className="space-y-4 text-center">
             <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent border border-accent/20">
               Passo 03
             </div>
             <h1 className="font-display text-4xl font-bold tracking-tight text-primary-dark">
-              Convide sua Equipe
+              Cores & Marca
             </h1>
             <p className="text-lg font-light leading-relaxed text-muted-foreground">
-              Adicione as pessoas que vão ajudar a operar seu negócio.
+              A identidade visual que seus clientes verão ao agendar.
             </p>
           </header>
 
-          <div className="rounded-[2.5rem] border border-border/40 p-6 md:p-8 space-y-6 bg-[#FAF7F9]">
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_160px_auto] gap-3">
-              <Input value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="email@equipe.com" className="h-14 rounded-2xl border-border/40 bg-white text-base shadow-sm focus:ring-4 focus:ring-accent/5" />
-              <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as Role)}>
-                <SelectTrigger className="h-14 rounded-2xl border-border/40 bg-white shadow-sm focus:ring-4 focus:ring-accent/5"><SelectValue /></SelectTrigger>
-                <SelectContent className="rounded-2xl border-border/40 shadow-xl">
-                  {INVITE_ROLES.map((r) => <SelectItem key={r} value={r} className="rounded-xl py-3 focus:bg-accent/5">{roleLabels[r]}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <Button type="button" onClick={addInvite} className="h-14 w-14 rounded-2xl bg-white border border-border/40 text-primary-dark hover:bg-accent hover:text-white transition-all shadow-sm" variant="outline">
-                <UserPlus className="h-6 w-6" />
-              </Button>
+          <div className="space-y-6">
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { v: brandPrimary, set: setBrandPrimary, l: "Primária" },
+                { v: brandSecondary, set: setBrandSecondary, l: "Secundária" },
+                { v: brandAccent, set: setBrandAccent, l: "Acento" },
+              ].map((c) => (
+                <div key={c.l} className="space-y-2">
+                  <Label className="text-[10px] font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">{c.l}</Label>
+                  <div className="flex items-center gap-2 rounded-2xl border border-border/40 bg-[#FAF7F9] px-2 h-14">
+                    <input type="color" value={c.v} onChange={(e) => c.set(e.target.value)} className="h-8 w-8 cursor-pointer rounded-lg border-none bg-transparent" />
+                    <Input value={c.v} onChange={(e) => c.set(e.target.value)} className="h-9 border-0 px-1 text-xs shadow-none bg-transparent font-mono" />
+                  </div>
+                </div>
+              ))}
             </div>
 
-            {invites.length === 0 ? (
-              <div className="py-8 text-center border-2 border-dashed border-border/40 rounded-3xl">
-                <p className="text-sm text-muted-foreground/60 font-medium italic">Nenhum convite adicionado ainda.</p>
+            <div className="space-y-2">
+              <Label htmlFor="un" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">WhatsApp Business</Label>
+              <div className="relative group">
+                <Phone className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                <Input id="wp" value={whatsappPhone} onChange={(e) => setWhatsappPhone(e.target.value)} className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] pl-12 text-base shadow-none transition-all" placeholder="(11) 99999-9999" />
               </div>
-            ) : (
-              <ul className="space-y-2">
-                {invites.map((i) => (
-                  <li key={i.email} className="flex items-center justify-between rounded-2xl bg-white border border-border/20 px-5 py-3 text-sm shadow-sm transition-all hover:border-accent/20 group">
-                    <span className="font-medium text-primary-dark truncate">{i.email}</span>
-                    <span className="flex items-center gap-4">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 px-3 py-1 bg-secondary/30 rounded-full">{roleLabels[i.role]}</span>
-                      <button type="button" onClick={() => setInvites((curr) => curr.filter((x) => x.email !== i.email))} className="text-muted-foreground hover:text-destructive transition-colors">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
+            </div>
           </div>
 
           <div className="flex gap-4 pt-4">
-            <Button variant="outline" onClick={() => setStep(2)} className="h-16 flex-1 rounded-full border-2 border-primary-dark/10 font-bold text-primary-dark hover:border-accent hover:text-accent">Voltar</Button>
+            <Button variant="outline" onClick={() => setStep(2)} className="h-16 flex-1 rounded-full border-2 border-primary-dark/10 font-bold text-primary-dark">Voltar</Button>
             <Button onClick={() => setStep(4)} className="h-16 flex-1 rounded-full bg-primary-dark font-bold text-white shadow-xl hover:bg-accent transition-all">Continuar</Button>
           </div>
         </div>
