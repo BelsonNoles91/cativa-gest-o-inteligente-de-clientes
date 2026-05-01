@@ -14,7 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Building2, Sparkles, Rocket, ArrowRight, Check, Mail, Lock, User,
-  Palette, Loader2, UserPlus, Trash2, Phone, ImagePlus, UploadCloud,
+  Palette, Loader2, UserPlus, Trash2, Phone, ImagePlus, UploadCloud, Scissors, PlusCircle, DollarSign,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AuthLayout } from "@/components/shell/AuthLayout";
