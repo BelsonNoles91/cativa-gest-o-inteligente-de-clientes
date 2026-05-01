@@ -7,6 +7,7 @@ import { ModulesSection } from "@/components/marketing/sections/ModulesSection";
 import { ProcessSection } from "@/components/marketing/sections/ProcessSection";
 import { MetricsSection } from "@/components/marketing/sections/MetricsSection";
 import { PremiumSection } from "@/components/marketing/layout/PremiumSection";
+import { PlansSection } from "@/components/marketing/sections/PlansSection";
 import { ArrowRight, CheckCircle2, TrendingUp, Users, Calendar, Star, Quote, ShieldCheck, UserCheck, LayoutDashboard, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -139,71 +140,17 @@ export default function PremiumLanding() {
             <div className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-8">
               Investimento
             </div>
-            <h3 className="font-display text-5xl md:text-7xl text-primary-dark tracking-tighter leading-[0.9]">
+            <h3 className="font-display text-5xl md:text-8xl text-primary-dark tracking-tighter leading-[0.9]">
               Planos que <br />
               <span className="italic serif font-normal text-accent">escalam com você.</span>
             </h3>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
-            {[
-              {
-                name: "Essencial",
-                price: "147",
-                desc: "Ideal para profissionais autônomos e estúdios em início de carreira.",
-                features: ["Agenda Inteligente", "Confirmações manuais ilimitadas", "Gestão de Clientes", "Relatórios básicos"],
-                button: "Começar Agora",
-                highlight: false
-              },
-              {
-                name: "Premium",
-                price: "297",
-                desc: "Para clínicas e salões que buscam automação total e inteligência.",
-                features: ["Tudo do Essencial", "Confirmações Automáticas", "BI & Dashboards Avançados", "Multi-profissionais", "Suporte Prioritário"],
-                button: "Testar Premium Grátis",
-                highlight: true
-              }
-            ].map((plan, i) => (
-              <div key={i} className={cn(
-                "p-12 rounded-[3.5rem] border transition-all duration-700 hover:-translate-y-2",
-                plan.highlight 
-                  ? "bg-primary-dark text-white border-primary-dark shadow-2xl shadow-primary/20 scale-105" 
-                  : "bg-white text-primary-dark border-border/40"
-              )}>
-                <p className={cn("text-xs font-bold uppercase tracking-widest mb-4", plan.highlight ? "text-accent" : "text-muted-foreground")}>
-                  {plan.name}
-                </p>
-                <div className="flex items-baseline gap-2 mb-8 text-primary-dark">
-                  <span className="text-xl font-bold opacity-60">R$</span>
-                  <span className="text-7xl font-display font-bold tracking-tighter">{plan.price}</span>
-                  <span className="text-sm font-bold opacity-60">/mês</span>
-                </div>
-                <p className={cn("text-lg font-light mb-10 leading-relaxed", plan.highlight ? "text-white/70" : "text-muted-foreground")}>
-                  {plan.desc}
-                </p>
-                
-                <div className="space-y-6 mb-12">
-                   {plan.features.map((feat, idx) => (
-                     <div key={idx} className="flex items-center gap-4">
-                        <CheckCircle2 className={cn("h-5 w-5", plan.highlight ? "text-accent" : "text-primary-dark")} />
-                        <span className="font-light">{feat}</span>
-                     </div>
-                   ))}
-                </div>
+          <PlansSection />
 
-                <Button asChild className={cn(
-                  "w-full h-16 rounded-none text-lg font-bold transition-all",
-                  plan.highlight 
-                    ? "bg-accent text-white hover:bg-white hover:text-primary-dark" 
-                    : "bg-primary-dark text-white hover:bg-accent"
-                )}>
-                  <Link to="/onboarding">{plan.button}</Link>
-                </Button>
-              </div>
-            ))}
-          </div>
-          <p className="text-center mt-12 text-sm text-muted-foreground font-light italic">
-            * Valores para pagamento mensal. Descontos progressivos para planos anuais.
+          <p className="text-center mt-20 text-sm text-muted-foreground font-light italic">
+            * Valores para pagamento mensal. Descontos progressivos para planos anuais. <br />
+            Suporte especializado disponível para todos os planos pagos.
           </p>
         </PremiumSection>
 
