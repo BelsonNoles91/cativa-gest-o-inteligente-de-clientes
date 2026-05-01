@@ -108,7 +108,7 @@ export default function PremiumLanding() {
               <div className="grid sm:grid-cols-2 gap-8">
                 {[
                   { icon: CheckCircle2, text: "Foco total em LTV e Retenção", desc: "Aumente o valor de cada cliente." },
-                  { icon: Smartphone, text: "Mobile-First de verdade", desc: "Gestão completa na palma da mão." },
+                  { icon: CheckCircle2, text: "Foco total em LTV e Retenção", desc: "Aumente o valor de cada cliente." },
                   { icon: Users, text: "Experiência do Cliente", desc: "Portal dedicado e personalizado." },
                   { icon: Calendar, text: "Fluxo de 3 cliques", desc: "Rapidez que sua recepção precisa." },
                 ].map((item, i) => (
