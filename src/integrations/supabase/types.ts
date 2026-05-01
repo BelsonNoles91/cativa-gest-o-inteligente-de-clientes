@@ -344,6 +344,7 @@ export type Database = {
           id: string
           metadata: Json
           tenant_id: string | null
+          user_id: string | null
         }
         Insert: {
           action: string
@@ -354,6 +355,7 @@ export type Database = {
           id?: string
           metadata?: Json
           tenant_id?: string | null
+          user_id?: string | null
         }
         Update: {
           action?: string
@@ -364,6 +366,7 @@ export type Database = {
           id?: string
           metadata?: Json
           tenant_id?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -3156,6 +3159,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      system_incidents: {
+        Row: {
+          affected_components: string[] | null
+          created_at: string | null
+          description: string | null
+          id: string
+          resolved_at: string | null
+          severity: string
+          status: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          affected_components?: string[] | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          resolved_at?: string | null
+          severity: string
+          status: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          affected_components?: string[] | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      system_status: {
+        Row: {
+          component_name: string
+          created_at: string | null
+          id: string
+          last_updated: string | null
+          status: string
+        }
+        Insert: {
+          component_name: string
+          created_at?: string | null
+          id?: string
+          last_updated?: string | null
+          status: string
+        }
+        Update: {
+          component_name?: string
+          created_at?: string | null
+          id?: string
+          last_updated?: string | null
+          status?: string
+        }
+        Relationships: []
       }
       team_invitations: {
         Row: {
