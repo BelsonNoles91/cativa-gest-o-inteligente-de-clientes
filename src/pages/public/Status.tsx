@@ -30,14 +30,19 @@ export default function StatusPage() {
 
   useEffect(() => {
     async function loadStatus() {
-      const [{ data: compData }, { data: incData }] = await Promise.all([
-        supabase.from('system_status').select('*').order('component_name'),
-        supabase.from('system_incidents').select('*').order('created_at', { ascending: false }).limit(10)
-      ]);
-      
-      if (compData) setComponents(compData as ComponentStatus[]);
-      if (incData) setIncidents(incData as Incident[]);
-      setLoading(false);
+      try {
+        const [{ data: compData }, { data: incData }] = await Promise.all([
+          supabase.from('system_status').select('*').order('component_name'),
+          supabase.from('system_incidents').select('*').order('created_at', { ascending: false }).limit(10)
+        ]);
+        
+        if (compData) setComponents(compData as ComponentStatus[]);
+        if (incData) setIncidents(incData as Incident[]);
+      } catch (err) {
+        console.error("Erro ao carregar status:", err);
+      } finally {
+        setLoading(false);
+      }
     }
     loadStatus();
   }, []);
