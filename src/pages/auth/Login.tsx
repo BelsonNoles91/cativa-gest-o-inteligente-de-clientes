@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Mail, Lock, Loader2, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Mail, Lock, Loader2, Eye, EyeOff, ArrowRight, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { AuthLayout } from "@/components/shell/AuthLayout";
 import { Button } from "@/components/ui/button";
