@@ -112,6 +112,7 @@ const App = () => (
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/privacidade" element={<Privacy />} />
                   <Route path="/termos" element={<Terms />} />
+                  <Route path="/demo" element={<Demo />} />
 
                   {/* Auth */}
                   <Route path="/auth/login" element={<Login />} />
