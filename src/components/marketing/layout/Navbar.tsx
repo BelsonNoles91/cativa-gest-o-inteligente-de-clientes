@@ -52,7 +52,7 @@ export function Navbar() {
             <a 
               key={link.name}
               href={link.href} 
-              className="text-[10px] font-bold uppercase tracking-widest text-primary-dark/60 hover:text-accent transition-colors"
+              className="text-[10px] font-bold uppercase tracking-widest text-primary-dark hover:text-accent transition-colors"
             >
               {link.name}
             </a>
@@ -60,11 +60,11 @@ export function Navbar() {
         </div>
 
         <div className="hidden lg:flex items-center gap-4">
-          <Link to="/auth/login" className="text-[10px] font-bold uppercase tracking-widest text-primary-dark/60 hover:text-primary-dark transition-colors px-6">
+          <Link to="/auth/login" className="text-[10px] font-bold uppercase tracking-widest text-primary-dark hover:text-accent transition-colors px-6">
             Entrar
           </Link>
-          <Button asChild variant="outline" className="rounded-full px-8 text-[10px] font-bold uppercase tracking-widest border-primary-dark/10 hover:bg-primary-dark hover:text-white transition-all duration-300">
-            <Link to="/demo">Demonstração</Link>
+          <Button asChild variant="outline" className="rounded-full px-8 text-[10px] font-bold uppercase tracking-widest border-primary-dark/20 hover:bg-primary-dark hover:text-white transition-all duration-300">
+            <Link to="/onboarding">Demonstração</Link>
           </Button>
           <Button asChild className="rounded-full px-8 text-[10px] font-bold uppercase tracking-widest bg-accent hover:bg-accent/90 text-white transition-all duration-300 shadow-lg shadow-accent/20">
             <Link to="/onboarding">Começar Agora</Link>
