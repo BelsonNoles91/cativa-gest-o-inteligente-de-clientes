@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   AlertCircle,
@@ -76,7 +76,7 @@ import { canAccess } from "@/domain/roles";
 import { isUsageBlocked } from "@/domain/billing";
 import { QuickFiltersBar } from "@/features/clients/QuickFiltersBar";
 import { supabase } from "@/integrations/supabase/client";
-import { cn } from "@/lib/utils";
+import { cn, debounce } from "@/lib/utils";
 
 type FiltersState = {
   search: string;
@@ -150,6 +150,17 @@ export default function ClientsPage() {
   const { toast } = useToast();
 
   const [filters, setFilters] = useState<FiltersState>(DEFAULT_FILTERS);
+  const [debouncedSearch, setDebouncedSearch] = useState(filters.search);
+
+  const updateDebouncedSearch = useCallback(
+    debounce((val: string) => setDebouncedSearch(val), 300),
+    []
+  );
+
+  useEffect(() => {
+    updateDebouncedSearch(filters.search);
+  }, [filters.search, updateDebouncedSearch]);
+
   const [clients, setClients] = useState<Client[]>([]);
   const [loadingList, setLoadingList] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -262,7 +273,7 @@ export default function ClientsPage() {
       try {
         const list = await listClients({
           tenantId: currentTenant.id,
-          search: filters.search || undefined,
+          search: debouncedSearch || undefined,
           status: filters.status,
           vipOnly: filters.vipOnly,
           inactiveOnly: filters.inactiveOnly,
@@ -295,7 +306,7 @@ export default function ClientsPage() {
     return () => {
       ignore = true;
     };
-  }, [currentTenant, filters, toast]);
+  }, [currentTenant, filters, debouncedSearch, toast]);
 
   useEffect(() => {
     if (!currentTenant || !selectedId) {
