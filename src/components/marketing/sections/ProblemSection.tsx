@@ -1,6 +1,7 @@
 import { PremiumSection } from "../layout/PremiumSection";
 import { XCircle, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 export function ProblemSection() {
   const problems = [
