@@ -2,7 +2,7 @@ import { PremiumSection } from "@/components/marketing/layout/PremiumSection";
 import { PremiumHeader } from "@/components/marketing/layout/PremiumHeader";
 import { PremiumFooter } from "@/components/marketing/layout/PremiumFooter";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, CheckCircle2, ArrowRight, Play, Check, Users, TrendingUp, Shield, Settings } from "lucide-react";
+import { Calendar, Clock, CheckCircle2, ArrowRight, Play, Check, Users, TrendingUp, Shield, Settings, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -13,8 +13,19 @@ import { toast } from "sonner";
 export default function DemoPage() {
   const navigate = useNavigate();
   const [selectedDay, setSelectedDay] = useState(15);
+  const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [demoStep, setDemoStep] = useState<'calendar' | 'service' | 'time' | 'confirm'>('calendar');
+
+  const services = [
+    { id: 'limpeza', name: 'Limpeza de Pele', price: 'R$ 120' },
+    { id: 'peeling', name: 'Peeling Diamante', price: 'R$ 180' },
+    { id: 'massagem', name: 'Massagem Relaxante', price: 'R$ 150' },
+  ];
+
+  const times = ['09:00', '09:30', '10:00', '11:00', '14:00', '15:30'];
 
   const handleDaySelect = (day: number, isAvailable: boolean) => {
     if (!isAvailable) {
@@ -22,15 +33,25 @@ export default function DemoPage() {
       return;
     }
     setSelectedDay(day);
+    setDemoStep('service');
+  };
+
+  const handleServiceSelect = (service: string) => {
+    setSelectedService(service);
+    setDemoStep('time');
+  };
+
+  const handleTimeSelect = (time: string) => {
+    setSelectedTime(time);
+    setDemoStep('confirm');
   };
 
   const handleConfirm = () => {
     setIsConfirmed(true);
     toast.success("Demonstração agendada com sucesso!");
     
-    // Pequeno delay para o usuário ver a confirmação antes de ser redirecionado ou resetar
     setTimeout(() => {
-      navigate(`/onboarding?demo_date=2026-05-${selectedDay}&demo_time=09:30`);
+      navigate(`/onboarding?demo_date=2026-05-${selectedDay}&demo_time=${selectedTime}&demo_service=${selectedService}`);
     }, 2500);
   };
 
@@ -105,61 +126,126 @@ export default function DemoPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                   >
-                    <div className="mb-8 md:mb-10 text-center">
-                      <h3 className="text-2xl font-display font-bold text-primary-dark mb-2">Escolha um horário</h3>
-                      <p className="text-sm text-muted-foreground font-light">Selecione o melhor momento para sua demonstração</p>
-                    </div>
+                    {demoStep === 'calendar' && (
+                      <>
+                        <div className="mb-8 md:mb-10 text-center">
+                          <h3 className="text-2xl font-display font-bold text-primary-dark mb-2">Escolha um dia</h3>
+                          <p className="text-sm text-muted-foreground font-light">Selecione uma data disponível</p>
+                        </div>
 
-                    <div className="grid grid-cols-7 gap-1 md:gap-2 mb-8 md:mb-10">
-                      {["D", "S", "T", "Q", "Q", "S", "S"].map((day, i) => (
-                        <div key={i} className="text-center text-[10px] font-bold text-muted-foreground uppercase py-2">{day}</div>
-                      ))}
-                      {Array.from({ length: 31 }).map((_, i) => {
-                        const day = i + 1;
-                        const isAvailable = day > 10 && day < 25;
-                        const isSelected = day === selectedDay;
-                        return (
-                          <button 
-                            key={i} 
-                            onClick={() => handleDaySelect(day, isAvailable)}
-                            type="button"
-                            aria-label={`Dia ${day}${isSelected ? " - selecionado" : ""}${!isAvailable ? " - indisponível" : ""}`}
+                        <div className="grid grid-cols-7 gap-1 md:gap-2 mb-8 md:mb-10">
+                          {["D", "S", "T", "Q", "Q", "S", "S"].map((day, i) => (
+                            <div key={i} className="text-center text-[10px] font-bold text-muted-foreground uppercase py-2">{day}</div>
+                          ))}
+                          {Array.from({ length: 31 }).map((_, i) => {
+                            const day = i + 1;
+                            const isAvailable = day > 10 && day < 25;
+                            const isSelected = day === selectedDay;
+                            return (
+                              <button 
+                                key={i} 
+                                onClick={() => handleDaySelect(day, isAvailable)}
+                                type="button"
+                                className={cn(
+                                  "aspect-square rounded-xl flex items-center justify-center text-xs md:text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-accent",
+                                  isSelected ? "bg-accent text-white shadow-lg scale-110 z-10" : 
+                                  isAvailable ? "hover:bg-accent/10 cursor-pointer text-primary-dark" : "text-muted-foreground/20 cursor-not-allowed"
+                                )}
+                              >
+                                {day}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </>
+                    )}
+
+                    {demoStep === 'service' && (
+                      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4 py-4">
+                        <div className="text-center mb-6">
+                          <h3 className="text-2xl font-display font-bold text-primary-dark">Qual o serviço?</h3>
+                          <button onClick={() => setDemoStep('calendar')} className="text-[10px] text-accent font-bold uppercase tracking-widest mt-1 hover:underline">Voltar para o dia</button>
+                        </div>
+                        {services.map(s => (
+                          <button
+                            key={s.id}
+                            onClick={() => handleServiceSelect(s.name)}
                             className={cn(
-                              "aspect-square rounded-xl flex items-center justify-center text-xs md:text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-accent",
-                              isSelected ? "bg-accent text-white shadow-lg scale-110 z-10" : 
-                              isAvailable ? "hover:bg-accent/10 cursor-pointer text-primary-dark" : "text-muted-foreground/20 cursor-not-allowed"
+                              "w-full p-4 rounded-2xl border transition-all text-left flex justify-between items-center group",
+                              selectedService === s.name ? "border-accent bg-accent/5" : "border-border/40 hover:border-accent/30"
                             )}
                           >
-                            {day}
+                            <div>
+                              <p className="text-sm font-bold text-primary-dark">{s.name}</p>
+                              <p className="text-[10px] text-muted-foreground">Especialista disponível</p>
+                            </div>
+                            <span className="text-sm font-display font-bold text-accent">{s.price}</span>
                           </button>
-                        );
-                      })}
-                    </div>
+                        ))}
+                      </motion.div>
+                    )}
 
-                    <div className="space-y-3 md:space-y-4">
-                      <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#FAF7F9] border border-border/20">
-                        <Calendar className="h-5 w-5 text-accent" />
-                        <div className="flex-1">
-                          <p className="text-xs font-bold text-primary-dark">{selectedDay} de Maio, 2026</p>
-                          <p className="text-[10px] text-muted-foreground">Dia selecionado</p>
+                    {demoStep === 'time' && (
+                      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4 py-4">
+                        <div className="text-center mb-6">
+                          <h3 className="text-2xl font-display font-bold text-primary-dark">Escolha um horário</h3>
+                          <button onClick={() => setDemoStep('service')} className="text-[10px] text-accent font-bold uppercase tracking-widest mt-1 hover:underline">Alterar serviço</button>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#FAF7F9] border border-border/20">
-                        <Clock className="h-5 w-5 text-accent" />
-                        <div className="flex-1">
-                          <p className="text-xs font-bold text-primary-dark">09:30 — 09:45 (15 min)</p>
-                          <p className="text-[10px] text-muted-foreground">Horário de Brasília</p>
+                        <div className="grid grid-cols-3 gap-3">
+                          {times.map(t => (
+                            <button
+                              key={t}
+                              onClick={() => handleTimeSelect(t)}
+                              className={cn(
+                                "py-3 rounded-xl border text-center text-xs font-bold transition-all",
+                                selectedTime === t ? "bg-accent text-white border-accent shadow-md" : "border-border/40 hover:border-accent/30 text-primary-dark"
+                              )}
+                            >
+                              {t}
+                            </button>
+                          ))}
                         </div>
-                      </div>
-                    </div>
+                      </motion.div>
+                    )}
 
-                    <Button 
-                      onClick={handleConfirm}
-                      className="w-full h-14 mt-8 md:mt-10 rounded-2xl bg-primary-dark text-white font-bold tracking-tight hover:scale-[1.02] transition-transform focus:outline-none focus:ring-4 focus:ring-accent/50"
-                      aria-label="Confirmar agendamento da demonstração"
-                    >
-                      Confirmar Agendamento
-                    </Button>
+                    {demoStep === 'confirm' && (
+                      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6 py-4">
+                        <div className="text-center mb-6">
+                          <h3 className="text-2xl font-display font-bold text-primary-dark">Quase lá!</h3>
+                          <p className="text-xs text-muted-foreground">Confirme os detalhes abaixo</p>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="p-4 rounded-2xl bg-[#FAF7F9] border border-border/20 flex items-center gap-4">
+                            <Calendar className="h-5 w-5 text-accent" />
+                            <div className="flex-1">
+                              <p className="text-xs font-bold text-primary-dark">{selectedDay} de Maio, 2026</p>
+                              <p className="text-[10px] text-muted-foreground">Data da demonstração</p>
+                            </div>
+                          </div>
+                          <div className="p-4 rounded-2xl bg-[#FAF7F9] border border-border/20 flex items-center gap-4">
+                            <Clock className="h-5 w-5 text-accent" />
+                            <div className="flex-1">
+                              <p className="text-xs font-bold text-primary-dark">{selectedTime} (15 min)</p>
+                              <p className="text-[10px] text-muted-foreground">Horário selecionado</p>
+                            </div>
+                          </div>
+                          <div className="p-4 rounded-2xl bg-[#FAF7F9] border border-border/20 flex items-center gap-4">
+                            <Sparkles className="h-5 w-5 text-accent" />
+                            <div className="flex-1">
+                              <p className="text-xs font-bold text-primary-dark">{selectedService}</p>
+                              <p className="text-[10px] text-muted-foreground">Serviço de foco</p>
+                            </div>
+                          </div>
+                        </div>
+                        <Button 
+                          onClick={handleConfirm}
+                          className="w-full h-14 mt-4 rounded-2xl bg-primary-dark text-white font-bold tracking-tight hover:scale-[1.02] transition-transform"
+                        >
+                          Agendar Demonstração
+                        </Button>
+                        <button onClick={() => setDemoStep('time')} className="w-full text-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-accent">Voltar e ajustar</button>
+                      </motion.div>
+                    )}
                   </motion.div>
                 ) : (
                   <motion.div
@@ -173,7 +259,7 @@ export default function DemoPage() {
                     </div>
                     <h3 className="text-2xl md:text-3xl font-display font-bold text-primary-dark mb-4">Agendado!</h3>
                     <p className="text-muted-foreground max-w-xs mx-auto mb-8 leading-relaxed">
-                      Sua demonstração foi marcada para o dia <span className="font-bold text-primary-dark">{selectedDay} de Maio às 09:30</span>.
+                      Sua demonstração foi marcada para o dia <span className="font-bold text-primary-dark">{selectedDay} de Maio às {selectedTime}</span>.
                     </p>
                     <div className="inline-flex items-center gap-2 text-accent text-sm font-bold uppercase tracking-widest animate-pulse">
                       Redirecionando para o onboarding...
@@ -266,10 +352,10 @@ export default function DemoPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                           {[
-                            { time: "09:00", name: "Ana Paula", service: "Limpeza de Pele", status: "Confirmado" },
-                            { time: "10:30", name: "Beatriz Silva", service: "Peeling", status: "Aguardando" },
-                            { time: "13:00", name: "Carla Souza", service: "Avaliação", status: "Pendente" },
-                            { time: "14:30", name: "Denise Lima", service: "Manicure", status: "Confirmado" }
+                            { time: "09:00", name: "Ana Paula", service: "Limpeza de Pele", status: "Confirmado", color: "emerald" },
+                            { time: "10:30", name: "Beatriz Silva", service: "Peeling", status: "Aguardando", color: "amber" },
+                            { time: "13:00", name: "Carla Souza", service: "Avaliação", status: "Pendente", color: "blue" },
+                            { time: "14:30", name: "Indisponível", service: "Bloqueio", status: "Ocupado", color: "slate" }
                           ].map((item, i) => (
                             <motion.div 
                               key={i}
@@ -278,12 +364,15 @@ export default function DemoPage() {
                               transition={{ delay: 0.2 + (i * 0.1) }}
                               className="bg-white p-3 rounded-2xl border border-border/40 shadow-sm flex items-center gap-3"
                             >
-                              <div className="w-10 h-10 rounded-full bg-accent/5 flex items-center justify-center text-accent font-bold text-xs">
+                              <div className={cn("w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs", `bg-${item.color}-500/10 text-${item.color}-600`)}>
                                 {item.name.charAt(0)}
                               </div>
                               <div className="flex-1 overflow-hidden">
                                 <p className="text-xs font-bold text-primary-dark truncate">{item.name}</p>
-                                <p className="text-[9px] text-muted-foreground truncate">{item.service}</p>
+                                <div className="flex items-center gap-1">
+                                  <div className={cn("w-1.5 h-1.5 rounded-full", `bg-${item.color}-500`)} />
+                                  <p className="text-[9px] text-muted-foreground truncate">{item.status}</p>
+                                </div>
                               </div>
                               <div className="text-[8px] font-bold text-muted-foreground">{item.time}</div>
                             </motion.div>
@@ -306,6 +395,38 @@ export default function DemoPage() {
                                 className={cn("flex-1 rounded-t-md", i === 5 ? "bg-accent" : "bg-accent/20")}
                               />
                             ))}
+                          </div>
+                        </div>
+                        {/* Seletor de Plano Simulado */}
+                        <div className="flex gap-4">
+                          <div className="flex-1 bg-white p-3 rounded-2xl border border-accent/20 shadow-sm relative overflow-hidden group/plan">
+                            <div className="absolute top-0 right-0 w-8 h-8 bg-accent/10 rounded-bl-2xl flex items-center justify-center">
+                              <CheckCircle2 className="w-3 h-3 text-accent" />
+                            </div>
+                            <p className="text-[7px] font-black uppercase text-accent mb-1 tracking-widest">Plano Pro</p>
+                            <p className="text-[10px] font-bold text-primary-dark mb-2">Multitenant Ativo</p>
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-[7px] font-bold text-muted-foreground">
+                                <span>Agendamentos</span>
+                                <span>Ilimitado</span>
+                              </div>
+                              <div className="h-1 w-full bg-accent/10 rounded-full overflow-hidden">
+                                <div className="h-full bg-accent w-full" />
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex-1 bg-[#1A0F16] p-3 rounded-2xl shadow-lg relative overflow-hidden">
+                            <p className="text-[7px] font-black uppercase text-accent/60 mb-1 tracking-widest">Feature Gate</p>
+                            <p className="text-[10px] font-bold text-white mb-2">Limite por Tenant</p>
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-[7px] font-bold text-white/40">
+                                <span>Equipe</span>
+                                <span>08/10</span>
+                              </div>
+                              <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                                <motion.div initial={{ width: 0 }} animate={{ width: '80%' }} transition={{ delay: 1, duration: 1.5 }} className="h-full bg-accent" />
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </motion.div>
