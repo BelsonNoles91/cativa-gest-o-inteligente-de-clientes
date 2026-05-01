@@ -60,22 +60,6 @@ export function AuthLayout({ children }: { children: ReactNode }) {
             ))}
           </div>
 
-          {/* Testimonial Badge */}
-          <div className="bg-white/90 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-xl border border-white/50 relative overflow-hidden group">
-            <Quote className="h-8 w-8 mb-4 text-accent/20" />
-            <p className="text-lg font-medium leading-tight mb-4 text-primary-dark italic serif">
-              "A Cativa não é apenas um software, é a inteligência que nossa marca de beleza precisava."
-            </p>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-accent/10 border border-accent/20 overflow-hidden">
-                <img src="https://i.pravatar.cc/100?u=4" alt="Usuário" className="w-full h-full object-cover" />
-              </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-primary-dark">Amanda Souza</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Clínica Bloom</p>
-              </div>
-            </div>
-          </div>
         </div>
 
         <p className="relative z-10 text-[10px] font-bold uppercase tracking-[0.3em] text-primary-dark/40">
