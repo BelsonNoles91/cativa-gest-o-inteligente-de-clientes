@@ -181,18 +181,43 @@ export function HeroSection() {
                 </div>
              </div>
 
-             {/* Floating Mobile App */}
-             <div className="absolute -bottom-12 -left-12 w-60 aspect-[9/19] bg-[#1A0F16] rounded-[3rem] p-3 shadow-2xl border-[4px] border-[#2A1523] transform -rotate-6 transition-all duration-1000 group-hover:-rotate-3 group-hover:translate-y-6 hidden md:block z-30">
-                <div className="w-full h-full bg-[#FAF7F9] rounded-[2.2rem] overflow-hidden p-5 relative">
-                   <div className="w-10 h-1 bg-primary/10 rounded-full mx-auto mb-6" />
-                   <div className="h-3 w-3/4 bg-primary-dark/10 rounded-full mb-8" />
-                   <div className="space-y-3">
-                      {[1,2,3,4,5].map(i => (
-                        <div key={i} className="h-14 bg-white rounded-xl shadow-sm border border-primary/5" />
-                      ))}
+             {/* Floating Mobile App - High Fidelity Simulation */}
+             <div className="absolute -bottom-12 -left-12 w-60 aspect-[9/19] bg-[#1A0F16] rounded-[3rem] p-3 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border-[4px] border-[#2A1523] transform -rotate-6 transition-all duration-1000 group-hover:-rotate-3 group-hover:translate-y-6 hidden md:block z-30">
+                <div className="w-full h-full bg-white rounded-[2.2rem] overflow-hidden flex flex-col relative">
+                   <div className="h-6 w-full flex justify-center items-end pb-1 shrink-0">
+                      <div className="w-10 h-1 bg-black/5 rounded-full" />
                    </div>
-                   <div className="absolute bottom-8 left-5 right-5 h-10 bg-accent rounded-xl flex items-center justify-center">
-                      <div className="w-6 h-0.5 bg-white/40 rounded-full" />
+                   
+                   <div className="p-4 flex-1">
+                      <div className="flex justify-between items-center mb-6">
+                         <div className="w-8 h-8 rounded-full bg-accent/10" />
+                         <div className="h-2 w-16 bg-black/5 rounded-full" />
+                      </div>
+                      
+                      <div className="space-y-4">
+                         <div className="h-32 bg-secondary/20 rounded-2xl flex flex-col justify-between p-4 overflow-hidden relative">
+                            <div className="flex justify-between items-start">
+                               <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                               <div className="h-2 w-12 bg-black/5 rounded-full" />
+                            </div>
+                            <div className="text-xl font-display font-black text-primary-dark">82%</div>
+                         </div>
+                         
+                         <div className="space-y-2">
+                            {[1,2,3,4].map(i => (
+                               <div key={i} className="h-12 bg-white rounded-xl shadow-sm border border-black/5 flex items-center px-3 gap-3">
+                                  <div className="w-6 h-6 rounded-full bg-secondary/50 shrink-0" />
+                                  <div className="h-1.5 w-full bg-black/5 rounded-full" />
+                               </div>
+                            ))}
+                         </div>
+                      </div>
+                   </div>
+                   
+                   <div className="h-16 bg-white border-t border-black/5 flex items-center justify-around px-4">
+                      <div className="w-1 h-1 rounded-full bg-accent" />
+                      <div className="w-1 h-1 rounded-full bg-black/10" />
+                      <div className="w-1 h-1 rounded-full bg-black/10" />
                    </div>
                 </div>
              </div>
