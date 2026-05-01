@@ -36,9 +36,9 @@ export function PremiumHeader() {
       )}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <div className="flex items-center group shrink-0">
+        <Link to="/" className="flex items-center group shrink-0">
           <Logo size="sm" className="transition-transform group-hover:scale-105" />
-        </div>
+        </Link>
 
         {/* Desktop Nav */}
         <nav className="hidden lg:flex items-center gap-8">
