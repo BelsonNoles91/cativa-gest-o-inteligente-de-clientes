@@ -306,7 +306,7 @@ export default function ClientsPage() {
     return () => {
       ignore = true;
     };
-  }, [currentTenant, filters, toast]);
+  }, [currentTenant, filters, debouncedSearch, toast]);
 
   useEffect(() => {
     if (!currentTenant || !selectedId) {
