@@ -220,8 +220,8 @@ export default function PremiumLanding() {
 
         <MetricsSection />
 
-        {/* FAQ Section - Clean & Sophisticated */}
-        <PremiumSection variant="light" padding="lg" id="faq">
+        {/* Seção de Dúvidas Frequentes */}
+        <PremiumSection variant="light" padding="lg" id="duvidas">
            <div className="max-w-5xl mx-auto">
               <div className="flex flex-col lg:flex-row gap-20">
                  <div className="lg:w-1/3">
@@ -233,14 +233,14 @@ export default function PremiumLanding() {
                        </Button>
                     </div>
                  </div>
-                 <div className="lg:w-2/3 space-y-4">
+                 <div className="lg:w-2/3 space-y-4 px-4 md:px-0">
                     {[
-                      { q: "A Cativa serve para o meu tipo de negócio?", a: "Sim. A plataforma foi pensada para clínicas de estética, salões de beleza, barbearias, esmalterias, lash/brow, massagem, wellness e negócios correlatos que buscam um nível superior de gestão." },
-                      { q: "Como funciona a demonstração?", a: "Nossa demonstração é um tour guiado por um especialista que entende o seu cenário. Mostramos como a Cativa resolve seus gargalos específicos em 20 minutos." },
-                      { q: "Posso testar antes de contratar?", a: "Sim. Oferecemos 14 dias de teste grátis com acesso total às funcionalidades core para que você sinta a diferença na operação real." },
-                      { q: "Vocês ajudam na migração de dados?", a: "Sim. Temos um processo de onboarding assistido para garantir que seu histórico e cadastros sejam migrados com segurança e rapidez." },
-                      { q: "O sistema funciona em tablets e celulares?", a: "Totalmente. A Cativa é mobile-first, permitindo que profissionais e gestores operem com 100% de eficiência de qualquer dispositivo." },
-                      { q: "É possível gerenciar mais de uma unidade?", a: "Com certeza. A estrutura da Cativa foi desenhada para redes e franquias, permitindo visão consolidada ou isolada por unidade com um único login." }
+                      { q: "A Cativa serve para o meu tipo de negócio?", a: "Sim. A plataforma foi pensada para clínicas de estética, salões de beleza, barbearias, esmalterias, profissionais de cílios e sobrancelhas, massagem e negócios de bem-estar que buscam um nível superior de gestão." },
+                      { q: "Como funciona a demonstração?", a: "Nossa demonstração é um tour guiado por um especialista que entende o seu cenário. Mostramos como a Cativa resolve seus problemas específicos em 20 minutos." },
+                      { q: "Posso testar antes de contratar?", a: "Sim. Oferecemos 14 dias de teste grátis com acesso total às principais funcionalidades para que você sinta a diferença na sua rotina real." },
+                      { q: "Vocês ajudam na transferência de dados?", a: "Sim. Temos um processo de acompanhamento inicial para garantir que seu histórico e cadastros sejam transferidos com segurança e rapidez." },
+                      { q: "O sistema funciona em tablets e celulares?", a: "Totalmente. A Cativa é otimizada para celular, permitindo que profissionais e gestores trabalhem com 100% de eficiência de qualquer dispositivo." },
+                      { q: "É possível gerenciar mais de uma unidade?", a: "Com certeza. A estrutura da Cativa foi desenhada para redes e franquias, permitindo visão geral ou individual por unidade com um único login." }
                     ].map((item, i) => (
                       <div key={i} className="p-8 md:p-10 rounded-[2.5rem] bg-[#FAF7F9] border border-border/20 transition-all hover:border-accent/40 group">
                          <h4 className="text-xl font-bold text-primary-dark mb-4 flex items-center justify-between gap-4">
