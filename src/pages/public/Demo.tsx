@@ -117,7 +117,11 @@ export default function DemoPage() {
                 </div>
               </div>
 
-              <Button className="w-full h-14 mt-10 rounded-2xl bg-primary-dark text-white font-bold tracking-tight hover:scale-[1.02] transition-transform">
+              <Button 
+                onClick={handleConfirm}
+                className="w-full h-14 mt-10 rounded-2xl bg-primary-dark text-white font-bold tracking-tight hover:scale-[1.02] transition-transform focus:outline-none focus:ring-4 focus:ring-accent/50"
+                aria-label="Confirmar agendamento da demonstração"
+              >
                 Confirmar Agendamento
               </Button>
             </motion.div>
