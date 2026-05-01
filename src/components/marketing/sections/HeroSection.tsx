@@ -81,18 +81,18 @@ export function HeroSection() {
           </motion.p>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-4 mb-8">
-            <Button asChild size="lg" className="h-14 md:h-16 px-8 md:px-10 rounded-full bg-primary-dark text-base md:text-lg shadow-xl shadow-primary/20 group relative overflow-hidden transition-all duration-300 hover:scale-[1.05] hover:shadow-2xl hover:shadow-primary/30 active:scale-[0.98]">
+            <Button asChild size="lg" variant="premium" className="group relative overflow-hidden" aria-label="Começar teste gratuito de 14 dias">
               <Link to="/onboarding">
                 <span className="relative z-10 flex items-center gap-2">
-                  Ver demonstração gratuita
+                  Começar teste de 14 dias
                   <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </span>
-                <div className="absolute inset-0 bg-accent translate-y-full transition-transform group-hover:translate-y-0" />
+                <div className="absolute inset-0 bg-white translate-y-full transition-transform group-hover:translate-y-0" />
               </Link>
             </Button>
             
-            <Button asChild variant="outline" size="lg" className="h-14 md:h-16 px-8 md:px-10 rounded-full border-2 border-primary-dark/60 text-primary-dark font-black text-base md:text-lg hover:bg-primary-dark hover:text-white hover:border-primary-dark shadow-md hover:shadow-xl transition-all duration-300 active:scale-[0.95]">
-              <Link to="/onboarding">Começar teste de 14 dias</Link>
+            <Button asChild variant="outline" size="lg" aria-label="Ver demonstração gratuita do sistema">
+              <Link to="/demo">Ver demonstração</Link>
             </Button>
           </div>
 
