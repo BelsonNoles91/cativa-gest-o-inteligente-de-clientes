@@ -30,7 +30,8 @@ export function PlansSection() {
           }
         }, []);
 
-        setPlans(uniquePlans || []);
+        const filteredPlans = (uniquePlans || []).filter((p: any) => p.code !== 'enterprise');
+        setPlans(filteredPlans);
       } catch (err) {
         console.error("Error fetching plans:", err);
       } finally {

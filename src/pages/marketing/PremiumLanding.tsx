@@ -81,9 +81,9 @@ export default function PremiumLanding() {
                </div>
                
                {/* Decorative floating badge */}
-               <div className="absolute -bottom-10 -left-10 bg-accent text-white p-8 rounded-[2.5rem] shadow-2xl transform rotate-3 transition-transform duration-700 group-hover:rotate-0 z-20">
-                  <Quote className="h-8 w-8 mb-4 opacity-40" />
-                  <p className="text-lg font-medium leading-tight mb-2">"A Cativa não é um software, é um consultor silencioso."</p>
+               <div className="absolute -bottom-6 -right-6 md:-bottom-10 md:-left-10 bg-accent text-white p-6 md:p-8 rounded-[2.5rem] shadow-2xl transform rotate-3 transition-transform duration-700 group-hover:rotate-0 z-20 max-w-[280px] md:max-w-none">
+                  <Quote className="h-6 w-6 md:h-8 md:w-8 mb-4 opacity-40" />
+                  <p className="text-base md:text-lg font-medium leading-tight mb-2">"A Cativa não é um software, é um consultor silencioso."</p>
                   <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">— Amanda Souza, Clínica Bloom</p>
                </div>
             </div>
@@ -108,7 +108,7 @@ export default function PremiumLanding() {
               <div className="grid sm:grid-cols-2 gap-8">
                 {[
                   { icon: CheckCircle2, text: "Foco total em LTV e Retenção", desc: "Aumente o valor de cada cliente." },
-                  { icon: CheckCircle2, text: "Foco total em LTV e Retenção", desc: "Aumente o valor de cada cliente." },
+                  { icon: ShieldCheck, text: "Segurança de Dados", desc: "Arquitetura robusta e confiável." },
                   { icon: Users, text: "Experiência do Cliente", desc: "Portal dedicado e personalizado." },
                   { icon: Calendar, text: "Fluxo de 3 cliques", desc: "Rapidez que sua recepção precisa." },
                 ].map((item, i) => (
