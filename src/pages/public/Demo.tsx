@@ -13,8 +13,19 @@ import { toast } from "sonner";
 export default function DemoPage() {
   const navigate = useNavigate();
   const [selectedDay, setSelectedDay] = useState(15);
+  const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [demoStep, setDemoStep] = useState<'calendar' | 'service' | 'time' | 'confirm'>('calendar');
+
+  const services = [
+    { id: 'limpeza', name: 'Limpeza de Pele', price: 'R$ 120' },
+    { id: 'peeling', name: 'Peeling Diamante', price: 'R$ 180' },
+    { id: 'massagem', name: 'Massagem Relaxante', price: 'R$ 150' },
+  ];
+
+  const times = ['09:00', '09:30', '10:00', '11:00', '14:00', '15:30'];
 
   const handleDaySelect = (day: number, isAvailable: boolean) => {
     if (!isAvailable) {
@@ -22,15 +33,25 @@ export default function DemoPage() {
       return;
     }
     setSelectedDay(day);
+    setDemoStep('service');
+  };
+
+  const handleServiceSelect = (service: string) => {
+    setSelectedService(service);
+    setDemoStep('time');
+  };
+
+  const handleTimeSelect = (time: string) => {
+    setSelectedTime(time);
+    setDemoStep('confirm');
   };
 
   const handleConfirm = () => {
     setIsConfirmed(true);
     toast.success("Demonstração agendada com sucesso!");
     
-    // Pequeno delay para o usuário ver a confirmação antes de ser redirecionado ou resetar
     setTimeout(() => {
-      navigate(`/onboarding?demo_date=2026-05-${selectedDay}&demo_time=09:30`);
+      navigate(`/onboarding?demo_date=2026-05-${selectedDay}&demo_time=${selectedTime}&demo_service=${selectedService}`);
     }, 2500);
   };
 
