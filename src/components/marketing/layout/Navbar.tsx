@@ -63,10 +63,10 @@ export function Navbar() {
           <Link to="/auth/login" className="text-[10px] font-bold uppercase tracking-widest text-primary-dark hover:text-accent transition-colors px-6">
             Entrar
           </Link>
-          <Button asChild variant="outline" className="rounded-full px-8 text-[10px] font-bold uppercase tracking-widest border-primary-dark/20 hover:bg-primary-dark hover:text-white transition-all duration-300">
+          <Button asChild variant="outline" size="sm" className="px-8 border-primary-dark/20 hover:bg-primary-dark hover:text-white transition-all duration-300">
             <Link to="/onboarding">Demonstração</Link>
           </Button>
-          <Button asChild className="rounded-full px-8 text-[10px] font-bold uppercase tracking-widest bg-accent hover:bg-accent/90 text-white transition-all duration-300 shadow-lg shadow-accent/20">
+          <Button asChild variant="premium" size="sm" className="px-8 shadow-lg shadow-accent/20">
             <Link to="/onboarding">Começar Agora</Link>
           </Button>
         </div>
