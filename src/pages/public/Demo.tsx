@@ -61,7 +61,7 @@ export default function DemoPage() {
       
       <main className="pt-20">
         <PremiumSection variant="soft" padding="none" className="min-h-[calc(100vh-80px)] flex items-center py-12 md:py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <motion.div 
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
