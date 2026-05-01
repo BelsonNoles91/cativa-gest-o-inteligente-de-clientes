@@ -132,6 +132,7 @@ export function AppHeader() {
         <UserMenu />
 
 
+
       </div>
 
       {/* CommandDialog de busca controlado pelo botão mobile */}
