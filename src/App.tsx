@@ -103,7 +103,8 @@ const App = () => (
               <Suspense fallback={<RouteFallback />}>
                 <Routes>
                   {/* Público */}
-                  <Route path="/" element={<Index />} />
+                  <Route path="/" element={<PremiumLanding />} />
+                  <Route path="/old-landing" element={<Index />} />
                   <Route path="/planos" element={<Pricing />} />
                   <Route path="/pricing" element={<Pricing />} />
 
