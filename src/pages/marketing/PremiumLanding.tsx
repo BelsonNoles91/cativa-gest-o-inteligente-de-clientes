@@ -320,9 +320,9 @@ export default function PremiumLanding() {
         </PremiumSection>
 ...
 
-        <ProcessSection />
+        <div id="processo"><ProcessSection /></div>
 
-        <MetricsSection />
+        <div id="metricas"><MetricsSection /></div>
 
         {/* Seção de Dúvidas Frequentes */}
         <PremiumSection variant="light" padding="lg" id="duvidas">
