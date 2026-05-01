@@ -288,20 +288,30 @@ export default function Onboarding() {
 
       {/* Step 0 — signup (ou continuar, se já houver sessão sem tenant) */}
       {step === 0 && user && (
-        <div className="space-y-4 animate-fade-in">
-          <h1 className="text-2xl font-semibold">Vamos finalizar seu cadastro</h1>
-          <p className="text-sm text-muted-foreground">
-            Você já está autenticado como <span className="font-medium text-foreground">{user.email}</span>,
-            mas ainda não há um estabelecimento configurado. Continue para criar seu workspace.
-          </p>
+        <div className="space-y-10 animate-fade-in">
+          <header className="space-y-4 text-center">
+            <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent border border-accent/20">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+              Finalizar Cadastro
+            </div>
+            <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-primary-dark">
+              Vamos começar
+            </h1>
+            <p className="text-lg font-light leading-relaxed text-muted-foreground">
+              Você já está logado como <span className="font-bold text-primary-dark">{user.email}</span>. Vamos configurar seu estabelecimento.
+            </p>
+          </header>
 
-          <Button onClick={() => setStep(1)} className="h-11 w-full rounded-xl bg-gradient-brand">
-            Continuar setup <ArrowRight className="ml-2 h-4 w-4" />
+          <Button onClick={() => setStep(1)} className="group h-16 w-full rounded-full bg-primary-dark text-lg font-bold text-white shadow-xl transition-all hover:bg-accent active:scale-[0.98]">
+            <span className="relative z-10 flex items-center justify-center gap-2">
+              Configurar meu Negócio
+              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+            </span>
           </Button>
 
-          <p className="text-center text-xs text-muted-foreground">
+          <p className="text-center text-xs font-medium text-muted-foreground/60">
             Não é você?{" "}
-            <Link to="/auth/login" className="font-medium text-primary hover:underline">
+            <Link to="/auth/login" className="text-primary-dark hover:underline">
               Entrar com outra conta
             </Link>
           </p>
@@ -309,52 +319,71 @@ export default function Onboarding() {
       )}
 
       {step === 0 && !user && (
-        <form onSubmit={handleSignup} className="space-y-4 animate-fade-in">
-          <h1 className="text-2xl font-semibold">Criar sua conta</h1>
-          <p className="text-sm text-muted-foreground">
-            {pendingEmailConfirmation
-              ? "Enviamos um link de confirmação. Abra seu e-mail e depois entre para continuar o setup."
-              : "Comece em minutos. 14 dias grátis."}
+        <div className="space-y-10 animate-fade-in">
+          <header className="space-y-4 text-center">
+            <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent border border-accent/20">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+              14 dias de teste grátis
+            </div>
+            <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-primary-dark">
+              Criar sua conta
+            </h1>
+            <p className="text-lg font-light leading-relaxed text-muted-foreground">
+              {pendingEmailConfirmation
+                ? "Quase lá! Enviamos um link de confirmação para o seu e-mail."
+                : "Junte-se às marcas de beleza que mais crescem."}
+            </p>
+          </header>
+
+          <form onSubmit={handleSignup} className="space-y-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">Seu Nome</Label>
+                <div className="relative group">
+                  <User className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground group-focus-within:text-accent" />
+                  <Input id="name" required value={fullName} onChange={(e) => setFullName(e.target.value)} className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] pl-12 text-base shadow-none transition-all focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/5" placeholder="Como podemos te chamar" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="se" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">E-mail Profissional</Label>
+                <div className="relative group">
+                  <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground group-focus-within:text-accent" />
+                  <Input id="se" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] pl-12 text-base shadow-none transition-all focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/5" placeholder="voce@negocio.com" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="sp" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">Senha de Acesso</Label>
+                <div className="relative group">
+                  <Lock className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground group-focus-within:text-accent" />
+                  <Input id="sp" type="password" required minLength={8} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] pl-12 text-base shadow-none transition-all focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/5" placeholder="Mínimo 8 caracteres" />
+                </div>
+              </div>
+            </div>
+
+            <Button type="submit" disabled={submitting || pendingEmailConfirmation} className="group h-16 w-full rounded-full bg-primary-dark text-lg font-bold text-white shadow-xl transition-all hover:bg-accent active:scale-[0.98]">
+              {submitting ? <Loader2 className="h-6 w-6 animate-spin" /> : (<span className="flex items-center gap-2">Continuar para Setup <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" /></span>)}
+            </Button>
+
+            {pendingEmailConfirmation && (
+              <div className="rounded-[2rem] border border-accent/20 bg-accent/5 p-8 text-center space-y-4">
+                <p className="font-bold text-primary-dark italic serif text-xl">Falta só confirmar seu e-mail.</p>
+                <p className="text-sm text-muted-foreground">
+                  Após confirmar, acesse o link de login para concluir o setup do seu novo workspace.
+                </p>
+                <Link to="/auth/login" className="inline-flex h-12 items-center justify-center rounded-full bg-white px-8 text-sm font-bold text-primary-dark border border-border/40 hover:bg-accent hover:text-white hover:border-accent transition-all">
+                  Ir para o Login
+                </Link>
+              </div>
+            )}
+          </form>
+
+          <p className="text-center text-xs font-medium text-muted-foreground/60">
+            Já possui uma conta?{" "}
+            <Link to="/auth/login" className="text-primary-dark hover:underline">
+              Entrar agora
+            </Link>
           </p>
-
-          <div className="space-y-2">
-            <Label htmlFor="name">Seu nome</Label>
-            <div className="relative">
-              <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input id="name" required value={fullName} onChange={(e) => setFullName(e.target.value)} className="h-11 rounded-xl pl-9" placeholder="Como podemos te chamar" />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="se">E-mail</Label>
-            <div className="relative">
-              <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input id="se" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className="h-11 rounded-xl pl-9" placeholder="voce@negocio.com" />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="sp">Senha</Label>
-            <div className="relative">
-              <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input id="sp" type="password" required minLength={8} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} className="h-11 rounded-xl pl-9" placeholder="Mínimo 8 caracteres" />
-            </div>
-          </div>
-
-          <Button type="submit" disabled={submitting || pendingEmailConfirmation} className="h-11 w-full rounded-xl bg-gradient-brand">
-            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (<>Continuar <ArrowRight className="ml-2 h-4 w-4" /></>)}
-          </Button>
-
-          {pendingEmailConfirmation && (
-            <div className="rounded-xl border border-border/70 bg-card px-4 py-3 text-left text-sm">
-              <p className="font-medium">Falta só confirmar seu e-mail.</p>
-              <p className="mt-1 text-muted-foreground">
-                Depois da confirmação, faça login para concluir a criação do workspace.
-              </p>
-              <Link to="/auth/login" className="mt-3 inline-flex text-sm font-medium text-primary hover:underline">
-                Ir para o login
-              </Link>
-            </div>
-          )}
-        </form>
+        </div>
       )}
 
       {/* Step 1 — Negócio */}
