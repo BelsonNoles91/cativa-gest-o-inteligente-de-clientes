@@ -81,7 +81,7 @@ export function FeaturesSection() {
       </PremiumGrid>
 
       {/* Feature Highlight Box - Elevated Editorial Style */}
-      <div className="mt-40 bg-[#1A0F16] rounded-[4rem] overflow-hidden relative shadow-2xl">
+      <div className="mt-40 bg-[#1A0F16] rounded-[2.5rem] md:rounded-[4rem] overflow-hidden relative shadow-2xl">
          <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(168,76,134,0.15),transparent_50%)]" />
          <div className="grid lg:grid-cols-2 gap-0 relative z-10">
             <div className="p-16 md:p-24 flex flex-col justify-center">
