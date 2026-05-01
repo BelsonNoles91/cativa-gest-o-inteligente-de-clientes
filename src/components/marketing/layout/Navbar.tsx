@@ -120,9 +120,9 @@ export function Navbar() {
                <Button asChild size="lg" variant="outline" className="w-full h-16 rounded-2xl text-xl">
                   <Link to="/demo">Agendar Demonstração</Link>
                </Button>
-               <Button variant="ghost" asChild size="lg" className="w-full h-16 rounded-2xl text-xl">
-                  <Link to="/auth/login">Entrar</Link>
-               </Button>
+                <Button variant="ghost" asChild size="lg" className="w-full h-16 rounded-2xl text-xl">
+                  <Link to="/auth/login" onClick={() => setMobileMenuOpen(false)}>Entrar</Link>
+                </Button>
             </div>
           </motion.div>
         )}
