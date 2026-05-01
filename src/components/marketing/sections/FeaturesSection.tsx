@@ -1,5 +1,6 @@
 import { PremiumSection, PremiumGrid } from "../layout/PremiumSection";
 import { Check, Layers, Zap, Heart, BarChart3, Users2, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
 
 const features = [
   {
