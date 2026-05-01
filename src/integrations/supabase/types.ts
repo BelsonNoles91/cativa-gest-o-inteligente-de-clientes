@@ -4266,6 +4266,7 @@ export type Database = {
         }[]
       }
       get_my_commission: { Args: { _professional_id: string }; Returns: number }
+      get_tenant_ltv_estimate: { Args: { _tenant_id: string }; Returns: number }
       has_any_tenant_role: {
         Args: {
           _roles: Database["public"]["Enums"]["app_role"][]

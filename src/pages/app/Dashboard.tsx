@@ -44,6 +44,7 @@ export default function Dashboard() {
     occupancyToday: data?.occupancyToday ?? 0,
     pendingConfirmations: data?.pendingConfirmations ?? 0,
     newClientsWeek: data?.newClientsWeek ?? 0,
+    ltvEstimate: data?.ltvEstimate ?? 0,
   }), [data]);
 
   const upcoming = data?.upcoming ?? [];
@@ -79,6 +80,14 @@ export default function Dashboard() {
         icon: Users,
         tone: "info" as const,
       },
+      {
+        label: "LTV Médio (Anual)",
+        value: snapshot.ltvEstimate.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+        delta: "Valor futuro estimado",
+        icon: TrendingUp,
+        tone: "brand" as const,
+      },
+
     ],
     [snapshot, upcoming.length],
   );
