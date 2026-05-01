@@ -34,11 +34,14 @@ import {
   visitConversion,
   waitlistConversionRate,
   packageCompletionRate,
+  hourlyProfitability,
+  estimatedLtv,
   type AnalyticsFilters,
   type AnalyticsPreset,
   type ApptFact,
   type ClientFact,
 } from "@/domain/analytics";
+
 import {
   fetchAppointments,
   fetchAvailability,
