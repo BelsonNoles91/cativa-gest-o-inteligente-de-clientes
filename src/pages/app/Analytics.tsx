@@ -247,6 +247,42 @@ export default function AnalyticsPage() {
                 }))}
               />
             </div>
+            <div className="grid gap-6 xl:grid-cols-2">
+              <SectionCard
+                title="Rentabilidade por Profissional"
+                description="Receita gerada por hora trabalhada (concluídos)."
+              >
+                {metrics.profitabilityByPro.length === 0 ? (
+                  <EmptyMiniState text="Sem dados de atendimentos concluídos." />
+                ) : (
+                  <div className="space-y-3">
+                    {metrics.profitabilityByPro.slice(0, 5).map((item) => (
+                      <MetricRow
+                        key={item.label}
+                        label={item.label}
+                        value={`${formatCurrency(item.hourlyRate)}/h`}
+                        helper="Média de faturamento por hora"
+                      />
+                    ))}
+                  </div>
+                )}
+              </SectionCard>
+
+              <SectionCard
+                title="Potencial de Valor (LTV)"
+                description="Estimativa de valor do cliente em 12 meses baseado no comportamento atual."
+              >
+                <div className="flex flex-col items-center justify-center py-6 text-center">
+                  <p className="text-sm text-muted-foreground italic mb-2">LTV Estimado (Médio)</p>
+                  <p className="text-4xl font-display font-bold text-primary">
+                    {formatCurrency(metrics.ltv)}
+                  </p>
+                  <p className="mt-4 text-xs text-muted-foreground max-w-xs">
+                    Cálculo: Ticket Médio × Frequência de Visitas × 12 meses. Ajuda a definir quanto você pode investir para adquirir um novo cliente.
+                  </p>
+                </div>
+              </SectionCard>
+            </div>
           </TabsContent>
 
           <TabsContent value="operational" className="mt-0 space-y-6">
