@@ -479,49 +479,6 @@ export default function Onboarding() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">Logo da Marca (opcional)</Label>
-              <div
-                className="flex items-center gap-4 rounded-[2rem] border-2 border-dashed border-border/40 p-4 bg-[#FAF7F9] group transition-all hover:border-accent/40"
-              >
-                <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl bg-white border border-border/20 shadow-sm transition-transform group-hover:scale-105">
-                  {logoPreview ? (
-                    <img src={logoPreview} alt="Pré-visualização do logo" className="h-full w-full object-contain p-2" />
-                  ) : (
-                    <ImagePlus className="h-8 w-8 text-muted-foreground/40" />
-                  )}
-                </div>
-                <div className="flex-1 space-y-2">
-                  <label
-                    htmlFor="onboarding-logo-input"
-                    className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-primary-dark/10 bg-white px-5 text-sm font-bold text-primary-dark hover:bg-accent hover:text-white transition-all shadow-sm"
-                  >
-                    <UploadCloud className="h-4 w-4" />
-                    {logoFile ? "Trocar logo" : "Escolher arquivo"}
-                  </label>
-                  <input
-                    id="onboarding-logo-input"
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                    className="sr-only"
-                    onChange={(e) => onPickLogo(e.target.files?.[0] ?? null)}
-                  />
-                  {logoFile && (
-                    <button
-                      type="button"
-                      onClick={() => onPickLogo(null)}
-                      className="ml-3 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-destructive hover:underline"
-                    >
-                      <Trash2 className="h-3 w-3" /> Remover
-                    </button>
-                  )}
-                  <p className="text-[10px] text-muted-foreground/60 leading-tight">
-                    PNG, JPG ou SVG. Máx 2 MB.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="un" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">Nome da Unidade Principal</Label>
               <Input id="un" value={unitName} onChange={(e) => setUnitName(e.target.value)} className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] text-base shadow-none transition-all focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/5" placeholder="Ex.: Unidade Matriz" />
             </div>
