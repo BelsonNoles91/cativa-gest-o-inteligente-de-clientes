@@ -10,7 +10,10 @@ export function Footer() {
         <div className="grid lg:grid-cols-12 gap-20 mb-32">
           {/* Brand Info */}
           <div className="lg:col-span-6">
-            <Link to="/" className="inline-block mb-10">
+            <Link to="/" className="inline-flex items-center gap-3 mb-10 group transition-transform hover:scale-[1.02]">
+              <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center shadow-lg shadow-accent/20">
+                 <span className="text-white font-black text-xl font-display">C</span>
+              </div>
               <span className="text-3xl font-display font-black tracking-tighter text-primary-dark">
                 CATIVA<span className="text-accent">.</span>
               </span>
