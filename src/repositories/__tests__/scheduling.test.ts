@@ -2,18 +2,21 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { listAppointmentsHydrated } from "../scheduling";
 import { supabase } from "@/integrations/supabase/client";
 
-vi.mock("@/integrations/supabase/client", () => ({
-  supabase: {
-    from: vi.fn(() => ({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      gte: vi.fn().mockReturnThis(),
-      lt: vi.fn().mockReturnThis(),
-      not: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
-    })),
-  },
-}));
+vi.mock("@/integrations/supabase/client", () => {
+  const mockQuery = {
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    gte: vi.fn().mockReturnThis(),
+    lt: vi.fn().mockReturnThis(),
+    not: vi.fn().mockReturnThis(),
+    order: vi.fn().mockResolvedValue({ data: [], error: null }),
+  };
+  return {
+    supabase: {
+      from: vi.fn(() => mockQuery),
+    },
+  };
+});
 
 describe("Scheduling Repository", () => {
   beforeEach(() => {
@@ -22,19 +25,8 @@ describe("Scheduling Repository", () => {
 
   describe("listAppointmentsHydrated", () => {
     it("should include filters in the query", async () => {
-      const mockSelect = vi.fn().mockReturnThis();
-      const mockEq = vi.fn().mockReturnThis();
-      const mockNot = vi.fn().mockReturnThis();
-
-      (supabase.from as any).mockReturnValue({
-        select: mockSelect,
-        eq: mockEq,
-        gte: vi.fn().mockReturnThis(),
-        lt: vi.fn().mockReturnThis(),
-        not: mockNot,
-        order: vi.fn().mockResolvedValue({ data: [], error: null }),
-      });
-
+      const mockQuery = (supabase.from as any)();
+      
       await listAppointmentsHydrated({
         tenantId: "t1",
         unitId: "u1",
@@ -43,9 +35,9 @@ describe("Scheduling Repository", () => {
         excludeStatuses: ["canceled"] as any,
       });
 
-      expect(mockEq).toHaveBeenCalledWith("tenant_id", "t1");
-      expect(mockEq).toHaveBeenCalledWith("unit_id", "u1");
-      expect(mockNot).toHaveBeenCalledWith("status", "in", "(canceled)");
+      expect(mockQuery.eq).toHaveBeenCalledWith("tenant_id", "t1");
+      expect(mockQuery.eq).toHaveBeenCalledWith("unit_id", "u1");
+      expect(mockQuery.not).toHaveBeenCalledWith("status", "in", "(canceled)");
     });
   });
 });
