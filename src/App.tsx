@@ -52,8 +52,8 @@ function lazyWithReload<T extends { default: ComponentType<any> }>(
   );
 }
 
-import Pricing from "./pages/public/Pricing";
 const NotFound = lazyWithReload(() => import("./pages/NotFound"));
+const PremiumLanding = lazyWithReload(() => import("./pages/marketing/PremiumLanding"));
 const Login = lazyWithReload(() => import("./pages/auth/Login"));
 const ForgotPassword = lazyWithReload(() => import("./pages/auth/ForgotPassword"));
 const ResetPassword = lazyWithReload(() => import("./pages/auth/ResetPassword"));
