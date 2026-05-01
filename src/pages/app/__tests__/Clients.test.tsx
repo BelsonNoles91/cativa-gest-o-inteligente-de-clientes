@@ -57,11 +57,23 @@ describe("ClientsPage Integration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (clientsRepo.listClients as any).mockResolvedValue([
-      { id: "c1", fullName: "Test Client", status: "active", riskLevel: "low" }
+      { 
+        id: "c1", 
+        fullName: "Test Client", 
+        status: "active", 
+        riskLevel: "low",
+        phone: "11999999999",
+        email: "test@example.com",
+        isVip: false,
+        lastVisitAt: null,
+        city: "São Paulo",
+        tenantId: "t1"
+      }
     ]);
     (clientsRepo.listTags as any).mockResolvedValue([]);
     (schedulingRepo.listProfessionalsLite as any).mockResolvedValue([]);
   });
+
 
   it("should render client list and allow selecting a client", async () => {
     render(<ClientsPage />, { wrapper });
