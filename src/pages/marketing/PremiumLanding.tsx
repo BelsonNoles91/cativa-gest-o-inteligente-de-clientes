@@ -388,7 +388,7 @@ export default function PremiumLanding() {
               </p>
               
                <div className="flex flex-col sm:flex-row justify-center items-center gap-6 mb-24">
-                  <Button asChild size="lg" className="h-16 md:h-20 px-8 md:px-12 rounded-full bg-accent text-white text-lg md:text-xl font-bold shadow-[0_30px_60px_-15px_rgba(168,76,134,0.5)] hover:bg-white hover:text-primary-dark transition-all duration-700 md:scale-110 hover:scale-105 group relative overflow-hidden">
+                  <Button asChild size="lg" className="h-16 md:h-20 px-8 md:px-12 rounded-full bg-accent text-white text-lg md:text-xl font-bold shadow-xl shadow-accent/30 hover:bg-white hover:text-primary-dark transition-all duration-500 md:scale-110 hover:scale-[1.15] hover:shadow-2xl hover:shadow-accent/40 group relative overflow-hidden active:scale-[0.98]">
                      <Link to="/demo">
                        <span className="relative z-10 flex items-center gap-3">
                          Ver demonstração gratuita
