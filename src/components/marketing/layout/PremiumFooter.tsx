@@ -42,7 +42,7 @@ export function PremiumFooter() {
         <div className="grid lg:grid-cols-12 gap-16 mb-20">
           <div className="lg:col-span-5">
             <Link to="/" className="flex items-center gap-2 mb-8 group">
-              <Logo className="w-10 h-10 brightness-0 invert" />
+              <Logo showWordmark={false} className="brightness-0 invert" />
               <span className="font-display text-3xl font-bold tracking-tight">Cativa</span>
             </Link>
             <p className="text-white/60 text-lg leading-relaxed max-w-md mb-8 italic">
