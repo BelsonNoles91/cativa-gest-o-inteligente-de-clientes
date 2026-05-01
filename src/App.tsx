@@ -1,6 +1,7 @@
 import { Suspense, lazy, type ComponentType, forwardRef } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -96,122 +97,124 @@ const PortalClientProvider = lazyWithReload(() =>
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ErrorBoundary name="Root">
-      <ThemeProvider defaultTheme={appConfig.defaultTheme}>
-      <BrowserRouter>
-        <AuthProvider>
-          <TenantProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <Suspense fallback={<RouteFallback />}>
-                <Routes>
-                  {/* Público */}
-                  <Route path="/" element={<PremiumLanding />} />
-                  <Route path="/old-landing" element={<Index />} />
-                  <Route path="/planos" element={<Pricing />} />
-                  <Route path="/pricing" element={<Pricing />} />
-                  <Route path="/privacidade" element={<Privacy />} />
-                  <Route path="/termos" element={<Terms />} />
-                  <Route path="/demo" element={<Demo />} />
-                  <Route path="/status" element={<StatusPage />} />
+    <HelmetProvider>
+      <ErrorBoundary name="Root">
+        <ThemeProvider defaultTheme={appConfig.defaultTheme}>
+        <BrowserRouter>
+          <AuthProvider>
+            <TenantProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <Suspense fallback={<RouteFallback />}>
+                  <Routes>
+                    {/* Público */}
+                    <Route path="/" element={<PremiumLanding />} />
+                    <Route path="/old-landing" element={<Index />} />
+                    <Route path="/planos" element={<Pricing />} />
+                    <Route path="/pricing" element={<Pricing />} />
+                    <Route path="/privacidade" element={<Privacy />} />
+                    <Route path="/termos" element={<Terms />} />
+                    <Route path="/demo" element={<Demo />} />
+                    <Route path="/status" element={<StatusPage />} />
 
-                  {/* Auth */}
-                  <Route path="/auth/login" element={<Login />} />
-                  <Route path="/auth/recuperar" element={<ForgotPassword />} />
-                  <Route path="/auth/reset-password" element={<ResetPassword />} />
-                  <Route path="/auth/aceite-convite" element={<AcceptInvite />} />
-                  <Route path="/portal/acesso" element={<PortalAccess />} />
+                    {/* Auth */}
+                    <Route path="/auth/login" element={<Login />} />
+                    <Route path="/auth/recuperar" element={<ForgotPassword />} />
+                    <Route path="/auth/reset-password" element={<ResetPassword />} />
+                    <Route path="/auth/aceite-convite" element={<AcceptInvite />} />
+                    <Route path="/portal/acesso" element={<PortalAccess />} />
 
-                  {/* Onboarding — público no Step 0 (signup); quando há sessão,
-                      o OnboardingGuard redireciona para /app caso o usuário já
-                      possua tenant/membership ativo (evita refazer o setup). */}
-                  <Route
-                    path="/onboarding"
-                    element={
-                      <OnboardingGuard>
-                        <Onboarding />
-                      </OnboardingGuard>
-                    }
-                  />
-
-                  {/* Portal do cliente */}
-                  <Route element={<ProtectedRoute />}>
+                    {/* Onboarding — público no Step 0 (signup); quando há sessão,
+                        o OnboardingGuard redireciona para /app caso o usuário já
+                        possua tenant/membership ativo (evita refazer o setup). */}
                     <Route
-                      path="/portal"
+                      path="/onboarding"
                       element={
-                        <PortalClientProvider>
-                          <PortalLayout />
-                        </PortalClientProvider>
+                        <OnboardingGuard>
+                          <Onboarding />
+                        </OnboardingGuard>
                       }
-                    >
-                      <Route index element={<PortalHome />} />
-                      <Route path="agenda" element={<PortalAgenda />} />
-                      <Route path="agendar" element={<PortalBooking />} />
-                      <Route path="historico" element={<PortalHistory />} />
-                      <Route path="pacotes" element={<PortalPackages />} />
-                      <Route path="perfil" element={<PortalProfile />} />
+                    />
+
+                    {/* Portal do cliente */}
+                    <Route element={<ProtectedRoute />}>
+                      <Route
+                        path="/portal"
+                        element={
+                          <PortalClientProvider>
+                            <PortalLayout />
+                          </PortalClientProvider>
+                        }
+                      >
+                        <Route index element={<PortalHome />} />
+                        <Route path="agenda" element={<PortalAgenda />} />
+                        <Route path="agendar" element={<PortalBooking />} />
+                        <Route path="historico" element={<PortalHistory />} />
+                        <Route path="pacotes" element={<PortalPackages />} />
+                        <Route path="perfil" element={<PortalProfile />} />
+                      </Route>
                     </Route>
-                  </Route>
 
-                  {/* App autenticado + onboarding completo */}
-                  <Route element={<ProtectedRoute />}>
-                    <Route element={<RequireOnboarding />}>
-                      <Route path="/app" element={<AppLayout />}>
-                        <Route index element={<Dashboard />} />
-                        <Route path="agenda" element={<AgendaPage />} />
-                        <Route path="clientes" element={<ClientsPage />} />
-                        <Route
-                          path="confirmacoes"
-                          element={
-                            <FeatureGate featureKey="confirmation_center">
-                              <ConfirmationCenter />
-                            </FeatureGate>
-                          }
-                        />
-                        <Route path="lista-de-espera" element={<WaitlistPage />} />
-
-                        <Route element={<RoleGuard allowed={["owner", "manager"]} />}>
-                          <Route path="servicos" element={<ServicesPage />} />
+                    {/* App autenticado + onboarding completo */}
+                    <Route element={<ProtectedRoute />}>
+                      <Route element={<RequireOnboarding />}>
+                        <Route path="/app" element={<AppLayout />}>
+                          <Route index element={<Dashboard />} />
+                          <Route path="agenda" element={<AgendaPage />} />
+                          <Route path="clientes" element={<ClientsPage />} />
                           <Route
-                            path="pacotes"
+                            path="confirmacoes"
                             element={
-                              <FeatureGate featureKey="packages_memberships">
-                                <PackagesPage />
+                              <FeatureGate featureKey="confirmation_center">
+                                <ConfirmationCenter />
                               </FeatureGate>
                             }
                           />
-                          <Route
-                            path="analytics"
-                            element={
-                              <FeatureGate featureKey="analytics">
-                                <AnalyticsPage />
-                              </FeatureGate>
-                            }
-                          />
-                          <Route path="meu-plano" element={<Billing />} />
-                          <Route path="assinatura" element={<Subscription />} />
-                          <Route path="dados" element={<DataImportExport />} />
-                          <Route path="configuracoes" element={<Settings />} />
-                        </Route>
+                          <Route path="lista-de-espera" element={<WaitlistPage />} />
 
-                        <Route element={<RoleGuard allowed={["super_admin"]} />}>
-                          <Route path="super-admin" element={<SuperAdmin />} />
+                          <Route element={<RoleGuard allowed={["owner", "manager"]} />}>
+                            <Route path="servicos" element={<ServicesPage />} />
+                            <Route
+                              path="pacotes"
+                              element={
+                                <FeatureGate featureKey="packages_memberships">
+                                  <PackagesPage />
+                                </FeatureGate>
+                              }
+                            />
+                            <Route
+                              path="analytics"
+                              element={
+                                <FeatureGate featureKey="analytics">
+                                  <AnalyticsPage />
+                                </FeatureGate>
+                              }
+                            />
+                            <Route path="meu-plano" element={<Billing />} />
+                            <Route path="assinatura" element={<Subscription />} />
+                            <Route path="dados" element={<DataImportExport />} />
+                            <Route path="configuracoes" element={<Settings />} />
+                          </Route>
+
+                          <Route element={<RoleGuard allowed={["super_admin"]} />}>
+                            <Route path="super-admin" element={<SuperAdmin />} />
+                          </Route>
                         </Route>
                       </Route>
                     </Route>
-                  </Route>
 
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-              <DebugConsole />
-            </TooltipProvider>
-          </TenantProvider>
-        </AuthProvider>
-      </BrowserRouter>
-      </ThemeProvider>
-    </ErrorBoundary>
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+                <DebugConsole />
+              </TooltipProvider>
+            </TenantProvider>
+          </AuthProvider>
+        </BrowserRouter>
+        </ThemeProvider>
+      </ErrorBoundary>
+    </HelmetProvider>
   </QueryClientProvider>
 );
 
