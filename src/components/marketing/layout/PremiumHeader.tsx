@@ -10,7 +10,7 @@ const NAV_LINKS = [
   { label: "Funcionalidades", href: "/#funcionalidades" },
   { label: "Módulos", href: "/#modulos" },
   { label: "Métricas", href: "/#metricas" },
-  { label: "Planos", href: "/planos" },
+  { label: "Planos", href: "/#planos" },
   { label: "Demonstração", href: "/demo" },
 ];
 
@@ -35,9 +35,9 @@ export function PremiumHeader() {
           : "bg-transparent"
       )}
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-        <Link to="/" className="flex items-center group shrink-0" aria-label="Cativa - Home">
-          <Logo size="sm" className="transition-transform group-hover:scale-105" />
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 md:gap-4">
+        <Link to="/" className="flex items-center group shrink-0 min-w-0" aria-label="Cativa - Home">
+          <Logo size="sm" className="transition-transform group-hover:scale-105 h-8 md:h-10 w-auto" />
         </Link>
 
         {/* Desktop Nav */}
@@ -78,29 +78,31 @@ export function PremiumHeader() {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden absolute top-full left-0 right-0 bg-white border-b border-border z-[100] shadow-2xl overflow-hidden flex flex-col"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="lg:hidden fixed inset-x-0 top-[60px] bottom-0 bg-white/95 backdrop-blur-xl z-[100] shadow-2xl overflow-y-auto flex flex-col"
           >
-            <div className="p-8 flex flex-col gap-6 items-center">
+            <div className="p-6 flex flex-col gap-4 items-center justify-center min-h-full">
               {NAV_LINKS.map((link) => (
                 <Link
                   key={link.label}
                   to={link.href}
-                  className="text-2xl font-display font-medium text-primary-dark active:text-accent"
+                  className="text-xl font-display font-semibold text-primary-dark hover:text-accent transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {link.label}
                 </Link>
               ))}
-              <hr className="w-full border-border" />
-              <Button asChild variant="outline" size="lg" className="w-full rounded-full">
-                <Link to="/auth/login" onClick={() => setMobileMenuOpen(false)}>Entrar</Link>
-              </Button>
-              <Button asChild size="lg" className="w-full rounded-full bg-primary-dark shadow-xl">
-                <Link to="/onboarding" onClick={() => setMobileMenuOpen(false)}>Começar agora</Link>
-              </Button>
+              <hr className="w-12 border-accent/20 my-2" />
+              <div className="flex flex-col gap-3 w-full max-w-xs">
+                <Button asChild variant="outline" size="lg" className="w-full rounded-full border-primary-dark/10">
+                  <Link to="/auth/login" onClick={() => setMobileMenuOpen(false)}>Entrar</Link>
+                </Button>
+                <Button asChild size="lg" className="w-full rounded-full bg-primary-dark shadow-xl shadow-primary/10">
+                  <Link to="/demo" onClick={() => setMobileMenuOpen(false)}>Agendar Demo</Link>
+                </Button>
+              </div>
             </div>
           </motion.div>
         )}
