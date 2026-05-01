@@ -638,7 +638,8 @@ export default function Onboarding() {
                 { label: "Estabelecimento", val: bizName },
                 { label: "Segmento", val: segment ? segmentLabels[segment as TenantSegment] : "—" },
                 { label: "Unidade Principal", val: unitName || "Matriz" },
-                { label: "Colaboradores", val: `${invites.length} pessoa(s)` },
+                { label: "Colaboradores", val: `${proDrafts.length} profissional(is)` },
+                { label: "Serviços", val: `${serviceDrafts.length} item(ns)` },
               ].map((item, i) => (
                 <div key={i} className="flex items-center justify-between pb-4 border-b border-border/10 last:border-0 last:pb-0">
                   <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">{item.label}</span>
