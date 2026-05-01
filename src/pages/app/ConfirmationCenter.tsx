@@ -391,6 +391,10 @@ export default function ConfirmationCenter() {
                 item={item} 
                 onOpen={handleOpen} 
                 onConfirmQuick={(item) => center.setItemStatus(item.id, "confirmed")}
+                selection={{
+                  selectedIds: center.selectedIds,
+                  toggleSelection: center.toggleSelection
+                }}
               />
             ))}
           </div>
