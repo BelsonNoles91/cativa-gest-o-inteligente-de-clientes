@@ -121,7 +121,14 @@ export default function PremiumLanding() {
                                 {segments[activeSegment].percentage.replace('%', '')}
                              </div>
                              <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                                <span className="text-5xl md:text-7xl font-display font-bold text-primary-dark">{segments[activeSegment].percentage}</span>
+                                <motion.span 
+                                  key={`perc-${activeSegment}`}
+                                  initial={{ opacity: 0, scale: 0.5 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  className="text-5xl md:text-7xl font-display font-bold text-primary-dark"
+                                >
+                                  {segments[activeSegment].percentage}
+                                </motion.span>
                                 <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">{segments[activeSegment].benefit}</span>
                              </div>
                           </div>
