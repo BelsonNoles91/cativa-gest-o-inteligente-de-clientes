@@ -5,6 +5,9 @@ import {
   CalendarClock,
   CircleDollarSign,
   Clock3,
+  Download,
+  FileSpreadsheet,
+  FileText,
   Gauge,
   ListChecks,
   RefreshCcw,
@@ -19,12 +22,22 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { AnalyticsFiltersBar } from "@/features/analytics/AnalyticsFiltersBar";
 import { CativaIndexCard } from "@/features/analytics/CativaIndexCard";
 import { KpiCard } from "@/features/analytics/KpiCard";
 import { NextBestActions } from "@/features/analytics/NextBestActions";
 import { useAnalytics } from "@/features/analytics/useAnalytics";
 import { cn } from "@/lib/utils";
+import { jsonToCsv, downloadFile, formatCurrencyForExport, formatDateForExport } from "@/lib/export-utils";
+
 
 const SOURCE_LABELS: Record<string, string> = {
   frontdesk: "Recepção",
@@ -77,6 +90,44 @@ export default function AnalyticsPage() {
     );
   }
 
+  const formatCurrency = (val: number) =>
+    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(val);
+
+  const exportToCsv = () => {
+    // Mapeia client_id para full_name para exportação
+    const clientMap = new Map(analytics.clients.map((c) => [c.id, c.fullName]));
+
+    const data = analytics.appts.map((a) => ({
+      Data: formatDateForExport(a.startsAt),
+      Cliente: clientMap.get(a.clientId) ?? "—",
+      Serviço: labels?.services.get(a.serviceId ?? "") ?? "—",
+      Profissional: labels?.pros.get(a.professionalId) ?? "—",
+      Unidade: labels?.units.get(a.unitId) ?? "—",
+      Status: a.status,
+      Valor: formatCurrencyForExport(a.totalPriceCents),
+    }));
+
+    const csv = jsonToCsv(data);
+    const fileName = `relatorio-cativa-${new Date().toISOString().split("T")[0]}.csv`;
+    downloadFile(csv, fileName, "text/csv;charset=utf-8;");
+  };
+
+  const exportSummaryToCsv = () => {
+    const summary = [
+      { Métrica: "Taxa de confirmação", Valor: `${(metrics.confirmation.rate).toFixed(1)}%` },
+      { Métrica: "Ocupação", Valor: `${(metrics.occupancy.rate).toFixed(1)}%` },
+      { Métrica: "Ticket Médio", Valor: formatCurrency(metrics.ticketAvg) },
+      { Métrica: "LTV Anual", Valor: formatCurrency(metrics.ltv) },
+      { Métrica: "Receita Futura", Valor: formatCurrency(metrics.futureValue) },
+      { Métrica: "Índice Cativa", Valor: cativa.score },
+    ];
+
+    const csv = jsonToCsv(summary);
+    const fileName = `resumo-gerencial-${new Date().toISOString().split("T")[0]}.csv`;
+    downloadFile(csv, fileName, "text/csv;charset=utf-8;");
+  };
+
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -86,12 +137,36 @@ export default function AnalyticsPage() {
         actions={
           <>
             <StatusBadge tone="info">{rangeLabel}</StatusBadge>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <Download className="mr-1.5 h-4 w-4" /> Exportar
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Relatórios de Fechamento</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={exportToCsv}>
+                  <FileSpreadsheet className="mr-2 h-4 w-4 text-success" />
+                  Listagem completa (CSV/Excel)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={exportSummaryToCsv}>
+                  <FileText className="mr-2 h-4 w-4 text-info" />
+                  Resumo executivo (CSV)
+                </DropdownMenuItem>
+                <DropdownMenuItem disabled>
+                  <FileText className="mr-2 h-4 w-4 text-destructive" />
+                  Relatório em PDF (Breve)
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button variant="outline" onClick={() => window.location.reload()}>
               <RefreshCcw className="mr-1.5 h-4 w-4" /> Atualizar
             </Button>
           </>
         }
       />
+
 
       <AnalyticsFiltersBar
         preset={analytics.preset}

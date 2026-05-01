@@ -1,7 +1,8 @@
 /**
- * UserMenu — perfil + signOut real.
+ * UserMenu — perfil + signOut real + Notificações.
  */
-import { LogOut, Settings, User } from "lucide-react";
+import { useEffect, useState } from "react";
+import { LogOut, Settings, User, Bell, BellOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -13,11 +14,34 @@ import { Button } from "@/components/ui/button";
 import { roleLabels } from "@/domain/roles";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { useIsMobile } from "@/hooks/use-mobile";
+
 
 export function UserMenu() {
   const navigate = useNavigate();
   const { currentRole, isSuperAdmin } = useTenant();
   const { user, signOut } = useAuth();
+  const isMobile = useIsMobile();
+  const [pushStatus, setPushStatus] = useState<"granted" | "denied" | "default" | "unsupported">("default");
+
+  useEffect(() => {
+    if (!("Notification" in window)) {
+      setPushStatus("unsupported");
+    } else {
+      setPushStatus(Notification.permission as any);
+    }
+  }, []);
+
+  const requestPush = async () => {
+    if (!("Notification" in window)) return;
+    const permission = await Notification.requestPermission();
+    setPushStatus(permission as any);
+    if (permission === "granted") {
+      toast.success("Notificações habilitadas com sucesso!");
+    } else {
+      toast.error("Permissão de notificação negada.");
+    }
+  };
 
   const initials = (user?.user_metadata?.full_name as string | undefined)
     ?.split(" ").slice(0, 2).map((p) => p[0]).join("").toUpperCase()
@@ -26,6 +50,7 @@ export function UserMenu() {
 
   // Super admin sempre é exibido como tal, mesmo que tenha membership como owner.
   const role = isSuperAdmin ? "super_admin" : currentRole;
+
 
   return (
     <DropdownMenu>
@@ -44,6 +69,23 @@ export function UserMenu() {
           {role && <span className="text-xs text-muted-foreground">{roleLabels[role]}</span>}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {pushStatus !== "granted" && pushStatus !== "unsupported" && (
+          <DropdownMenuItem onSelect={requestPush} className="gap-2">
+            <Bell className="h-4 w-4" /> Ativar notificações push
+          </DropdownMenuItem>
+        )}
+        {pushStatus === "granted" && (
+          <DropdownMenuItem disabled className="gap-2 opacity-50">
+            <Bell className="h-4 w-4" /> Notificações ativas
+          </DropdownMenuItem>
+        )}
+        {pushStatus === "unsupported" && isMobile && (
+          <DropdownMenuItem disabled className="gap-2 opacity-50">
+            <BellOff className="h-4 w-4" /> Push não suportado
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
+
         <DropdownMenuItem onSelect={() => navigate("/app/configuracoes")} className="gap-2">
           <User className="h-4 w-4" /> Perfil
         </DropdownMenuItem>
