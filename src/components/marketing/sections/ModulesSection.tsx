@@ -58,7 +58,12 @@ const modules = [
 export function ModulesSection() {
   return (
     <PremiumSection variant="light" padding="lg" id="modulos">
-      <div className="max-w-4xl mb-16 md:mb-24 px-4 md:px-0">
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="max-w-4xl mb-16 md:mb-24 px-4 md:px-0"
+      >
         <div className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-6 md:mb-8">
           Módulos do Sistema
         </div>
@@ -69,11 +74,14 @@ export function ModulesSection() {
         <p className="text-lg md:text-xl text-muted-foreground/80 font-light leading-relaxed max-w-2xl">
           Cada parte da Cativa foi desenhada para resolver um problema real do dia a dia e, ao mesmo tempo, fortalecer a fidelidade dos seus clientes.
         </p>
-      </div>
+      </motion.div>
 
       <div className="grid gap-6 md:gap-10 px-4 md:px-0">
         {modules.map((module, idx) => (
-          <div 
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.98 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.7, delay: idx * 0.05 }}
             key={idx} 
             className="group relative bg-white rounded-[2rem] md:rounded-[3rem] border border-border/30 p-6 md:p-14 transition-all duration-700 hover:border-accent/40 hover:shadow-xl overflow-hidden"
           >
@@ -84,9 +92,12 @@ export function ModulesSection() {
             
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12 lg:gap-20 items-center relative z-10">
               <div className="lg:col-span-1">
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-[1.5rem] md:rounded-[2.5rem] bg-[#FAF7F9] flex items-center justify-center text-primary-dark transition-all duration-700 group-hover:bg-accent group-hover:text-white group-hover:scale-110 group-hover:rotate-6 border border-border/10">
+                <motion.div 
+                  whileHover={{ rotate: 10, scale: 1.1 }}
+                  className="w-16 h-16 md:w-20 md:h-20 rounded-[1.5rem] md:rounded-[2.5rem] bg-[#FAF7F9] flex items-center justify-center text-primary-dark transition-all duration-700 group-hover:bg-accent group-hover:text-white border border-border/10"
+                >
                   <module.icon className="h-8 w-8 md:h-10 md:w-10" />
-                </div>
+                </motion.div>
               </div>
               
               <div className="lg:col-span-5">
@@ -119,7 +130,7 @@ export function ModulesSection() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
     </PremiumSection>
