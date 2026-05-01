@@ -357,7 +357,10 @@ export function useAnalytics() {
       packageCompletion,
       pendingPackages,
       highValueUnconfirmed,
+      profitabilityByPro,
+      ltv,
     },
+
     cativa,
     nba,
   };
