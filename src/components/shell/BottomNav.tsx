@@ -87,7 +87,7 @@ export function BottomNav() {
           {/* Skeletons enquanto billing carrega: evita "pulo" do nav
               quando itens com featureKey são incluídos/removidos. */}
           {billingLoading && primary.length === 0
-            ? Array.from({ length: 4 }).map((_, i) => (
+            ? Array.from({ length: 5 }).map((_, i) => (
                 <li key={`skeleton-${i}`} data-testid="bottom-nav-skeleton">
                   <div className="flex flex-col items-center justify-center gap-1 py-2 min-h-touch">
                     <Skeleton className="h-5 w-5 rounded-md" />
