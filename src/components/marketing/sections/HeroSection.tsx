@@ -28,38 +28,44 @@ export function HeroSection() {
           </div>
 
           <h1 className="font-display text-6xl md:text-8xl xl:text-[7.5rem] leading-[0.9] tracking-[-0.03em] text-primary-dark mb-10 animate-fade-in delay-100">
-            Pare de apenas <br />
+            Transforme sua <br />
             <span className="relative inline-block">
-              agendar
+              agenda
               <svg className="absolute -bottom-2 left-0 w-full h-3 text-accent/30 -z-10" viewBox="0 0 300 12" fill="none">
                 <path d="M1 10.5C50 4 150 1 299 10.5" stroke="currentColor" strokeWidth="6" strokeLinecap="round"/>
               </svg>
             </span>
             <br />
-            e comece a <span className="italic font-normal serif">lucrar</span>.
+            em <span className="italic font-normal serif text-accent">retenção.</span>
           </h1>
 
           <p className="text-xl md:text-2xl text-muted-foreground/80 leading-relaxed max-w-xl mb-12 animate-fade-in delay-200 font-light">
-            A Cativa automatiza sua recepção e recupera clientes inativos, transformando sua agenda em uma <span className="text-primary-dark font-medium">máquina de faturamento previsível</span>.
+            A Cativa centraliza clientes, agendamentos, confirmações, protocolos e indicadores em um único sistema pensado para clínicas de estética, salões e negócios de beleza que querem crescer com organização e <span className="text-primary-dark font-medium">fazer o cliente voltar.</span>
           </p>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-6 mb-16 animate-fade-in delay-300">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-6 mb-8 animate-fade-in delay-300">
             <Button asChild size="lg" className="h-18 px-10 rounded-none bg-primary-dark text-lg shadow-2xl shadow-primary/20 group relative overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98]">
               <Link to="/onboarding">
                 <span className="relative z-10 flex items-center gap-2">
-                  Testar Grátis por 14 Dias
+                  Agendar demonstração
                   <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </span>
                 <div className="absolute inset-0 bg-accent translate-y-full transition-transform group-hover:translate-y-0" />
               </Link>
             </Button>
             
-            <button className="flex items-center gap-4 group px-4 py-2 transition-all hover:translate-x-1">
-              <div className="w-14 h-14 rounded-full border border-primary/10 flex items-center justify-center text-primary-dark group-hover:bg-primary-dark group-hover:text-white transition-all duration-500">
-                <Play className="h-5 w-5 fill-current ml-1" />
+            <Button asChild variant="outline" size="lg" className="h-18 px-10 rounded-none border-primary-dark/20 text-lg hover:bg-primary-dark hover:text-white transition-all">
+              <Link to="/onboarding">Começar teste</Link>
+            </Button>
+          </div>
+
+          <div className="flex flex-wrap gap-x-8 gap-y-2 mb-16 animate-fade-in delay-400">
+            {["Sem depender de API de WhatsApp", "Mobile-first", "Personalizável para o seu negócio"].map((item, i) => (
+              <div key={i} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary-dark/40">
+                <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                {item}
               </div>
-              <span className="font-bold text-sm uppercase tracking-widest text-primary-dark/60 group-hover:text-primary-dark">Assistir Filme</span>
-            </button>
+            ))}
           </div>
 
           <div className="flex items-center gap-12 animate-fade-in delay-500 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-700">
@@ -147,7 +153,7 @@ export function HeroSection() {
                 <div className="w-full h-1.5 bg-secondary/30 rounded-full overflow-hidden">
                    <div className="w-[94%] h-full bg-accent" />
                 </div>
-                <p className="text-[10px] text-muted-foreground mt-4 leading-relaxed italic">"Desde que implementamos a Cativa, a taxa de retorno cresceu exponencialmente."</p>
+                <p className="text-[10px] text-muted-foreground mt-4 leading-relaxed italic">"Mais do que organizar horários, a Cativa ajuda sua operação a reter clientes, reduzir faltas, melhorar o rebooking e enxergar com clareza."</p>
              </div>
           </div>
 
