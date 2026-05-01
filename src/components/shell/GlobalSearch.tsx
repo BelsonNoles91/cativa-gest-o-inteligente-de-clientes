@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   CalendarDays,
   CheckCircle2,
+  Hourglass,
   Loader2,
   Search,
   Sparkles,
@@ -105,12 +106,13 @@ export function GlobalSearch({
   const quickActions = useMemo(
     () => [
       { label: "Abrir agenda de hoje", icon: CalendarDays, to: `/app/agenda?date=${todayIso()}` },
-      { label: "Abrir clientes", icon: Users, to: "/app/clientes" },
       { label: "Abrir confirmações", icon: CheckCircle2, to: "/app/confirmacoes" },
-      { label: "Abrir serviços", icon: Sparkles, to: "/app/servicos" },
+      { label: "Abrir lista de espera", icon: Hourglass, to: "/app/lista-de-espera" },
+      { label: "Abrir clientes", icon: Users, to: "/app/clientes" },
     ],
     [],
   );
+
 
   const filteredClients = useMemo(
     () => clients.slice(0, 8),
