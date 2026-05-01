@@ -2533,7 +2533,7 @@ export type Database = {
           min_ltv_cents: number | null
           name: string
           status: string | null
-          tenant_id: string | null
+          tenant_id: string
           updated_at: string | null
         }
         Insert: {
@@ -2544,7 +2544,7 @@ export type Database = {
           min_ltv_cents?: number | null
           name: string
           status?: string | null
-          tenant_id?: string | null
+          tenant_id: string
           updated_at?: string | null
         }
         Update: {
@@ -2555,7 +2555,7 @@ export type Database = {
           min_ltv_cents?: number | null
           name?: string
           status?: string | null
-          tenant_id?: string | null
+          tenant_id?: string
           updated_at?: string | null
         }
         Relationships: [
