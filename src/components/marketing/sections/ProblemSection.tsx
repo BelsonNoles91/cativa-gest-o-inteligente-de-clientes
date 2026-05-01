@@ -28,7 +28,7 @@ export function ProblemSection() {
             <span className="text-accent italic serif font-normal">perdendo receita todos os dias.</span>
           </h2>
           <p className="text-lg md:text-xl text-white/60 font-light leading-relaxed max-w-xl mb-10 md:mb-12">
-            Muitos negócios de estética acreditam que o desafio está apenas em “preencher a agenda”. Mas o que mais compromete o crescimento é a falta de controle sobre o que acontece na operação.
+            Muitos negócios de estética acreditam que o desafio está apenas em “preencher a agenda”. Mas o que mais compromete o crescimento é a falta de controle sobre o que acontece na operação quando o cliente sai pela porta.
           </p>
           
           <div className="space-y-6">
@@ -87,7 +87,7 @@ export function ProblemSection() {
                >
                   <p className="text-[10px] font-bold uppercase tracking-[0.2em] mb-3 md:mb-4 opacity-80">A Realidade</p>
                   <p className="text-2xl md:text-3xl font-display font-bold leading-tight mb-6">
-                    Sua recepção gasta horas todos os dias apenas confirmando horários manualmente.
+                    A confirmação de horários pode consumir horas preciosas da recepção todos os dias.
                   </p>
                   <button className="flex items-center gap-2 text-[10px] md:text-xs font-bold uppercase tracking-widest group">
                     Mudar este cenário <ChevronRight className="h-3.5 w-3.5 md:h-4 md:w-4 group-hover:translate-x-1 transition-transform" />
