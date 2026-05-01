@@ -21,7 +21,8 @@ export function Navbar() {
     { name: "Funcionalidades", href: "#funcionalidades" },
     { name: "Módulos", href: "#modulos" },
     { name: "Métricas", href: "#metricas" },
-    { name: "Planos", href: "#planos" },
+    { name: "Planos", href: "/planos" },
+    { name: "Demonstração", href: "/demo" },
     { name: "Dúvidas", href: "#duvidas" },
   ];
 
