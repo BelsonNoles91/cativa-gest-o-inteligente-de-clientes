@@ -315,7 +315,7 @@ export default function PremiumLanding() {
                 Pronto para o Próximo Nível?
               </div>
               
-              <h2 className="font-display text-7xl md:text-[10rem] text-white mb-16 tracking-tighter leading-[0.8] animate-fade-in">
+              <h2 className="font-display text-5xl sm:text-7xl md:text-[10rem] text-white mb-16 tracking-tighter leading-[0.8] animate-fade-in">
                 Sua operação, <br />
                 <span className="italic serif font-normal text-accent relative inline-block">
                   elevada.
