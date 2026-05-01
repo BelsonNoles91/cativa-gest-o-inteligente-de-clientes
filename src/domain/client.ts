@@ -50,6 +50,10 @@ export interface Client {
   nextVisitAt: string | null;
   city: string | null;
   state: string | null;
+  averageCycleDays: number | null;
+  churnRiskScore: number;
+  nextBestAction: string | null;
+  lastServiceId: string | null;
   createdAt: string;
   updatedAt: string;
 }

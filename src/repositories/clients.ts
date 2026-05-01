@@ -48,6 +48,10 @@ type DbClient = {
   next_visit_at: string | null;
   city: string | null;
   state: string | null;
+  average_cycle_days: number | null;
+  churn_risk_score: number;
+  next_best_action: string | null;
+  last_service_id: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -77,13 +81,17 @@ function toClient(r: DbClient): Client {
     nextVisitAt: r.next_visit_at,
     city: r.city,
     state: r.state,
+    averageCycleDays: r.average_cycle_days,
+    churnRiskScore: r.churn_risk_score,
+    nextBestAction: r.next_best_action,
+    lastServiceId: r.last_service_id,
     createdAt: r.created_at,
     updatedAt: r.updated_at,
   };
 }
 
 const CLIENT_COLUMNS = "id, tenant_id, full_name, phone, email, status, is_vip, risk_level, last_visit_at, city";
-const CLIENT_DETAIL_COLUMNS = "id, tenant_id, preferred_unit_id, preferred_professional_id, referred_by_client_id, full_name, email, phone, whatsapp_phone, birth_date, origin, notes, allergies, contraindications, preferences, status, is_vip, risk_level, needs_reactivation, last_visit_at, next_visit_at, city, state, created_at, updated_at";
+const CLIENT_DETAIL_COLUMNS = "id, tenant_id, preferred_unit_id, preferred_professional_id, referred_by_client_id, full_name, email, phone, whatsapp_phone, birth_date, origin, notes, allergies, contraindications, preferences, status, is_vip, risk_level, needs_reactivation, last_visit_at, next_visit_at, city, state, average_cycle_days, churn_risk_score, next_best_action, last_service_id, created_at, updated_at";
 
 // -----------------------------------------------------------------------------
 // CLIENTS
