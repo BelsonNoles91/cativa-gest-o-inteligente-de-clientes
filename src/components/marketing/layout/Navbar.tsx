@@ -39,7 +39,7 @@ export function Navbar() {
 
         {/* Desktop Links */}
         <div className="hidden lg:flex items-center gap-10">
-          <a href="#features" className="text-[10px] font-bold uppercase tracking-widest text-primary-dark/60 hover:text-accent transition-colors">Funcionalidades</a>
+          <a href="#funcionalidades" className="text-[10px] font-bold uppercase tracking-widest text-primary-dark/60 hover:text-accent transition-colors">Funcionalidades</a>
           <a href="#modulos" className="text-[10px] font-bold uppercase tracking-widest text-primary-dark/60 hover:text-accent transition-colors">Módulos</a>
           <a href="#planos" className="text-[10px] font-bold uppercase tracking-widest text-primary-dark/60 hover:text-accent transition-colors">Planos</a>
         </div>
@@ -52,7 +52,7 @@ export function Navbar() {
             <Link to="/demo">Demonstração</Link>
           </Button>
           <Button asChild className="rounded-full px-8 text-[10px] font-bold uppercase tracking-widest bg-accent hover:bg-accent/90 text-white transition-all duration-300 shadow-lg shadow-accent/20">
-            <Link to="/onboarding">Começar Teste</Link>
+            <Link to="/onboarding">Começar Agora</Link>
           </Button>
         </div>
 
