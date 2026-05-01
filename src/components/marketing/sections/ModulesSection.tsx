@@ -1,6 +1,7 @@
 import { PremiumSection } from "../layout/PremiumSection";
 import { Users, Calendar, Settings, Shield, Globe, BarChart, Activity, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 const modules = [
   {
