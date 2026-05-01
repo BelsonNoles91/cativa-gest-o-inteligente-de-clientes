@@ -9,6 +9,7 @@ import { listAppointmentsHydrated } from "@/repositories/scheduling";
 import { countQueueByStage } from "@/repositories/confirmation";
 import { fetchAvailability } from "@/repositories/analytics";
 import { supabase } from "@/integrations/supabase/client";
+import { appConfig } from "@/config/app";
 
 /**
  * @hook useDashboardData
