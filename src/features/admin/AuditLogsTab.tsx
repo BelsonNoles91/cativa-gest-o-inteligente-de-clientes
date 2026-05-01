@@ -187,9 +187,9 @@ export function AuditLogsTab({
         <div className="grid gap-2 sm:grid-cols-3">
           {isSuperAdmin && (
             <div>
-              <Label className="text-[11px] text-muted-foreground font-semibold uppercase">Tenant</Label>
+              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Tenant</Label>
               <Select value={tenantFilter} onValueChange={(v) => { setTenantFilter(v); setPage(0); }}>
-                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-10 text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos os tenants</SelectItem>
                   {tenants.map((t) => (
@@ -200,9 +200,9 @@ export function AuditLogsTab({
             </div>
           )}
           <div className={isSuperAdmin ? "" : "sm:col-span-2"}>
-            <Label className="text-[11px] text-muted-foreground font-semibold uppercase">Módulo / Ação</Label>
+            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Módulo / Ação</Label>
             <Select value={actionFilter} onValueChange={(v) => { setActionFilter(v); setPage(0); }}>
-              <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-10 text-sm"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {ACTION_PREFIXES.map((p) => (
                   <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
@@ -211,9 +211,9 @@ export function AuditLogsTab({
             </Select>
           </div>
           <div>
-            <Label className="text-[11px] text-muted-foreground font-semibold uppercase">Registros p/ página</Label>
+            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Registros p/ página</Label>
             <Select value={limit} onValueChange={(v) => { setLimit(v); setPage(0); }}>
-              <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-10 text-sm"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {["25", "50", "100", "200"].map((n) => (
                   <SelectItem key={n} value={n}>{n} registros</SelectItem>
@@ -225,11 +225,11 @@ export function AuditLogsTab({
 
         <div className="grid gap-2 sm:grid-cols-3">
           <div>
-            <Label className="flex items-center gap-1 text-[11px] text-muted-foreground font-semibold uppercase">
-              <CalendarRange className="h-3 w-3" /> Período
+            <Label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">
+              <CalendarRange className="h-3.5 w-3.5" /> Período
             </Label>
             <Select value={periodPreset} onValueChange={(v) => { setPeriodPreset(v); setPage(0); }}>
-              <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-10 text-sm"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todo o histórico</SelectItem>
                 <SelectItem value="1">Últimas 24h</SelectItem>
@@ -331,18 +331,18 @@ export function AuditLogsTab({
                   className="flex w-full flex-col gap-3 p-4 text-left sm:flex-row sm:items-center sm:gap-4"
                 >
                   <div className="flex flex-wrap items-center gap-2 sm:w-48">
-                    <StatusBadge tone={toneFromAction(row.action)} className="font-mono text-[10px] uppercase">
+                    <StatusBadge tone={toneFromAction(row.action)} className="font-mono text-[11px] uppercase tracking-tighter">
                       {row.action}
                     </StatusBadge>
                   </div>
                   
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="truncate text-sm font-semibold">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <p className="truncate text-base font-medium text-foreground tracking-tight">
                         {row.actor_name ?? "Sistema"}
                       </p>
                       {row.tenant_name && isSuperAdmin && (
-                        <span className="rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[10px] font-bold">
+                        <span className="rounded-full bg-primary/10 text-primary px-2.5 py-0.5 text-[11px] font-bold">
                           {row.tenant_name}
                         </span>
                       )}
@@ -350,13 +350,13 @@ export function AuditLogsTab({
                     
                     <div className="flex flex-wrap gap-x-4 gap-y-1">
                       {row.entity && (
-                        <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-                          <span className="font-medium text-foreground/70">{row.entity}:</span>
-                          <span className="font-mono">{row.entity_id ? row.entity_id.slice(0, 8) : "—"}</span>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                          <span className="font-medium text-foreground/80">{row.entity}:</span>
+                          <span className="font-mono bg-muted/50 px-1.5 rounded">{row.entity_id ? row.entity_id.slice(0, 8) : "—"}</span>
                         </p>
                       )}
-                      <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
+                      <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5" />
                         {formatDateTime(row.created_at)}
                       </p>
                     </div>
@@ -372,9 +372,9 @@ export function AuditLogsTab({
                     <div className="p-4 space-y-4">
                       {/* Resumo e Links */}
                       <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="space-y-1">
-                          <p className="text-[11px] font-bold text-muted-foreground uppercase">Ator</p>
-                          <p className="text-xs">{row.actor_email || "Sistema Automático"}</p>
+                        <div className="space-y-1.5">
+                          <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Ator</p>
+                          <p className="text-sm font-medium">{row.actor_email || "Sistema Automático"}</p>
                         </div>
                         {row.entity_id && (
                           <Button variant="ghost" size="sm" className="h-7 text-[10px] gap-1.5" asChild>
@@ -390,9 +390,9 @@ export function AuditLogsTab({
                       {row.metadata && renderBeforeAfter(row.metadata)}
 
                       {/* JSON Completo */}
-                      <div className="space-y-2">
-                        <p className="text-[11px] font-bold text-muted-foreground uppercase">Payload Completo</p>
-                        <pre className="max-h-60 overflow-auto whitespace-pre-wrap break-words rounded-xl bg-slate-950 p-4 text-[11px] font-mono text-slate-300 leading-relaxed scrollbar-thin scrollbar-thumb-slate-800">
+                      <div className="space-y-2.5">
+                        <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Payload Completo</p>
+                        <pre className="max-h-60 overflow-auto whitespace-pre-wrap break-words rounded-xl bg-slate-950 p-4 text-xs font-mono text-slate-300 leading-relaxed scrollbar-thin scrollbar-thumb-slate-800">
                           {JSON.stringify(row.metadata, null, 2)}
                         </pre>
                       </div>
@@ -446,9 +446,9 @@ function renderBeforeAfter(metadata: Record<string, unknown>) {
 
   return (
     <div className="space-y-2">
-      <p className="text-[11px] font-bold text-muted-foreground uppercase">Comparativo de Mudanças</p>
+      <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Comparativo de Mudanças</p>
       <div className="overflow-hidden rounded-xl border border-border/60 bg-background/50">
-        <div className="grid grid-cols-3 bg-muted/50 p-2 text-[10px] font-bold uppercase text-muted-foreground border-b border-border/40">
+        <div className="grid grid-cols-3 bg-muted/50 p-2.5 text-[11px] font-bold uppercase text-muted-foreground border-b border-border/40 tracking-tight">
           <div>Atributo</div>
           <div>Anterior</div>
           <div>Novo Valor</div>
@@ -461,8 +461,8 @@ function renderBeforeAfter(metadata: Record<string, unknown>) {
             if (!changed && keys.length > 5) return null; // Esconder campos não alterados se forem muitos
 
             return (
-              <div key={k} className={`grid grid-cols-3 p-2 text-[11px] font-mono items-center ${changed ? "bg-warning/5" : ""}`}>
-                <div className="font-semibold text-foreground/70 truncate mr-2" title={k}>{k}</div>
+              <div key={k} className={`grid grid-cols-3 p-2.5 text-xs font-mono items-center ${changed ? "bg-warning/5" : ""}`}>
+                <div className="font-semibold text-foreground/80 truncate mr-2" title={k}>{k}</div>
                 <div className="text-destructive/70 line-through truncate mr-2" title={formatVal(b)}>{formatVal(b)}</div>
                 <div className="text-success font-medium truncate" title={formatVal(a)}>{formatVal(a)}</div>
               </div>
