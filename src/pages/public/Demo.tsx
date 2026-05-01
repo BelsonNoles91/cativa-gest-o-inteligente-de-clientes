@@ -284,7 +284,7 @@ export default function DemoPage() {
               </h2>
             </div>
             
-            <div className="aspect-video bg-[#1A0F16] rounded-[2.5rem] md:rounded-[4rem] shadow-2xl relative overflow-hidden group border border-white/5">
+            <div className="aspect-video bg-[#1A0F16] rounded-[1.5rem] md:rounded-[4rem] shadow-2xl relative overflow-hidden group border border-white/5">
               {!isPlaying ? (
                 <>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
@@ -308,7 +308,7 @@ export default function DemoPage() {
                   </div>
                 </>
               ) : (
-                <div className="absolute inset-0 w-full h-full bg-[#FAF7F9] flex flex-col">
+                <div className="absolute inset-0 w-full h-full bg-[#FAF7F9] flex flex-col z-30">
                   {/* Header do Mockup */}
                   <div className="h-12 bg-white border-b border-border/40 px-6 flex items-center justify-between">
                     <div className="flex items-center gap-2">
