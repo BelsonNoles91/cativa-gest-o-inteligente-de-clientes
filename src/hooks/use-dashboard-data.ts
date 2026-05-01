@@ -35,7 +35,7 @@ export function useDashboardData() {
       const weekStart = getStartOfWeek(new Date());
 
       // Concurrent fetch for all dashboard components
-      const [appointmentsToday, queueCounts, availability, newClients] = await Promise.all([
+      const [appointmentsToday, queueCounts, availability, newClients, ltvQuery] = await Promise.all([
         listAppointmentsHydrated({
           tenantId: currentTenant.id,
           rangeStart: today.start.toISOString(),
@@ -52,6 +52,7 @@ export function useDashboardData() {
           .select("id", { count: "exact", head: true })
           .eq("tenant_id", currentTenant.id)
           .gte("created_at", weekStart.toISOString()),
+        supabase.rpc("get_tenant_ltv_estimate", { _tenant_id: currentTenant.id }),
       ]);
 
       // Calculate aggregated metrics
