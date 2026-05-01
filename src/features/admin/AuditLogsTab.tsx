@@ -287,7 +287,17 @@ export function AuditLogsTab({
               variant="ghost" 
               className="h-7 w-7" 
               disabled={page >= totalPages - 1 || loading}
-              onClick={() => setPage(p => p + 1)}
+              onClick={() => {
+                const lastRow = rows[rows.length - 1];
+                if (lastRow) {
+                  setCursors(prev => {
+                    const next = [...prev];
+                    next[page + 1] = { id: lastRow.id, timestamp: lastRow.created_at };
+                    return next;
+                  });
+                  setPage(p => p + 1);
+                }
+              }}
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
