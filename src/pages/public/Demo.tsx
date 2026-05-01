@@ -126,61 +126,126 @@ export default function DemoPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                   >
-                    <div className="mb-8 md:mb-10 text-center">
-                      <h3 className="text-2xl font-display font-bold text-primary-dark mb-2">Escolha um horário</h3>
-                      <p className="text-sm text-muted-foreground font-light">Selecione o melhor momento para sua demonstração</p>
-                    </div>
+                    {demoStep === 'calendar' && (
+                      <>
+                        <div className="mb-8 md:mb-10 text-center">
+                          <h3 className="text-2xl font-display font-bold text-primary-dark mb-2">Escolha um dia</h3>
+                          <p className="text-sm text-muted-foreground font-light">Selecione uma data disponível</p>
+                        </div>
 
-                    <div className="grid grid-cols-7 gap-1 md:gap-2 mb-8 md:mb-10">
-                      {["D", "S", "T", "Q", "Q", "S", "S"].map((day, i) => (
-                        <div key={i} className="text-center text-[10px] font-bold text-muted-foreground uppercase py-2">{day}</div>
-                      ))}
-                      {Array.from({ length: 31 }).map((_, i) => {
-                        const day = i + 1;
-                        const isAvailable = day > 10 && day < 25;
-                        const isSelected = day === selectedDay;
-                        return (
-                          <button 
-                            key={i} 
-                            onClick={() => handleDaySelect(day, isAvailable)}
-                            type="button"
-                            aria-label={`Dia ${day}${isSelected ? " - selecionado" : ""}${!isAvailable ? " - indisponível" : ""}`}
+                        <div className="grid grid-cols-7 gap-1 md:gap-2 mb-8 md:mb-10">
+                          {["D", "S", "T", "Q", "Q", "S", "S"].map((day, i) => (
+                            <div key={i} className="text-center text-[10px] font-bold text-muted-foreground uppercase py-2">{day}</div>
+                          ))}
+                          {Array.from({ length: 31 }).map((_, i) => {
+                            const day = i + 1;
+                            const isAvailable = day > 10 && day < 25;
+                            const isSelected = day === selectedDay;
+                            return (
+                              <button 
+                                key={i} 
+                                onClick={() => handleDaySelect(day, isAvailable)}
+                                type="button"
+                                className={cn(
+                                  "aspect-square rounded-xl flex items-center justify-center text-xs md:text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-accent",
+                                  isSelected ? "bg-accent text-white shadow-lg scale-110 z-10" : 
+                                  isAvailable ? "hover:bg-accent/10 cursor-pointer text-primary-dark" : "text-muted-foreground/20 cursor-not-allowed"
+                                )}
+                              >
+                                {day}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </>
+                    )}
+
+                    {demoStep === 'service' && (
+                      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4 py-4">
+                        <div className="text-center mb-6">
+                          <h3 className="text-2xl font-display font-bold text-primary-dark">Qual o serviço?</h3>
+                          <button onClick={() => setDemoStep('calendar')} className="text-[10px] text-accent font-bold uppercase tracking-widest mt-1 hover:underline">Voltar para o dia</button>
+                        </div>
+                        {services.map(s => (
+                          <button
+                            key={s.id}
+                            onClick={() => handleServiceSelect(s.name)}
                             className={cn(
-                              "aspect-square rounded-xl flex items-center justify-center text-xs md:text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-accent",
-                              isSelected ? "bg-accent text-white shadow-lg scale-110 z-10" : 
-                              isAvailable ? "hover:bg-accent/10 cursor-pointer text-primary-dark" : "text-muted-foreground/20 cursor-not-allowed"
+                              "w-full p-4 rounded-2xl border transition-all text-left flex justify-between items-center group",
+                              selectedService === s.name ? "border-accent bg-accent/5" : "border-border/40 hover:border-accent/30"
                             )}
                           >
-                            {day}
+                            <div>
+                              <p className="text-sm font-bold text-primary-dark">{s.name}</p>
+                              <p className="text-[10px] text-muted-foreground">Especialista disponível</p>
+                            </div>
+                            <span className="text-sm font-display font-bold text-accent">{s.price}</span>
                           </button>
-                        );
-                      })}
-                    </div>
+                        ))}
+                      </motion.div>
+                    )}
 
-                    <div className="space-y-3 md:space-y-4">
-                      <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#FAF7F9] border border-border/20">
-                        <Calendar className="h-5 w-5 text-accent" />
-                        <div className="flex-1">
-                          <p className="text-xs font-bold text-primary-dark">{selectedDay} de Maio, 2026</p>
-                          <p className="text-[10px] text-muted-foreground">Dia selecionado</p>
+                    {demoStep === 'time' && (
+                      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4 py-4">
+                        <div className="text-center mb-6">
+                          <h3 className="text-2xl font-display font-bold text-primary-dark">Escolha um horário</h3>
+                          <button onClick={() => setDemoStep('service')} className="text-[10px] text-accent font-bold uppercase tracking-widest mt-1 hover:underline">Alterar serviço</button>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#FAF7F9] border border-border/20">
-                        <Clock className="h-5 w-5 text-accent" />
-                        <div className="flex-1">
-                          <p className="text-xs font-bold text-primary-dark">09:30 — 09:45 (15 min)</p>
-                          <p className="text-[10px] text-muted-foreground">Horário de Brasília</p>
+                        <div className="grid grid-cols-3 gap-3">
+                          {times.map(t => (
+                            <button
+                              key={t}
+                              onClick={() => handleTimeSelect(t)}
+                              className={cn(
+                                "py-3 rounded-xl border text-center text-xs font-bold transition-all",
+                                selectedTime === t ? "bg-accent text-white border-accent shadow-md" : "border-border/40 hover:border-accent/30 text-primary-dark"
+                              )}
+                            >
+                              {t}
+                            </button>
+                          ))}
                         </div>
-                      </div>
-                    </div>
+                      </motion.div>
+                    )}
 
-                    <Button 
-                      onClick={handleConfirm}
-                      className="w-full h-14 mt-8 md:mt-10 rounded-2xl bg-primary-dark text-white font-bold tracking-tight hover:scale-[1.02] transition-transform focus:outline-none focus:ring-4 focus:ring-accent/50"
-                      aria-label="Confirmar agendamento da demonstração"
-                    >
-                      Confirmar Agendamento
-                    </Button>
+                    {demoStep === 'confirm' && (
+                      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6 py-4">
+                        <div className="text-center mb-6">
+                          <h3 className="text-2xl font-display font-bold text-primary-dark">Quase lá!</h3>
+                          <p className="text-xs text-muted-foreground">Confirme os detalhes abaixo</p>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="p-4 rounded-2xl bg-[#FAF7F9] border border-border/20 flex items-center gap-4">
+                            <Calendar className="h-5 w-5 text-accent" />
+                            <div className="flex-1">
+                              <p className="text-xs font-bold text-primary-dark">{selectedDay} de Maio, 2026</p>
+                              <p className="text-[10px] text-muted-foreground">Data da demonstração</p>
+                            </div>
+                          </div>
+                          <div className="p-4 rounded-2xl bg-[#FAF7F9] border border-border/20 flex items-center gap-4">
+                            <Clock className="h-5 w-5 text-accent" />
+                            <div className="flex-1">
+                              <p className="text-xs font-bold text-primary-dark">{selectedTime} (15 min)</p>
+                              <p className="text-[10px] text-muted-foreground">Horário selecionado</p>
+                            </div>
+                          </div>
+                          <div className="p-4 rounded-2xl bg-[#FAF7F9] border border-border/20 flex items-center gap-4">
+                            <Sparkles className="h-5 w-5 text-accent" />
+                            <div className="flex-1">
+                              <p className="text-xs font-bold text-primary-dark">{selectedService}</p>
+                              <p className="text-[10px] text-muted-foreground">Serviço de foco</p>
+                            </div>
+                          </div>
+                        </div>
+                        <Button 
+                          onClick={handleConfirm}
+                          className="w-full h-14 mt-4 rounded-2xl bg-primary-dark text-white font-bold tracking-tight hover:scale-[1.02] transition-transform"
+                        >
+                          Agendar Demonstração
+                        </Button>
+                        <button onClick={() => setDemoStep('time')} className="w-full text-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-accent">Voltar e ajustar</button>
+                      </motion.div>
+                    )}
                   </motion.div>
                 ) : (
                   <motion.div
@@ -194,7 +259,7 @@ export default function DemoPage() {
                     </div>
                     <h3 className="text-2xl md:text-3xl font-display font-bold text-primary-dark mb-4">Agendado!</h3>
                     <p className="text-muted-foreground max-w-xs mx-auto mb-8 leading-relaxed">
-                      Sua demonstração foi marcada para o dia <span className="font-bold text-primary-dark">{selectedDay} de Maio às 09:30</span>.
+                      Sua demonstração foi marcada para o dia <span className="font-bold text-primary-dark">{selectedDay} de Maio às {selectedTime}</span>.
                     </p>
                     <div className="inline-flex items-center gap-2 text-accent text-sm font-bold uppercase tracking-widest animate-pulse">
                       Redirecionando para o onboarding...
