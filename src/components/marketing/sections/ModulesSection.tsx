@@ -74,7 +74,7 @@ export function ModulesSection() {
         {modules.map((module, idx) => (
           <div 
             key={idx} 
-            className="group relative bg-white rounded-[3rem] border border-border/30 p-8 md:p-14 transition-all duration-700 hover:border-accent/40 hover:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.08)] overflow-hidden"
+            className="group relative bg-white rounded-[2rem] md:rounded-[3rem] border border-border/30 p-8 md:p-14 transition-all duration-700 hover:border-accent/40 hover:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.08)] overflow-hidden"
           >
             {/* Background Identifier - Editorial Detail */}
             <div className="absolute -top-6 -right-6 text-[12rem] font-display font-bold text-primary-dark/[0.03] select-none pointer-events-none transition-all duration-1000 group-hover:text-accent/[0.08] group-hover:scale-110">
