@@ -120,8 +120,8 @@ export default function Onboarding() {
   const steps = useMemo(
     () => [
       { id: 1, title: "Negócio", icon: Building2 },
-      { id: 2, title: "Branding & Unidade", icon: Palette },
-      { id: 3, title: "Equipe", icon: UserPlus },
+      { id: 2, title: "Equipe & Serviços", icon: Palette },
+      { id: 3, title: "Branding", icon: Sparkles },
       { id: 4, title: "Pronto", icon: Rocket },
     ],
     [],
@@ -232,6 +232,34 @@ export default function Onboarding() {
         }
       }
 
+      // Criar profissionais e serviços rascunhados
+      for (const proName of proDrafts) {
+        await supabase.from("professionals").insert({
+          tenant_id: result.tenantId,
+          display_name: proName,
+          is_active: true
+        });
+      }
+
+      for (const svc of serviceDrafts) {
+        const { data: svcData } = await supabase.from("services").insert({
+          tenant_id: result.tenantId,
+          name: svc.name,
+          duration_minutes: 30,
+          is_active: true
+        }).select("id").single();
+
+        if (svcData) {
+          await supabase.from("service_prices").insert({
+            tenant_id: result.tenantId,
+            service_id: svcData.id,
+            amount_cents: parseInt(svc.price) * 100,
+            currency: currency || 'BRL',
+            is_default: true
+          });
+        }
+      }
+
       setCurrentTenantId(result.tenantId);
       setCurrentUnitId(result.unitId);
       await refresh();
@@ -245,6 +273,19 @@ export default function Onboarding() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const [serviceDrafts, setServiceDrafts] = useState<Array<{ name: string, price: string }>>([]);
+  const [proDrafts, setProDrafts] = useState<string[]>([]);
+
+  const addServiceDraft = (name: string, price: string) => {
+    if (!name.trim()) return;
+    setServiceDrafts([...serviceDrafts, { name, price }]);
+  };
+
+  const addProDraft = (name: string) => {
+    if (!name.trim()) return;
+    setProDrafts([...proDrafts, name]);
   };
 
   // ----- Render -----
