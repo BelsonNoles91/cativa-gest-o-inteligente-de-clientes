@@ -127,6 +127,7 @@ export function GlobalSearch({
     [appointments],
   );
 
+
   function go(to: string) {
     setOpen(false);
     navigate(to);
