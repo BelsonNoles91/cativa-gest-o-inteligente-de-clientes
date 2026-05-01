@@ -14,7 +14,9 @@ import {
   AlarmClock,
   Stethoscope,
   Hourglass,
+  Search,
 } from "lucide-react";
+
 import { PageHeader } from "@/components/shell/PageHeader";
 import { PageActionCluster, PrimaryAction } from "@/components/shell/PageActionCluster";
 import { EmptyState } from "@/components/feedback/EmptyState";
