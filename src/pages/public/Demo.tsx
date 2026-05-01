@@ -115,7 +115,7 @@ export default function DemoPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="bg-white rounded-[2.5rem] border border-border/40 p-6 md:p-8 lg:p-12 shadow-2xl relative overflow-hidden min-h-[600px] flex flex-col justify-center w-full max-w-xl mx-auto"
+              className="bg-white rounded-[1.5rem] md:rounded-[2.5rem] border border-border/40 p-4 md:p-8 lg:p-12 shadow-2xl relative overflow-hidden min-h-[500px] md:min-h-[600px] flex flex-col justify-center w-full max-w-xl mx-auto"
             >
               <div className="absolute top-0 left-0 w-full h-2 bg-accent" />
               
