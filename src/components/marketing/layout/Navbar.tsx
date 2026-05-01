@@ -102,14 +102,14 @@ export function Navbar() {
             
             <div className="flex flex-col gap-10 overflow-y-auto">
               {navLinks.map((link) => (
-                <a 
+                <Link 
                   key={link.name}
-                  href={link.href} 
+                  to={link.href.startsWith('/') ? link.href : `/${link.href}`} 
                   className="text-4xl font-display font-bold text-primary-dark" 
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {link.name}
-                </a>
+                </Link>
               ))}
             </div>
 
