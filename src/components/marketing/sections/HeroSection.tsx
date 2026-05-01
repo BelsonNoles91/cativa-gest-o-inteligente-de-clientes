@@ -83,8 +83,8 @@ export function HeroSection() {
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4 mb-8">
             <div className="flex flex-col gap-2">
-              <Button asChild size="lg" variant="premium" className="group relative overflow-hidden h-16 px-8" aria-label="Começar teste gratuito de 14 dias">
-                <Link to="/onboarding">
+              <Button asChild size="lg" variant="premium" className="group relative overflow-hidden h-16 px-8 flex-1" aria-label="Começar teste gratuito de 14 dias">
+                <Link to="/onboarding" className="w-full h-full flex items-center justify-center">
                   <span className="relative z-10 flex items-center gap-2">
                     Começar teste grátis
                     <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -95,9 +95,9 @@ export function HeroSection() {
               <span className="text-[10px] text-muted-foreground font-medium text-center px-2">Experimente os principais fluxos sem compromisso.</span>
             </div>
             
-            <div className="flex flex-col gap-2">
-              <Button asChild variant="outline" size="lg" className="h-16 px-8 rounded-full border-primary-dark/20 bg-primary text-primary-dark hover:text-white hover:border-primary-dark" aria-label="Agendar demonstração personalizada">
-                <Link to="/demo">Agendar demonstração</Link>
+            <div className="flex flex-col gap-2 flex-1">
+              <Button asChild variant="outline" size="lg" className="h-16 px-8 rounded-full border-primary-dark/20 bg-primary text-primary-dark hover:text-white hover:border-primary-dark flex-1" aria-label="Agendar demonstração personalizada">
+                <Link to="/demo" className="w-full h-full flex items-center justify-center">Agendar demonstração</Link>
               </Button>
               <span className="text-[10px] text-muted-foreground font-medium text-center px-2">Veja a Cativa aplicada ao seu tipo de negócio.</span>
             </div>
