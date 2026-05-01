@@ -197,12 +197,16 @@
   .pt-safe {
     padding-top: max(env(safe-area-inset-top), 0rem);
   }
+  .pt-safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
   .pl-safe {
     padding-left: env(safe-area-inset-left);
   }
   .pr-safe {
     padding-right: env(safe-area-inset-right);
   }
+
   /* Altura do bottom nav + safe inset (usado para deixar espaço no main) */
   .pb-bottom-nav {
     padding-bottom: calc(4.25rem + env(safe-area-inset-bottom));
