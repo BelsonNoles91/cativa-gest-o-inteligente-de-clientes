@@ -56,9 +56,9 @@ export function HeroSection() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="font-display text-[2.5rem] sm:text-6xl md:text-7xl xl:text-[7rem] leading-[0.95] tracking-tight text-primary-dark mb-8 relative"
           >
-            <span className="relative z-10">Fidelize seus clientes <br className="hidden sm:block" />
+            <span className="relative z-10">O sistema que faz <br className="hidden sm:block" />
             <span className="relative inline-block">
-              com mais retorno
+              seu cliente voltar
               <motion.svg 
                 initial={{ pathLength: 0, opacity: 0 }}
                 animate={{ pathLength: 1, opacity: 1 }}
@@ -69,7 +69,7 @@ export function HeroSection() {
               </motion.svg>
             </span>
             {" "}— através de <br className="hidden sm:block" />
-            uma <span className="italic font-normal serif text-accent">operação organizada.</span></span>
+            uma <span className="italic font-normal serif text-accent">gestão inteligente.</span></span>
           </motion.h1>
 
           <motion.p 
