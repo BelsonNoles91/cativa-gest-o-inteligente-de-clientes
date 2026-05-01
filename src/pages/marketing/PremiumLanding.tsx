@@ -173,9 +173,9 @@ export default function PremiumLanding() {
                 <p className={cn("text-xs font-bold uppercase tracking-widest mb-4", plan.highlight ? "text-accent" : "text-muted-foreground")}>
                   {plan.name}
                 </p>
-                <div className="flex items-baseline gap-2 mb-8">
-                  <span className="text-sm font-bold opacity-60">R$</span>
-                  <span className="text-6xl font-display font-bold">{plan.price}</span>
+                <div className="flex items-baseline gap-2 mb-8 text-primary-dark">
+                  <span className="text-xl font-bold opacity-60">R$</span>
+                  <span className="text-7xl font-display font-bold tracking-tighter">{plan.price}</span>
                   <span className="text-sm font-bold opacity-60">/mês</span>
                 </div>
                 <p className={cn("text-lg font-light mb-10 leading-relaxed", plan.highlight ? "text-white/70" : "text-muted-foreground")}>
