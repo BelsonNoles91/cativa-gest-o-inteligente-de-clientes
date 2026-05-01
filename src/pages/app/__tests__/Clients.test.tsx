@@ -5,6 +5,7 @@ import { BrowserRouter } from "react-router-dom";
 import { TenantProvider } from "@/features/tenant/TenantProvider";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { TenantBillingProvider } from "@/features/billing/TenantBillingProvider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as clientsRepo from "@/repositories/clients";
 import * as schedulingRepo from "@/repositories/scheduling";
@@ -19,6 +20,7 @@ vi.mock("@/integrations/supabase/client", () => ({
       eq: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
       maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
     })),
     auth: {
@@ -39,13 +41,16 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
       <AuthProvider>
         <TenantProvider>
           <TenantBillingProvider>
-            {children}
+            <TooltipProvider>
+              {children}
+            </TooltipProvider>
           </TenantBillingProvider>
         </TenantProvider>
       </AuthProvider>
     </QueryClientProvider>
   </BrowserRouter>
 );
+
 
 
 describe("ClientsPage Integration", () => {
