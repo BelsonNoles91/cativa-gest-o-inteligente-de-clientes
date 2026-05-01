@@ -448,99 +448,105 @@ export default function Onboarding() {
 
       {/* Step 2 — Branding + unidade */}
       {step === 2 && (
-        <div className="space-y-4 animate-fade-in">
-          <h1 className="text-2xl font-semibold">Identidade & primeira unidade</h1>
-          <p className="text-sm text-muted-foreground">Escolha cores e cadastre a unidade principal. Você pode mudar depois.</p>
+        <div className="space-y-8 animate-fade-in">
+          <header className="space-y-4">
+            <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent border border-accent/20">
+              Passo 02
+            </div>
+            <h1 className="font-display text-4xl font-bold tracking-tight text-primary-dark">
+              Identidade & Unidade
+            </h1>
+            <p className="text-lg font-light leading-relaxed text-muted-foreground">
+              Escolha suas cores e cadastre a unidade principal do seu negócio.
+            </p>
+          </header>
 
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { v: brandPrimary, set: setBrandPrimary, l: "Primária" },
-              { v: brandSecondary, set: setBrandSecondary, l: "Secundária" },
-              { v: brandAccent, set: setBrandAccent, l: "Acento" },
-            ].map((c) => (
-              <div key={c.l} className="space-y-2">
-                <Label>{c.l}</Label>
-                <div className="flex items-center gap-2 rounded-xl border border-border/70 px-2 h-11">
-                  <input type="color" value={c.v} onChange={(e) => c.set(e.target.value)} className="h-7 w-7 cursor-pointer rounded" />
-                  <Input value={c.v} onChange={(e) => c.set(e.target.value)} className="h-9 border-0 px-1 text-xs shadow-none focus-visible:ring-0" />
+          <div className="space-y-6">
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { v: brandPrimary, set: setBrandPrimary, l: "Primária" },
+                { v: brandSecondary, set: setBrandSecondary, l: "Secundária" },
+                { v: brandAccent, set: setBrandAccent, l: "Acento" },
+              ].map((c) => (
+                <div key={c.l} className="space-y-2">
+                  <Label className="text-[10px] font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">{c.l}</Label>
+                  <div className="flex items-center gap-2 rounded-2xl border border-border/40 bg-[#FAF7F9] px-2 h-14">
+                    <input type="color" value={c.v} onChange={(e) => c.set(e.target.value)} className="h-8 w-8 cursor-pointer rounded-lg border-none bg-transparent" />
+                    <Input value={c.v} onChange={(e) => c.set(e.target.value)} className="h-9 border-0 px-1 text-xs shadow-none focus-visible:ring-0 bg-transparent font-mono" />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">Logo da Marca (opcional)</Label>
+              <div
+                className="flex items-center gap-4 rounded-[2rem] border-2 border-dashed border-border/40 p-4 bg-[#FAF7F9] group transition-all hover:border-accent/40"
+              >
+                <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl bg-white border border-border/20 shadow-sm transition-transform group-hover:scale-105">
+                  {logoPreview ? (
+                    <img src={logoPreview} alt="Pré-visualização do logo" className="h-full w-full object-contain p-2" />
+                  ) : (
+                    <ImagePlus className="h-8 w-8 text-muted-foreground/40" />
+                  )}
+                </div>
+                <div className="flex-1 space-y-2">
+                  <label
+                    htmlFor="onboarding-logo-input"
+                    className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-primary-dark/10 bg-white px-5 text-sm font-bold text-primary-dark hover:bg-accent hover:text-white transition-all shadow-sm"
+                  >
+                    <UploadCloud className="h-4 w-4" />
+                    {logoFile ? "Trocar logo" : "Escolher arquivo"}
+                  </label>
+                  <input
+                    id="onboarding-logo-input"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                    className="sr-only"
+                    onChange={(e) => onPickLogo(e.target.files?.[0] ?? null)}
+                  />
+                  {logoFile && (
+                    <button
+                      type="button"
+                      onClick={() => onPickLogo(null)}
+                      className="ml-3 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-destructive hover:underline"
+                    >
+                      <Trash2 className="h-3 w-3" /> Remover
+                    </button>
+                  )}
+                  <p className="text-[10px] text-muted-foreground/60 leading-tight">
+                    PNG, JPG ou SVG. Máx 2 MB.
+                  </p>
                 </div>
               </div>
-            ))}
-          </div>
-
-          <div className="space-y-2">
-            <Label>Logo (opcional)</Label>
-            <div
-              className="flex items-center gap-3 rounded-xl border border-dashed border-border/70 p-3"
-              data-testid="onboarding-logo-uploader"
-            >
-              <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-xl bg-muted/40">
-                {logoPreview ? (
-                  <img src={logoPreview} alt="Pré-visualização do logo" className="h-full w-full object-contain" />
-                ) : (
-                  <ImagePlus className="h-5 w-5 text-muted-foreground" />
-                )}
-              </div>
-              <div className="flex-1 space-y-1.5">
-                <label
-                  htmlFor="onboarding-logo-input"
-                  className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-input bg-background px-3 text-sm font-medium hover:bg-accent"
-                >
-                  <UploadCloud className="h-4 w-4" />
-                  {logoFile ? "Trocar imagem" : "Escolher imagem"}
-                </label>
-                <input
-                  id="onboarding-logo-input"
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                  className="sr-only"
-                  onChange={(e) => onPickLogo(e.target.files?.[0] ?? null)}
-                />
-                {logoFile && (
-                  <button
-                    type="button"
-                    onClick={() => onPickLogo(null)}
-                    className="ml-2 inline-flex items-center gap-1 text-xs text-destructive hover:underline"
-                  >
-                    <Trash2 className="h-3 w-3" /> Remover
-                  </button>
-                )}
-                <p className="text-[11px] text-muted-foreground">
-                  Enviaremos depois que o workspace for criado. PNG, JPG, SVG ou WebP. Máx 2 MB.
-                </p>
-              </div>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="un">Nome da unidade</Label>
-            <Input id="un" value={unitName} onChange={(e) => setUnitName(e.target.value)} className="h-11 rounded-xl" placeholder="Matriz" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="up">Telefone da unidade</Label>
-              <div className="relative">
-                <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input id="up" value={unitPhone} onChange={(e) => setUnitPhone(e.target.value)} className="h-11 rounded-xl pl-9" placeholder="(11) 0000-0000" />
-              </div>
+              <Label htmlFor="un" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">Nome da Unidade Principal</Label>
+              <Input id="un" value={unitName} onChange={(e) => setUnitName(e.target.value)} className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] text-base shadow-none transition-all focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/5" placeholder="Ex.: Unidade Matriz" />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="wp">WhatsApp do negócio</Label>
-              <div className="relative">
-                <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input id="wp" value={whatsappPhone} onChange={(e) => setWhatsappPhone(e.target.value)} className="h-11 rounded-xl pl-9" placeholder="(11) 99999-0000" />
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="up" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">Telefone de Contato</Label>
+                <div className="relative group">
+                  <Phone className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground group-focus-within:text-accent" />
+                  <Input id="up" value={unitPhone} onChange={(e) => setUnitPhone(e.target.value)} className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] pl-12 text-base shadow-none transition-all focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/5" placeholder="(11) 9999-9999" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="wp" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">WhatsApp Business</Label>
+                <div className="relative group">
+                  <Phone className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground group-focus-within:text-accent" />
+                  <Input id="wp" value={whatsappPhone} onChange={(e) => setWhatsappPhone(e.target.value)} className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] pl-12 text-base shadow-none transition-all focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/5" placeholder="(11) 99999-9999" />
+                </div>
               </div>
             </div>
           </div>
 
-          <p className="text-[11px] text-muted-foreground">
-            Lembre: o WhatsApp será usado para gerar mensagens e abrir conversas manualmente. Nenhum envio automático.
-          </p>
-
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setStep(1)} className="h-11 flex-1 rounded-xl">Voltar</Button>
-            <Button onClick={() => setStep(3)} className="h-11 flex-1 rounded-xl bg-gradient-brand">Continuar</Button>
+          <div className="flex gap-4 pt-4">
+            <Button variant="outline" onClick={() => setStep(1)} className="h-16 flex-1 rounded-full border-2 border-primary-dark/10 font-bold text-primary-dark hover:border-accent hover:text-accent">Voltar</Button>
+            <Button onClick={() => setStep(3)} className="h-16 flex-1 rounded-full bg-primary-dark font-bold text-white shadow-xl hover:bg-accent transition-all">Continuar</Button>
           </div>
         </div>
       )}
