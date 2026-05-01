@@ -130,6 +130,7 @@ export function AppHeader() {
           <Bell className="h-4 w-4" />
         </Button>
         <UserMenu />
+
       </div>
 
       {/* CommandDialog de busca controlado pelo botão mobile */}
