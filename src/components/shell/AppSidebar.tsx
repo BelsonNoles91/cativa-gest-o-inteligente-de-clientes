@@ -83,23 +83,25 @@ export function AppSidebar() {
                         asChild
                         tooltip={locked ? `${item.label} · plano necessário` : item.label}
                         isActive={active}
+                        className={cn(
+                          "group transition-all duration-200",
+                          active && "bg-primary/10 text-primary font-semibold"
+                        )}
                       >
                         <NavLink
                           to={item.to}
                           end={item.to === "/app"}
-                          className={cn(
-                            "group flex items-center gap-3 rounded-lg text-sm font-medium transition-colors",
-                            active
-                              ? "bg-primary-soft text-primary"
-                              : "text-foreground/75 hover:bg-muted hover:text-foreground",
-                          )}
+                          className="flex w-full items-center gap-3 px-2 py-1.5"
                         >
-                          <item.icon className="h-4 w-4 shrink-0" />
+                          <item.icon className={cn(
+                            "h-4 w-4 shrink-0 transition-transform group-hover:scale-110",
+                            active ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                          )} />
                           <span className="truncate">{item.label}</span>
                           {locked && !collapsed && (
                             <Lock
                               aria-label="Recurso bloqueado pelo plano"
-                              className="ml-auto h-3 w-3 text-muted-foreground"
+                              className="ml-auto h-3 w-3 text-muted-foreground/60"
                             />
                           )}
                         </NavLink>
