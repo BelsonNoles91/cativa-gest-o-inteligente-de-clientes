@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { SidebarNavItem } from "./SidebarNavItem";
+import { SidebarProvider, SidebarMenu } from "@/components/ui/sidebar";
 import { LayoutDashboard } from "lucide-react";
 import { describe, it, expect, vi } from "vitest";
 
@@ -14,13 +15,21 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
-const renderWithRouter = (ui: React.ReactElement) => {
-  return render(ui, { wrapper: BrowserRouter });
+const renderWithContext = (ui: React.ReactElement) => {
+  return render(
+    <BrowserRouter>
+      <SidebarProvider>
+        <SidebarMenu>
+          {ui}
+        </SidebarMenu>
+      </SidebarProvider>
+    </BrowserRouter>
+  );
 };
 
 describe("SidebarNavItem", () => {
   it("renders correctly with label", () => {
-    renderWithRouter(
+    renderWithContext(
       <SidebarNavItem 
         to="/dashboard" 
         label="Dashboard" 
@@ -32,7 +41,7 @@ describe("SidebarNavItem", () => {
   });
 
   it("shows active state style", () => {
-    renderWithRouter(
+    renderWithContext(
       <SidebarNavItem 
         to="/dashboard" 
         label="Dashboard" 
@@ -46,7 +55,7 @@ describe("SidebarNavItem", () => {
   });
 
   it("navigates on click and shows loading state", () => {
-    renderWithRouter(
+    renderWithContext(
       <SidebarNavItem 
         to="/dashboard" 
         label="Dashboard" 
@@ -63,7 +72,8 @@ describe("SidebarNavItem", () => {
   });
 
   it("prevents navigation when locked", () => {
-    renderWithRouter(
+    mockedUsedNavigate.mockClear();
+    renderWithContext(
       <SidebarNavItem 
         to="/admin" 
         label="Admin" 
@@ -75,13 +85,13 @@ describe("SidebarNavItem", () => {
     const link = screen.getByRole("menuitem");
     fireEvent.click(link);
     
-    expect(mockedUsedNavigate).not.toHaveBeenCalledWith("/admin");
+    expect(mockedUsedNavigate).not.toHaveBeenCalled();
     expect(link).toHaveAttribute("aria-disabled", "true");
   });
 
   it("supports keyboard navigation (Enter)", () => {
     mockedUsedNavigate.mockClear();
-    renderWithRouter(
+    renderWithContext(
       <SidebarNavItem 
         to="/settings" 
         label="Settings" 
