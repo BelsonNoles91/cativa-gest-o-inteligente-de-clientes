@@ -10,8 +10,7 @@ const FOOTER_LINKS = [
       { label: "Funcionalidades", href: "/#funcionalidades" },
       { label: "Módulos", href: "/#modulos" },
       { label: "Preços", href: "/#planos" },
-      { label: "Agendar demonstração", href: "/demo" },
-      { label: "Começar teste grátis", href: "/onboarding" },
+       { label: "Começar grátis", href: "/onboarding" },
     ],
   },
   {
@@ -89,14 +88,11 @@ export function PremiumFooter() {
            <div className="absolute inset-0 bg-secondary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
            <div className="relative z-10 text-center md:text-left">
               <h3 className="text-2xl md:text-3xl font-display font-bold mb-2">Pronta para profissionalizar sua clínica?</h3>
-              <p className="text-muted-foreground">Experimente por 14 dias sem compromisso ou agende uma demo.</p>
+              <p className="text-muted-foreground">Escolha o plano gratuito ou experimente os recursos premium por 14 dias.</p>
            </div>
            <div className="flex flex-col sm:flex-row gap-4 relative z-10 w-full md:w-auto">
-             <Button asChild variant="outline" size="lg" className="h-16 px-8 rounded-full border-primary-dark/20 hover:bg-secondary/10">
-                <Link to="/demo">Agendar demonstração</Link>
-             </Button>
              <Button asChild size="lg" className="h-16 px-10 rounded-full bg-primary-dark text-white shadow-xl">
-                <Link to="/onboarding">Começar teste grátis</Link>
+                <Link to="/onboarding">Começar agora grátis</Link>
              </Button>
            </div>
         </div>
