@@ -373,17 +373,17 @@ export default function PremiumLanding() {
                        <h2 className="font-display text-5xl md:text-6xl text-primary-dark tracking-tighter leading-none mb-8">Dúvidas <br />Comuns.</h2>
                        <p className="text-muted-foreground font-light text-lg mb-10">Tudo o que você precisa saber para elevar seu negócio hoje.</p>
                        <Button asChild size="lg" className="rounded-full bg-primary-dark text-white px-8 py-6 h-auto text-sm font-bold uppercase tracking-widest gap-2 hover:scale-[1.02] transition-all shadow-lg">
-                          <Link to="/demo" className="flex items-center gap-2">Agendar demonstração <ArrowRight className="h-4 w-4" /></Link>
+                          <Link to="/onboarding" className="flex items-center gap-2">Começar agora grátis <ArrowRight className="h-4 w-4" /></Link>
                        </Button>
                     </div>
                  </div>
                   <div className="lg:w-2/3 space-y-4 px-4 md:px-0">
                     {[
                       { q: "A Cativa serve para o meu tipo de negócio?", a: "Sim. A plataforma foi pensada para clínicas de estética, salões de beleza, barbearias, esmalterias, profissionais de cílios e sobrancelhas, massagem e negócios de bem-estar que buscam um nível superior de gestão." },
-                      { q: "Como funciona a demonstração?", a: "Nossa demonstração é um tour guiado por um especialista que entende o seu cenário. Mostramos como a Cativa resolve seus problemas específicos em 15 minutos, sem compromisso." },
-                      { q: "Posso testar antes de contratar?", a: "Com certeza. Oferecemos 14 dias de teste grátis com acesso total às principais funcionalidades para que você sinta a diferença na sua rotina real antes de decidir." },
+                      { q: "Como começo a usar o Cativa?", a: "É simples: basta clicar em 'Começar agora grátis'. Em menos de 1 minuto você terá acesso ao seu workspace para configurar sua agenda e profissionais." },
+                      { q: "Posso testar os recursos premium?", a: "Sim. Todos os novos cadastros recebem 14 dias de acesso total aos recursos premium (Planos Empreendedor e Studio) para sentir a diferença na rotina antes de decidir." },
                       { q: "O sistema usa API oficial de WhatsApp?", a: "Não. A Cativa utiliza uma central de confirmação inteligente baseada em links diretos (wa.me), o que garante estabilidade total, evita bloqueios de números e elimina taxas abusivas por mensagem, mantendo o processo 100% sob seu controle." },
-                      { q: "Consigo falar com um especialista agora?", a: "Sim! Você pode clicar no botão de WhatsApp em nosso rodapé ou agendar uma demonstração completa para tirar dúvidas específicas sobre o seu negócio." },
+                      { q: "Consigo falar com um especialista agora?", a: "Sim! Você pode clicar no botão de WhatsApp em nosso rodapé para tirar dúvidas específicas sobre o seu negócio com nosso time especializado." },
                       { q: "Funciona para quem tem mais de uma unidade?", a: "Sim. A estrutura da Cativa foi desenhada para crescer com você, permitindo a gestão de múltiplas unidades com visão consolidada ou individualizada por local." },
                       { q: "Consigo acessar pelo celular?", a: "A Cativa é mobile-first. Isso significa que você e sua equipe têm uma experiência completa e fluida diretamente pelo navegador do celular, sem precisar baixar aplicativos pesados." }
                     ].map((item, i) => (
@@ -430,23 +430,23 @@ export default function PremiumLanding() {
               
                <div className="flex flex-col sm:flex-row justify-center items-center gap-6 mb-24">
                   <div className="flex flex-col gap-2">
-                    <Button asChild size="lg" variant="premium" className="group relative overflow-hidden h-20 px-12" aria-label="Solicitar demonstração gratuita">
-                       <Link to="/demo">
+                    <Button asChild size="lg" variant="premium" className="group relative overflow-hidden h-20 px-12">
+                       <Link to="/onboarding">
                          <span className="relative z-10 flex items-center gap-3 text-xl">
-                           Agendar demonstração
+                           Começar Agora Grátis
                            <ArrowRight className="h-6 w-6" />
                          </span>
                          <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover:translate-y-0" />
                        </Link>
                     </Button>
-                    <span className="text-xs text-white/40 font-bold uppercase tracking-widest">Veja a Cativa aplicada ao seu negócio.</span>
+                    <span className="text-xs text-white/40 font-bold uppercase tracking-widest">Acesso imediato à sua nova gestão.</span>
                   </div>
                   
                   <div className="flex flex-col gap-2">
-                    <Button asChild variant="outlineWhite" size="lg" className="h-20 px-12 rounded-full border-white/20 hover:bg-white/10" aria-label="Começar teste gratuito de 14 dias">
-                       <Link to="/onboarding" className="text-xl">Começar teste grátis</Link>
+                    <Button asChild variant="outlineWhite" size="lg" className="h-20 px-12 rounded-full border-white/20 hover:bg-white/10">
+                       <Link to="/auth/login" className="text-xl">Já tenho uma conta</Link>
                     </Button>
-                    <span className="text-xs text-white/40 font-bold uppercase tracking-widest">Experimente agora sem compromisso.</span>
+                    <span className="text-xs text-white/40 font-bold uppercase tracking-widest">Faça login para continuar sua operação.</span>
                   </div>
                </div>
                
@@ -482,10 +482,10 @@ export default function PremiumLanding() {
           >
             <div className="flex gap-3">
               <Button asChild variant="outline" className="flex-1 rounded-full border-primary-dark/20 h-14 font-bold text-xs uppercase tracking-widest">
-                <Link to="/demo">Demo</Link>
+                <Link to="/auth/login">Entrar</Link>
               </Button>
               <Button asChild className="flex-1 rounded-full bg-primary-dark h-14 font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20">
-                <Link to="/onboarding">Teste Grátis</Link>
+                <Link to="/onboarding">Começar Grátis</Link>
               </Button>
             </div>
           </motion.div>

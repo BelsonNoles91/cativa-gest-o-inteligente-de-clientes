@@ -22,7 +22,6 @@ export function Navbar() {
     { name: "Módulos", href: "#modulos" },
     { name: "Métricas", href: "#metricas" },
     { name: "Planos", href: "/planos" },
-    { name: "Demonstração", href: "/demo" },
     { name: "Dúvidas", href: "#duvidas" },
   ];
 
@@ -77,11 +76,8 @@ export function Navbar() {
           <Link to="/auth/login" className="text-[10px] font-bold uppercase tracking-widest text-primary-dark hover:text-accent transition-colors px-6">
             Entrar
           </Link>
-          <Button asChild variant="outline" size="sm" className="px-8 border-primary-dark/20 hover:bg-primary-dark hover:text-white transition-all duration-300">
-            <Link to="/demo">Demonstração</Link>
-          </Button>
           <Button asChild variant="premium" size="sm" className="px-8 shadow-lg shadow-accent/20">
-            <Link to="/onboarding">Começar Agora</Link>
+            <Link to="/onboarding">Começar Grátis</Link>
           </Button>
         </div>
 
@@ -125,10 +121,7 @@ export function Navbar() {
 
             <div className="mt-auto space-y-6">
                <Button asChild size="lg" className="w-full h-16 rounded-2xl bg-accent text-xl">
-                  <Link to="/onboarding">Começar Agora</Link>
-               </Button>
-               <Button asChild size="lg" variant="outline" className="w-full h-16 rounded-2xl text-xl">
-                  <Link to="/demo">Agendar Demonstração</Link>
+                  <Link to="/onboarding">Começar Agora Grátis</Link>
                </Button>
                 <Button variant="ghost" asChild size="lg" className="w-full h-16 rounded-2xl text-xl">
                   <Link to="/auth/login" onClick={() => setMobileMenuOpen(false)}>Entrar</Link>
