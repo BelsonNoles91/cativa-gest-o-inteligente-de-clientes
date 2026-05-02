@@ -452,6 +452,11 @@ const SidebarMenuButton = React.forwardRef<
       data-active={isActive}
       className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
       {...props}
+      onClick={(e) => {
+        // Se for um link ou tiver asChild, deixamos o componente filho lidar com a navegação,
+        // mas garantimos que o evento não seja bloqueado por bolhas estranhas.
+        props.onClick?.(e);
+      }}
     />
   );
 
