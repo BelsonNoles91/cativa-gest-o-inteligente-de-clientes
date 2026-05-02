@@ -5,7 +5,7 @@
 import { useCallback, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { Lock } from "lucide-react";
-import { NavLink } from "@/components/NavLink";
+import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -88,9 +88,8 @@ export function AppSidebar() {
                           active && "bg-primary/10 text-primary font-semibold"
                         )}
                       >
-                        <NavLink
+                        <Link
                           to={item.to}
-                          end={item.to === "/app"}
                           className="flex w-full items-center gap-3 px-2 py-1.5"
                         >
                           <item.icon className={cn(
