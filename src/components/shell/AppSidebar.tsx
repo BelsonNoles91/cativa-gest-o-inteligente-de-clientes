@@ -4,6 +4,7 @@
  */
 import { useCallback, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { Lock } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
