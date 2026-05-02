@@ -57,11 +57,8 @@ export function PremiumHeader() {
           <Button asChild variant="ghost" className="text-sm px-4">
             <Link to="/auth/login">Entrar</Link>
           </Button>
-          <Button asChild variant="outline" className="rounded-xl h-10 px-5 text-sm font-bold">
-            <Link to="/demo">Demo</Link>
-          </Button>
           <Button asChild variant="premium" className="rounded-xl h-10 px-5 text-sm">
-            <Link to="/onboarding">Teste grátis</Link>
+            <Link to="/onboarding">Começar agora grátis</Link>
           </Button>
         </div>
 

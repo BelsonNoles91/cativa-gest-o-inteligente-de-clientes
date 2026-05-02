@@ -132,7 +132,7 @@ export function PlansSection() {
                     </p>
                   ) : plan.trial_days > 0 ? (
                     <p className={cn("text-center mt-2 text-[9px] font-bold uppercase tracking-widest opacity-40")}>
-                      {plan.trial_days} dias para testar sem compromisso
+                      Experimente todos os recursos por {plan.trial_days} dias
                     </p>
                   ) : (
                     <div className="h-6" /> // Spacer para manter alinhamento quando não há trial
