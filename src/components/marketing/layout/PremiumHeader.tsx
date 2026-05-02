@@ -118,11 +118,8 @@ export function PremiumHeader() {
                   <Button asChild variant="outline" size="lg" className="w-full rounded-xl">
                     <Link to="/auth/login" onClick={() => setMobileMenuOpen(false)}>Entrar</Link>
                   </Button>
-                  <Button asChild variant="outline" size="lg" className="w-full rounded-xl">
-                    <Link to="/demo" onClick={() => setMobileMenuOpen(false)}>Agendar Demo</Link>
-                  </Button>
                   <Button asChild variant="premium" size="lg" className="w-full rounded-xl">
-                    <Link to="/onboarding" onClick={() => setMobileMenuOpen(false)}>Começar Teste Grátis</Link>
+                    <Link to="/onboarding" onClick={() => setMobileMenuOpen(false)}>Começar agora grátis</Link>
                   </Button>
                 </div>
               </div>
