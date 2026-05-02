@@ -83,23 +83,23 @@ export function HeroSection() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-5 mb-10">
             <div className="flex flex-col gap-3 w-full sm:w-auto">
-              <Button asChild size="lg" variant="premium" className="group h-16 px-10 w-full sm:w-[300px] text-lg rounded-2xl" aria-label="Começar teste gratuito de 14 dias">
+              <Button asChild size="lg" variant="premium" className="group h-16 px-10 w-full sm:w-[300px] text-lg rounded-2xl" aria-label="Começar agora gratuitamente">
                 <Link to="/onboarding" className="flex items-center justify-center gap-2">
-                  Começar teste grátis
+                  Começar agora grátis
                   <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
               <p className="text-[11px] text-muted-foreground/70 font-medium text-center px-4 leading-tight">
-                Experimente os principais fluxos <br className="hidden sm:block" /> sem compromisso.
+                Crie sua conta em 30 segundos <br className="hidden sm:block" /> e organize sua agenda hoje.
               </p>
             </div>
             
             <div className="flex flex-col gap-3 w-full sm:w-auto">
-              <Button asChild variant="outline" size="lg" className="h-16 px-10 rounded-2xl w-full sm:w-[300px] text-lg font-bold" aria-label="Agendar demonstração personalizada">
-                <Link to="/demo">Agendar demonstração</Link>
+              <Button asChild variant="outline" size="lg" className="h-16 px-10 rounded-2xl w-full sm:w-[300px] text-lg font-bold" aria-label="Ver planos e preços">
+                <Link to="/planos">Ver planos e preços</Link>
               </Button>
               <p className="text-[11px] text-muted-foreground/70 font-medium text-center px-4 leading-tight">
-                Veja a Cativa aplicada <br className="hidden sm:block" /> ao seu tipo de negócio.
+                Opções para profissionais <br className="hidden sm:block" /> individuais até grandes clínicas.
               </p>
             </div>
           </div>
@@ -111,8 +111,8 @@ export function HeroSection() {
                 ))}
              </div>
               <p className="text-[10px] font-medium text-muted-foreground tracking-tight">
-                <span className="text-primary-dark font-bold">14 dias grátis</span>. Sem necessidade de cartão. <br />
-                Veja em poucos minutos como a Cativa se adapta à sua rotina.
+                <span className="text-primary-dark font-bold">Plano grátis vitalício</span>. Sem necessidade de cartão. <br />
+                Sua gestão profissional começa aqui, sem custos iniciais.
               </p>
           </div>
 

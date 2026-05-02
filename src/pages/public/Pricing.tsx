@@ -32,8 +32,12 @@ import { handleError } from "@/lib/error-handler";
 // ---------------------------------------------------------------------------
 const FAQ = [
   {
+    q: "O Cativa possui plano gratuito?",
+    a: "Sim! Oferecemos um plano gratuito vitalício para profissionais que estão começando, com limite de agendamentos mensais. Você pode migrar para um plano pago a qualquer momento.",
+  },
+  {
     q: "Preciso de cartão de crédito para começar?",
-    a: "Não. O trial de 14 dias é livre, sem cartão. Você só ativa o plano quando decidir.",
+    a: "Não para o plano gratuito ou para o período de testes dos planos pagos. Você só insere os dados de pagamento quando decidir assinar um plano premium.",
   },
   {
     q: "Posso trocar de plano depois?",
@@ -198,7 +202,7 @@ export default function Pricing() {
               Simples como precisa ser. Robusto como o seu negócio merece.
             </h1>
             <p className="mt-3 text-muted-foreground">
-              Trial de 14 dias em todos os planos. Sem cartão de crédito. Cancele quando quiser.
+              Plano gratuito para sempre ou trial de 14 dias nos planos premium. Sem cartão.
             </p>
 
             {availablePeriods.length > 1 && (
@@ -318,7 +322,7 @@ export default function Pricing() {
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Button asChild size="lg" className="h-12 rounded-xl bg-background px-6 text-foreground hover:bg-background/90">
               <Link to="/onboarding">
-                Começar trial grátis <ArrowRight className="ml-2 h-4 w-4" />
+                Começar agora grátis <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
           </div>
@@ -440,7 +444,7 @@ function PlanCard({
         )}
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
-        Trial de {trialDays} dias · sem cartão
+        {isFree ? "Grátis para sempre" : `Trial de ${trialDays} dias · sem cartão`}
       </p>
 
       <ul className="mt-6 flex-1 space-y-2.5 text-sm">

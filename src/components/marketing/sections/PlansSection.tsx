@@ -124,14 +124,13 @@ export function PlansSection() {
                     </Link>
                   </Button>
                   
-                  <Button asChild variant="ghost" className={cn(
-                    "w-full h-12 rounded-xl text-xs font-bold transition-all",
-                    isHighlight ? "text-white/60 hover:text-white" : "text-primary-dark/60 hover:text-primary-dark"
-                  )}>
-                    <Link to="/demo">Ver demonstração</Link>
-                  </Button>
+                  <div className="h-12" />
                   
-                  {plan.trial_days > 0 ? (
+                  {plan.code === 'free' ? (
+                    <p className={cn("text-center mt-2 text-[9px] font-bold uppercase tracking-widest opacity-40")}>
+                      Grátis para sempre para pequenos negócios
+                    </p>
+                  ) : plan.trial_days > 0 ? (
                     <p className={cn("text-center mt-2 text-[9px] font-bold uppercase tracking-widest opacity-40")}>
                       {plan.trial_days} dias para testar sem compromisso
                     </p>
