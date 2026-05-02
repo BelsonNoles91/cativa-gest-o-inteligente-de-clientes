@@ -14,10 +14,9 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { SidebarNavItem } from "./SidebarNavItem";
 import { navItems } from "@/config/navigation";
 import { Logo } from "@/components/brand/Logo";
 import { useTenant } from "@/features/tenant/TenantProvider";
@@ -73,40 +72,17 @@ export function AppSidebar() {
             {!collapsed && <SidebarGroupLabel>{groupLabels[g]}</SidebarGroupLabel>}
             <SidebarGroupContent>
               <SidebarMenu>
-                {items.map((item) => {
-                  const active = isActive(item.to);
-                  const locked = Boolean(item.featureKey) && !hasFeature(item.featureKey!);
-                  return (
-                    <SidebarMenuItem key={item.to}>
-                      <SidebarMenuButton
-                        asChild
-                        tooltip={locked ? `${item.label} · plano necessário` : item.label}
-                        isActive={active}
-                        className={cn(
-                          "group transition-all duration-200",
-                          active && "bg-primary/10 text-primary font-semibold"
-                        )}
-                      >
-                        <Link
-                          to={item.to}
-                          className="flex w-full items-center gap-3 px-2 py-1.5"
-                        >
-                          <item.icon className={cn(
-                            "h-4 w-4 shrink-0 transition-transform group-hover:scale-110",
-                            active ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
-                          )} />
-                          <span className="truncate">{item.label}</span>
-                          {locked && !collapsed && (
-                            <Lock
-                              aria-label="Recurso bloqueado pelo plano"
-                              className="ml-auto h-3 w-3 text-muted-foreground/60"
-                            />
-                          )}
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
+                {items.map((item) => (
+                  <SidebarNavItem
+                    key={item.to}
+                    to={item.to}
+                    label={item.label}
+                    icon={item.icon}
+                    isActive={isActive(item.to)}
+                    locked={Boolean(item.featureKey) && !hasFeature(item.featureKey!)}
+                    collapsed={collapsed}
+                  />
+                ))}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
