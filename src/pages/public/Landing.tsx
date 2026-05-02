@@ -240,16 +240,16 @@ export default function Landing() {
             <div className="flex flex-wrap items-center gap-3">
               <Button asChild size="lg" className="h-14 rounded-2xl bg-gradient-brand px-8 text-lg shadow-lg tap-feedback">
                 <Link to="/onboarding">
-                  Começar trial grátis <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                  Começar agora grátis <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="h-12 rounded-xl px-6">
-                <Link to="/planos">Ver planos</Link>
+                <Link to="/planos">Ver planos e preços</Link>
               </Button>
             </div>
             <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
               <li className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-3.5 w-3.5 text-success" /> 14 dias de trial
+                <CheckCircle2 className="h-3.5 w-3.5 text-success" /> Plano Grátis disponível
               </li>
               <li className="flex items-center gap-1.5">
                 <CheckCircle2 className="h-3.5 w-3.5 text-success" /> Sem cartão de crédito
