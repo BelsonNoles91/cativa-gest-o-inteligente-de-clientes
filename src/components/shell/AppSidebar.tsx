@@ -103,7 +103,7 @@ export function AppSidebar() {
                               className="ml-auto h-3 w-3 text-muted-foreground/60"
                             />
                           )}
-                        </NavLink>
+                        </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   );
