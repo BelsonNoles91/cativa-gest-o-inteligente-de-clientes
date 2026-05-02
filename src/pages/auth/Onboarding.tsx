@@ -386,7 +386,7 @@ export default function Onboarding() {
           <header className="space-y-4 text-center">
             <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent border border-accent/20">
               <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
-              14 dias de teste grátis
+              Conta Grátis Ativa
             </div>
             <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-primary-dark">
               Criar sua conta
@@ -394,7 +394,7 @@ export default function Onboarding() {
             <p className="text-lg font-light leading-relaxed text-muted-foreground">
               {pendingEmailConfirmation
                 ? "Quase lá! Enviamos um link de confirmação para o seu e-mail."
-                : "Junte-se às marcas de beleza que mais crescem."}
+                : "Comece agora e profissionalize sua gestão hoje mesmo."}
             </p>
           </header>
 
