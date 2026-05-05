@@ -91,7 +91,7 @@ export const navItems: NavItem[] = [
   },
   {
     to: "/app/analytics",
-    label: "Analytics",
+    label: "Relatórios",
     icon: BarChart3,
     roles: ["owner", "manager"],
     featureKey: "advanced_reports",
@@ -127,7 +127,7 @@ export const navItems: NavItem[] = [
   },
   {
     to: "/app/super-admin",
-    label: "Super Admin",
+    label: "Administração",
     icon: ShieldCheck,
     roles: ["super_admin"],
     group: "sistema",

@@ -172,7 +172,18 @@ export default function Billing() {
                           <p className="font-medium">{item.name}</p>
                           <p className="text-xs text-muted-foreground">{item.description ?? "Sem descrição"}</p>
                         </div>
-                        <span className="text-sm font-semibold">{formatPrice(item.priceCents, item.currency)}</span>
+                        <div className="text-right">
+                          {item.priceCents === 0 && !item.name.toLowerCase().includes("apoio") ? (
+                            <span className="text-sm font-semibold">Sob medida</span>
+                          ) : (
+                            <>
+                              <span className="text-sm font-semibold">{formatPrice(item.priceCents, item.currency)}</span>
+                              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">
+                                {item.billingPeriod === 'yearly' ? 'Anual' : item.billingPeriod === 'monthly' ? 'Mensal' : ''}
+                              </p>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}

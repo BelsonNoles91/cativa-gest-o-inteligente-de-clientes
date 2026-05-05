@@ -253,6 +253,43 @@ export function MembersTab() {
     }
   }
 
+  function handleForcePasswordReset(member: MemberRow) {
+    if (!member.userId) {
+      toast({ title: "Erro", description: "Usuário ainda não aceitou o convite (sem ID vinculado).", variant: "destructive" });
+      return;
+    }
+    const newPassword = Math.random().toString(36).slice(-10) + "C1!";
+    setConfirm({
+      title: "Forçar reset de senha?",
+      description: `Isto alterará a senha de ${member.email} e forçará a escolha de uma nova senha no próximo login. Continuar?`,
+      destructive: true,
+      action: async () => {
+        setSaving(true);
+        try {
+          const { error } = await supabase.rpc("admin_force_reset_password", {
+            target_user_id: member.userId,
+            new_raw_password: newPassword,
+          });
+          if (error) throw error;
+          
+          toast({ 
+            title: "Senha resetada com sucesso!", 
+            description: `A nova senha provisória é: ${newPassword} (informe ao usuário). Ele deverá alterá-la no próximo login.`,
+            duration: 15000
+          });
+        } catch (error) {
+          toast({
+            title: "Erro ao resetar senha",
+            description: String((error as Error)?.message ?? error),
+            variant: "destructive",
+          });
+        } finally {
+          setSaving(false);
+        }
+      }
+    });
+  }
+
   function handleStatusChange(member: MemberRow, newStatus: MembershipStatus) {
     if (newStatus === member.status) return;
     // Bloqueio cliente-side anti auto-suspensão (o servidor também bloqueia)
@@ -407,7 +444,7 @@ export function MembersTab() {
         <SummaryTile label="Total" value={stats.total} />
         <SummaryTile label="Ativos" value={stats.active} tone="success" />
         <SummaryTile label="Convidados" value={stats.invited} tone="warning" />
-        <SummaryTile label="Super admins" value={stats.supers} tone="brand" />
+        <SummaryTile label="Administradores" value={stats.supers} tone="brand" />
       </div>
 
       {loading ? (
@@ -563,6 +600,28 @@ export function MembersTab() {
                     </p>
                   )}
                 </div>
+
+                {editing.userId && (
+                  <div className="surface-card space-y-2 p-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="space-y-0.5">
+                        <p className="text-sm font-medium">Forçar Reset de Senha</p>
+                        <p className="text-xs text-muted-foreground">
+                          Gera uma senha aleatória e exige troca no próximo login.
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={saving}
+                        onClick={() => handleForcePasswordReset(editing)}
+                        className="h-8 text-xs border-destructive text-destructive hover:bg-destructive/10"
+                      >
+                        Resetar
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
                 <dl className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
                   <div>

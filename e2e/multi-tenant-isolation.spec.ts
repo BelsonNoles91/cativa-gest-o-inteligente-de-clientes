@@ -7,6 +7,9 @@ import { test, expect } from '@playwright/test';
  */
 
 test.describe('Isolamento Multi-Tenant e Hierarquia', () => {
+  
+  // Limpar sessão global para testar isolamento entre tenants
+  test.use({ storageState: { cookies: [], origins: [] } });
 
   const TENANT_A = {
     email: 'owner.a@cativa.test',
@@ -25,8 +28,8 @@ test.describe('Isolamento Multi-Tenant e Hierarquia', () => {
     const contextA = await browser.newContext();
     const pageA = await contextA.newPage();
     await pageA.goto('/auth/login');
-    await pageA.fill('input[name="email"]', TENANT_A.email);
-    await pageA.fill('input[name="password"]', TENANT_A.password);
+    await pageA.fill('input#email', TENANT_A.email);
+    await pageA.fill('input#password', TENANT_A.password);
     await pageA.click('button[type="submit"]');
     await pageA.click('nav >> text=Clientes');
     
@@ -34,8 +37,8 @@ test.describe('Isolamento Multi-Tenant e Hierarquia', () => {
     const contextB = await browser.newContext();
     const pageB = await contextB.newPage();
     await pageB.goto('/auth/login');
-    await pageB.fill('input[name="email"]', TENANT_B.email);
-    await pageB.fill('input[name="password"]', TENANT_B.password);
+    await pageB.fill('input#email', TENANT_B.email);
+    await pageB.fill('input#password', TENANT_B.password);
     await pageB.click('button[type="submit"]');
     await pageB.click('nav >> text=Clientes');
 
@@ -51,8 +54,8 @@ test.describe('Isolamento Multi-Tenant e Hierarquia', () => {
 
   test('Validação de Hierarquia: Manager não deve acessar Super Admin', async ({ page }) => {
     await page.goto('/auth/login');
-    await page.fill('input[name="email"]', 'manager@cativa.test');
-    await page.fill('input[name="password"]', 'Cativa@Test2026');
+    await page.fill('input#email', 'gerente@cativa.com');
+    await page.fill('input#password', 'senha123');
     await page.click('button[type="submit"]');
 
     // Tentar acessar rota protegida de Super Admin

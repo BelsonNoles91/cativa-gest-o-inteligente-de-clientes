@@ -1,19 +1,20 @@
 /**
  * Banner exibido quando o tenant atual não possui assinatura.
- * Oferece ação rápida para ativar um trial padrão.
+ *
+ * Comportamento por papel:
+ * - Owner/Manager → "Escolha um plano" (CTA para /app/assinatura)
+ * - Frontdesk/Professional → "Aguardando ativação do gestor" (sem CTA)
  *
  * Variantes:
  * - "panel"  → versão completa (Dashboard, etc.)
  * - "sidebar"→ versão compacta para o rodapé do sidebar
  */
-import { useState } from "react";
-import { Sparkles, Rocket, Loader2 } from "lucide-react";
+import { Sparkles, Rocket, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import { useTenantBilling } from "@/features/billing/useTenantBilling";
-import { activateDefaultTrial } from "@/services/billing/activateTrial";
 import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
 
 interface NoSubscriptionBannerProps {
   variant?: "panel" | "sidebar";
@@ -24,39 +25,13 @@ export function NoSubscriptionBanner({
   variant = "panel",
   className,
 }: NoSubscriptionBannerProps) {
-  const { currentTenant } = useTenant();
-  const { loading, subscription, refresh } = useTenantBilling();
-  const { toast } = useToast();
-  const [activating, setActivating] = useState(false);
+  const { currentTenant, isSuperAdmin, currentRole } = useTenant();
+  const { loading, subscription } = useTenantBilling();
 
-  // Não exibir enquanto carrega ou se já existe assinatura
-  if (loading || subscription || !currentTenant) return null;
+  // Não exibir enquanto carrega, se já existe assinatura ou se é Super Admin
+  if (loading || subscription || !currentTenant || isSuperAdmin) return null;
 
-  async function handleActivate() {
-    if (!currentTenant) return;
-    setActivating(true);
-    try {
-      const result = await activateDefaultTrial(currentTenant.id);
-      toast({
-        title: result.alreadyExisted
-          ? "Assinatura já estava ativa"
-          : "Trial ativado com sucesso",
-        description: result.alreadyExisted
-          ? `${result.plan.name} já está vinculado a ${currentTenant.name}.`
-          : `Você ganhou ${result.plan.trialDays} dias do plano ${result.plan.name}.`,
-      });
-      await refresh();
-    } catch (error) {
-      toast({
-        title: "Não foi possível ativar o trial",
-        description:
-          error instanceof Error ? error.message : "Erro inesperado ao iniciar o trial.",
-        variant: "destructive",
-      });
-    } finally {
-      setActivating(false);
-    }
-  }
+  const canManagePlan = currentRole === "owner" || currentRole === "manager";
 
   if (variant === "sidebar") {
     return (
@@ -67,28 +42,56 @@ export function NoSubscriptionBanner({
         )}
       >
         <div className="flex items-center gap-2">
-          <Sparkles className="h-3.5 w-3.5 text-warning-foreground" />
-          <p className="text-xs font-semibold text-warning-foreground">Sem assinatura</p>
+          {canManagePlan ? (
+            <Sparkles className="h-3.5 w-3.5 text-warning-foreground" />
+          ) : (
+            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+          )}
+          <p className="text-xs font-semibold text-warning-foreground">
+            {canManagePlan ? "Sem assinatura" : "Aguardando ativação"}
+          </p>
         </div>
         <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
-          Ative um trial padrão para liberar todos os módulos.
+          {canManagePlan
+            ? "Escolha um plano para liberar todos os módulos."
+            : "Seu gestor ainda não ativou um plano."}
         </p>
-        <Button
-          size="sm"
-          className="mt-2 h-8 w-full rounded-lg text-xs"
-          onClick={handleActivate}
-          disabled={activating}
-        >
-          {activating ? (
-            <>
-              <Loader2 className="mr-1.5 h-3 w-3 animate-spin" /> Ativando…
-            </>
-          ) : (
-            <>
-              <Rocket className="mr-1.5 h-3 w-3" /> Ativar trial
-            </>
-          )}
-        </Button>
+        {canManagePlan && (
+          <Button
+            size="sm"
+            className="mt-2 h-8 w-full rounded-lg text-xs"
+            asChild
+          >
+            <Link to="/app/assinatura">
+              <Rocket className="mr-1.5 h-3 w-3" /> Ver planos
+            </Link>
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  // Variante "panel"
+  if (!canManagePlan) {
+    return (
+      <div
+        className={cn(
+          "surface-card flex flex-wrap items-center gap-4 border-border/40 bg-muted/30 p-4 md:p-5",
+          className,
+        )}
+      >
+        <div className="flex flex-1 min-w-[280px] items-start gap-3">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-muted text-muted-foreground">
+            <Clock className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <p className="font-display text-base font-semibold">Aguardando ativação</p>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              O responsável pela equipe ainda não ativou um plano. Entre em contato
+              com seu gestor para liberar o acesso completo.
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -96,36 +99,29 @@ export function NoSubscriptionBanner({
   return (
     <div
       className={cn(
-        "surface-card flex flex-col gap-3 border-warning/30 bg-warning-soft/40 p-4 md:flex-row md:items-center md:justify-between md:p-5",
+        "surface-card flex flex-wrap items-center justify-between gap-4 border-warning/30 bg-warning-soft/40 p-4 md:p-5",
         className,
       )}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex flex-1 min-w-[280px] items-start gap-3">
         <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-warning text-warning-foreground">
           <Sparkles className="h-5 w-5" />
         </div>
         <div className="min-w-0">
           <p className="font-display text-base font-semibold">Sem assinatura ativa</p>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            Este tenant ainda não possui um plano vinculado. Ative o trial padrão para
-            destravar agenda, clientes, pacotes e relatórios sem cartão.
+            Sua conta ainda não possui um plano vinculado. Escolha um plano para
+            destravar agenda, clientes, pacotes e relatórios.
           </p>
         </div>
       </div>
       <Button
         className="rounded-xl bg-gradient-brand md:shrink-0"
-        onClick={handleActivate}
-        disabled={activating}
+        asChild
       >
-        {activating ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Ativando trial…
-          </>
-        ) : (
-          <>
-            <Rocket className="mr-2 h-4 w-4" /> Ativar trial padrão
-          </>
-        )}
+        <Link to="/app/assinatura">
+          <Rocket className="mr-2 h-4 w-4" /> Escolher um plano
+        </Link>
       </Button>
     </div>
   );

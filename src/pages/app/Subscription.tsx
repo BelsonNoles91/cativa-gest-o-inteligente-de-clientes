@@ -28,7 +28,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import { useTenantBilling } from "@/features/billing/useTenantBilling";
-import { activateDefaultTrial } from "@/services/billing/activateTrial";
+import { activateDefaultTrial, activateSpecificTrial } from "@/services/billing/activateTrial";
+import { WelcomePlanDialog } from "@/features/billing/WelcomePlanDialog";
 import { useToast } from "@/hooks/use-toast";
 import {
   billingPeriodLabels,
@@ -41,10 +42,12 @@ import {
 
 export default function Subscription() {
   const { currentTenant, currentRole, isSuperAdmin } = useTenant();
-  const { loading, subscription, plan, refresh } = useTenantBilling();
+  const { loading, subscription, plan, refresh, allPlans } = useTenantBilling();
   const { toast } = useToast();
   const [isActing, setIsActing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [welcomePlan, setWelcomePlan] = useState<any>(null);
+  const [isWelcomeOpen, setIsWelcomeOpen] = useState(false);
 
   const canManage = useMemo(
     () => isSuperAdmin || currentRole === "owner" || currentRole === "manager",
@@ -79,6 +82,32 @@ export default function Subscription() {
       } else if (/Nenhum plano/i.test(raw)) {
         friendly =
           "Nenhum plano padrão foi configurado. Peça ao suporte para publicar um plano marcado como padrão.";
+      }
+      setErrorMessage(friendly);
+      toast({
+        title: "Não foi possível processar",
+        description: friendly,
+        variant: "destructive",
+      });
+    } finally {
+      setIsActing(false);
+    }
+  };
+
+  const handleSelectPlan = async (planId: string) => {
+    if (!currentTenant) return;
+    setErrorMessage(null);
+    setIsActing(true);
+    try {
+      const result = await activateSpecificTrial(currentTenant.id, planId);
+      await refresh();
+      setWelcomePlan(result.plan);
+      setIsWelcomeOpen(true);
+    } catch (error) {
+      const raw = error instanceof Error ? error.message : "Erro desconhecido.";
+      let friendly = raw;
+      if (/permission|permissão|42501|policy|RLS/i.test(raw)) {
+        friendly = "Acesso negado. Apenas o administrador da conta pode selecionar o plano.";
       }
       setErrorMessage(friendly);
       toast({
@@ -126,42 +155,61 @@ export default function Subscription() {
 
       {/* Sem assinatura: oferece ativação */}
       {!subscription || !plan ? (
-        <div className="surface-card space-y-4 p-6" data-testid="subscription-empty">
-          <div className="flex items-start gap-3">
-            <Sparkles className="mt-1 h-5 w-5 text-primary" />
-            <div>
-              <h2 className="font-display text-lg font-semibold">
-                Nenhuma assinatura ativa
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Ative o trial padrão para liberar todos os módulos e começar
-                a operar agora mesmo.
-              </p>
+        <div className="space-y-6">
+          <div className="surface-card space-y-4 p-6" data-testid="subscription-empty">
+            <div className="flex items-start gap-3">
+              <Sparkles className="mt-1 h-5 w-5 text-primary" />
+              <div>
+                <h2 className="font-display text-lg font-semibold">
+                  Escolha seu plano
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Selecione o plano que melhor atende às suas necessidades. Planos pagos iniciam com um período de trial gratuito. O plano Apoio é gratuito para sempre.
+                </p>
+              </div>
             </div>
+
+            {errorMessage && (
+              <ErrorBlock message={errorMessage} onDismiss={() => setErrorMessage(null)} />
+            )}
           </div>
 
-          {errorMessage && (
-            <ErrorBlock message={errorMessage} onDismiss={() => setErrorMessage(null)} />
-          )}
-
-          <div>
-            <Button
-              type="button"
-              onClick={handleActivateOrReactivate}
-              disabled={!canManage || isActing}
-              data-testid="subscription-activate-trial"
-              data-critical-action="activate-trial"
-            >
-              {isActing ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Ativando…
-                </>
-              ) : (
-                <>
-                  <Sparkles className="mr-2 h-4 w-4" /> Ativar trial padrão
-                </>
-              )}
-            </Button>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {allPlans.filter(p => p.status === "public").sort((a,b) => (a.priceCents || 0) - (b.priceCents || 0)).map((p) => (
+              <div key={p.id} className="surface-card flex flex-col p-5">
+                <div className="mb-4">
+                  <h3 className="font-display text-lg font-semibold flex items-center gap-2">
+                    {p.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1 h-10">{p.description}</p>
+                </div>
+                <div className="mb-6">
+                  <p className="font-display text-2xl font-bold">
+                    {p.priceCents === 0 ? "Grátis" : formatPrice(p.priceCents, p.currency)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {p.priceCents > 0 ? (p.billingPeriod === 'annual' ? 'por ano' : 'por mês') : "para sempre"}
+                  </p>
+                </div>
+                <div className="mt-auto">
+                  <Button
+                    type="button"
+                    onClick={() => handleSelectPlan(p.id)}
+                    disabled={!canManage || isActing}
+                    className="w-full"
+                    variant={p.priceCents === 0 ? "outline" : "default"}
+                  >
+                    {isActing ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : p.priceCents === 0 ? (
+                      "Ativar Grátis"
+                    ) : (
+                      `Testar Grátis (${p.trialDays || 14} dias)`
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       ) : (
@@ -301,8 +349,8 @@ export default function Subscription() {
 
             {(subscription.status === "active" ||
               subscription.status === "trialing") && (
-              <div className="flex items-start gap-2 rounded-lg bg-success/10 p-3 text-xs text-success-foreground">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+              <div className="flex items-start gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs font-medium text-emerald-800 dark:text-emerald-300">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
                 <span>
                   Sua assinatura está em dia. Não há ações pendentes.
                 </span>
@@ -316,6 +364,13 @@ export default function Subscription() {
           </aside>
         </div>
       )}
+
+      <WelcomePlanDialog 
+        isOpen={isWelcomeOpen} 
+        onOpenChange={setIsWelcomeOpen} 
+        plan={welcomePlan} 
+        isTrial={welcomePlan ? welcomePlan.priceCents > 0 : false} 
+      />
     </div>
   );
 }

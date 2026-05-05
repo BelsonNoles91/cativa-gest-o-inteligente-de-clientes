@@ -1,9 +1,9 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Lock, Loader2 } from "lucide-react";
 import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 interface SidebarNavItemProps {
   to: string;
@@ -31,6 +31,11 @@ export function SidebarNavItem({
 }: SidebarNavItemProps) {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    setIsLoading(false);
+  }, [location.pathname]);
 
   const handleNavigation = (e: React.MouseEvent | React.KeyboardEvent) => {
     if (locked || isLoading) {

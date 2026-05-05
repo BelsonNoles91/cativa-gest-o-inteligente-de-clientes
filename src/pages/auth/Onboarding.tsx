@@ -212,7 +212,7 @@ export default function Onboarding() {
             .eq("tenant_id", result.tenantId);
         } catch (err) {
           console.error("Falha ao enviar logo (workspace foi criado)", err);
-          toast.warning("Workspace criado, mas o logo não pôde ser enviado.", {
+          toast.warning("Conta criada, mas o logo não pôde ser enviado.", {
             description: "Você pode tentar de novo em Configurações → Branding.",
           });
         }
@@ -424,14 +424,14 @@ export default function Onboarding() {
             </div>
 
             <Button type="submit" disabled={submitting || pendingEmailConfirmation} className="group h-16 w-full rounded-full bg-primary-dark text-lg font-bold text-white shadow-xl transition-all hover:bg-accent active:scale-[0.98]">
-              {submitting ? <Loader2 className="h-6 w-6 animate-spin" /> : (<span className="flex items-center gap-2">Continuar para Setup <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" /></span>)}
+              {submitting ? <Loader2 className="h-6 w-6 animate-spin" /> : (<span className="flex items-center gap-2">Continuar para Configuração <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" /></span>)}
             </Button>
 
             {pendingEmailConfirmation && (
               <div className="rounded-[2rem] border border-accent/20 bg-accent/5 p-8 text-center space-y-4">
                 <p className="font-bold text-primary-dark italic serif text-xl">Falta só confirmar seu e-mail.</p>
                 <p className="text-sm text-muted-foreground">
-                  Após confirmar, acesse o link de login para concluir o setup do seu novo workspace.
+                  Após confirmar, acesse o link de login para concluir a configuração do seu novo espaço de trabalho.
                 </p>
                 <Link to="/auth/login" className="inline-flex h-12 items-center justify-center rounded-full bg-white px-8 text-sm font-bold text-primary-dark border border-border/40 hover:bg-accent hover:text-white hover:border-accent transition-all">
                   Ir para o Login
@@ -504,7 +504,7 @@ export default function Onboarding() {
             if (!bizName.trim() || !segment) { toast.error("Preencha o nome e o segmento."); return; }
             setStep(2);
           }} className="group h-16 w-full rounded-full bg-primary-dark text-lg font-bold text-white shadow-xl transition-all hover:bg-accent active:scale-[0.98]">
-            Continuar para Identidade <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+            Continuar para Identidade Visual <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
           </Button>
         </div>
       )}
@@ -563,14 +563,14 @@ export default function Onboarding() {
                 <div className="flex gap-2">
                   <div className="relative flex-1">
                     <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input id="svc-price" placeholder="Preço" className="rounded-xl h-11 pl-9" type="number" />
+                    <Input id="svc-price" placeholder="Valor" className="rounded-xl h-11 pl-9" type="number" />
                   </div>
                   <Button variant="outline" onClick={() => {
                     const n = document.getElementById('svc-name') as HTMLInputElement;
                     const p = document.getElementById('svc-price') as HTMLInputElement;
                     addServiceDraft(n.value, p.value);
                     n.value = ''; p.value = '';
-                  }}>Add</Button>
+                  }}>Adicionar</Button>
                 </div>
               </div>
               <ul className="space-y-2">
@@ -649,7 +649,7 @@ export default function Onboarding() {
             <div>
               <h1 className="font-display text-4xl font-bold tracking-tight text-primary-dark">Tudo pronto!</h1>
               <p className="mt-2 text-lg font-light leading-relaxed text-muted-foreground px-4">
-                Confira os detalhes antes de criarmos seu workspace profissional.
+                Confira os detalhes antes de criarmos seu espaço de trabalho profissional.
               </p>
             </div>
           </header>

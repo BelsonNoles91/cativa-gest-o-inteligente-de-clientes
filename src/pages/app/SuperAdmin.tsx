@@ -44,7 +44,7 @@ export default function SuperAdmin() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <PageHeader
-        title="Super Admin Console"
+        title="Painel Administrativo"
         description="Gestão multi-tenant, auditoria global e incidentes."
         icon={<ShieldCheck className="h-6 w-6 text-primary" />}
         actions={
@@ -52,7 +52,7 @@ export default function SuperAdmin() {
             <Button variant="outline" size="sm" className="gap-2" onClick={() => reload()}>
               <Activity className="h-4 w-4" /> Atualizar
             </Button>
-            <StatusBadge tone="brand">{tenants.length} tenants</StatusBadge>
+            <StatusBadge tone="brand">{tenants.length} contas</StatusBadge>
           </div>
         }
       />

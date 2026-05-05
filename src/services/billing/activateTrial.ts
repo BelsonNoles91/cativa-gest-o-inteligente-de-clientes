@@ -205,3 +205,85 @@ export async function activateDefaultTrial(tenantId: string): Promise<ActivateTr
     alreadyExisted: Boolean(existing),
   };
 }
+
+export async function activateSpecificTrial(tenantId: string, planId: string): Promise<ActivateTrialResult> {
+  if (!tenantId || !planId) {
+    throw new Error("Tenant ou Plano inválidos para ativar a assinatura.");
+  }
+
+  const existing = await getSubscriptionByTenant(tenantId);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase as any).rpc("start_specific_trial", {
+    _tenant_id: tenantId,
+    _plan_id: planId,
+  });
+
+  if (error) {
+    const raw = error.message ?? "";
+    const reason = classifyError(raw, error.code);
+
+    await logAttempt({
+      tenantId,
+      action: "trial.activation.failure",
+      metadata: {
+        reason,
+        rpc: "start_specific_trial",
+        error_code: error.code ?? null,
+        error_message: raw,
+        plan_id: planId
+      },
+    });
+
+    if (reason === "rls_denied") {
+      throw new Error("Você não tem permissão para ativar a assinatura neste tenant.");
+    }
+    if (reason === "no_plan") {
+      throw new Error("O plano escolhido não está disponível.");
+    }
+    if (reason === "unauthenticated") {
+      throw new Error("Sessão expirada. Faça login novamente.");
+    }
+    throw new Error(raw || "Não foi possível processar a assinatura.");
+  }
+
+  if (!data) {
+    throw new Error("Resposta vazia do servidor.");
+  }
+
+  const row = data as Record<string, unknown>;
+
+  const subscription: TenantSubscription = {
+    id: row.id as string,
+    tenantId: row.tenant_id as string,
+    planId: row.plan_id as string,
+    status: row.status as TenantSubscription["status"],
+    trialStartedAt: (row.trial_started_at as string) ?? null,
+    trialEndsAt: (row.trial_ends_at as string) ?? null,
+    currentPeriodStart: row.current_period_start as string,
+    currentPeriodEnd: (row.current_period_end as string) ?? null,
+    canceledAt: (row.canceled_at as string) ?? null,
+    suspendedAt: (row.suspended_at as string) ?? null,
+    overdueSince: (row.overdue_since as string) ?? null,
+    discountCents: (row.discount_cents as number) ?? 0,
+    discountReason: (row.discount_reason as string) ?? null,
+    overrideLimits: (row.override_limits as Record<string, number | null>) ?? {},
+    notes: (row.notes as string) ?? null,
+  };
+
+  const plans = await listPlans();
+  const activatedPlan = plans.find((p) => p.id === subscription.planId);
+  if (!activatedPlan) throw new Error("Plano da assinatura não encontrado.");
+
+  await logAttempt({
+    tenantId,
+    action: existing ? "trial.activation.already_existed" : "trial.activation.success",
+    metadata: { subscription_id: subscription.id, plan_id: activatedPlan.id }
+  });
+
+  return {
+    subscription,
+    plan: activatedPlan,
+    alreadyExisted: Boolean(existing),
+  };
+}

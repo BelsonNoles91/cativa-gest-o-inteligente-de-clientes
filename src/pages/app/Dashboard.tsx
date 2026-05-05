@@ -35,7 +35,7 @@ function initials(name: string) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { currentTenant } = useTenant();
+  const { currentTenant, isSuperAdmin, currentRole } = useTenant();
   const { plan, usage, limits, subscription } = useTenantBilling();
   const { data, isLoading } = useDashboardData();
 
@@ -80,16 +80,16 @@ export default function Dashboard() {
         icon: Users,
         tone: "info" as const,
       },
-      {
+      ...(currentRole === "owner" || currentRole === "manager" || isSuperAdmin ? [{
         label: "LTV Médio (Anual)",
         value: snapshot.ltvEstimate.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
         delta: "Valor futuro estimado",
         icon: TrendingUp,
         tone: "brand" as const,
-      },
+      }] : []),
 
     ],
-    [snapshot, upcoming.length],
+    [snapshot, upcoming.length, currentRole, isSuperAdmin],
   );
 
   const focusMessage =
@@ -105,84 +105,92 @@ export default function Dashboard() {
         title="Olá! Bem-vindo de volta"
         description={`Visão geral de ${currentTenant?.name ?? "seu negócio"} para hoje.`}
         actions={
-          <>
-            <Button variant="outline" className="rounded-xl" onClick={() => navigate("/app/dados")}>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" className="h-9 rounded-xl shadow-sm" onClick={() => navigate("/app/dados")}>
               Exportar
             </Button>
-            <Button className="rounded-xl bg-gradient-brand" onClick={() => navigate("/app/agenda")}>
+            <Button className="h-9 rounded-xl bg-gradient-brand shadow-sm" onClick={() => navigate("/app/agenda")}>
               <Plus className="mr-2 h-4 w-4" /> Novo agendamento
             </Button>
-          </>
+          </div>
         }
       />
 
-      <NoSubscriptionBanner variant="panel" className="mb-4 md:mb-6" />
+      {(currentRole === "owner" || currentRole === "manager" || isSuperAdmin) && (
+        <>
+          <NoSubscriptionBanner variant="panel" className="mb-4 md:mb-6" />
 
-      {subscription && (
-        <section className="surface-card mb-4 grid grid-cols-1 gap-4 p-4 md:mb-6 md:grid-cols-2 md:p-5">
-          <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-              <ShieldCheck className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Seu plano atual</p>
-              <p className="font-display text-lg font-semibold text-primary">{plan?.name ?? "Carregando..."}</p>
-            </div>
-          </div>
-          <div className="flex flex-col justify-center gap-1 border-t pt-3 md:border-l md:border-t-0 md:pl-6 md:pt-0">
-            <UsageBar 
-              label="Agendamentos (30 dias)" 
-              used={usage.appointmentsLast30d} 
-              limit={limits?.maxAppointmentsMonth ?? null} 
-            />
-            {limits?.maxAppointmentsMonth ? (
-              <p className="text-[10px] text-muted-foreground">
-                {usage.appointmentsLast30d >= limits.maxAppointmentsMonth
-                  ? "Limite atingido! Seu negócio cresceu e agora precisa de mais fôlego. Faça upgrade para continuar agendando."
-                  : usage.appointmentsLast30d >= (limits.maxAppointmentsMonth * 0.8) 
-                    ? "Você está próximo do limite mensal. Considere um upgrade para não parar sua operação." 
-                    : "Uso saudável dos limites do seu plano."}
-              </p>
-            ) : (
-              <p className="text-[10px] text-muted-foreground">
-                Você tem agendamentos ilimitados. Aproveite para crescer seu negócio!
-              </p>
-            )}
-          </div>
-        </section>
+          {subscription && (
+            <section className="surface-card mb-4 grid grid-cols-1 gap-4 p-4 md:mb-6 md:grid-cols-2 md:p-5">
+              <div className="flex items-center gap-3">
+                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                  <ShieldCheck className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Seu plano atual</p>
+                  <p className="font-display text-lg font-semibold text-primary">
+                    {isSuperAdmin ? "Sistema (Acesso Global)" : (plan?.name ?? "Carregando...")}
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col justify-center gap-1 border-t pt-3 md:border-l md:border-t-0 md:pl-6 md:pt-0">
+                <UsageBar 
+                  label="Agendamentos (30 dias)" 
+                  used={usage.appointmentsLast30d} 
+                  limit={limits?.maxAppointmentsMonth ?? null} 
+                />
+                {limits?.maxAppointmentsMonth ? (
+                  <p className="text-[10px] text-muted-foreground">
+                    {usage.appointmentsLast30d >= limits.maxAppointmentsMonth
+                      ? "Limite atingido! Seu negócio cresceu e agora precisa de mais fôlego. Faça upgrade para continuar agendando."
+                      : usage.appointmentsLast30d >= (limits.maxAppointmentsMonth * 0.8) 
+                        ? "Você está próximo do limite mensal. Considere um upgrade para não parar sua operação." 
+                        : "Uso saudável dos limites do seu plano."}
+                  </p>
+                ) : (
+                  <p className="text-[10px] text-muted-foreground">
+                    Você tem agendamentos ilimitados. Aproveite para crescer seu negócio!
+                  </p>
+                )}
+              </div>
+            </section>
+          )}
+        </>
       )}
 
       {isLoading ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 xl:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
+        <div className={`grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 ${kpis.length === 5 ? "lg:grid-cols-3 xl:grid-cols-5" : "lg:grid-cols-4"}`}>
+          {Array.from({ length: kpis.length || 4 }).map((_, i) => (
             <div key={i} className="surface-card flex h-28 animate-pulse items-center gap-4 p-4 md:p-5" />
           ))}
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 xl:grid-cols-4">
+          <div className={`grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 ${kpis.length === 5 ? "lg:grid-cols-3 xl:grid-cols-5" : "lg:grid-cols-4"}`}>
             {kpis.map((kpi) => (
               <div
                 key={kpi.label}
-                className="surface-card flex items-center gap-4 p-4 md:p-5"
+                className="surface-card flex flex-col gap-3 p-4 md:p-5"
               >
-                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-gradient-soft text-primary">
-                  <kpi.icon className="h-5 w-5" />
-                </div>
-                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                <div className="flex items-center gap-3">
+                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-soft text-primary">
+                    <kpi.icon className="h-5 w-5" />
+                  </div>
                   <p
-                    className="truncate text-xs font-medium text-muted-foreground"
+                    className="min-w-0 flex-1 truncate text-sm font-medium text-muted-foreground"
                     title={kpi.label}
                   >
                     {kpi.label}
                   </p>
-                  <p className="font-display text-2xl font-semibold leading-none md:text-3xl">
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate font-display text-2xl font-semibold leading-none md:text-3xl" title={kpi.value}>
                     {kpi.value}
                   </p>
                   <StatusBadge
                     tone={kpi.tone}
                     dot
-                    className="mt-1 w-fit max-w-full px-1.5 py-0.5 text-[10px] font-normal"
+                    className="mt-2 w-fit max-w-full px-2 py-0.5 text-[11px] font-normal"
                   >
                     <span className="truncate" title={kpi.delta}>
                       {kpi.delta}

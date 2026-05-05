@@ -53,7 +53,7 @@ interface TenantBillingContextValue {
 const TenantBillingContext = createContext<TenantBillingContextValue | undefined>(undefined);
 
 export function TenantBillingProvider({ children }: { children: ReactNode }) {
-  const { currentTenant } = useTenant();
+  const { currentTenant, isSuperAdmin } = useTenant();
   const tenantId = currentTenant?.id ?? null;
   // initialLoading = primeira carga (mostra loader). subsequentes são "soft refresh".
   const [initialLoading, setInitialLoading] = useState(true);
@@ -72,6 +72,16 @@ export function TenantBillingProvider({ children }: { children: ReactNode }) {
   });
 
   const load = useCallback(async () => {
+    // Se for Super Admin, carregamos planos globais mas garantimos acesso total
+    if (isSuperAdmin && !tenantId) {
+      try {
+        const plans = await listPlans();
+        setAllPlans(plans);
+        setInitialLoading(false);
+      } catch (e) {}
+      return;
+    }
+
     if (!tenantId) {
       setSubscription(null);
       setPlan(null);
@@ -149,10 +159,18 @@ export function TenantBillingProvider({ children }: { children: ReactNode }) {
     return map;
   }, [flags]);
 
-  const limits = useMemo(
-    () => (plan ? effectiveLimits(plan, subscription?.overrideLimits ?? {}) : null),
-    [plan, subscription?.overrideLimits],
-  );
+  const limits = useMemo(() => {
+    if (isSuperAdmin) {
+      return {
+        maxUnits: null,
+        maxProfessionals: null,
+        maxActiveClients: null,
+        maxStorageMb: null,
+        maxAppointmentsMonth: null,
+      };
+    }
+    return plan ? effectiveLimits(plan, subscription?.overrideLimits ?? {}) : null;
+  }, [plan, subscription?.overrideLimits, isSuperAdmin]);
 
   const value = useMemo<TenantBillingContextValue>(() => ({
     loading: initialLoading,
@@ -165,6 +183,9 @@ export function TenantBillingProvider({ children }: { children: ReactNode }) {
     usage,
     limits,
     hasFeature: (featureKey: string) => {
+      // Super Admin tem todas as features liberadas
+      if (isSuperAdmin) return true;
+
       // Prioridade 1: Flags de override (telemetria/suporte)
       const flagOverride = flagMap.get(featureKey);
       if (flagOverride !== undefined) return isBooleanFeatureEnabled(flagOverride);

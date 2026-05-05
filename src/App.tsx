@@ -16,7 +16,7 @@ import { appConfig } from "@/config/app";
 
 import { FeatureGate } from "@/features/billing/FeatureGate";
 import { DebugConsole } from "@/components/debug/DebugConsole";
-import Index from "./pages/Index";
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -67,6 +67,7 @@ const Dashboard = lazyWithReload(() => import("./pages/app/Dashboard"));
 const Privacy = lazyWithReload(() => import("./pages/public/Privacy"));
 const Terms = lazyWithReload(() => import("./pages/public/Terms"));
 const Settings = lazyWithReload(() => import("./pages/app/Settings"));
+const ProfilePage = lazyWithReload(() => import("./pages/app/Profile"));
 const Billing = lazyWithReload(() => import("./pages/app/Billing"));
 const Subscription = lazyWithReload(() => import("./pages/app/Subscription"));
 const SuperAdmin = lazyWithReload(() => import("./pages/app/SuperAdmin"));
@@ -110,7 +111,6 @@ const App = () => (
                   <Routes>
                     {/* Público */}
                     <Route path="/" element={<PremiumLanding />} />
-                    <Route path="/old-landing" element={<Index />} />
                     <Route path="/planos" element={<Pricing />} />
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/privacidade" element={<Privacy />} />
@@ -172,6 +172,7 @@ const App = () => (
                             }
                           />
                           <Route path="lista-de-espera" element={<WaitlistPage />} />
+                          <Route path="perfil" element={<ProfilePage />} />
 
                           <Route element={<RoleGuard allowed={["owner", "manager"]} />}>
                             <Route path="servicos" element={<ServicesPage />} />

@@ -11,6 +11,7 @@ import { BottomNav } from "@/components/shell/BottomNav";
 import { OfflineBanner } from "@/components/shell/OfflineBanner";
 import { SafeAreaDebugOverlay } from "@/components/debug/SafeAreaDebugOverlay";
 import { TenantBillingProvider } from "@/features/billing/TenantBillingProvider";
+import { SubscriptionBlocker } from "@/features/billing/SubscriptionBlocker";
 
 export function AppLayout() {
   return (
@@ -31,7 +32,9 @@ export function AppLayout() {
               className="flex-1 px-4 pt-4 pb-bottom-nav md:px-8 md:pb-10 md:pt-6"
             >
               <div className="mx-auto w-full max-w-7xl">
-                <Outlet />
+                <SubscriptionBlocker>
+                  <Outlet />
+                </SubscriptionBlocker>
               </div>
             </main>
             <BottomNav />

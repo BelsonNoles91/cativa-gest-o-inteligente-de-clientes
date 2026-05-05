@@ -211,6 +211,40 @@ export function TeamSettings() {
     }
   };
 
+  const toggleMemberStatus = async (userId: string, currentStatus: string) => {
+    if (!currentTenant) return;
+    const newStatus = currentStatus === "active" ? "inactive" : "active";
+    try {
+      const { error } = await supabase
+        .from("tenant_memberships")
+        .update({ status: newStatus })
+        .eq("user_id", userId)
+        .eq("tenant_id", currentTenant.id);
+      if (error) throw error;
+      toast.success(newStatus === "active" ? "Acesso desbloqueado" : "Acesso bloqueado");
+      await load();
+    } catch (err) {
+      toast.error("Erro ao alterar status");
+    }
+  };
+
+  const removeMember = async (userId: string, name: string) => {
+    if (!currentTenant) return;
+    if (!window.confirm(`Remover o acesso de ${name}? Ele não poderá mais acessar o sistema desta clínica.`)) return;
+    try {
+      const { error } = await supabase
+        .from("tenant_memberships")
+        .delete()
+        .eq("user_id", userId)
+        .eq("tenant_id", currentTenant.id);
+      if (error) throw error;
+      toast.success("Membro removido da equipe");
+      await load();
+    } catch (err) {
+      toast.error("Erro ao remover membro");
+    }
+  };
+
   const openCreate = () => {
     setEditorForm(EMPTY_PROFESSIONAL);
     setEditorOpen(true);
@@ -329,7 +363,7 @@ export function TeamSettings() {
                 const name = m.profiles?.full_name ?? "Sem nome";
                 const initials = name.split(" ").slice(0, 2).map((p) => p[0]).join("").toUpperCase() || "??";
                 return (
-                  <li key={m.user_id} className="flex items-center gap-3 py-3">
+                  <li key={m.user_id} className="flex flex-wrap items-center gap-3 py-3">
                     <Avatar className="h-9 w-9 border border-border/60">
                       <AvatarFallback className="bg-accent-soft text-accent-foreground text-xs">{initials}</AvatarFallback>
                     </Avatar>
@@ -338,6 +372,28 @@ export function TeamSettings() {
                       <p className="text-xs text-muted-foreground">{roleLabels[m.role]}</p>
                     </div>
                     <StatusBadge tone={m.status === "active" ? "success" : "warning"}>{m.status === "active" ? "Ativo" : m.status}</StatusBadge>
+                    
+                    {m.user_id !== user?.id && m.role !== "owner" && (
+                      <div className="flex items-center gap-2 ml-auto">
+                        <div className="flex items-center gap-2 mr-2">
+                          <Switch 
+                            checked={m.status === "active"} 
+                            onCheckedChange={() => toggleMemberStatus(m.user_id, m.status)} 
+                            aria-label="Bloquear/Desbloquear acesso"
+                            title={m.status === "active" ? "Bloquear acesso" : "Desbloquear acesso"}
+                          />
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeMember(m.user_id, name)}
+                          aria-label={`Remover acesso de ${name}`}
+                          title="Remover da equipe"
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    )}
                   </li>
                 );
               })}

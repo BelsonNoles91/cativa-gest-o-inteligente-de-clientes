@@ -16,7 +16,7 @@ create table if not exists public.team_invitations (
   tenant_id uuid not null references public.tenants(id) on delete cascade,
   email text not null,
   role public.app_role not null,
-  token text not null unique default encode(gen_random_bytes(24), 'hex'),
+  token text not null unique default encode(extensions.gen_random_bytes(24), 'hex'),
   status public.team_invitation_status not null default 'pending',
   invited_by uuid,
   accepted_by uuid,

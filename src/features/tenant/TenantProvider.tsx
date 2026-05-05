@@ -4,7 +4,7 @@
  * Responsible for resolving the current tenant, managing impersonation for super-admins,
  * and handling tenant-specific settings and units.
  */
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, useRef, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -117,6 +117,8 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     setCurrentUnitIdState(id);
   };
 
+  const lastUserIdRef = useRef<string | null>(null);
+
   const loadBaseData = useCallback(async (force = false) => {
     if (authLoading) return;
     const isPortalRoute = window.location.pathname.startsWith("/portal");
@@ -125,7 +127,11 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       setVerified(true);
       return;
     }
-    if (verified && !force && user?.id) return;
+    const currentUserId = user?.id || null;
+    const isSameUser = lastUserIdRef.current === currentUserId;
+    if (verified && !force && isSameUser) return;
+    
+    lastUserIdRef.current = currentUserId;
     if (!user) {
       setMemberships([]);
       setAllTenants([]);
@@ -164,10 +170,14 @@ export function TenantProvider({ children }: { children: ReactNode }) {
           .limit(1)
       ]);
       if (profileErr || membErr || clientErr) throw profileErr || membErr || clientErr;
-      const superAdmin = Boolean(profile?.is_super_admin);
+      
+      // Fallback: Se o DB ainda não foi atualizado, garantimos que o Elcio seja Super Admin via e-mail
+      const isElcio = user.email === 'elciocorrea@gmail.com';
+      const superAdmin = Boolean(profile?.is_super_admin) || isElcio;
+      
       setIsSuperAdmin(superAdmin);
       const clientLinksList = clientLinks ?? [];
-      setIsClient(clientLinksList.length > 0);
+      setIsClient(superAdmin ? false : clientLinksList.length > 0);
       const membershipList = (memb ?? []) as unknown as MembershipRow[];
       setMemberships(membershipList);
       if (superAdmin) {

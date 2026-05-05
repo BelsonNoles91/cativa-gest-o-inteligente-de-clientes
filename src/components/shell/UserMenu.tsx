@@ -86,7 +86,7 @@ export function UserMenu() {
         )}
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem onSelect={() => navigate("/app/configuracoes")} className="gap-2">
+        <DropdownMenuItem onSelect={() => navigate("/app/perfil")} className="gap-2">
           <User className="h-4 w-4" /> Perfil
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => navigate("/app/configuracoes")} className="gap-2">

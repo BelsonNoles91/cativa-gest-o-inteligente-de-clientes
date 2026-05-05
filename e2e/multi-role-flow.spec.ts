@@ -10,16 +10,19 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Fluxo Multi-Papel (Owner, Frontdesk, Professional)', () => {
   
+  // Limpar sessão global para testar logins diferentes em cada teste
+  test.use({ storageState: { cookies: [], origins: [] } });
+  
   test('Owner deve conseguir configurar tenant e convidar equipe', async ({ page }) => {
     // Login como Owner
     await page.goto('/auth/login');
-    await page.fill('input[name="email"]', 'owner@cativa.test');
-    await page.fill('input[name="password"]', 'Cativa@Test2026');
+    await page.fill('input#email', 'owner.a@cativa.test');
+    await page.fill('input#password', 'Cativa@Test2026');
     await page.click('button[type="submit"]');
     
     // Validar Dashboard
     await expect(page).toHaveURL(/\/app/);
-    await expect(page.locator('h1')).toContainText(/Dashboard/i);
+    await expect(page.locator('h1')).toContainText(/Bem-vindo/i);
     
     // Navegar para Configurações
     await page.click('nav >> text=Configurações');
@@ -27,9 +30,9 @@ test.describe('Fluxo Multi-Papel (Owner, Frontdesk, Professional)', () => {
     
     // Criar um novo serviço
     await page.click('nav >> text=Serviços');
-    await page.click('button:has-text("Novo Serviço")');
-    await page.fill('input[name="name"]', 'Serviço E2E Test');
-    await page.fill('input[name="duration_minutes"]', '45');
+    await page.click('button:has-text("Novo serviço")');
+    await page.fill('input#name', 'Serviço E2E Test');
+    await page.fill('input#duration_minutes', '45');
     await page.click('button:has-text("Salvar")');
     
     await expect(page.locator('table')).toContainText('Serviço E2E Test');
@@ -38,21 +41,22 @@ test.describe('Fluxo Multi-Papel (Owner, Frontdesk, Professional)', () => {
   test('Frontdesk deve gerenciar clientes e agendamentos', async ({ page }) => {
     // Login como Frontdesk
     await page.goto('/auth/login');
-    await page.fill('input[name="email"]', 'frontdesk@cativa.test');
-    await page.fill('input[name="password"]', 'Cativa@Test2026');
+    await page.fill('input#email', 'recepcao@cativa.test');
+    await page.fill('input#password', 'Cativa@Test2026');
     await page.click('button[type="submit"]');
 
     // Adicionar Cliente
     await page.click('nav >> text=Clientes');
-    await page.click('button:has-text("Novo Cliente")');
-    await page.fill('input[name="full_name"]', 'Cliente Teste E2E');
-    await page.fill('input[name="email"]', 'cliente.e2e@test.com');
+    await page.click('nav >> text=Clientes');
+    await page.click('button:has-text("Novo cliente")');
+    await page.fill('input#full_name', 'Cliente Teste E2E');
+    await page.fill('input#email', 'cliente.e2e@test.com');
     await page.click('button:has-text("Salvar")');
 
     // Criar Agendamento na Agenda
     await page.click('nav >> text=Agenda');
-    await page.click('.calendar-grid-cell'); // Simulação de clique num slot vazio
-    await page.fill('input[placeholder*="Buscar cliente"]', 'Cliente Teste E2E');
+    await page.click('button:has-text("Novo agendamento")');
+    await page.fill('input[placeholder*="cliente"]', 'Cliente Teste E2E');
     await page.click('text=Cliente Teste E2E');
     await page.click('button:has-text("Confirmar Agendamento")');
 
@@ -62,8 +66,8 @@ test.describe('Fluxo Multi-Papel (Owner, Frontdesk, Professional)', () => {
   test('Professional deve ver apenas seus atendimentos', async ({ page }) => {
     // Login como Professional
     await page.goto('/auth/login');
-    await page.fill('input[name="email"]', 'professional@cativa.test');
-    await page.fill('input[name="password"]', 'Cativa@Test2026');
+    await page.fill('input#email', 'profissional@cativa.test');
+    await page.fill('input#password', 'Cativa@Test2026');
     await page.click('button[type="submit"]');
 
     await page.click('nav >> text=Agenda');

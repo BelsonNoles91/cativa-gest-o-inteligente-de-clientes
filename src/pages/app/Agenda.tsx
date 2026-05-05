@@ -677,64 +677,74 @@ export default function AgendaPage() {
 
       <Card>
         <CardContent className="pt-6">
-          <div className="grid gap-3 xl:grid-cols-[auto_auto_minmax(0,1fr)] xl:items-end xl:gap-4">
-            <Field label="Período">
-              <Tabs value={view} onValueChange={(value) => setView(value as ViewMode)}>
-                <TabsList className="h-10 w-full sm:w-auto">
-                  <TabsTrigger value="day" className="px-4">Dia</TabsTrigger>
-                  <TabsTrigger value="week" className="px-4">Semana</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </Field>
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-end">
+            <div className="flex flex-wrap items-end gap-4">
+              <Field label="Período">
+                <Tabs value={view} onValueChange={(value) => setView(value as ViewMode)}>
+                  <TabsList className="h-10">
+                    <TabsTrigger value="day" className="px-4">Dia</TabsTrigger>
+                    <TabsTrigger value="week" className="px-4">Semana</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </Field>
 
-            <Field label="Agrupar por">
-              <Tabs value={groupMode} onValueChange={(value) => setGroupMode(value as GroupMode)}>
-                <TabsList className="h-10 w-full sm:w-auto">
-                  <TabsTrigger value="professional" className="px-4">Profissional</TabsTrigger>
-                  <TabsTrigger value="resource" className="px-4">Recurso / sala</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </Field>
+              <Field label="Agrupar por">
+                <Tabs value={groupMode} onValueChange={(value) => setGroupMode(value as GroupMode)}>
+                  <TabsList className="h-10">
+                    <TabsTrigger value="professional" className="px-4">Profissional</TabsTrigger>
+                    <TabsTrigger value="resource" className="px-4">Recurso / sala</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </Field>
+            </div>
 
-            <div className={`grid gap-3 ${groupMode === "resource" ? "sm:grid-cols-4" : "sm:grid-cols-3"}`}>
-              <Field label="Data base">
-                <Input type="date" value={selectedDate} onChange={(event) => setSelectedDate(event.target.value)} />
-              </Field>
-              <Field label="Unidade">
-                <Select value={unitFilter} onValueChange={setUnitFilter}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas as unidades</SelectItem>
-                    {availableUnits.map((unit) => (
-                      <SelectItem key={unit.id} value={unit.id}>{unit.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Profissional">
-                <Select value={professionalFilter} onValueChange={setProfessionalFilter}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos os profissionais</SelectItem>
-                    {professionals.map((professional) => (
-                      <SelectItem key={professional.id} value={professional.id}>{professional.displayName}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              {groupMode === "resource" ? (
-                <Field label="Recurso / sala">
-                  <Select value={resourceFilter} onValueChange={setResourceFilter}>
+            <div className="flex w-full flex-wrap items-end gap-3 lg:flex-1">
+              <div className="flex-1 min-w-[140px]">
+                <Field label="Data base">
+                  <Input type="date" value={selectedDate} onChange={(event) => setSelectedDate(event.target.value)} />
+                </Field>
+              </div>
+              <div className="flex-1 min-w-[180px]">
+                <Field label="Unidade">
+                  <Select value={unitFilter} onValueChange={setUnitFilter}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todos os recursos</SelectItem>
-                      <SelectItem value="__none__">Sem recurso atribuído</SelectItem>
-                      {resources.map((resource) => (
-                        <SelectItem key={resource.id} value={resource.id}>{resource.name}</SelectItem>
+                      <SelectItem value="all">Todas as unidades</SelectItem>
+                      {availableUnits.map((unit) => (
+                        <SelectItem key={unit.id} value={unit.id}>{unit.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </Field>
+              </div>
+              <div className="flex-1 min-w-[180px]">
+                <Field label="Profissional">
+                  <Select value={professionalFilter} onValueChange={setProfessionalFilter}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os profissionais</SelectItem>
+                      {professionals.map((professional) => (
+                        <SelectItem key={professional.id} value={professional.id}>{professional.displayName}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              </div>
+              {groupMode === "resource" ? (
+                <div className="flex-1 min-w-[180px]">
+                  <Field label="Recurso / sala">
+                    <Select value={resourceFilter} onValueChange={setResourceFilter}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os recursos</SelectItem>
+                        <SelectItem value="__none__">Sem recurso atribuído</SelectItem>
+                        {resources.map((resource) => (
+                          <SelectItem key={resource.id} value={resource.id}>{resource.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                </div>
               ) : null}
             </div>
           </div>
@@ -986,9 +996,6 @@ export default function AgendaPage() {
                 <Select value={form.status} onValueChange={(value) => setForm((current) => ({ ...current, status: value as AppointmentStatus }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {(editing
-                      ? [editing.appointment.status, ...allowedTransitions[editing.appointment.status]]
-                      : ["pending", "confirmed", "requested"]) as AppointmentStatus[]}
                     {Array.from(new Set(
                       (editing
                         ? [editing.appointment.status, ...allowedTransitions[editing.appointment.status]]
@@ -1072,7 +1079,7 @@ export default function AgendaPage() {
               </Field>
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap justify-end gap-2">
               <Button onClick={() => void handleSaveAppointment()} disabled={saving}>
                 {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
                 {editing ? "Salvar alterações" : "Criar agendamento"}

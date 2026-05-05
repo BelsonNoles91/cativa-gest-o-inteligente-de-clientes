@@ -107,7 +107,9 @@ export function AuditLogsTab({
       
       const { data, error } = await supabase.rpc("get_audit_logs_advanced", {
         _tenant_id: tenantFilter === "all" ? null : tenantFilter,
+        _actor_id: null,
         _action_prefix: actionFilter === "all" ? null : actionFilter,
+        _entity: null,
         _from: range.from,
         _to: range.to,
         _limit: currentLimit,
@@ -124,7 +126,7 @@ export function AuditLogsTab({
     } catch (err) {
       toast({
         title: "Erro ao carregar auditoria",
-        description: String(err instanceof Error ? err.message : err),
+        description: err instanceof Error ? err.message : JSON.stringify(err),
         variant: "destructive",
       });
     } finally {

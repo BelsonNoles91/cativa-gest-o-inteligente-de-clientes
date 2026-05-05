@@ -380,7 +380,7 @@ export default function PremiumLanding() {
                   <div className="lg:w-2/3 space-y-4 px-4 md:px-0">
                     {[
                       { q: "A Cativa serve para o meu tipo de negócio?", a: "Sim. A plataforma foi pensada para clínicas de estética, salões de beleza, barbearias, esmalterias, profissionais de cílios e sobrancelhas, massagem e negócios de bem-estar que buscam um nível superior de gestão." },
-                      { q: "Como começo a usar o Cativa?", a: "É simples: basta clicar em 'Começar agora grátis'. Em menos de 1 minuto você terá acesso ao seu workspace para configurar sua agenda e profissionais." },
+                      { q: "Como começo a usar o Cativa?", a: "É simples: basta clicar em 'Começar agora grátis'. Em menos de 1 minuto você terá acesso ao seu painel para configurar sua agenda e profissionais." },
                       { q: "Posso testar os recursos premium?", a: "Sim. Todos os novos cadastros recebem 14 dias de acesso total aos recursos premium (Planos Empreendedor e Studio) para sentir a diferença na rotina antes de decidir." },
                       { q: "O sistema usa API oficial de WhatsApp?", a: "Não. A Cativa utiliza uma central de confirmação inteligente baseada em links diretos (wa.me), o que garante estabilidade total, evita bloqueios de números e elimina taxas abusivas por mensagem, mantendo o processo 100% sob seu controle." },
                       { q: "Consigo falar com um especialista agora?", a: "Sim! Você pode clicar no botão de WhatsApp em nosso rodapé para tirar dúvidas específicas sobre o seu negócio com nosso time especializado." },

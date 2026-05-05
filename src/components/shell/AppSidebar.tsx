@@ -36,7 +36,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
-  const { currentRole } = useTenant();
+  const { currentRole, isSuperAdmin } = useTenant();
   const { loading, plan, subscription, hasFeature } = useTenantBilling();
 
   const groups = useMemo(() => ["operacao", "gestao", "sistema"] as const, []);
@@ -92,17 +92,17 @@ export function AppSidebar() {
       <SidebarFooter className="px-3 py-3">
         {!collapsed && (
           <>
-            {!loading && !subscription ? (
+            {!loading && !subscription && !isSuperAdmin ? (
               <NoSubscriptionBanner variant="sidebar" />
             ) : (
               <div className="rounded-xl border border-border/70 bg-gradient-soft p-3">
                 <p className="text-xs font-medium text-primary">
-                  {loading ? "Carregando plano…" : plan?.name ?? "Sem plano"}
+                  {loading ? "Carregando plano…" : (isSuperAdmin ? "Sistema (Acesso Global)" : (plan?.name ?? "Sem plano"))}
                 </p>
                 <p className="mt-0.5 text-[11px] text-muted-foreground">
-                  {subscription
-                    ? subscriptionStatusLabels[subscription.status]
-                    : "Sem assinatura"}
+                  {isSuperAdmin 
+                    ? "Super Usuário" 
+                    : (subscription ? subscriptionStatusLabels[subscription.status] : "Sem assinatura")}
                 </p>
               </div>
             )}

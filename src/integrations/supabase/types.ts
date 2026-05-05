@@ -546,7 +546,7 @@ export type Database = {
           {
             foreignKeyName: "channel_preferences_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
@@ -2117,6 +2117,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      password_history: {
+        Row: {
+          created_at: string
+          id: string
+          password_hash: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          password_hash: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          password_hash?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       permissions: {
         Row: {
@@ -3979,39 +4000,6 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      admin_assign_plan_to_tenant: {
-        Args: {
-          _notes?: string
-          _plan_id: string
-          _start_trial?: boolean
-          _tenant_id: string
-        }
-        Returns: {
-          canceled_at: string | null
-          created_at: string
-          current_period_end: string | null
-          current_period_start: string
-          discount_cents: number
-          discount_reason: string | null
-          id: string
-          notes: string | null
-          overdue_since: string | null
-          override_limits: Json
-          plan_id: string
-          status: Database["public"]["Enums"]["subscription_status"]
-          suspended_at: string | null
-          tenant_id: string
-          trial_ends_at: string | null
-          trial_started_at: string | null
-          updated_at: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "tenant_subscriptions"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
       admin_cancel_client_membership: {
         Args: { _reason?: string; _subscription_id: string }
         Returns: {
@@ -4040,6 +4028,10 @@ export type Database = {
         Returns: undefined
       }
       admin_feature_flag_impact: { Args: { _flag_key: string }; Returns: Json }
+      admin_force_reset_password: {
+        Args: { new_raw_password: string; target_user_id: string }
+        Returns: undefined
+      }
       admin_get_tenant_membership_dashboard: {
         Args: { _tenant_id: string }
         Returns: Json
@@ -4587,6 +4579,34 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      start_specific_trial: {
+        Args: { _plan_id: string; _tenant_id: string }
+        Returns: {
+          canceled_at: string | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string
+          discount_cents: number
+          discount_reason: string | null
+          id: string
+          notes: string | null
+          overdue_since: string | null
+          override_limits: Json
+          plan_id: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          suspended_at: string | null
+          tenant_id: string
+          trial_ends_at: string | null
+          trial_started_at: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tenant_subscriptions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       tenant_has_feature: {
         Args: { _feature_key: string; _tenant_id: string }
         Returns: boolean
@@ -4598,6 +4618,10 @@ export type Database = {
       touch_portal_last_seen: { Args: { _link_id: string }; Returns: undefined }
       update_client_retention_metrics: {
         Args: { p_client_id: string }
+        Returns: undefined
+      }
+      user_change_password_with_history: {
+        Args: { new_raw_password: string }
         Returns: undefined
       }
     }

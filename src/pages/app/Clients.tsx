@@ -822,14 +822,14 @@ export default function ClientsPage() {
                   <Plus className="mr-2 h-4 w-4" /> Novo cliente
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-h-[90vh] overflow-hidden sm:max-w-2xl">
+              <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
                 <DialogHeader>
                   <DialogTitle>Novo cliente</DialogTitle>
                   <DialogDescription>
                     Preencha os dados principais do cliente para iniciar o relacionamento no CRM.
                   </DialogDescription>
                 </DialogHeader>
-                <ScrollArea className="max-h-[72vh] pr-4">
+                <div className="py-2">
                   <ClientForm
                     form={form}
                     setForm={setForm}
@@ -839,7 +839,7 @@ export default function ClientsPage() {
                     saving={savingForm}
                     saveLabel="Cadastrar cliente"
                   />
-                </ScrollArea>
+                </div>
               </DialogContent>
             </Dialog>
           </>
@@ -1515,7 +1515,7 @@ function FiltersCard({
             className="min-w-0 pl-9"
           />
         </div>
-        <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 [&>*]:min-w-0">
+        <div className="flex flex-col min-w-0 gap-3 [&>*]:min-w-0">
           <FilterSelectTooltip fieldLabel="Status" valueLabel={statusLabel}>
             <Select value={filters.status} onValueChange={(value) => setFilters((prev) => ({ ...prev, status: value as ClientStatus | "all" }))}>
               <SelectTrigger className="min-w-0 w-full" aria-label={`Status: ${statusLabel}`}>
@@ -1681,8 +1681,8 @@ function ClientForm({
   onStatusChange?: (status: ClientStatus) => void;
 }) {
   return (
-    <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2">
+    <div className="space-y-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Nome completo" required>
           <Input
             data-testid="client-form-full-name"
@@ -1773,17 +1773,17 @@ function ClientForm({
         </Field>
       </div>
       <Field label="Observações">
-        <Textarea value={form.notes} onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))} rows={4} />
+        <Textarea value={form.notes} onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))} rows={2} />
       </Field>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-3">
         <Field label="Preferências">
-          <Textarea value={form.preferences} onChange={(e) => setForm((prev) => ({ ...prev, preferences: e.target.value }))} rows={4} />
+          <Textarea value={form.preferences} onChange={(e) => setForm((prev) => ({ ...prev, preferences: e.target.value }))} rows={2} />
         </Field>
         <Field label="Alergias">
-          <Textarea value={form.allergies} onChange={(e) => setForm((prev) => ({ ...prev, allergies: e.target.value }))} rows={4} />
+          <Textarea value={form.allergies} onChange={(e) => setForm((prev) => ({ ...prev, allergies: e.target.value }))} rows={2} />
         </Field>
         <Field label="Contraindicações">
-          <Textarea value={form.contraindications} onChange={(e) => setForm((prev) => ({ ...prev, contraindications: e.target.value }))} rows={4} />
+          <Textarea value={form.contraindications} onChange={(e) => setForm((prev) => ({ ...prev, contraindications: e.target.value }))} rows={2} />
         </Field>
       </div>
       <Button data-testid="client-form-submit" onClick={onSave} disabled={saving}>

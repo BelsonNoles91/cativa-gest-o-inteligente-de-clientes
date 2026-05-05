@@ -114,7 +114,7 @@ $$;
 -- -------------------------------------------------------------------------
 -- 4) AUDIT_LOGS: remover do Realtime
 -- -------------------------------------------------------------------------
-ALTER PUBLICATION supabase_realtime DROP TABLE public.audit_logs;
+-- ALTER PUBLICATION supabase_realtime DROP TABLE public.audit_logs;
 
 -- -------------------------------------------------------------------------
 -- 5) SEGMENT_TEMPLATES: exigir membership ativa em algum tenant

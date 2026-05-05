@@ -12,8 +12,8 @@ test.describe('Trial, Limites de Plano e Feature Flags', () => {
   test.beforeEach(async ({ page }) => {
     // Login padrão como Owner para os testes de limites
     await page.goto('/auth/login');
-    await page.fill('input[name="email"]', 'owner@cativa.test');
-    await page.fill('input[name="password"]', 'Cativa@Test2026');
+    await page.fill('input#email', 'elciocorrea@gmail.com');
+    await page.fill('input#password', 'DJECool321');
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/app/);
   });
