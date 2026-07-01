@@ -56,7 +56,7 @@ export function useConfirmationCenter() {
     setLoading(true);
     try {
       const [list, c, tmpls] = await Promise.all([
-        listQueueHydrated({ tenantId, stage, excludeClosed: true }),
+        listQueueHydrated({ tenantId, stage, excludeClosed: true, limit: 200 }),
         countQueueByStage(tenantId),
         listTemplates(tenantId, { activeOnly: true }),
       ]);

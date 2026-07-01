@@ -18,6 +18,17 @@ Antes de iniciar a validação, garanta que:
 - [ ] Caixa de e-mail real acessível por cada perfil de teste.
 - [ ] **2 dispositivos físicos** (1 Android + 1 iOS) com WhatsApp instalado.
 
+### Validado localmente em 30/06/2026 (baseline produção)
+
+- [x] `npm ci` concluído com sucesso.
+- [x] `vitest.config.ts` exclui specs Playwright em `src/tests/e2e/` e `src/__tests__/Auth.test.ts`.
+- [x] Specs Playwright órfãos movidos para `e2e/` (`audit-security`, `go-live-readiness`, `onboarding-flow`, `ux-responsiveness`).
+- [x] CI/CD: `.github/workflows/ci.yml` e `vercel.json` adicionados.
+- [x] Hardening P0: error handling, debug overlays, PWA sem cache de API Supabase, billing copy atualizado.
+- [x] `npm test`: **354/358** testes passando (4 falhas pré-existentes: `access-matrix` analytics×2, `safe-area-mobile` grid-cols-4, `SidebarNavItem` loading state).
+- [x] `npm run build`: verde (PWA + bundle gerado em ~10s).
+- [ ] `npm run lint`: 55 erros pré-existentes (`@typescript-eslint/no-explicit-any` e hooks deps) — não introduzidos por este hardening.
+
 ### Validado localmente em 23/04/2026
 
 - [x] `npm test` passando com `321` testes.
@@ -174,12 +185,36 @@ Antes de iniciar a validação, garanta que:
 
 ## 7. Mobile-first & PWA
 
+### Matriz de dispositivos (validação manual)
+
+| Viewport | Rotas a validar manualmente |
+|----------|---------------------------|
+| iPhone SE 375×667 | Agenda dialog, CRM create, Portal nav |
+| Android 360×800 | Analytics filters, Confirmações tabs |
+| iPhone 14 landscape | Safe-area lateral no BottomNav |
+
+### Checklist zero scroll horizontal
+
+- [ ] Abrir cada dialog principal sem arrastar lateralmente (Agenda, Clientes, Confirmações, Waitlist)
+- [ ] Rotacionar para landscape sem conteúdo cortado
+- [ ] Teclado virtual não esconde CTA primário (forms auth/portal)
+
+### PWA e shell
+
 - [ ] Acessar app pelo Chrome mobile (Android) → instalar PWA via banner.
 - [ ] Acessar pelo Safari mobile (iOS) → adicionar à tela de início.
 - [ ] Abrir offline → confirmar `offline.html` e banner de offline aparecem.
 - [ ] Validar BottomNav: nenhum ícone coberto por badge ou elemento flutuante (E2E `bottom-nav-overlap.spec.ts` cobre, mas validar visualmente em iPhone SE e Galaxy S8).
 - [ ] Menu "Mais": abre drawer corretamente, mostra skeletons durante loading, estado vazio quando aplicável.
 - [ ] Tela de Assinatura: skeletons aparecem antes do conteúdo, sem layout shift.
+
+### Suíte automatizada mobile (CI)
+
+- [ ] `npm test` — Vitest inclui `pages-visual.test.ts`, `safe-area-mobile.test.ts` e `responsive-layout-patterns.test.ts`
+- [ ] `npm run test:visual:public` — rotas públicas + marketing (`marketing-routes.spec.ts`)
+- [ ] `npm run test:visual:auth:critical` — rotas autenticadas em iphone-14, iphone-se e android-360
+- [ ] `npm run test:mobile:pre-release` — gate completo pré-publicação (Vitest + build + Playwright mobile)
+- [ ] Baselines visuais em `e2e/__screenshots__/`: gerar com `npm run test:visual:update` quando credenciais E2E estiverem disponíveis; sem credenciais, specs autenticados são pulados (`AUTH_SKIP_REASON`)
 
 ---
 

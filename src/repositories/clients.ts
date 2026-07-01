@@ -111,18 +111,29 @@ export interface ListClientsParams {
   tagId?: string;
   churnRiskScoreMin?: number;
   limit?: number;
+  offset?: number;
 }
 
-export async function listClients(params: ListClientsParams): Promise<Client[]> {
+export interface ListClientsPage {
+  clients: Client[];
+  total: number;
+  hasMore: boolean;
+}
+
+export const CLIENTS_PAGE_SIZE_DEFAULT = 50;
+
+export async function listClients(params: ListClientsParams): Promise<ListClientsPage> {
   if (!params.tenantId) {
     throw new Error("tenantId é obrigatório para listClients");
   }
+  const limit = params.limit ?? CLIENTS_PAGE_SIZE_DEFAULT;
+  const offset = params.offset ?? 0;
   let q = supabase
     .from("clients")
-    .select(CLIENT_COLUMNS)
+    .select(CLIENT_COLUMNS, { count: "exact" })
     .eq("tenant_id", params.tenantId)
     .order("full_name", { ascending: true })
-    .limit(params.limit ?? 200);
+    .range(offset, offset + limit - 1);
 
   // Performance hint
   q = q.throwOnError();
@@ -141,7 +152,7 @@ export async function listClients(params: ListClientsParams): Promise<Client[]> 
   if (params.origin) q = q.eq("origin", params.origin);
   if (params.churnRiskScoreMin !== undefined) q = q.gte("churn_risk_score", params.churnRiskScoreMin);
 
-  const { data, error } = await q;
+  const { data, error, count } = await q;
   if (error) throw error;
   let list = (data ?? []).map((r: any) => ({
     id: r.id,
@@ -173,7 +184,12 @@ export async function listClients(params: ListClientsParams): Promise<Client[]> 
     list = list.filter((c) => ids.has(c.id));
   }
 
-  return list;
+  const total = count ?? list.length;
+  return {
+    clients: list,
+    total,
+    hasMore: offset + list.length < total,
+  };
 }
 
 export async function getClient(clientId: string): Promise<Client | null> {

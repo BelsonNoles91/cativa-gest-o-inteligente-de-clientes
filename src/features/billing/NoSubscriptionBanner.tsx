@@ -80,7 +80,7 @@ export function NoSubscriptionBanner({
           className,
         )}
       >
-        <div className="flex flex-1 min-w-[280px] items-start gap-3">
+        <div className="flex min-w-0 w-full flex-1 items-start gap-3">
           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-muted text-muted-foreground">
             <Clock className="h-5 w-5" />
           </div>
@@ -103,7 +103,7 @@ export function NoSubscriptionBanner({
         className,
       )}
     >
-      <div className="flex flex-1 min-w-[280px] items-start gap-3">
+      <div className="flex min-w-0 w-full flex-1 items-start gap-3">
         <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-warning text-warning-foreground">
           <Sparkles className="h-5 w-5" />
         </div>
@@ -116,7 +116,7 @@ export function NoSubscriptionBanner({
         </div>
       </div>
       <Button
-        className="rounded-xl bg-gradient-brand md:shrink-0"
+        className="w-full rounded-xl bg-gradient-brand sm:w-auto md:shrink-0"
         asChild
       >
         <Link to="/app/assinatura">

@@ -40,7 +40,7 @@ export function AppLayout() {
             <BottomNav />
           </SidebarInset>
         </div>
-        <SafeAreaDebugOverlay />
+        {import.meta.env.DEV && <SafeAreaDebugOverlay />}
       </SidebarProvider>
     </TenantBillingProvider>
   );

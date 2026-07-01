@@ -72,6 +72,14 @@ test.describe("rotas autenticadas", () => {
     { path: "/app/agenda", name: "agenda" },
     { path: "/app/clientes", name: "clientes" },
     { path: "/app/confirmacoes", name: "confirmacoes" },
+    { path: "/app/lista-de-espera", name: "waitlist" },
+    { path: "/app/servicos", name: "servicos" },
+    { path: "/app/configuracoes", name: "configuracoes" },
+    { path: "/app/dados", name: "dados" },
+    { path: "/app/perfil", name: "perfil" },
+    { path: "/app/analytics", name: "analytics" },
+    { path: "/app/pacotes", name: "pacotes" },
+    { path: "/app/assinatura", name: "assinatura" },
   ]) {
     test(`${path} — sem cortes e baseline visual`, async ({ page }) => {
       await openAuthenticatedVisualRoute(page, path);

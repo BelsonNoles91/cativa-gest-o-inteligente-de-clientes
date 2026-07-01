@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
+import { handleError } from "@/lib/error-handler";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { usePortalClient } from "@/features/portal/PortalClientProvider";
 import {
@@ -82,6 +83,11 @@ export default function PortalProfile() {
         setUnits(us);
         setPros(pr);
         setConsents(cs);
+      } catch (err) {
+        handleError(err, {
+          category: "DATABASE",
+          context: { source: "PortalProfile.load" },
+        });
       } finally {
         setLoading(false);
       }

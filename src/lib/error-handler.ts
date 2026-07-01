@@ -35,9 +35,39 @@ export class AppError extends Error {
   }
 }
 
+let sentryInitPromise: Promise<void> | null = null;
+
+async function ensureSentry(): Promise<typeof import("@sentry/react") | null> {
+  const dsn = import.meta.env.VITE_SENTRY_DSN;
+  if (!dsn) return null;
+
+  if (!sentryInitPromise) {
+    sentryInitPromise = import("@sentry/react").then((Sentry) => {
+      Sentry.init({
+        dsn,
+        environment: import.meta.env.MODE,
+        enabled: !import.meta.env.DEV,
+      });
+    });
+  }
+  await sentryInitPromise;
+  return import("@sentry/react");
+}
+
+function captureSentry(error: unknown, context?: Record<string, unknown>) {
+  void ensureSentry().then((Sentry) => {
+    if (!Sentry) return;
+    if (error instanceof Error) {
+      Sentry.captureException(error, { extra: context });
+    } else {
+      Sentry.captureMessage(String(error), { extra: context });
+    }
+  });
+}
+
 /**
  * Manipulador centralizado de exceções.
- * Realiza logging, telemetria (futuro) e feedback ao usuário.
+ * Realiza logging, telemetria (Sentry quando configurado) e feedback ao usuário.
  */
 export const handleError = (error: unknown, options: AppErrorOptions = {}) => {
   const isDevelopment = import.meta.env.DEV;
@@ -56,15 +86,19 @@ export const handleError = (error: unknown, options: AppErrorOptions = {}) => {
     appError = new AppError(String(error), { category: options.category });
   }
 
+  const mergedContext = { ...appError.context, ...options.context };
+
   // Logging persistente e estruturado para debug
   console.error(
     `[${appError.category}] ${appError.message}`,
     {
       timestamp: appError.timestamp,
-      context: { ...appError.context, ...options.context },
+      context: mergedContext,
       stack: appError.stack
     }
   );
+
+  captureSentry(error instanceof Error ? error : appError, mergedContext);
 
   // Feedback visual ao usuário (se não for silencioso)
   if (!options.silent && !appError.context.silent) {

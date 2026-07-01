@@ -5,7 +5,7 @@
  *   visible = canAccess(role, item.roles) && (!item.featureKey || hasFeature(item.featureKey))
  *
  * Snapshot dos 4 tenants demo capturado em 2026-04-22 via psql:
- *  - demo-belle-pele : Studio (active)            features: agenda, analytics, client_portal, confirmation_center, packages_memberships
+ *  - demo-belle-pele : Studio (active)            features: agenda, advanced_reports, client_portal, confirmation_center, packages_memberships
  *  - demo-origem     : Starter (trialing)         features: agenda, confirmation_center, packages_memberships
  *  - demo-sereno     : Starter (trialing)         features: agenda, confirmation_center, packages_memberships
  *  - demo-lumiere    : sem assinatura             features: ∅  (banner "Sem assinatura" deve aparecer)
@@ -42,7 +42,7 @@ const TENANTS: TenantSnapshot[] = [
     subscriptionStatus: "active",
     enabledFeatures: new Set([
       "agenda",
-      "analytics",
+      "advanced_reports",
       "client_portal",
       "confirmation_center",
       "packages_memberships",
@@ -216,10 +216,10 @@ describe("Matriz de acesso — papel × tenant × menu", () => {
             }
           });
 
-          it("Analytics gated por feature 'analytics' (apenas plano Studio)", () => {
+          it("Analytics gated por feature 'advanced_reports' (apenas plano Studio)", () => {
             const analytics = items.find((i) => i.to === "/app/analytics");
             const owedByRole = role === "owner" || role === "manager";
-            const owedByFeature = tenant.enabledFeatures.has("analytics");
+            const owedByFeature = tenant.enabledFeatures.has("advanced_reports");
             expect(analytics?.visible).toBe(owedByRole && owedByFeature);
           });
 

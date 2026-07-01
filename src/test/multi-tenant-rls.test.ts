@@ -23,6 +23,8 @@ vi.mock("@/integrations/supabase/client", () => {
     or: vi.fn().mockReturnThis(),
     order: vi.fn().mockReturnThis(),
     limit: vi.fn().mockReturnThis(),
+    range: vi.fn().mockReturnThis(),
+    throwOnError: vi.fn().mockReturnThis(),
     maybeSingle: vi.fn(),
     single: vi.fn(),
     then: vi.fn(),
@@ -47,7 +49,7 @@ describe("Isolamento Multi-Tenant (RLS Mocked Validation)", () => {
   it("listClients deve incluir obrigatoriamente o filtro eq('tenant_id', ...)", async () => {
     // Configura o mock para retornar sucesso
     const mockFrom = (supabase.from as any)();
-    mockFrom.then.mockImplementation((callback: any) => callback({ data: [], error: null }));
+    mockFrom.then.mockImplementation((callback: any) => callback({ data: [], error: null, count: 0 }));
 
     await listClients({ tenantId: TENANT_A });
 

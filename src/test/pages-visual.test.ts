@@ -35,6 +35,11 @@ const PAGES = {
   billing: readPage("src/pages/app/Billing.tsx"),
   dataImportExport: readPage("src/pages/app/DataImportExport.tsx"),
   settings: readPage("src/pages/app/Settings.tsx"),
+  agenda: readPage("src/pages/app/Agenda.tsx"),
+  clients: readPage("src/pages/app/Clients.tsx"),
+  confirmationActionDialog: readPage("src/features/confirmation/ConfirmationActionDialog.tsx"),
+  analyticsFiltersBar: readPage("src/features/analytics/AnalyticsFiltersBar.tsx"),
+  portalLayout: readPage("src/components/shell/PortalLayout.tsx"),
   dialogPrimitive: readPage("src/components/ui/dialog.tsx"),
 } as const;
 
@@ -207,6 +212,113 @@ describe("Páginas — invariantes visuais (mobile + 1366×768)", () => {
     });
   });
 
+  describe("Agenda (Agenda.tsx)", () => {
+    const src = PAGES.agenda;
+    const dialogs = findDialogContents(src);
+
+    it("possui pelo menos 2 DialogContent (agendamento + bloqueio)", () => {
+      expect(dialogs.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it("DialogContent largos têm clamp horizontal mobile", () => {
+      for (const attrs of dialogs) {
+        const cls = getClassName(attrs);
+        if (/max-w-(2xl|3xl|4xl)/.test(cls)) {
+          expect(cls, `Dialog sem clamp: ${cls}`).toMatch(/w-\[calc\(100vw-2rem\)\]/);
+        }
+      }
+    });
+
+    it("slot grid usa grid-cols-1 sm:grid-cols-3 (empilha em mobile)", () => {
+      expect(src).toMatch(/grid-cols-1[\s\S]*sm:grid-cols-3/);
+    });
+
+    it("toolbar de filtros empilha em mobile (flex-col sm:flex-row)", () => {
+      expect(src).toMatch(/flex-col[\s\S]*sm:flex-row/);
+    });
+  });
+
+  describe("Clientes (Clients.tsx)", () => {
+    const src = PAGES.clients;
+    const dialogs = findDialogContents(src);
+
+    it("DialogContent de criação tem clamp horizontal mobile", () => {
+      for (const attrs of dialogs) {
+        const cls = getClassName(attrs);
+        if (/max-w-(2xl|3xl)/.test(cls)) {
+          expect(cls, `Dialog sem clamp: ${cls}`).toMatch(/w-\[calc\(100vw-2rem\)\]/);
+        }
+      }
+    });
+
+    it("CTA Novo cliente usa w-full sm:w-auto", () => {
+      expect(src).toMatch(/w-full[\s\S]*sm:w-auto/);
+    });
+  });
+
+  describe("Confirmações — ConfirmationActionDialog.tsx", () => {
+    const src = PAGES.confirmationActionDialog;
+
+    it("DialogContent tem clamp horizontal mobile", () => {
+      expect(src).toMatch(/w-\[calc\(100vw-2rem\)\]/);
+    });
+
+    it("TabsList usa overflow-x-auto (não grid-cols-5 fixo)", () => {
+      expect(src).toMatch(/overflow-x-auto/);
+      expect(src).not.toMatch(/grid-cols-5/);
+    });
+
+    it("TabsTrigger usa whitespace-nowrap shrink-0", () => {
+      expect(src).toMatch(/whitespace-nowrap/);
+      expect(src).toMatch(/shrink-0/);
+    });
+  });
+
+  describe("Analytics — AnalyticsFiltersBar.tsx", () => {
+    const src = PAGES.analyticsFiltersBar;
+
+    it("SelectTriggers usam w-full min-w-0 sm:w-[...] (sem largura fixa em mobile)", () => {
+      expect(src).toMatch(/w-full min-w-0 sm:w-\[/);
+      expect(src).not.toMatch(/className="w-\[1[6-9]0px\]"/);
+    });
+
+    it("container não usa -mx-4 bleed (overflow horizontal)", () => {
+      expect(src).not.toMatch(/-mx-4/);
+    });
+
+    it("filtros empilham em mobile (flex-col sm:flex-row)", () => {
+      expect(src).toMatch(/flex-col[\s\S]*sm:flex-row/);
+    });
+  });
+
+  describe("Portal — PortalLayout.tsx", () => {
+    const src = PAGES.portalLayout;
+
+    it("main usa pb-bottom-nav (não pb-28 hardcoded)", () => {
+      expect(src).toMatch(/pb-bottom-nav/);
+      expect(src).not.toMatch(/\bpb-28\b/);
+    });
+
+    it("nav inferior aplica pb-safe pl-safe pr-safe", () => {
+      expect(src).toMatch(/pb-safe/);
+      expect(src).toMatch(/pl-safe/);
+      expect(src).toMatch(/pr-safe/);
+    });
+
+    it("header direito usa min-w-0 shrink-0", () => {
+      expect(src).toMatch(/min-w-0 shrink-0/);
+    });
+  });
+
+  describe("PageHeader — sem min-w-[300px] fixo", () => {
+    const pageHeader = readPage("src/components/shell/PageHeader.tsx");
+
+    it("bloco de título usa min-w-0 flex-1", () => {
+      expect(pageHeader).toMatch(/min-w-0 flex-1/);
+      expect(pageHeader).not.toMatch(/min-w-\[300px\]/);
+    });
+  });
+
   describe("Acessibilidade — foco em botões e modais", () => {
     it("nenhuma página remove o foco com tabIndex={-1} em botões interativos", () => {
       for (const [name, src] of Object.entries(PAGES)) {
@@ -220,7 +332,7 @@ describe("Páginas — invariantes visuais (mobile + 1366×768)", () => {
     });
 
     it("todos os DialogTitle estão presentes (Radix exige para a11y)", () => {
-      const pagesWithDialogs = ["waitlist", "services"] as const;
+      const pagesWithDialogs = ["waitlist", "services", "agenda", "clients"] as const;
       for (const key of pagesWithDialogs) {
         const src = PAGES[key];
         const dialogContentCount = (src.match(/<DialogContent\b/g) ?? []).length;

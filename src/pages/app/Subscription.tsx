@@ -359,7 +359,7 @@ export default function Subscription() {
 
             <p className="text-xs text-muted-foreground">
               Para mudar de plano, alterar limites ou cancelar, fale com o suporte.
-              A integração com pagamentos será conectada em breve.
+              A ativação de planos e trials é feita manualmente pelo Super Admin.
             </p>
           </aside>
         </div>

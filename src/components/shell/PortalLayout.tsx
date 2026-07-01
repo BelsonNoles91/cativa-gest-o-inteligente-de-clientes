@@ -121,12 +121,12 @@ export function PortalLayout() {
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 shrink-0 items-center gap-2">
             {links.length > 1 && (
               <select
                 value={activeLink.tenantId}
                 onChange={(e) => setActiveTenant(e.target.value)}
-                className="rounded-md border border-input bg-background px-2 py-1 text-xs"
+                className="max-w-[8rem] truncate rounded-md border border-input bg-background px-2 py-1 text-xs sm:max-w-none"
                 aria-label="Trocar de estabelecimento"
               >
                 {links.map((l) => (
@@ -158,7 +158,7 @@ export function PortalLayout() {
         data-app-main="true"
         data-testid="app-main"
         data-app-context="portal"
-        className="mx-auto w-full max-w-3xl px-4 pb-28 pt-4"
+        className="mx-auto w-full max-w-3xl px-4 pb-bottom-nav pt-4"
       >
         <Outlet />
       </main>
@@ -169,7 +169,7 @@ export function PortalLayout() {
         data-testid="bottom-nav"
         data-app-context="portal"
         aria-label="Navegação do portal"
-        className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 backdrop-blur"
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 backdrop-blur pb-safe pl-safe pr-safe"
       >
         <div className="mx-auto grid max-w-3xl grid-cols-4">
           {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
@@ -203,7 +203,7 @@ export function PortalLayout() {
           ))}
         </div>
       </nav>
-      <SafeAreaDebugOverlay />
+      {import.meta.env.DEV && <SafeAreaDebugOverlay />}
     </div>
   );
 }

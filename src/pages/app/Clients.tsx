@@ -55,6 +55,7 @@ import {
   listClientCustomValues,
   listClientTagIds,
   listClients,
+  CLIENTS_PAGE_SIZE_DEFAULT,
   listConsentResponses,
   listConsentTemplates,
   listCustomFieldDefs,
@@ -161,8 +162,22 @@ export default function ClientsPage() {
     updateDebouncedSearch(filters.search);
   }, [filters.search, updateDebouncedSearch]);
 
+  const clientFilterKey = useMemo(
+    () =>
+      JSON.stringify({
+        tenantId: currentTenant?.id,
+        debouncedSearch,
+        filters,
+      }),
+    [currentTenant?.id, debouncedSearch, filters],
+  );
+
   const [clients, setClients] = useState<Client[]>([]);
   const [loadingList, setLoadingList] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [clientOffset, setClientOffset] = useState(0);
+  const [hasMoreClients, setHasMoreClients] = useState(false);
+  const [totalClients, setTotalClients] = useState(0);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [professionals, setProfessionals] = useState<ProfessionalLite[]>([]);
   const [tags, setTags] = useState<ClientTag[]>([]);
@@ -266,12 +281,18 @@ export default function ClientsPage() {
   }, [currentTenant, user]);
 
   useEffect(() => {
+    setClientOffset(0);
+  }, [clientFilterKey]);
+
+  useEffect(() => {
     if (!currentTenant) return;
     let ignore = false;
-    setLoadingList(true);
+    const isFirstPage = clientOffset === 0;
+    if (isFirstPage) setLoadingList(true);
+    else setLoadingMore(true);
     void (async () => {
       try {
-        const list = await listClients({
+        const page = await listClients({
           tenantId: currentTenant.id,
           search: debouncedSearch || undefined,
           status: filters.status,
@@ -284,14 +305,19 @@ export default function ClientsPage() {
           preferredProfessionalId: filters.preferredProfessionalId === "all" ? undefined : filters.preferredProfessionalId,
           origin: filters.origin === "all" ? undefined : filters.origin,
           churnRiskScoreMin: filters.churnRiskScore === "high" ? 70 : undefined,
-          limit: 300,
+          offset: clientOffset,
+          limit: CLIENTS_PAGE_SIZE_DEFAULT,
         });
         if (ignore) return;
-        setClients(list);
-        setSelectedId((prev) => {
-          if (prev && list.some((client) => client.id === prev)) return prev;
-          return list[0]?.id ?? null;
-        });
+        setClients((prev) => (isFirstPage ? page.clients : [...prev, ...page.clients]));
+        setHasMoreClients(page.hasMore);
+        setTotalClients(page.total);
+        if (isFirstPage) {
+          setSelectedId((prev) => {
+            if (prev && page.clients.some((client) => client.id === prev)) return prev;
+            return page.clients[0]?.id ?? null;
+          });
+        }
       } catch (error) {
         if (ignore) return;
         toast({
@@ -300,13 +326,16 @@ export default function ClientsPage() {
           variant: "destructive",
         });
       } finally {
-        if (!ignore) setLoadingList(false);
+        if (!ignore) {
+          setLoadingList(false);
+          setLoadingMore(false);
+        }
       }
     })();
     return () => {
       ignore = true;
     };
-  }, [currentTenant, filters, debouncedSearch, toast]);
+  }, [currentTenant?.id, clientFilterKey, clientOffset]);
 
   useEffect(() => {
     if (!currentTenant || !selectedId) {
@@ -807,7 +836,7 @@ export default function ClientsPage() {
                 <Button
                   data-critical-action
                   data-testid="clients-create-cta"
-                  className="rounded-xl bg-gradient-brand"
+                  className="w-full rounded-xl bg-gradient-brand sm:w-auto"
                   disabled={
                     limits?.maxActiveClients !== null &&
                     limits?.maxActiveClients !== undefined &&
@@ -822,7 +851,7 @@ export default function ClientsPage() {
                   <Plus className="mr-2 h-4 w-4" /> Novo cliente
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+              <DialogContent className="w-[calc(100vw-2rem)] max-h-[90vh] overflow-y-auto sm:max-w-2xl sm:w-full">
                 <DialogHeader>
                   <DialogTitle>Novo cliente</DialogTitle>
                   <DialogDescription>
@@ -877,7 +906,11 @@ export default function ClientsPage() {
           <Card className="min-w-0 w-full max-w-full overflow-hidden">
             <CardHeader className="min-w-0 px-4 pb-3 sm:px-6">
               <CardTitle className="text-base">Base de clientes</CardTitle>
-              <CardDescription>Busca rápida para recepção e consulta operacional.</CardDescription>
+              <CardDescription>
+                {totalClients > 0
+                  ? `${clients.length} de ${totalClients} clientes`
+                  : "Busca rápida para recepção e consulta operacional."}
+              </CardDescription>
             </CardHeader>
             <CardContent className="min-w-0 px-0 pb-0">
               {loadingList ? (
@@ -934,6 +967,25 @@ export default function ClientsPage() {
                     ))}
                   </ul>
                 </ScrollArea>
+              )}
+              {hasMoreClients && !loadingList && (
+                <div className="border-t border-border/60 px-4 py-3 sm:px-6">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    disabled={loadingMore}
+                    onClick={() => setClientOffset((prev) => prev + CLIENTS_PAGE_SIZE_DEFAULT)}
+                  >
+                    {loadingMore ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Carregando…
+                      </>
+                    ) : (
+                      "Carregar mais clientes"
+                    )}
+                  </Button>
+                </div>
               )}
             </CardContent>
           </Card>

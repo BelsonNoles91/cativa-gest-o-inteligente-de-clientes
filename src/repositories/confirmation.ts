@@ -54,21 +54,40 @@ export interface ListQueueParams {
   stage?: ConfirmationStage;
   status?: ConfirmationQueueStatus;
   excludeClosed?: boolean;
+  offset?: number;
+  limit?: number;
 }
 
-export async function listQueue(params: ListQueueParams): Promise<ConfirmationQueueItem[]> {
+export interface ListQueuePage {
+  items: ConfirmationQueueItem[];
+  total: number;
+  hasMore: boolean;
+}
+
+export const QUEUE_PAGE_SIZE_DEFAULT = 50;
+
+export async function listQueue(params: ListQueueParams): Promise<ListQueuePage> {
+  const limit = params.limit ?? QUEUE_PAGE_SIZE_DEFAULT;
+  const offset = params.offset ?? 0;
   let q = supabase
     .from("confirmation_queue")
-    .select(QUEUE_COLS)
+    .select(QUEUE_COLS, { count: "exact" })
     .eq("tenant_id", params.tenantId)
     .order("priority", { ascending: false })
-    .order("appointment_starts_at", { ascending: true });
+    .order("appointment_starts_at", { ascending: true })
+    .range(offset, offset + limit - 1);
   if (params.stage) q = q.eq("stage", params.stage);
   if (params.status) q = q.eq("status", params.status);
   if (params.excludeClosed) q = q.not("status", "in", "(closed,confirmed,canceled)");
-  const { data, error } = await q;
+  const { data, error, count } = await q;
   if (error) throw error;
-  return (data ?? []).map((r) => toQueueItem(r as Record<string, unknown>));
+  const items = (data ?? []).map((r) => toQueueItem(r as Record<string, unknown>));
+  const total = count ?? items.length;
+  return {
+    items,
+    total,
+    hasMore: offset + items.length < total,
+  };
 }
 
 export async function countQueueByStage(tenantId: string): Promise<Record<ConfirmationStage, number>> {
@@ -595,7 +614,7 @@ export interface QueueItemHydrated extends ConfirmationQueueItem {
 }
 
 export async function listQueueHydrated(params: ListQueueParams): Promise<QueueItemHydrated[]> {
-  const items = await listQueue(params);
+  const { items } = await listQueue(params);
   if (items.length === 0) return [];
   const clientIds = Array.from(new Set(items.map((i) => i.clientId)));
   const apptIds = Array.from(new Set(items.map((i) => i.appointmentId)));

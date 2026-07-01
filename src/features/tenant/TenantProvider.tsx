@@ -141,7 +141,9 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       try {
         localStorage.removeItem(STORAGE_KEY_TENANT);
         localStorage.removeItem(STORAGE_KEY_UNIT);
-      } catch (e) {}
+      } catch (e) {
+        console.warn("[TenantProvider] Failed to clear tenant storage", e);
+      }
       setCurrentTenantIdState(null);
       setCurrentUnitIdState(null);
       setVerified(true);

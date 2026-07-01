@@ -374,7 +374,7 @@ export function MembersTab() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Select value={tenantFilter} onValueChange={setTenantFilter}>
-            <SelectTrigger className="h-9 min-w-[140px] flex-1 sm:flex-none">
+            <SelectTrigger className="h-9 w-full min-w-0 flex-1 sm:w-[140px] sm:flex-none">
               <Building2 className="mr-1.5 h-3.5 w-3.5" />
               <SelectValue />
             </SelectTrigger>
@@ -386,7 +386,7 @@ export function MembersTab() {
             </SelectContent>
           </Select>
           <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v as Role | "all")}>
-            <SelectTrigger className="h-9 min-w-[130px] flex-1 sm:flex-none">
+            <SelectTrigger className="h-9 w-full min-w-0 flex-1 sm:w-[130px] sm:flex-none">
               <UserCog className="mr-1.5 h-3.5 w-3.5" />
               <SelectValue />
             </SelectTrigger>
@@ -398,7 +398,7 @@ export function MembersTab() {
             </SelectContent>
           </Select>
           <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as MembershipStatus | "all")}>
-            <SelectTrigger className="h-9 min-w-[130px] flex-1 sm:flex-none">
+            <SelectTrigger className="h-9 w-full min-w-0 flex-1 sm:w-[130px] sm:flex-none">
               <Filter className="mr-1.5 h-3.5 w-3.5" />
               <SelectValue />
             </SelectTrigger>

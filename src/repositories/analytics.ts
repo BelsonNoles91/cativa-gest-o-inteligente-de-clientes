@@ -113,19 +113,28 @@ function rowToAppt(r: Record<string, unknown>): ApptFact {
 }
 
 export async function fetchClients(tenantId: string): Promise<ClientFact[]> {
-  const { data, error } = await supabase
-    .from("clients")
-    .select(
-      "id, created_at, is_vip, full_name, email, phone, last_visit_at",
-    )
-    .eq("tenant_id", tenantId)
-    .limit(1000);
-  if (error) throw error;
-  // calcula completedVisits e firstVisitAt em outra query agregada
-  const ids = (data ?? []).map((c) => c.id as string);
+  const pageSize = 500;
+  const allRows: Record<string, unknown>[] = [];
+  let offset = 0;
+
+  while (true) {
+    const { data, error } = await supabase
+      .from("clients")
+      .select("id, created_at, is_vip, full_name, email, phone, last_visit_at")
+      .eq("tenant_id", tenantId)
+      .order("created_at", { ascending: true })
+      .range(offset, offset + pageSize - 1);
+    if (error) throw error;
+    const batch = (data ?? []) as Record<string, unknown>[];
+    allRows.push(...batch);
+    if (batch.length < pageSize) break;
+    offset += pageSize;
+  }
+
+  const ids = allRows.map((c) => c.id as string);
   const visits = await aggregateClientVisits(tenantId, ids);
 
-  return (data ?? []).map((c) => {
+  return allRows.map((c) => {
     const v = visits.get(c.id as string);
     return {
       id: c.id as string,

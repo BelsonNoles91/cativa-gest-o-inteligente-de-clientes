@@ -27,9 +27,8 @@ export default defineConfig(({ mode }) => ({
     //
     // Estratégia de cache:
     // - precache: HTML/JS/CSS/fontes/imagens do build
-    // - runtime "NetworkFirst" para chamadas Supabase REST (rápido
-    //   quando online, mostra última versão quando offline)
     // - runtime "CacheFirst" para fontes/imagens externas
+    // - Auth/REST/Storage Supabase NÃO são cacheados (dados sensíveis por tenant)
     // - navigateFallback → /offline.html quando uma rota nova é
     //   solicitada sem rede e sem cache
     // ─────────────────────────────────────────────────────────────
@@ -65,21 +64,6 @@ export default defineConfig(({ mode }) => ({
         ],
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff2}"],
         runtimeCaching: [
-          // Supabase REST/Auth → NetworkFirst com timeout curto
-          {
-            urlPattern: ({ url }) =>
-              url.hostname.endsWith(".supabase.co") &&
-              (url.pathname.startsWith("/rest/") ||
-                url.pathname.startsWith("/auth/") ||
-                url.pathname.startsWith("/storage/")),
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "supabase-api",
-              networkTimeoutSeconds: 4,
-              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
           // Imagens
           {
             urlPattern: ({ request }) => request.destination === "image",

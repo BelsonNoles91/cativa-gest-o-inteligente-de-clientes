@@ -191,7 +191,8 @@ export default function Billing() {
             </div>
           )}
           <p className="px-1 text-xs text-muted-foreground">
-            Para mudar de plano, fale com o suporte. A integração com pagamento será adicionada em breve.
+            Para mudar de plano ou ativar recursos adicionais, entre em contato com o suporte.
+            Planos e trials são ativados manualmente pelo administrador da plataforma.
           </p>
         </aside>
       </div>

@@ -444,11 +444,19 @@ function ExportPanel({ tenantId }: { tenantId: string }) {
   async function exportClients(format: "csv" | "json") {
     setBusy("clients-" + format);
     try {
-      const clients = await listClients({ tenantId, limit: 5000 });
+      const allClients: Awaited<ReturnType<typeof listClients>>["clients"] = [];
+      let offset = 0;
+      const limit = 500;
+      while (true) {
+        const page = await listClients({ tenantId, limit, offset });
+        allClients.push(...page.clients);
+        if (!page.hasMore) break;
+        offset += limit;
+      }
       const filename = `clientes_${dateStamp()}.${format}`;
-      if (format === "csv") downloadFile(filename, exportClientsCsv(clients));
-      else downloadJson(filename, buildClientRows(clients));
-      toast({ title: "Exportação concluída", description: `${clients.length} clientes.` });
+      if (format === "csv") downloadFile(filename, exportClientsCsv(allClients));
+      else downloadJson(filename, buildClientRows(allClients));
+      toast({ title: "Exportação concluída", description: `${allClients.length} clientes.` });
     } finally {
       setBusy(null);
     }

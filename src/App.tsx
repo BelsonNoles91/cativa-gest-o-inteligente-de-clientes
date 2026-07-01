@@ -208,7 +208,9 @@ const App = () => (
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
-                <DebugConsole />
+                {(import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEBUG === "true") && (
+                  <DebugConsole />
+                )}
               </TooltipProvider>
             </TenantProvider>
           </AuthProvider>

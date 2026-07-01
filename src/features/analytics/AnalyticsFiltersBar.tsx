@@ -67,10 +67,10 @@ export function AnalyticsFiltersBar({
   onSource,
 }: Props) {
   return (
-    <div className="surface-card sticky top-0 z-20 -mx-4 mb-4 flex flex-wrap items-center gap-2 p-3 md:mx-0 md:rounded-xl md:p-4">
-      <Filter className="h-4 w-4 text-muted-foreground" />
+    <div className="surface-card sticky top-0 z-20 mb-4 flex flex-col gap-2 p-3 sm:flex-row sm:flex-wrap sm:items-center md:rounded-xl md:p-4">
+      <Filter className="hidden h-4 w-4 shrink-0 text-muted-foreground sm:block" />
       <Select value={preset} onValueChange={(v) => onPreset(v as AnalyticsPreset)}>
-        <SelectTrigger className="w-[170px]">
+        <SelectTrigger className="w-full min-w-0 sm:w-[170px]">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -83,7 +83,7 @@ export function AnalyticsFiltersBar({
       </Select>
 
       <Select value={unitId ?? "all"} onValueChange={(v) => onUnit(v === "all" ? null : v)}>
-        <SelectTrigger className="w-[160px]">
+        <SelectTrigger className="w-full min-w-0 sm:w-[160px]">
           <SelectValue placeholder="Unidade" />
         </SelectTrigger>
         <SelectContent>
@@ -97,7 +97,7 @@ export function AnalyticsFiltersBar({
       </Select>
 
       <Select value={professionalId ?? "all"} onValueChange={(v) => onPro(v === "all" ? null : v)}>
-        <SelectTrigger className="w-[180px]">
+        <SelectTrigger className="w-full min-w-0 sm:w-[180px]">
           <SelectValue placeholder="Profissional" />
         </SelectTrigger>
         <SelectContent>
@@ -111,7 +111,7 @@ export function AnalyticsFiltersBar({
       </Select>
 
       <Select value={serviceId ?? "all"} onValueChange={(v) => onService(v === "all" ? null : v)}>
-        <SelectTrigger className="w-[180px]">
+        <SelectTrigger className="w-full min-w-0 sm:w-[180px]">
           <SelectValue placeholder="Serviço" />
         </SelectTrigger>
         <SelectContent>
@@ -125,7 +125,7 @@ export function AnalyticsFiltersBar({
       </Select>
 
       <Select value={source ?? "all"} onValueChange={(v) => onSource(v === "all" ? null : (v as AppointmentSource))}>
-        <SelectTrigger className="w-[170px]">
+        <SelectTrigger className="w-full min-w-0 sm:w-[170px]">
           <SelectValue placeholder="Origem" />
         </SelectTrigger>
         <SelectContent>

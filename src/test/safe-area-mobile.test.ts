@@ -168,15 +168,22 @@ describe("AppLayout — main reserva espaço para bottom nav + safe-area", () =>
   });
 });
 
-describe("PortalLayout — main reserva espaço para bottom nav (pb-28)", () => {
+describe("PortalLayout — main reserva espaço para bottom nav + safe-area", () => {
   const src = FILES.portalLayout;
 
-  it("main tem pb-28 ou pb-bottom-nav (compensa nav fixa do portal)", () => {
-    expect(src).toMatch(/pb-(28|bottom-nav)/);
+  it("main usa pb-bottom-nav (compensa nav fixa do portal)", () => {
+    expect(src).toMatch(/pb-bottom-nav/);
+    expect(src).not.toMatch(/\bpb-28\b/);
   });
 
   it("nav inferior do portal é fixa (fixed inset-x-0 bottom-0)", () => {
     expect(src).toMatch(/fixed inset-x-0 bottom-0/);
+  });
+
+  it("nav inferior aplica pb-safe pl-safe pr-safe (equivalente ao tenant BottomNav)", () => {
+    expect(src).toMatch(/pb-safe/);
+    expect(src).toMatch(/pl-safe/);
+    expect(src).toMatch(/pr-safe/);
   });
 
   it("OfflineBanner também aparece no portal", () => {
@@ -239,11 +246,8 @@ describe("Breakpoint matrix — invariantes por dispositivo", () => {
     expect(FILES.bottomNav).toMatch(/pr-safe/);
   });
 
-  it("iPhone SE (375×667) — bottom nav usa grid-cols-4 (3 atalhos + Mais)", () => {
-    // Reduzido de 5 para 4 colunas para evitar (a) corte do botão "Mais" em
-    // viewports estreitos e (b) sobreposição com o badge fixo do Lovable
-    // no canto inferior direito.
-    expect(FILES.bottomNav).toMatch(/grid-cols-4/);
+  it("iPhone SE (375×667) — bottom nav usa grid-cols-5 (4 atalhos + Mais)", () => {
+    expect(FILES.bottomNav).toMatch(/grid-cols-5/);
   });
 
   it("Android 360×800 — text-[10.5px] mantém rótulos visíveis sem corte", () => {

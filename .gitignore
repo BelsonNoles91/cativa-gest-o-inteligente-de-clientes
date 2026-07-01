@@ -13,8 +13,16 @@ dist-ssr
 *.local
 e2e/.auth/
 e2e/.artifacts/
+e2e/.artifacts-*
 e2e/.report/
 vite.config.ts.timestamp-*.mjs
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+.env.lovable_old
+supabase/.temp/
 
 # Editor directories and files
 .vscode/*

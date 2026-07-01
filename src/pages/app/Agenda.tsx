@@ -208,7 +208,7 @@ export default function AgendaPage() {
     setLoading(true);
     void (async () => {
       try {
-        const [nextAppointments, nextTimeOff, nextRecurring, nextServices, nextClients, nextProfessionals, nextResources, nextBasePrices] = await Promise.all([
+        const [nextAppointments, nextTimeOff, nextRecurring, nextServices, nextClientsPage, nextProfessionals, nextResources, nextBasePrices] = await Promise.all([
           listAppointmentsHydrated({
             tenantId: currentTenant.id,
             unitId: unitFilter === "all" ? undefined : unitFilter,
@@ -229,7 +229,7 @@ export default function AgendaPage() {
         setTimeOffBlocks(nextTimeOff);
         setRecurringBlocks(nextRecurring);
         setServices(nextServices);
-        setClients(nextClients);
+        setClients(nextClientsPage.clients);
         setProfessionals(nextProfessionals);
         setResources(nextResources);
         setBasePrices(new Map(Array.from(nextBasePrices.entries()).map(([id, row]) => [id, row.amountCents])));
@@ -698,13 +698,13 @@ export default function AgendaPage() {
               </Field>
             </div>
 
-            <div className="flex w-full flex-wrap items-end gap-3 lg:flex-1">
-              <div className="flex-1 min-w-[140px]">
+            <div className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end lg:flex-1">
+              <div className="w-full min-w-0 sm:flex-1 sm:min-w-[140px]">
                 <Field label="Data base">
                   <Input type="date" value={selectedDate} onChange={(event) => setSelectedDate(event.target.value)} />
                 </Field>
               </div>
-              <div className="flex-1 min-w-[180px]">
+              <div className="w-full min-w-0 sm:flex-1 sm:min-w-[140px]">
                 <Field label="Unidade">
                   <Select value={unitFilter} onValueChange={setUnitFilter}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
@@ -717,7 +717,7 @@ export default function AgendaPage() {
                   </Select>
                 </Field>
               </div>
-              <div className="flex-1 min-w-[180px]">
+              <div className="w-full min-w-0 sm:flex-1 sm:min-w-[140px]">
                 <Field label="Profissional">
                   <Select value={professionalFilter} onValueChange={setProfessionalFilter}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
@@ -731,7 +731,7 @@ export default function AgendaPage() {
                 </Field>
               </div>
               {groupMode === "resource" ? (
-                <div className="flex-1 min-w-[180px]">
+                <div className="w-full min-w-0 sm:flex-1 sm:min-w-[140px]">
                   <Field label="Recurso / sala">
                     <Select value={resourceFilter} onValueChange={setResourceFilter}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
@@ -912,7 +912,7 @@ export default function AgendaPage() {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-4xl sm:w-full">
           <DialogHeader>
             <DialogTitle>{editing ? "Editar agendamento" : "Novo agendamento"}</DialogTitle>
             <DialogDescription>
@@ -1033,7 +1033,7 @@ export default function AgendaPage() {
                       description="Troque data, profissional, serviço ou ative o encaixe manual."
                     />
                   ) : (
-                    <RadioGroup value={form.slotStartsAt} onValueChange={(value) => setForm((current) => ({ ...current, slotStartsAt: value, manualTime: value ? new Date(value).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", hour12: false }) : "" }))} className="grid gap-2 sm:grid-cols-3">
+                    <RadioGroup value={form.slotStartsAt} onValueChange={(value) => setForm((current) => ({ ...current, slotStartsAt: value, manualTime: value ? new Date(value).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", hour12: false }) : "" }))} className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                       {slots.map((slot) => (
                         <label key={slot.startsAt} className={`flex cursor-pointer items-center gap-2 rounded-xl border p-3 text-sm ${form.slotStartsAt === slot.startsAt ? "border-primary bg-primary-soft/40" : "border-border/70"}`}>
                           <RadioGroupItem value={slot.startsAt} />
@@ -1093,7 +1093,7 @@ export default function AgendaPage() {
       </Dialog>
 
       <Dialog open={blockDialogOpen} onOpenChange={setBlockDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl sm:w-full">
           <DialogHeader>
             <DialogTitle>Novo bloqueio</DialogTitle>
             <DialogDescription>Cadastre indisponibilidades pontuais ou recorrentes.</DialogDescription>

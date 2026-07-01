@@ -78,7 +78,9 @@ export function TenantBillingProvider({ children }: { children: ReactNode }) {
         const plans = await listPlans();
         setAllPlans(plans);
         setInitialLoading(false);
-      } catch (e) {}
+      } catch (e) {
+        console.warn("[TenantBillingProvider] Failed to load plans for super admin", e);
+      }
       return;
     }
 

@@ -124,7 +124,7 @@ export default function PremiumLanding() {
 
         {/* Seção de Solução Dinâmica */}
         <PremiumSection id="solucao" variant="soft" padding="lg">
-          <div className="flex flex-wrap justify-center gap-4 mb-16 px-4">
+          <div className="flex flex-wrap justify-center gap-4 mb-16 overflow-x-auto px-4">
             {segments.map((s, i) => (
               <button 
                 key={i}

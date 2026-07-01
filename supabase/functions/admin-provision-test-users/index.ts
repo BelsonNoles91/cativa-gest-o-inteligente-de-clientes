@@ -6,11 +6,33 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
+
+function getAllowedOrigins(): string[] {
+  const raw = Deno.env.get("ALLOWED_ORIGINS") ?? Deno.env.get("SITE_URL") ?? "";
+  return raw
+    .split(",")
+    .map((o) => o.trim())
+    .filter(Boolean);
+}
+
+function corsHeadersForRequest(req: Request): Record<string, string> {
+  const origin = req.headers.get("Origin") ?? "";
+  const allowed = getAllowedOrigins();
+  const allowOrigin =
+    allowed.length === 0
+      ? ""
+      : allowed.includes(origin)
+        ? origin
+        : allowed[0];
+  return {
+    ...corsHeaders,
+    ...(allowOrigin ? { "Access-Control-Allow-Origin": allowOrigin } : {}),
+  };
+}
 
 interface Body {
   tenant_id: string;
@@ -31,18 +53,19 @@ interface ProvisionResult {
 }
 
 Deno.serve(async (req) => {
+  const headers = corsHeadersForRequest(req);
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers });
   }
   if (req.method !== "POST") {
-    return json({ error: "Método não suportado" }, 405);
+    return json({ error: "Método não suportado" }, 405, headers);
   }
 
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
   const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
   if (!SUPABASE_URL || !SERVICE_ROLE) {
-    return json({ error: "Configuração de servidor ausente" }, 500);
+    return json({ error: "Configuração de servidor ausente" }, 500, headers);
   }
 
   // 1) Validar caller via JWT do header
@@ -53,7 +76,7 @@ Deno.serve(async (req) => {
   });
   const { data: userRes, error: userErr } = await userClient.auth.getUser();
   if (userErr || !userRes.user) {
-    return json({ error: "Não autenticado" }, 401);
+    return json({ error: "Não autenticado" }, 401, headers);
   }
   const callerId = userRes.user.id;
 
@@ -67,7 +90,7 @@ Deno.serve(async (req) => {
     .eq("id", callerId)
     .maybeSingle();
   if (!profile?.is_super_admin) {
-    return json({ error: "Apenas super admin" }, 403);
+    return json({ error: "Apenas super admin" }, 403, headers);
   }
 
   // 2) Body
@@ -75,19 +98,19 @@ Deno.serve(async (req) => {
   try {
     body = (await req.json()) as Body;
   } catch {
-    return json({ error: "JSON inválido" }, 400);
+    return json({ error: "JSON inválido" }, 400, headers);
   }
   const tenantId = body.tenant_id;
   const rawPassword = typeof body.password === "string" ? body.password.trim() : "";
   const domain = (body.email_domain ?? "cativa.test").trim().toLowerCase();
   if (!tenantId || !/^[0-9a-f-]{36}$/i.test(tenantId)) {
-    return json({ error: "tenant_id inválido" }, 400);
+    return json({ error: "tenant_id inválido" }, 400, headers);
   }
   if (!rawPassword) {
-    return json({ error: "password é obrigatório no corpo da requisição" }, 400);
+    return json({ error: "password é obrigatório no corpo da requisição" }, 400, headers);
   }
   if (rawPassword.length < 12) {
-    return json({ error: "senha precisa ter ao menos 12 caracteres" }, 400);
+    return json({ error: "senha precisa ter ao menos 12 caracteres" }, 400, headers);
   }
   // Guarda contra uso acidental em produção: só aceita domínios de teste reconhecidos
   const allowedDomainSuffixes = [".test", ".local", ".example"];
@@ -95,6 +118,7 @@ Deno.serve(async (req) => {
     return json(
       { error: "email_domain deve terminar em .test, .local ou .example" },
       400,
+      headers,
     );
   }
   const password = rawPassword;
@@ -105,7 +129,7 @@ Deno.serve(async (req) => {
     .select("id, slug, name")
     .eq("id", tenantId)
     .maybeSingle();
-  if (!tenant) return json({ error: "Tenant não encontrado" }, 404);
+  if (!tenant) return json({ error: "Tenant não encontrado" }, 404, headers);
 
   const { data: defaultUnit } = await admin
     .from("units")
@@ -280,10 +304,14 @@ Deno.serve(async (req) => {
 
   // Não retornamos a senha — quem chamou já a forneceu.
   const safeAccounts = results.map(({ ...rest }) => rest);
-  return json({
-    tenant: { id: tenant.id, slug: tenant.slug, name: tenant.name },
-    accounts: safeAccounts,
-  });
+  return json(
+    {
+      tenant: { id: tenant.id, slug: tenant.slug, name: tenant.name },
+      accounts: safeAccounts,
+    },
+    200,
+    headers,
+  );
 });
 
 function roleFullName(role: RoleKey): string {
@@ -301,9 +329,9 @@ function roleFullName(role: RoleKey): string {
   }
 }
 
-function json(payload: unknown, status = 200) {
+function json(payload: unknown, status = 200, headers: Record<string, string> = {}) {
   return new Response(JSON.stringify(payload), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...headers, "Content-Type": "application/json" },
   });
 }

@@ -135,7 +135,7 @@ export function TrialLogsTab({ tenants }: { tenants: TenantWithSub[] }) {
           value={statusFilter}
           onValueChange={(v) => setStatusFilter(v as TrialLogStatus | "all")}
         >
-          <SelectTrigger className="w-[170px]" data-testid="trial-logs-status-filter">
+          <SelectTrigger className="w-full min-w-0 sm:w-[170px]" data-testid="trial-logs-status-filter">
             <Filter className="mr-1.5 h-3.5 w-3.5" />
             <SelectValue />
           </SelectTrigger>
@@ -148,7 +148,7 @@ export function TrialLogsTab({ tenants }: { tenants: TenantWithSub[] }) {
         </Select>
 
         <Select value={tenantFilter} onValueChange={setTenantFilter}>
-          <SelectTrigger className="w-[220px]" data-testid="trial-logs-tenant-filter">
+          <SelectTrigger className="w-full min-w-0 sm:w-[220px]" data-testid="trial-logs-tenant-filter">
             <Building2 className="mr-1.5 h-3.5 w-3.5" />
             <SelectValue />
           </SelectTrigger>

@@ -53,6 +53,10 @@ export function SidebarNavItem({
       return;
     }
 
+    if ("preventDefault" in e) {
+      e.preventDefault();
+    }
+
     setIsLoading(true);
     
     // Pequeno atraso para feedback visual (opcional, mas bom para UX)

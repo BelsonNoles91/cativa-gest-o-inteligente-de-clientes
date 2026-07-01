@@ -217,7 +217,7 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-hidden p-0">
+      <DialogContent className="w-[calc(100vw-2rem)] max-h-[90vh] max-w-2xl overflow-hidden p-0 sm:w-full">
         <ScrollArea className="max-h-[90vh]">
           <div className="p-6">
             <DialogHeader>
@@ -237,12 +237,12 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
             </DialogHeader>
 
             <Tabs defaultValue="message" className="mt-4">
-              <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="message">Mensagem</TabsTrigger>
-                <TabsTrigger value="call">Ligação</TabsTrigger>
-                <TabsTrigger value="status">Status</TabsTrigger>
-                <TabsTrigger value="prefs">Preferências</TabsTrigger>
-                <TabsTrigger value="history">Histórico</TabsTrigger>
+              <TabsList className="flex w-full justify-start overflow-x-auto">
+                <TabsTrigger value="message" className="shrink-0 whitespace-nowrap">Mensagem</TabsTrigger>
+                <TabsTrigger value="call" className="shrink-0 whitespace-nowrap">Ligação</TabsTrigger>
+                <TabsTrigger value="status" className="shrink-0 whitespace-nowrap">Status</TabsTrigger>
+                <TabsTrigger value="prefs" className="shrink-0 whitespace-nowrap">Preferências</TabsTrigger>
+                <TabsTrigger value="history" className="shrink-0 whitespace-nowrap">Histórico</TabsTrigger>
               </TabsList>
 
               {/* MENSAGEM */}

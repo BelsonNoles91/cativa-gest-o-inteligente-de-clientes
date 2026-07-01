@@ -154,7 +154,7 @@ export default function WaitlistPage() {
     setLoading(true);
     void (async () => {
       try {
-        const [nextEntries, nextClients, nextServices, nextProfessionals, nextBasePrices] = await Promise.all([
+        const [nextEntries, nextClientsPage, nextServices, nextProfessionals, nextBasePrices] = await Promise.all([
           listWaitlistHydrated(currentTenant.id),
           listClients({ tenantId: currentTenant.id, limit: 500 }),
           listServices({ tenantId: currentTenant.id, activeOnly: true }),
@@ -163,7 +163,7 @@ export default function WaitlistPage() {
         ]);
         if (ignore) return;
         setEntries(nextEntries);
-        setClients(nextClients);
+        setClients(nextClientsPage.clients);
         setServices(nextServices);
         setProfessionals(nextProfessionals);
         setBasePrices(new Map(Array.from(nextBasePrices.entries()).map(([id, row]) => [id, row.amountCents])));
@@ -435,7 +435,7 @@ export default function WaitlistPage() {
 
           <div className="flex flex-wrap items-center gap-2">
             <Select value={proFilter} onValueChange={setProFilter}>
-              <SelectTrigger className="w-[160px] h-9 rounded-lg">
+              <SelectTrigger className="h-9 w-full min-w-0 rounded-lg sm:w-[160px]">
                 <Filter className="mr-2 h-3.5 w-3.5" />
                 <SelectValue placeholder="Profissional" />
               </SelectTrigger>
@@ -448,7 +448,7 @@ export default function WaitlistPage() {
             </Select>
 
             <Select value={serviceFilter} onValueChange={setServiceFilter}>
-              <SelectTrigger className="w-[160px] h-9 rounded-lg">
+              <SelectTrigger className="h-9 w-full min-w-0 rounded-lg sm:w-[160px]">
                 <Filter className="mr-2 h-3.5 w-3.5" />
                 <SelectValue placeholder="Serviço" />
               </SelectTrigger>

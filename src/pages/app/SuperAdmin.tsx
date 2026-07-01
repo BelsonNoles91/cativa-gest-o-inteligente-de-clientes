@@ -25,6 +25,7 @@ import {
   listTenantsWithSubscriptions,
   type TenantWithSub,
 } from "@/repositories/billing";
+import { handleError } from "@/lib/error-handler";
 
 export default function SuperAdmin() {
   const [loading, setLoading] = useState(true);
@@ -32,9 +33,14 @@ export default function SuperAdmin() {
 
   async function reload() {
     setLoading(true);
-    const tenantRows = await listTenantsWithSubscriptions();
-    setTenants(tenantRows);
-    setLoading(false);
+    try {
+      const tenantRows = await listTenantsWithSubscriptions();
+      setTenants(tenantRows);
+    } catch (err) {
+      handleError(err, { category: "DATABASE", context: { source: "SuperAdmin.reload" } });
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {

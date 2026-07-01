@@ -28,6 +28,7 @@ import {
   listPlanFeatures,
 } from "@/repositories/billing";
 import { isBooleanFeatureEnabled } from "@/domain/billing";
+import { handleError } from "@/lib/error-handler";
 import type {
   ClientUserLink,
   PortalTenantBranding,
@@ -69,7 +70,6 @@ export function PortalClientProvider({ children }: { children: ReactNode }) {
     if (authLoading) return;
 
     if (!user) {
-      console.log("[PortalClientProvider] No user found, clearing context");
       setLinks([]);
       setProfile(null);
       setBranding(null);
@@ -77,8 +77,7 @@ export function PortalClientProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       return;
     }
-    
-    console.log("[PortalClientProvider] Requesting load for user:", user.id);
+
     setLoading(true);
     try {
       await claimPortalLinksForCurrentUser();
@@ -111,9 +110,13 @@ export function PortalClientProvider({ children }: { children: ReactNode }) {
             const portalFeature = features.find((f) => f.featureKey === "client_portal");
             setPortalEnabled(isBooleanFeatureEnabled(portalFeature?.value));
           }
-        } catch {
-          // Em caso de erro de leitura, não bloqueia o cliente — falha aberto
-          // para evitar lockout caso a tabela de billing fique indisponível.
+        } catch (billingErr) {
+          handleError(billingErr, {
+            category: "DATABASE",
+            context: { source: "PortalClientProvider.portalEnabled" },
+            silent: true,
+          });
+          // Fail-open: não bloqueia o cliente se billing estiver indisponível.
           setPortalEnabled(true);
         }
       } else {
@@ -121,6 +124,12 @@ export function PortalClientProvider({ children }: { children: ReactNode }) {
         setBranding(null);
         setPortalEnabled(true);
       }
+    } catch (err) {
+      handleError(err, {
+        category: "DATABASE",
+        context: { source: "PortalClientProvider.load" },
+        silent: true,
+      });
     } finally {
       setLoading(false);
     }

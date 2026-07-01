@@ -80,7 +80,7 @@ export function GlobalSearch({
       try {
         const start = new Date();
         const end = new Date(start.getTime() + 14 * 86_400_000);
-        const [nextClients, nextServices, nextAppointments] = await Promise.all([
+        const [nextClientsPage, nextServices, nextAppointments] = await Promise.all([
           listClients({ tenantId: currentTenant.id, limit: 200 }),
           listServices({ tenantId: currentTenant.id, activeOnly: true }),
           listAppointmentsHydrated({
@@ -90,7 +90,7 @@ export function GlobalSearch({
           }),
         ]);
         if (ignore) return;
-        setClients(nextClients);
+        setClients(nextClientsPage.clients);
         setServices(nextServices);
         setAppointments(nextAppointments.slice(0, 80));
       } finally {

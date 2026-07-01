@@ -209,6 +209,9 @@ const ROUTES_TO_CHECK = [
   { path: "/app/agenda", name: "agenda" },
   { path: "/app/clientes", name: "clientes" },
   { path: "/app/confirmacoes", name: "confirmacoes" },
+  { path: "/app/lista-de-espera", name: "waitlist" },
+  { path: "/app/analytics", name: "analytics" },
+  { path: "/app/configuracoes", name: "configuracoes" },
 ];
 
 async function waitForAppShell(page: Page, path: string): Promise<void> {

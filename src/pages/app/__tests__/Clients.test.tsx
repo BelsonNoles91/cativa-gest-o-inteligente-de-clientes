@@ -2,9 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import ClientsPage from "../Clients";
 import { BrowserRouter } from "react-router-dom";
-import { TenantProvider } from "@/features/tenant/TenantProvider";
-import { AuthProvider } from "@/features/auth/AuthProvider";
-import { TenantBillingProvider } from "@/features/billing/TenantBillingProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as clientsRepo from "@/repositories/clients";
@@ -13,6 +10,24 @@ import * as schedulingRepo from "@/repositories/scheduling";
 // Mock das dependências pesadas
 vi.mock("@/repositories/clients");
 vi.mock("@/repositories/scheduling");
+const mockTenant = { id: "t1", name: "Test Tenant", slug: "test" };
+vi.mock("@/features/tenant/TenantProvider", () => ({
+  useTenant: () => ({
+    currentTenant: mockTenant,
+    availableUnits: [],
+    currentRole: "owner",
+  }),
+}));
+vi.mock("@/features/billing/useTenantBilling", () => ({
+  useTenantBilling: () => ({
+    limits: { maxActiveClients: 200 },
+    usage: { activeClientsCount: 0 },
+    refresh: vi.fn(),
+  }),
+}));
+vi.mock("@/features/auth/AuthProvider", () => ({
+  useAuth: () => ({ user: { id: "u1" }, loading: false }),
+}));
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     from: vi.fn(() => ({
@@ -38,15 +53,7 @@ const queryClient = new QueryClient({
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <BrowserRouter>
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TenantProvider>
-          <TenantBillingProvider>
-            <TooltipProvider>
-              {children}
-            </TooltipProvider>
-          </TenantBillingProvider>
-        </TenantProvider>
-      </AuthProvider>
+      <TooltipProvider>{children}</TooltipProvider>
     </QueryClientProvider>
   </BrowserRouter>
 );
@@ -56,22 +63,43 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 describe("ClientsPage Integration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (clientsRepo.listClients as any).mockResolvedValue([
-      { 
-        id: "c1", 
-        fullName: "Test Client", 
-        status: "active", 
-        riskLevel: "low",
-        phone: "11999999999",
-        email: "test@example.com",
-        isVip: false,
-        lastVisitAt: null,
-        city: "São Paulo",
-        tenantId: "t1"
-      }
-    ]);
+    (clientsRepo.listClients as any).mockResolvedValue({
+      clients: [
+        { 
+          id: "c1", 
+          fullName: "Test Client", 
+          status: "active", 
+          riskLevel: "low",
+          phone: "11999999999",
+          email: "test@example.com",
+          isVip: false,
+          lastVisitAt: null,
+          city: "São Paulo",
+          tenantId: "t1"
+        }
+      ],
+      total: 1,
+      hasMore: false,
+    });
     (clientsRepo.listTags as any).mockResolvedValue([]);
     (schedulingRepo.listProfessionalsLite as any).mockResolvedValue([]);
+    (clientsRepo.getClient as any).mockResolvedValue({
+      id: "c1",
+      fullName: "Test Client",
+      status: "active",
+      riskLevel: "low",
+      churnRiskScore: 10,
+      tenantId: "t1",
+    });
+    (clientsRepo.listClientTagIds as any).mockResolvedValue([]);
+    (clientsRepo.listNotes as any).mockResolvedValue([]);
+    (clientsRepo.listFiles as any).mockResolvedValue([]);
+    (clientsRepo.listPhotos as any).mockResolvedValue([]);
+    (clientsRepo.listTimeline as any).mockResolvedValue([]);
+    (clientsRepo.listCustomFieldDefs as any).mockResolvedValue([]);
+    (clientsRepo.listClientCustomValues as any).mockResolvedValue({});
+    (clientsRepo.listConsentTemplates as any).mockResolvedValue([]);
+    (clientsRepo.listConsentResponses as any).mockResolvedValue([]);
   });
 
 

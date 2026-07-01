@@ -231,7 +231,7 @@ function FlagsConsolePanel({
           className="min-w-[200px] flex-1"
         />
         <Select value={scope} onValueChange={(v) => onScope(v as typeof scope)}>
-          <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-full min-w-0 sm:w-[160px]"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos escopos</SelectItem>
             <SelectItem value="global">Globais</SelectItem>

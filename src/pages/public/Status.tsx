@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CheckCircle2, AlertTriangle, AlertCircle, Clock, Globe } from "lucide-react";
+import { CheckCircle2, Clock, Globe, Database } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { PremiumHeader } from "@/components/marketing/layout/PremiumHeader";
@@ -23,23 +23,49 @@ type Incident = {
   resolved_at: string | null;
 };
 
+type HealthCheck = {
+  database: 'operational' | 'degraded' | 'major_outage';
+  auth: 'operational' | 'degraded' | 'major_outage';
+  latencyMs: number | null;
+};
+
 export default function StatusPage() {
   const [components, setComponents] = useState<ComponentStatus[]>([]);
   const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [health, setHealth] = useState<HealthCheck | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadStatus() {
+      const started = performance.now();
+      let database: HealthCheck['database'] = 'operational';
+      let auth: HealthCheck['auth'] = 'operational';
+
       try {
-        const [{ data: compData }, { data: incData }] = await Promise.all([
+        const [{ data: compData, error: compErr }, { data: incData }, sessionRes] = await Promise.all([
           supabase.from('system_status').select('*').order('component_name'),
-          supabase.from('system_incidents').select('*').order('created_at', { ascending: false }).limit(10)
+          supabase.from('system_incidents').select('*').order('created_at', { ascending: false }).limit(10),
+          supabase.auth.getSession(),
         ]);
-        
+
+        const { error: dbPingErr } = await supabase.from('system_status').select('id').limit(1);
+        if (dbPingErr || compErr) database = 'major_outage';
+        if (sessionRes.error) auth = 'degraded';
+
         if (compData) setComponents(compData as ComponentStatus[]);
         if (incData) setIncidents(incData as Incident[]);
+        setHealth({
+          database,
+          auth,
+          latencyMs: Math.round(performance.now() - started),
+        });
       } catch (err) {
         console.error("Erro ao carregar status:", err);
+        setHealth({
+          database: 'major_outage',
+          auth: 'degraded',
+          latencyMs: null,
+        });
       } finally {
         setLoading(false);
       }
@@ -70,6 +96,34 @@ export default function StatusPage() {
             Acompanhe em tempo real a saúde da plataforma Cativa.
           </p>
         </div>
+
+        {health && (
+          <section className="surface-card p-6 md:p-8 mb-8">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2">
+              <Database className="h-4 w-4" /> Health check
+            </h2>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-card/50">
+                <span className="font-medium text-sm">Banco de dados</span>
+                <StatusBadge tone={health.database === 'operational' ? 'success' : 'danger'}>
+                  {health.database === 'operational' ? 'OK' : 'Indisponível'}
+                </StatusBadge>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-card/50">
+                <span className="font-medium text-sm">Autenticação</span>
+                <StatusBadge tone={health.auth === 'operational' ? 'success' : 'warning'}>
+                  {health.auth === 'operational' ? 'OK' : 'Instável'}
+                </StatusBadge>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-card/50">
+                <span className="font-medium text-sm">Latência</span>
+                <span className="text-sm text-muted-foreground">
+                  {health.latencyMs != null ? `${health.latencyMs} ms` : '—'}
+                </span>
+              </div>
+            </div>
+          </section>
+        )}
 
         <section className="surface-card p-6 md:p-8 mb-8">
           <div className="grid gap-6 md:grid-cols-2">
