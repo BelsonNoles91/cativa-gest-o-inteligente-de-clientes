@@ -179,7 +179,7 @@ export default function Billing() {
                             <>
                               <span className="text-sm font-semibold">{formatPrice(item.priceCents, item.currency)}</span>
                               <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">
-                                {item.billingPeriod === 'yearly' ? 'Anual' : item.billingPeriod === 'monthly' ? 'Mensal' : ''}
+                                {item.billingPeriod === 'annual' ? 'Anual' : item.billingPeriod === 'monthly' ? 'Mensal' : ''}
                               </p>
                             </>
                           )}

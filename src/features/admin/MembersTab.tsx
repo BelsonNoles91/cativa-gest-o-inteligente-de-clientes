@@ -266,7 +266,7 @@ export function MembersTab() {
       action: async () => {
         setSaving(true);
         try {
-          const { error } = await supabase.rpc("admin_force_reset_password", {
+          const { error } = await (supabase.rpc as any)("admin_force_reset_password", {
             target_user_id: member.userId,
             new_raw_password: newPassword,
           });

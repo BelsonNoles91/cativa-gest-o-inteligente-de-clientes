@@ -213,7 +213,7 @@ export function TeamSettings() {
 
   const toggleMemberStatus = async (userId: string, currentStatus: string) => {
     if (!currentTenant) return;
-    const newStatus = currentStatus === "active" ? "inactive" : "active";
+    const newStatus: "active" | "suspended" = currentStatus === "active" ? "suspended" : "active";
     try {
       const { error } = await supabase
         .from("tenant_memberships")
