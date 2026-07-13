@@ -1,25 +1,55 @@
 -- ==============================================================================
 -- 👑 SCRIPT: CONFIGURAÇÃO TOTAL DO AMBIENTE (SUPER ADMIN + TENANTS)
--- 
+--
 -- 1. Promove elciocorrea@gmail.com a Super Admin
 -- 2. Cria Tenant A (Cativa Studio) e Tenant B (Studio B) para testes de isolamento
 -- 3. Configura horários e clientes de teste
+--
+-- ------------------------------------------------------------------------------
+-- ⚠️ SEGURANÇA — NENHUMA SENHA É ARMAZENADA NESTE ARQUIVO.
+--
+-- As senhas do super admin e dos usuários de teste DEVEM ser fornecidas em
+-- tempo de execução via variáveis do psql (\set / -v). Se qualquer uma delas
+-- estiver ausente ou vazia, o script aborta antes de tocar em auth.users.
+--
+-- Uso recomendado (leia de variáveis de ambiente locais que NÃO estão no repo):
+--
+--   psql "$SUPABASE_DB_URL" \
+--     -v super_admin_password="$SEED_SUPER_ADMIN_PASSWORD" \
+--     -v test_users_password="$SEED_TEST_USERS_PASSWORD" \
+--     -f supabase/seed-owner.sql
+--
+-- Nunca faça commit dos valores; use um gerenciador de senhas ou
+-- `openssl rand -base64 24` para gerá-los localmente.
 -- ==============================================================================
+
+-- Defaults vazios só para permitir a checagem abaixo; NÃO são senhas válidas.
+\if :{?super_admin_password} \else \set super_admin_password '' \endif
+\if :{?test_users_password}  \else \set test_users_password  '' \endif
 
 DO $$
 DECLARE
-  v_user_id uuid;
-  v_tenant_id uuid;
-  v_unit_id uuid;
-  v_now timestamptz := now();
-  v_w int;
+  v_super_pw   text := NULLIF(current_setting('seed.super_admin_password', true), '');
+  v_test_pw    text := NULLIF(current_setting('seed.test_users_password',  true), '');
+  v_user_id    uuid;
+  v_tenant_id  uuid;
+  v_unit_id    uuid;
+  v_now        timestamptz := now();
+  v_w          int;
 BEGIN
+  IF v_super_pw IS NULL OR length(v_super_pw) < 12 THEN
+    RAISE EXCEPTION 'Seed abortado: forneça seed.super_admin_password (>=12 chars) via psql -v super_admin_password=...';
+  END IF;
+  IF v_test_pw IS NULL OR length(v_test_pw) < 12 THEN
+    RAISE EXCEPTION 'Seed abortado: forneça seed.test_users_password (>=12 chars) via psql -v test_users_password=...';
+  END IF;
+
   -- 1. Obter ou criar usuário Elcio
   SELECT id INTO v_user_id FROM auth.users WHERE email = 'elciocorrea@gmail.com';
   IF v_user_id IS NULL THEN
     v_user_id := '00000000-0000-0000-0000-000000000001';
     INSERT INTO auth.users (id, instance_id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, role, aud)
-    VALUES (v_user_id, '00000000-0000-0000-0000-000000000000', 'elciocorrea@gmail.com', crypt('DJECool321', gen_salt('bf')), v_now, '{"provider":"email","providers":["email"]}', '{"full_name": "Elcio Correa"}', v_now, v_now, 'authenticated', 'authenticated');
+    VALUES (v_user_id, '00000000-0000-0000-0000-000000000000', 'elciocorrea@gmail.com', crypt(v_super_pw, gen_salt('bf')), v_now, '{"provider":"email","providers":["email"]}', '{"full_name": "Elcio Correa"}', v_now, v_now, 'authenticated', 'authenticated');
   END IF;
 
   -- 2. Promoção a Super Admin
@@ -59,21 +89,21 @@ BEGIN
   -- Usuarios de Teste Adicionais (Tenant A)
   IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'owner.a@cativa.test') THEN
     INSERT INTO auth.users (id, instance_id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, role, aud)
-    VALUES ('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000000', 'owner.a@cativa.test', crypt('Cativa@Test2026', gen_salt('bf')), v_now, '{"provider":"email","providers":["email"]}', '{"full_name": "Owner A"}', v_now, v_now, 'authenticated', 'authenticated');
+    VALUES ('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000000', 'owner.a@cativa.test', crypt(v_test_pw, gen_salt('bf')), v_now, '{"provider":"email","providers":["email"]}', '{"full_name": "Owner A"}', v_now, v_now, 'authenticated', 'authenticated');
     INSERT INTO public.profiles (id, full_name) VALUES ('00000000-0000-0000-0000-000000000003', 'Owner A') ON CONFLICT (id) DO NOTHING;
     INSERT INTO public.tenant_memberships (tenant_id, user_id, role, status) VALUES (v_tenant_id, '00000000-0000-0000-0000-000000000003', 'owner', 'active') ON CONFLICT DO NOTHING;
   END IF;
 
   IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'recepcao@cativa.test') THEN
     INSERT INTO auth.users (id, instance_id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, role, aud)
-    VALUES ('00000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000000', 'recepcao@cativa.test', crypt('Cativa@Test2026', gen_salt('bf')), v_now, '{"provider":"email","providers":["email"]}', '{"full_name": "Recepção"}', v_now, v_now, 'authenticated', 'authenticated');
+    VALUES ('00000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000000', 'recepcao@cativa.test', crypt(v_test_pw, gen_salt('bf')), v_now, '{"provider":"email","providers":["email"]}', '{"full_name": "Recepção"}', v_now, v_now, 'authenticated', 'authenticated');
     INSERT INTO public.profiles (id, full_name) VALUES ('00000000-0000-0000-0000-000000000004', 'Recepção') ON CONFLICT (id) DO NOTHING;
     INSERT INTO public.tenant_memberships (tenant_id, user_id, role, status) VALUES (v_tenant_id, '00000000-0000-0000-0000-000000000004', 'frontdesk', 'active') ON CONFLICT DO NOTHING;
   END IF;
 
   IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'profissional@cativa.test') THEN
     INSERT INTO auth.users (id, instance_id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, role, aud)
-    VALUES ('00000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000000', 'profissional@cativa.test', crypt('Cativa@Test2026', gen_salt('bf')), v_now, '{"provider":"email","providers":["email"]}', '{"full_name": "Profissional Teste"}', v_now, v_now, 'authenticated', 'authenticated');
+    VALUES ('00000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000000', 'profissional@cativa.test', crypt(v_test_pw, gen_salt('bf')), v_now, '{"provider":"email","providers":["email"]}', '{"full_name": "Profissional Teste"}', v_now, v_now, 'authenticated', 'authenticated');
     INSERT INTO public.profiles (id, full_name) VALUES ('00000000-0000-0000-0000-000000000005', 'Profissional Teste') ON CONFLICT (id) DO NOTHING;
     INSERT INTO public.tenant_memberships (tenant_id, user_id, role, status) VALUES (v_tenant_id, '00000000-0000-0000-0000-000000000005', 'professional', 'active') ON CONFLICT DO NOTHING;
   END IF;
@@ -81,8 +111,8 @@ BEGIN
   -- 4. Tenant B (Studio B) para Isolamento
   IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'owner.b@cativa.test') THEN
     INSERT INTO auth.users (id, instance_id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, role, aud)
-    VALUES ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000000', 'owner.b@cativa.test', crypt('Cativa@Test2026', gen_salt('bf')), v_now, '{"provider":"email","providers":["email"]}', '{"full_name": "Owner B"}', v_now, v_now, 'authenticated', 'authenticated');
-    
+    VALUES ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000000', 'owner.b@cativa.test', crypt(v_test_pw, gen_salt('bf')), v_now, '{"provider":"email","providers":["email"]}', '{"full_name": "Owner B"}', v_now, v_now, 'authenticated', 'authenticated');
+
     INSERT INTO public.tenants (name, slug, segment, status, created_by)
     VALUES ('Studio B', 'studio-b', 'clinica_estetica', 'active', '00000000-0000-0000-0000-000000000002')
     RETURNING id INTO v_tenant_id;
