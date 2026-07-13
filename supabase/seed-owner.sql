@@ -27,6 +27,11 @@
 \if :{?super_admin_password} \else \set super_admin_password '' \endif
 \if :{?test_users_password}  \else \set test_users_password  '' \endif
 
+-- Propaga as senhas do psql para GUCs de sessão consumidos pelo DO block.
+-- `false` = escopo de sessão (não requer transação); nunca são logadas.
+SELECT set_config('seed.super_admin_password', :'super_admin_password', false);
+SELECT set_config('seed.test_users_password',  :'test_users_password',  false);
+
 DO $$
 DECLARE
   v_super_pw   text := NULLIF(current_setting('seed.super_admin_password', true), '');
