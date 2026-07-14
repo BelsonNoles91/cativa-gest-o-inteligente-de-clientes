@@ -173,9 +173,9 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       ]);
       if (profileErr || membErr || clientErr) throw profileErr || membErr || clientErr;
       
-      // Fallback: Se o DB ainda não foi atualizado, garantimos que o Elcio seja Super Admin via e-mail
-      const isElcio = user.email === 'elciocorrea@gmail.com';
-      const superAdmin = Boolean(profile?.is_super_admin) || isElcio;
+      // Super admin é derivado exclusivamente do flag verificado no banco (profiles.is_super_admin)
+      const superAdmin = Boolean(profile?.is_super_admin);
+      
       
       setIsSuperAdmin(superAdmin);
       const clientLinksList = clientLinks ?? [];
