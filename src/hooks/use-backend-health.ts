@@ -16,24 +16,19 @@ const DEGRADED_RETRY_MS = 30_000;
 
 async function pingBackend(): Promise<{ ok: boolean; error?: string }> {
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), HEALTH_CHECK_TIMEOUT_MS);
-
     // getSession é leve, não requer tabelas e valida se o cliente foi
     // inicializado corretamente + se o endpoint de auth responde.
     const result = await Promise.race([
       supabase.auth.getSession(),
-      new Promise<{ error: { message: string } }>((_, reject) => {
-        controller.signal.addEventListener("abort", () =>
-          reject(new Error("timeout")),
-        );
-      }),
+      new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error("backend health timeout")),
+          HEALTH_CHECK_TIMEOUT_MS,
+        ),
+      ),
     ]);
-    clearTimeout(timer);
 
-    // @ts-expect-error — union runtime check
-    if (result?.error) {
-      // @ts-expect-error
+    if (result.error) {
       return { ok: false, error: result.error.message ?? "auth error" };
     }
     return { ok: true };
