@@ -16,6 +16,7 @@ import { appConfig } from "@/config/app";
 
 import { FeatureGate } from "@/features/billing/FeatureGate";
 import { DebugConsole } from "@/components/debug/DebugConsole";
+import { BackendHealthBanner } from "@/components/shell/BackendHealthBanner";
 
 
 const queryClient = new QueryClient({
@@ -107,6 +108,7 @@ const App = () => (
               <TooltipProvider>
                 <Toaster />
                 <Sonner />
+                <BackendHealthBanner />
                 <Suspense fallback={<RouteFallback />}>
                   <Routes>
                     {/* Público */}
