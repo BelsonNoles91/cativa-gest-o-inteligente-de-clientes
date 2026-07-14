@@ -29,6 +29,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Verifica guard de env vars ausentes
+        run: npm run test:build:missing-env
+
   playwright-mobile:
     needs: vitest
     runs-on: ubuntu-latest
