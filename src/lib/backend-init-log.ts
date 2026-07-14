@@ -55,7 +55,7 @@ export function logBackendInitDiagnostics(): void {
 
   if (missing.length > 0) {
     // Runtime: bundle publicado sem variáveis → cliente inicializará quebrado.
-    // eslint-disable-next-line no-console
+    /* eslint-disable no-console */
     console.error("[backend-init] falha de inicialização — variáveis ausentes", {
       mode: snap.mode,
       isDev: snap.isDev,
@@ -66,9 +66,26 @@ export function logBackendInitDiagnostics(): void {
       hasAnonKey: snap.hasAnonKey,
       urlHost: snap.urlHost,
       projectRefPresent: snap.projectRefPresent,
-      hint:
-        "Rebuild com .env populado (Lovable Cloud / provedor). Não é possível corrigir em runtime.",
     });
+    console.groupCollapsed(
+      "[backend-init] onde configurar e como reiniciar o build",
+    );
+    console.info(
+      [
+        "Onde configurar as variáveis:",
+        "  • Lovable Cloud: editor Lovable → Cloud → Overview (regrava .env automaticamente).",
+        "  • Vercel/Netlify/Cloudflare Pages: Project Settings → Environment Variables (Production/Preview).",
+        "  • VPS/Docker/local: defina em .env na raiz ou exporte no shell antes do build.",
+        "",
+        "Como reiniciar o build:",
+        "  1. Lovable: clique em Publish → Update para gerar novo bundle.",
+        "  2. Vercel/Netlify: dispare Redeploy após salvar as variáveis (build antigo fica em cache).",
+        "  3. Local/VPS: rode `npm run build` novamente. Variáveis VITE_* são embutidas em build time —",
+        "     recarregar a página não resolve.",
+      ].join("\n"),
+    );
+    console.groupEnd();
+    /* eslint-enable no-console */
     return;
   }
 
