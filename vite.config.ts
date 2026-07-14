@@ -1,11 +1,59 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode, command }) => {
+  // ─────────────────────────────────────────────────────────────
+  // Guard de variáveis obrigatórias no build de produção.
+  // Evita publicar um bundle quebrado ("supabaseUrl is required.")
+  // quando o .env não foi injetado no ambiente de build.
+  // Em `vite dev` também validamos, mas com aviso — não bloqueia HMR.
+  // ─────────────────────────────────────────────────────────────
+  const env = loadEnv(mode, process.cwd(), "");
+  const supabaseUrl = env.VITE_SUPABASE_URL;
+  const supabaseKey =
+    env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY;
+
+  const missing: string[] = [];
+  if (!supabaseUrl) missing.push("VITE_SUPABASE_URL");
+  if (!supabaseKey)
+    missing.push("VITE_SUPABASE_PUBLISHABLE_KEY (ou VITE_SUPABASE_ANON_KEY)");
+
+  if (missing.length > 0) {
+    const message = [
+      "",
+      "╔══════════════════════════════════════════════════════════════╗",
+      "║  ❌  Variáveis de ambiente obrigatórias ausentes             ║",
+      "╚══════════════════════════════════════════════════════════════╝",
+      "",
+      "As seguintes variáveis não estão definidas no ambiente de build:",
+      ...missing.map((v) => `  • ${v}`),
+      "",
+      "Sem elas o cliente Supabase inicializa como `undefined` e a",
+      "aplicação publicada falha com \"supabaseUrl is required.\".",
+      "",
+      "Como resolver:",
+      "  1. Verifique se o arquivo `.env` existe na raiz do projeto.",
+      "  2. Confirme que a conexão do Lovable Cloud / Supabase está",
+      "     ativa (ela é quem popula essas variáveis).",
+      "  3. Em hospedagens externas (Vercel/Netlify), configure as",
+      "     variáveis no painel do provedor antes do build.",
+      "",
+    ].join("\n");
+
+    if (command === "build") {
+      // Bloqueia o build de produção com mensagem clara.
+      throw new Error(message);
+    } else {
+      // Em dev, só avisa — permite trabalhar em telas públicas.
+      console.warn(message);
+    }
+  }
+
+  return ({
   server: {
     host: "::",
     port: 8080,
@@ -123,4 +171,5 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
-}));
+  });
+});
