@@ -10,9 +10,9 @@ export default defineConfig(({ mode, command }) => {
   // Guard de variáveis obrigatórias no build de produção.
   // Evita publicar um bundle quebrado ("supabaseUrl is required.")
   // quando o .env não foi injetado no ambiente de build.
-  // Em `vite dev` também validamos, mas com aviso — não bloqueia HMR.
+  // Em dev / build:dev apenas avisa — não bloqueia.
   // ─────────────────────────────────────────────────────────────
-  const env = loadEnv(mode, process.cwd(), "");
+  const env = { ...process.env, ...loadEnv(mode, process.cwd(), "") };
   const supabaseUrl = env.VITE_SUPABASE_URL;
   const supabaseKey =
     env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY;
@@ -44,11 +44,12 @@ export default defineConfig(({ mode, command }) => {
       "",
     ].join("\n");
 
-    if (command === "build") {
-      // Bloqueia o build de produção com mensagem clara.
+    // Só bloqueia em build de PRODUÇÃO. `build:dev` (mode=development)
+    // e `vite dev` apenas avisam, para não travar preview/sandbox
+    // enquanto o .env ainda não foi injetado.
+    if (command === "build" && mode === "production") {
       throw new Error(message);
     } else {
-      // Em dev, só avisa — permite trabalhar em telas públicas.
       console.warn(message);
     }
   }
