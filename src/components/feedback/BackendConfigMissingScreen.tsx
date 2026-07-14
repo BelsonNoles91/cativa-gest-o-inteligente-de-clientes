@@ -93,21 +93,50 @@ export function BackendConfigMissingScreen({
           </div>
         </div>
 
-        <h2 style={{ fontSize: 15, margin: "22px 0 8px" }}>Como resolver</h2>
+        <h2 style={{ fontSize: 15, margin: "22px 0 8px" }}>
+          Onde configurar as variáveis
+        </h2>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6, fontSize: 14 }}>
+          <li>
+            <strong>Lovable Cloud (padrão do projeto):</strong> abra{" "}
+            <em>Cloud → Overview</em> no editor Lovable e confirme que a conexão
+            está ativa. Ela regrava <code>.env</code> na raiz com{" "}
+            <code>VITE_SUPABASE_URL</code>,{" "}
+            <code>VITE_SUPABASE_PUBLISHABLE_KEY</code> e{" "}
+            <code>VITE_SUPABASE_PROJECT_ID</code>.
+          </li>
+          <li>
+            <strong>Vercel / Netlify / Cloudflare Pages:</strong>{" "}
+            <em>Project Settings → Environment Variables</em>, adicione as duas
+            variáveis para o ambiente <em>Production</em> (e <em>Preview</em>,
+            se usar) e salve.
+          </li>
+          <li>
+            <strong>VPS / Docker / self-hosted:</strong> defina no{" "}
+            <code>.env</code> ao lado do <code>package.json</code>, ou exporte
+            no shell antes do build (<code>export VITE_SUPABASE_URL=…</code>).
+          </li>
+        </ul>
+
+        <h2 style={{ fontSize: 15, margin: "22px 0 8px" }}>
+          Como reiniciar o build
+        </h2>
         <ol style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6, fontSize: 14 }}>
           <li>
-            Confirme que a conexão do Lovable Cloud / Supabase está ativa — é
-            ela que popula o arquivo <code>.env</code> antes do build.
+            No Lovable, clique em <strong>Publish → Update</strong> no canto
+            superior direito para gerar um novo bundle com as variáveis já
+            preenchidas.
           </li>
           <li>
-            Em hospedagens externas (Vercel, Netlify, VPS), defina{" "}
-            <code>VITE_SUPABASE_URL</code> e{" "}
-            <code>VITE_SUPABASE_PUBLISHABLE_KEY</code> nas variáveis do
-            provedor e faça um novo deploy.
+            Na Vercel/Netlify, dispare um novo deploy (<em>Redeploy</em> ou{" "}
+            <em>Trigger deploy</em>) após salvar as variáveis — o build antigo
+            fica em cache com os valores antigos.
           </li>
           <li>
-            Após corrigir, faça um novo build/publish — variáveis do Vite são
-            embutidas em <em>build time</em>, não podem ser injetadas em runtime.
+            Localmente ou em VPS: rode <code>npm run build</code> novamente
+            (ou <code>npm run dev</code> para desenvolvimento). Variáveis{" "}
+            <code>VITE_*</code> são embutidas em <em>build time</em>; um
+            reload do navegador sozinho não resolve.
           </li>
         </ol>
 
