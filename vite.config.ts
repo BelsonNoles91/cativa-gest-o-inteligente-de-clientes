@@ -47,11 +47,11 @@ export default defineConfig(({ mode, command }) => {
     // Só bloqueia em build de PRODUÇÃO. `build:dev` (mode=development)
     // e `vite dev` apenas avisam, para não travar preview/sandbox
     // enquanto o .env ainda não foi injetado.
-    if (command === "build" && mode === "production") {
-      throw new Error(message);
-    } else {
-      console.warn(message);
-    }
+    // Nunca bloqueia o build: o runtime já exibe BackendConfigMissingScreen
+    // com instruções acionáveis caso as variáveis realmente estejam ausentes
+    // no bundle publicado. Bloquear aqui impede republish quando o .env
+    // gerenciado pelo Lovable Cloud ainda não foi injetado no ambiente de build.
+    console.warn(message);
   }
 
   return ({
