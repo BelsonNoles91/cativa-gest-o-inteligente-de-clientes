@@ -31,6 +31,7 @@ DECLARE
   inv    uuid := '00000000-0000-4000-8000-00000000d001';
   v      bigint;
   flag   boolean;
+  n_rows int;
   failures int := 0;
 BEGIN
   -- =========================================================================
@@ -96,7 +97,8 @@ BEGIN
   EXECUTE format('SELECT count(*) FROM public.system_incidents WHERE id = %L', inc) INTO v;
   BEGIN
     EXECUTE format('UPDATE public.system_incidents SET title = ''hack'' WHERE id = %L', inc);
-    flag := NOT FOUND;
+    GET DIAGNOSTICS n_rows = ROW_COUNT;
+    flag := (n_rows = 0);
   EXCEPTION WHEN insufficient_privilege THEN flag := true;
   END;
   RESET ROLE;
@@ -216,7 +218,8 @@ BEGIN
   PERFORM set_config('request.jwt.claims', json_build_object('sub', u_pro, 'role','authenticated')::text, true);
   BEGIN
     EXECUTE format('UPDATE public.tenant_memberships SET role = ''owner'' WHERE tenant_id = %L AND user_id = %L', t_a, u_pro);
-    flag := NOT FOUND;
+    GET DIAGNOSTICS n_rows = ROW_COUNT;
+    flag := (n_rows = 0);
   EXCEPTION WHEN insufficient_privilege THEN flag := true;
   END;
   RESET ROLE; PERFORM set_config('request.jwt.claims', NULL, true);
@@ -227,7 +230,8 @@ BEGIN
   EXECUTE 'SET LOCAL ROLE authenticated';
   PERFORM set_config('request.jwt.claims', json_build_object('sub', u_mng, 'role','authenticated')::text, true);
   EXECUTE format('UPDATE public.tenant_memberships SET status = ''suspended'' WHERE tenant_id = %L AND user_id = %L', t_a, u_pro);
-  flag := FOUND;
+  GET DIAGNOSTICS n_rows = ROW_COUNT;
+  flag := (n_rows > 0);
   RESET ROLE; PERFORM set_config('request.jwt.claims', NULL, true);
   IF NOT flag THEN failures := failures + 1; RAISE WARNING 'FALHOU: manager não conseguiu atualizar membro do próprio tenant';
   ELSE RAISE NOTICE 'ok  memberships: manager atualiza membros do próprio tenant'; END IF;
