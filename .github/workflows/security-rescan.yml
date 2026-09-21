@@ -77,6 +77,39 @@ jobs:
           psql "$SUPABASE_DB_URL" -X -q -c "select 1" > /dev/null
           echo "Conexão com o banco validada."
 
+      - name: Testes de regressão de RLS
+        id: rls
+        continue-on-error: true
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -o pipefail
+          psql "$SUPABASE_DB_URL" -X -v ON_ERROR_STOP=1 \
+            -f supabase/tests/rls-regression.sql 2>&1 | tee rls-output.txt
+          {
+            echo "## Testes de regressão de RLS"
+            echo ""
+            echo '```'
+            grep -E 'NOTICE|WARNING|ERROR' rls-output.txt || cat rls-output.txt
+            echo '```'
+            echo ""
+          } > rls-summary.md
+          cat rls-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Registra falha dos testes de RLS
+        if: steps.rls.outcome == 'failure'
+        run: |
+          {
+            echo "## Testes de regressão de RLS"
+            echo ""
+            echo "❌ Os testes de RLS falharam. Saída:"
+            echo ""
+            echo '```'
+            tail -n 40 rls-output.txt 2>/dev/null || echo "sem saída"
+            echo '```'
+            echo ""
+          } > rls-summary.md
+
       - name: Re-scan de segurança
         id: rescan
         continue-on-error: true
