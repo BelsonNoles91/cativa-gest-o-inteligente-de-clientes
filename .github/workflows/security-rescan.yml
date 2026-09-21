@@ -115,7 +115,13 @@ jobs:
         continue-on-error: true
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-        run: node scripts/security-rescan.mjs --out security-report.md
+          SECURITY_SCAN_PR: ${{ github.event.pull_request.number }}
+        run: |
+          if [ -f migrations-summary.md ]; then
+            SECURITY_SCAN_MIGRATIONS=$(grep -o 'supabase/[^`]*' migrations-summary.md | paste -sd, -)
+            export SECURITY_SCAN_MIGRATIONS
+          fi
+          node scripts/security-rescan.mjs --out security-report.md
 
       - name: Monta comentário do PR
         if: github.event_name == 'pull_request'
