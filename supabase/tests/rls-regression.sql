@@ -47,10 +47,18 @@ BEGIN
   FROM (VALUES (u_own,'owner-a'), (u_mng,'manager-a'), (u_pro,'professional-a'),
                (u_ownb,'owner-b'), (u_sup,'super')) AS x(id, label);
 
+  -- Os triggers de proteção impedem criar um super admin por INSERT direto
+  -- (comportamento desejado). Para a fixture, desabilitamos temporariamente.
+  ALTER TABLE public.profiles DISABLE TRIGGER profiles_block_super_admin_changes_trg;
+  ALTER TABLE public.profiles DISABLE TRIGGER profiles_block_self_super_admin;
+
   INSERT INTO public.profiles (id, full_name, is_super_admin)
   VALUES (u_own,'Owner A',false), (u_mng,'Manager A',false), (u_pro,'Pro A',false),
          (u_ownb,'Owner B',false), (u_sup,'Super',true)
   ON CONFLICT (id) DO UPDATE SET is_super_admin = EXCLUDED.is_super_admin;
+
+  ALTER TABLE public.profiles ENABLE TRIGGER profiles_block_super_admin_changes_trg;
+  ALTER TABLE public.profiles ENABLE TRIGGER profiles_block_self_super_admin;
 
   INSERT INTO public.tenants (id, name, slug, segment, created_by)
   VALUES (t_a, 'Tenant A RLS', 'tenant-a-rls-test', 'salao', u_own),
