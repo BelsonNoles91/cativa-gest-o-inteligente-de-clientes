@@ -26,17 +26,13 @@ DECLARE
   u_mng  uuid := '00000000-0000-4000-8000-0000000000a2';
   u_pro  uuid := '00000000-0000-4000-8000-0000000000a3';
   u_ownb uuid := '00000000-0000-4000-8000-0000000000b1';
-  u_sup  uuid := '00000000-0000-4000-8000-0000000000s1'::text::uuid;
+  u_sup  uuid := '00000000-0000-4000-8000-0000000000f1';
   inc    uuid := '00000000-0000-4000-8000-00000000c001';
   inv    uuid := '00000000-0000-4000-8000-00000000d001';
   v      bigint;
   flag   boolean;
   failures int := 0;
-
-  PROCEDURE_PLACEHOLDER boolean; -- (não usado; mantém o bloco legível)
 BEGIN
-  u_sup := '00000000-0000-4000-8000-0000000000f1';
-
   -- =========================================================================
   -- Limpeza defensiva + fixtures
   -- =========================================================================
@@ -159,8 +155,6 @@ BEGIN
   -- =========================================================================
   -- 3. tenant_memberships — gap owner/manager e super_admin
   -- =========================================================================
-  FOR flag IN SELECT true LOOP END LOOP; -- no-op (mantém estrutura legível)
-
   -- owner
   EXECUTE 'SET LOCAL ROLE authenticated';
   PERFORM set_config('request.jwt.claims', json_build_object('sub', u_own, 'role','authenticated')::text, true);
