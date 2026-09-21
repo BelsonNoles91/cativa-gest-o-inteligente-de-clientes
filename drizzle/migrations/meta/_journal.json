@@ -8,6 +8,13 @@
       "when": 1790033583098,
       "tag": "0000_fix_team_invitations_self_read_policy",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790033687235,
+      "tag": "0001_revoke_anon_access_team_invitations",
+      "breakpoints": true
     }
   ]
 }
