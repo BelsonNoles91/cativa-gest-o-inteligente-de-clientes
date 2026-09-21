@@ -8,6 +8,10 @@
     {
       "id": "anon_readable_policies:system_status",
       "reason": "página pública /status exibe o estado do serviço"
+    },
+    {
+      "id": "anon_readable_policies:plans",
+      "reason": "tabela de planos alimenta a página pública de preços"
     }
   ]
 }
