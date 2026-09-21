@@ -63,7 +63,7 @@ BEGIN
          (t_b, u_ownb, 'owner', 'active');
 
   INSERT INTO public.system_incidents (id, title, description, status, severity)
-  VALUES (inc, 'Incidente de teste RLS', 'fixture', 'investigating', 'minor');
+  VALUES (inc, 'Incidente de teste RLS', 'fixture', 'investigating', 'low');
 
   INSERT INTO public.team_invitations (id, tenant_id, email, role, token, token_hash,
                                        invited_by, status, expires_at)
