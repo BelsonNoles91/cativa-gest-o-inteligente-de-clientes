@@ -119,7 +119,7 @@ jobs:
 
       - name: Monta comentário do PR
         if: github.event_name == 'pull_request'
-        run: cat migrations-summary.md security-report.md > pr-comment.md
+        run: cat migrations-summary.md rls-summary.md security-report.md > pr-comment.md
 
       - name: Comenta resumo no PR
         if: github.event_name == 'pull_request'
@@ -148,9 +148,16 @@ jobs:
           path: |
             security-report.md
             migrations-summary.md
+            rls-summary.md
+            rls-output.txt
 
-      - name: Falha se houver achados críticos
-        if: steps.rescan.outcome == 'failure'
+      - name: Falha se houver achados críticos ou regressão de RLS
+        if: steps.rescan.outcome == 'failure' || steps.rls.outcome == 'failure'
         run: |
-          echo "::error::Re-scan de segurança encontrou achados críticos. Veja o relatório no resumo do job."
+          if [ "${{ steps.rls.outcome }}" = "failure" ]; then
+            echo "::error::Testes de regressão de RLS falharam."
+          fi
+          if [ "${{ steps.rescan.outcome }}" = "failure" ]; then
+            echo "::error::Re-scan de segurança encontrou achados críticos."
+          fi
           exit 1
