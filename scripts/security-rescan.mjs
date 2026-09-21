@@ -227,4 +227,72 @@ if (process.env.GITHUB_STEP_SUMMARY) {
   appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${report}\n`, "utf8");
 }
 
+// --- Histórico: grava a execução no banco (tabelas security_scans/_findings) ---
+function exec(sql) {
+  execFileSync("psql", [DB_URL, "-X", "-q", "--no-psqlrc", "-v", "ON_ERROR_STOP=1", "-c", sql], {
+    encoding: "utf8",
+    maxBuffer: 20 * 1024 * 1024,
+  });
+}
+
+function quote(value) {
+  if (value === null || value === undefined || value === "") return "null";
+  return `$sec$${String(value)}$sec$`;
+}
+
+if (process.env.SECURITY_SCAN_PERSIST !== "0") {
+  try {
+    const migrations = (process.env.SECURITY_SCAN_MIGRATIONS || "")
+      .split(/[\n,]/)
+      .map((m) => m.trim())
+      .filter(Boolean);
+    const payload = {
+      source: process.env.GITHUB_ACTIONS ? "ci" : "local",
+      git_ref: process.env.GITHUB_REF_NAME || null,
+      git_sha: process.env.GITHUB_SHA || null,
+      pull_request: process.env.SECURITY_SCAN_PR ? Number(process.env.SECURITY_SCAN_PR) : null,
+      migrations,
+      critical_count: criticalCount,
+      warning_count: warningCount,
+      accepted_count: acceptedCount,
+      findings: results.flatMap((check) =>
+        (check.findings ?? []).map((f) => ({
+          check_id: check.id,
+          title: check.title,
+          severity: check.severity,
+          object_name: f.row[0] ?? "",
+          details: Object.fromEntries(check.columns.map((c, i) => [c, f.row[i] ?? null])),
+          accepted: f.accepted,
+          accepted_reason: f.reason ?? null,
+        })),
+      ),
+    };
+
+    exec(`
+      with payload as (select ${quote(JSON.stringify(payload))}::jsonb as j),
+      ins as (
+        insert into public.security_scans
+          (source, git_ref, git_sha, pull_request, migrations, critical_count, warning_count, accepted_count, report_md)
+        select j->>'source', j->>'git_ref', j->>'git_sha',
+               nullif(j->>'pull_request','')::int,
+               coalesce(array(select jsonb_array_elements_text(j->'migrations')), '{}'),
+               (j->>'critical_count')::int, (j->>'warning_count')::int, (j->>'accepted_count')::int,
+               ${quote(report)}
+        from payload
+        returning id
+      )
+      insert into public.security_scan_findings
+        (scan_id, check_id, title, severity, object_name, details, accepted, accepted_reason)
+      select ins.id, f->>'check_id', f->>'title', f->>'severity', f->>'object_name',
+             coalesce(f->'details','{}'::jsonb), (f->>'accepted')::boolean, f->>'accepted_reason'
+      from ins, payload, jsonb_array_elements(payload.j->'findings') f;
+    `);
+    console.log("Histórico de scan gravado em public.security_scans.");
+  } catch (error) {
+    console.warn(
+      `Não foi possível gravar o histórico do scan: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+}
+
 process.exit(criticalCount > 0 ? 1 : 0);

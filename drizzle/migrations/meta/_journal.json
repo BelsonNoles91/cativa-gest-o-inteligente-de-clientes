@@ -15,6 +15,13 @@
       "when": 1790033687235,
       "tag": "0001_revoke_anon_access_team_invitations",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790033929209,
+      "tag": "0002_create_security_scan_history",
+      "breakpoints": true
     }
   ]
 }

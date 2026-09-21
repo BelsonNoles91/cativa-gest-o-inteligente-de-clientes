@@ -18,6 +18,7 @@ import { MembersTab } from "@/features/admin/MembersTab";
 import { AuditLogsTab } from "@/features/admin/AuditLogsTab";
 import { IncidentsTab as AdminIncidentsTab } from "@/features/admin/IncidentsTab";
 import { FeatureFlagsConsole } from "@/features/admin/FeatureFlagsConsole";
+import { SecurityScansTab } from "@/features/admin/SecurityScansTab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -83,6 +84,9 @@ export default function SuperAdmin() {
               <TabsTrigger value="plans" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3 font-semibold text-sm whitespace-nowrap">
                 <Package className="mr-1.5 h-3.5 w-3.5" /> Planos
               </TabsTrigger>
+              <TabsTrigger value="security" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3 font-semibold text-sm whitespace-nowrap">
+                <ShieldCheck className="mr-1.5 h-3.5 w-3.5" /> Segurança
+              </TabsTrigger>
               <TabsTrigger value="console" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3 font-semibold text-sm whitespace-nowrap">
                 <SlidersHorizontal className="mr-1.5 h-3.5 w-3.5" /> Console
               </TabsTrigger>
@@ -103,6 +107,10 @@ export default function SuperAdmin() {
 
           <TabsContent value="plans" className="mt-0 focus-visible:ring-0">
             <TrialLogsTab tenants={tenants} />
+          </TabsContent>
+
+          <TabsContent value="security" className="mt-0 focus-visible:ring-0">
+            <SecurityScansTab />
           </TabsContent>
 
           <TabsContent value="console" className="mt-0 focus-visible:ring-0">
