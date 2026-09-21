@@ -1,0 +1,17 @@
+{
+  "$comment": "Achados de segurança aceitos por design. Formato do id: '<check_id>:<objeto>' ou apenas '<check_id>' para aceitar a checagem inteira.",
+  "accepted": [
+    {
+      "id": "public_storage_buckets:tenant-logos",
+      "reason": "logos precisam ser lidas pelo portal público e pela landing"
+    },
+    {
+      "id": "anon_readable_policies:system_status",
+      "reason": "página pública /status exibe o estado do serviço"
+    },
+    {
+      "id": "anon_readable_policies:plans",
+      "reason": "tabela de planos alimenta a página pública de preços"
+    }
+  ]
+}
