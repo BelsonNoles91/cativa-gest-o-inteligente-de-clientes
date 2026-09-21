@@ -88,14 +88,20 @@ const checks = [
   {
     id: "anon_writable_tables",
     severity: "critical",
-    title: "Tabelas com escrita concedida ao papel anon",
-    columns: ["tabela", "privilegio"],
-    sql: `select c.relname, p.priv
-          from pg_class c
+    title: "Tabelas com escrita efetivamente aberta a anon (GRANT + policy permissiva)",
+    columns: ["tabela", "policy", "comando"],
+    sql: `select c.relname, pol.polname, pol.polcmd::text
+          from pg_policy pol
+          join pg_class c on c.oid = pol.polrelid
           join pg_namespace n on n.oid = c.relnamespace
-          cross join lateral (values ('INSERT'),('UPDATE'),('DELETE')) as p(priv)
-          where n.nspname = 'public' and c.relkind = 'r'
-            and has_table_privilege('anon', c.oid, p.priv)
+          where n.nspname = 'public'
+            and pol.polcmd in ('a', 'w', 'd', '*')
+            and (pol.polroles = '{0}'::oid[]
+                 or exists (select 1 from unnest(pol.polroles) r
+                            join pg_roles pr on pr.oid = r where pr.rolname = 'anon'))
+            and has_table_privilege('anon', c.oid,
+                  case pol.polcmd when 'a' then 'INSERT' when 'w' then 'UPDATE'
+                                  when 'd' then 'DELETE' else 'INSERT' end)
           order by 1, 2`,
   },
   {
