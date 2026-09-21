@@ -4351,6 +4351,7 @@ export type Database = {
           token: string
         }[]
       }
+      current_auth_email: { Args: never; Returns: string }
       effective_subscription_limits: {
         Args: { _tenant_id: string }
         Returns: Json
