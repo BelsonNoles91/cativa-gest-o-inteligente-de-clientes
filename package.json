@@ -15,6 +15,7 @@
     "test:visual:check": "node scripts/e2e-preflight.mjs",
     "test:build:missing-env": "node scripts/verify-missing-env-build.mjs",
     "security:rescan": "node scripts/security-rescan.mjs",
+    "test:rls": "psql \"$SUPABASE_DB_URL\" -X -v ON_ERROR_STOP=1 -f supabase/tests/rls-regression.sql",
     "test:visual:roles": "node scripts/e2e-role-check.mjs",
     "test:crm:media": "npm run test:auth:bootstrap && npm run build && playwright test -c playwright.smoke.config.ts e2e/diagnostics/crm-media.spec.ts --project=iphone-14-portrait --workers 1",
     "test:portal:booking": "npm run test:auth:bootstrap && npm run build && playwright test -c playwright.smoke.config.ts e2e/diagnostics/portal-booking.spec.ts --project=iphone-14-portrait --workers 1",
