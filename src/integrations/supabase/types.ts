@@ -2716,6 +2716,98 @@ export type Database = {
           },
         ]
       }
+      security_scan_findings: {
+        Row: {
+          accepted: boolean
+          accepted_reason: string | null
+          check_id: string
+          created_at: string
+          details: Json
+          id: string
+          object_name: string
+          scan_id: string
+          severity: string
+          title: string
+        }
+        Insert: {
+          accepted?: boolean
+          accepted_reason?: string | null
+          check_id: string
+          created_at?: string
+          details?: Json
+          id?: string
+          object_name: string
+          scan_id: string
+          severity: string
+          title: string
+        }
+        Update: {
+          accepted?: boolean
+          accepted_reason?: string | null
+          check_id?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          object_name?: string
+          scan_id?: string
+          severity?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "security_scan_findings_scan_id_fkey"
+            columns: ["scan_id"]
+            isOneToOne: false
+            referencedRelation: "security_scans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      security_scans: {
+        Row: {
+          accepted_count: number
+          created_at: string
+          created_by: string | null
+          critical_count: number
+          git_ref: string | null
+          git_sha: string | null
+          id: string
+          migrations: string[]
+          pull_request: number | null
+          report_md: string | null
+          source: string
+          warning_count: number
+        }
+        Insert: {
+          accepted_count?: number
+          created_at?: string
+          created_by?: string | null
+          critical_count?: number
+          git_ref?: string | null
+          git_sha?: string | null
+          id?: string
+          migrations?: string[]
+          pull_request?: number | null
+          report_md?: string | null
+          source?: string
+          warning_count?: number
+        }
+        Update: {
+          accepted_count?: number
+          created_at?: string
+          created_by?: string | null
+          critical_count?: number
+          git_ref?: string | null
+          git_sha?: string | null
+          id?: string
+          migrations?: string[]
+          pull_request?: number | null
+          report_md?: string | null
+          source?: string
+          warning_count?: number
+        }
+        Relationships: []
+      }
       segment_templates: {
         Row: {
           created_at: string
