@@ -248,6 +248,8 @@ EXCEPTION WHEN OTHERS THEN
   RESET ROLE;
   PERFORM set_config('request.jwt.claims', NULL, true);
   BEGIN
+    ALTER TABLE public.profiles ENABLE TRIGGER profiles_block_super_admin_changes_trg;
+    ALTER TABLE public.profiles ENABLE TRIGGER profiles_block_self_super_admin;
     DELETE FROM public.system_incidents WHERE id = inc;
     DELETE FROM public.tenants WHERE id IN (t_a, t_b);
     DELETE FROM auth.users WHERE id IN (u_own, u_mng, u_pro, u_ownb, u_sup);
