@@ -37,9 +37,18 @@ BEGIN
   -- =========================================================================
   -- Limpeza defensiva + fixtures
   -- =========================================================================
-  DELETE FROM public.system_incidents WHERE id = inc;
-  DELETE FROM public.tenants WHERE id IN (t_a, t_b);
-  DELETE FROM auth.users WHERE id IN (u_own, u_mng, u_pro, u_ownb, u_sup);
+  BEGIN
+    DELETE FROM public.system_incidents WHERE id = inc;
+  EXCEPTION WHEN insufficient_privilege THEN NULL;
+  END;
+  BEGIN
+    DELETE FROM public.tenants WHERE id IN (t_a, t_b);
+  EXCEPTION WHEN insufficient_privilege THEN NULL;
+  END;
+  BEGIN
+    DELETE FROM auth.users WHERE id IN (u_own, u_mng, u_pro, u_ownb, u_sup);
+  EXCEPTION WHEN insufficient_privilege THEN NULL;
+  END;
 
   INSERT INTO auth.users (id, instance_id, aud, role, email, encrypted_password,
                           email_confirmed_at, created_at, updated_at)
@@ -237,11 +246,24 @@ BEGIN
   ELSE RAISE NOTICE 'ok  memberships: manager atualiza membros do próprio tenant'; END IF;
 
   -- =========================================================================
-  -- Limpeza
+  -- Limpeza (best-effort: o papel de execução pode não ter DELETE em todas
+  -- as tabelas; isso não invalida os testes de RLS acima)
   -- =========================================================================
-  DELETE FROM public.system_incidents WHERE id = inc;
-  DELETE FROM public.tenants WHERE id IN (t_a, t_b);
-  DELETE FROM auth.users WHERE id IN (u_own, u_mng, u_pro, u_ownb, u_sup);
+  BEGIN
+    DELETE FROM public.system_incidents WHERE id = inc;
+  EXCEPTION WHEN insufficient_privilege THEN
+    RAISE NOTICE 'aviso: sem privilégio para limpar system_incidents (%);', inc;
+  END;
+  BEGIN
+    DELETE FROM public.tenants WHERE id IN (t_a, t_b);
+  EXCEPTION WHEN insufficient_privilege THEN
+    RAISE NOTICE 'aviso: sem privilégio para limpar tenants de teste';
+  END;
+  BEGIN
+    DELETE FROM auth.users WHERE id IN (u_own, u_mng, u_pro, u_ownb, u_sup);
+  EXCEPTION WHEN insufficient_privilege THEN
+    RAISE NOTICE 'aviso: sem privilégio para limpar auth.users de teste';
+  END;
 
   IF failures > 0 THEN
     RAISE EXCEPTION 'Testes de regressão de RLS: % falha(s)', failures;
