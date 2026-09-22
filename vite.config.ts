@@ -125,7 +125,10 @@ export default defineConfig(({ mode, command }) => {
         clientsClaim: true,
         skipWaiting: true,
         // Permite servir index.html para qualquer rota SPA (offline)
-        navigateFallback: "/offline.html",
+        // SPA: TODA navegação deve ser servida pelo index.html.
+        // Usar /offline.html aqui fazia o SW responder a tela "Sem conexão"
+        // em qualquer recarregamento/rota, mesmo com internet funcionando.
+        navigateFallback: "/index.html",
         navigateFallbackDenylist: [
           /^\/~oauth/,
           /^\/api\//,
