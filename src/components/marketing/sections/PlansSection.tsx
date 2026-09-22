@@ -23,7 +23,7 @@ export function PlansSection() {
           .order("display_order", { ascending: true });
 
         if (error) throw error;
-        
+
         // Remove duplicados por nome e filtra o Enterprise
         const uniquePlans = data?.reduce<PublicPlan[]>((acc, current) => {
           const x = acc.find(item => item.name === current.name);
@@ -34,7 +34,7 @@ export function PlansSection() {
           }
         }, []);
 
-        const filteredPlans = (uniquePlans || []).filter((p) => 
+        const filteredPlans = (uniquePlans || []).filter((p) =>
           p.code !== 'enterprise' && p.name.toLowerCase() !== 'enterprise'
         );
         setPlans(filteredPlans);
@@ -56,7 +56,7 @@ export function PlansSection() {
         // Marcamos como destaque o plano intermediário ou o que tiver maior ordem
         const isHighlight = plan.code === 'pro' || plan.code === 'entrepreneur' || plan.name === 'Empreendedor';
         const price = plan.price_cents / 100;
-        
+
         // Benefícios claros e em português para cada plano
         const defaultFeatures: Record<string, string[]> = {
           free: ["Até 25 agendamentos", "1 profissional", "Gestão de horários"],
@@ -70,14 +70,14 @@ export function PlansSection() {
         const features = defaultFeatures[plan.code as keyof typeof defaultFeatures] || ["Consulte nossa equipe"];
 
         return (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: i * 0.1 }}
             key={plan.id} className={cn(
             "group relative p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem] border transition-all duration-700 flex flex-col h-full",
-            isHighlight 
-              ? "bg-[#1A0F16] text-white border-accent/30 shadow-[0_40px_100px_-20px_rgba(168,76,134,0.3)] md:scale-105 z-10" 
+            isHighlight
+              ? "bg-[#1A0F16] text-white border-accent/30 shadow-[0_40px_100px_-20px_rgba(168,76,134,0.3)] md:scale-105 z-10"
               : "bg-white text-primary-dark border-border/40 hover:border-accent/20 hover:shadow-xl"
           )}>
             {isHighlight && (
@@ -85,29 +85,29 @@ export function PlansSection() {
                 <Star className="h-6 w-6 text-accent fill-accent animate-pulse" />
               </div>
             )}
-            
+
             <div className="flex flex-col h-full">
               <div className="flex flex-col">
                 <p className={cn("text-[10px] font-bold uppercase tracking-[0.3em] mb-6", isHighlight ? "text-accent" : "text-muted-foreground")}>
                   {plan.name === 'Studio' ? 'Estúdio' : plan.name}
                 </p>
-                
+
                 <div className="flex items-baseline gap-1 mb-8">
                   <span className="text-xl font-bold opacity-60">R$</span>
                   <span className="text-6xl md:text-7xl font-display font-bold tracking-tighter">
-                    {plan.code === 'free' ? "Grátis" : 
+                    {plan.code === 'free' ? "Grátis" :
                      plan.code === 'pro' || plan.code === 'entrepreneur' ? "47,90" : "87,90"}
                   </span>
                   {plan.code !== 'free' && <span className="text-sm font-bold opacity-60">/mês</span>}
                 </div>
-                
+
                 <div className="min-h-[100px] mb-8">
                   <p className={cn("text-lg font-light leading-relaxed", isHighlight ? "text-white/70" : "text-muted-foreground")}>
                     {plan.description || "A solução ideal para organizar sua rotina."}
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex-grow">
                 <div className="space-y-6 mb-12 min-h-[220px]">
                    {features.slice(0, 5).map((feat, idx) => (
@@ -126,9 +126,9 @@ export function PlansSection() {
                       {plan.code === 'free' ? "Começar agora" : "Escolher este plano"}
                     </Link>
                   </Button>
-                  
+
                   <div className="h-12" />
-                  
+
                   {plan.code === 'free' ? (
                     <p className={cn("text-center mt-2 text-[9px] font-bold uppercase tracking-widest opacity-40")}>
                       Grátis para sempre para pequenos negócios

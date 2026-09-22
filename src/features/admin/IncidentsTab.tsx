@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { 
-  AlertCircle, 
-  Plus, 
-  Loader2, 
-  Clock, 
-  CheckCircle2, 
-  Save, 
-  MessageSquare, 
+import {
+  AlertCircle,
+  Plus,
+  Loader2,
+  Clock,
+  CheckCircle2,
+  Save,
+  MessageSquare,
   History,
   Send,
   AlertTriangle,
@@ -79,7 +79,7 @@ export function IncidentsTab() {
       .from('system_incidents')
       .select('*')
       .order('created_at', { ascending: false });
-    
+
     if (data) setIncidents(data as Incident[]);
     setLoading(false);
   }
@@ -90,7 +90,7 @@ export function IncidentsTab() {
 
   async function handleCreate() {
     if (!form.title) return;
-    
+
     const { error } = await supabase
       .from('system_incidents')
       .insert([form]);
@@ -116,15 +116,15 @@ export function IncidentsTab() {
 
   async function handleUpdateStatus() {
     if (!selectedIncident) return;
-    
-    const updates: Partial<Incident> = { 
+
+    const updates: Partial<Incident> = {
       status: updateForm.status,
       description: updateForm.message,
       updated_at: new Date().toISOString()
     };
-    
+
     if (updateForm.status === 'resolved') updates.resolved_at = new Date().toISOString();
-    
+
     const { error } = await supabase
       .from('system_incidents')
       .update(updates)
@@ -149,7 +149,7 @@ export function IncidentsTab() {
           </h2>
           <p className="text-sm text-muted-foreground mt-1">Gerencie crises e comunique o status aos usuários em tempo real.</p>
         </div>
-        
+
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2 shadow-lg shadow-primary/20">
@@ -163,8 +163,8 @@ export function IncidentsTab() {
             <div className="space-y-4 pt-4">
               <div className="space-y-2">
                 <Label>Título do Incidente</Label>
-                <Input 
-                  value={form.title} 
+                <Input
+                  value={form.title}
                   onChange={e => setForm({...form, title: e.target.value})}
                   placeholder="Ex: Instabilidade no processamento de pagamentos"
                   className="h-11"
@@ -173,8 +173,8 @@ export function IncidentsTab() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Severidade</Label>
-                  <Select 
-                    value={form.severity} 
+                  <Select
+                    value={form.severity}
                     onValueChange={(v) => setForm({...form, severity: v as Incident['severity']})}
                   >
                     <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
@@ -188,8 +188,8 @@ export function IncidentsTab() {
                 </div>
                 <div className="space-y-2">
                   <Label>Status Inicial</Label>
-                  <Select 
-                    value={form.status} 
+                  <Select
+                    value={form.status}
                     onValueChange={(v) => setForm({...form, status: v as Incident['status']})}
                   >
                     <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
@@ -203,8 +203,8 @@ export function IncidentsTab() {
               </div>
               <div className="space-y-2">
                 <Label>Descrição / Primeira Mensagem</Label>
-                <Textarea 
-                  value={form.description} 
+                <Textarea
+                  value={form.description}
                   onChange={e => setForm({...form, description: e.target.value})}
                   placeholder="Detalhes sobre o que está acontecendo..."
                   className="min-h-[120px] resize-none"
@@ -247,14 +247,14 @@ export function IncidentsTab() {
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     <StatusBadge tone={inc.status === 'resolved' ? 'success' : 'warning'} className="h-9 px-3 text-xs uppercase font-bold">
                       {inc.status}
                     </StatusBadge>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="h-9 gap-2"
                       onClick={() => openUpdateDialog(inc)}
                     >
@@ -262,7 +262,7 @@ export function IncidentsTab() {
                     </Button>
                   </div>
                 </div>
-                
+
                 <div className="bg-muted/30 rounded-xl p-4 border border-border/50">
                   <div className="flex items-start gap-3">
                     <Info className="h-4 w-4 text-muted-foreground mt-1 shrink-0" />
@@ -287,8 +287,8 @@ export function IncidentsTab() {
           <div className="space-y-5 pt-4">
             <div className="space-y-2">
               <Label>Novo Status</Label>
-              <Select 
-                value={updateForm.status} 
+              <Select
+                value={updateForm.status}
                 onValueChange={(v: Incident['status']) => setUpdateForm({
                   status: v,
                   message: STATUS_TEMPLATES[v]
@@ -303,14 +303,14 @@ export function IncidentsTab() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex justify-between items-end">
                 <Label>Mensagem Pública (Status Page)</Label>
                 <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded font-medium uppercase tracking-tighter">Sugestão Automática</span>
               </div>
-              <Textarea 
-                value={updateForm.message} 
+              <Textarea
+                value={updateForm.message}
                 onChange={e => setUpdateForm({...updateForm, message: e.target.value})}
                 placeholder="Escreva a mensagem que aparecerá na página de status..."
                 className="min-h-[140px] resize-none leading-relaxed"
@@ -320,7 +320,7 @@ export function IncidentsTab() {
                 Dica: substitua [NOME DO COMPONENTE] pelo sistema afetado.
               </p>
             </div>
-            
+
             <DialogFooter className="gap-2 sm:gap-0">
               <Button variant="ghost" onClick={() => setIsUpdateDialogOpen(false)}>Cancelar</Button>
               <Button onClick={handleUpdateStatus} className="gap-2">

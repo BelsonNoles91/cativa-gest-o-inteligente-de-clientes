@@ -32,12 +32,12 @@ import { dirname, resolve } from "node:path";
 const TAG = "[playwright:setup]";
 
 function log(msg: string) {
-   
+
   console.log(`${TAG} ${msg}`);
 }
 
 function warn(msg: string, err?: unknown) {
-   
+
   console.warn(
     `${TAG} WARN ${msg}` +
       (err instanceof Error ? ` :: ${err.message}` : ""),

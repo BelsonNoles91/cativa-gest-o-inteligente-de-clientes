@@ -180,7 +180,7 @@ export function SafeAreaDebugOverlay() {
     const snap = captureSnapshot();
     setSnapshot(snap);
     if (!loggedOnceRef.current) {
-       
+
       console.info("[safe-area]", snap);
       loggedOnceRef.current = true;
     }
@@ -192,7 +192,7 @@ export function SafeAreaDebugOverlay() {
     refresh();
     const onResize = () => {
       refresh();
-       
+
       console.info("[safe-area] resize/orientation", captureSnapshot());
     };
     window.addEventListener("resize", onResize);
