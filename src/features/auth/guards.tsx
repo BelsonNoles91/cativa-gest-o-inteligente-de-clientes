@@ -76,7 +76,7 @@ export function RequireOnboarding({ children }: { children?: ReactNode }) {
         if (invites && invites.length > 0) {
           // A RPC retorna dados do convite — precisamos do token (se disponível)
           // ou pelo menos redirecionar para a página com o ID
-          const firstInvite = invites[0] as any;
+          const firstInvite = invites[0] as { token?: string | null; id?: string | null };
           setPendingInviteToken(firstInvite.token ?? firstInvite.id ?? null);
         } else {
           setPendingInviteToken(null);

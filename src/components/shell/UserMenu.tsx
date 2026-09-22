@@ -22,20 +22,20 @@ export function UserMenu() {
   const { currentRole, isSuperAdmin } = useTenant();
   const { user, signOut } = useAuth();
   const isMobile = useIsMobile();
-  const [pushStatus, setPushStatus] = useState<"granted" | "denied" | "default" | "unsupported">("default");
+  const [pushStatus, setPushStatus] = useState<NotificationPermission | "unsupported">("default");
 
   useEffect(() => {
     if (!("Notification" in window)) {
       setPushStatus("unsupported");
     } else {
-      setPushStatus(Notification.permission as any);
+      setPushStatus(Notification.permission);
     }
   }, []);
 
   const requestPush = async () => {
     if (!("Notification" in window)) return;
     const permission = await Notification.requestPermission();
-    setPushStatus(permission as any);
+    setPushStatus(permission);
     if (permission === "granted") {
       toast.success("Notificações habilitadas com sucesso!");
     } else {

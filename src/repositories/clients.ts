@@ -154,7 +154,7 @@ export async function listClients(params: ListClientsParams): Promise<ListClient
 
   const { data, error, count } = await q;
   if (error) throw error;
-  let list = (data ?? []).map((r: any) => ({
+  let list = ((data ?? []) as DbClient[]).map((r) => ({
     id: r.id,
     fullName: r.full_name,
     phone: r.phone,

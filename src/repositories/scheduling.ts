@@ -375,7 +375,14 @@ export async function listAppointmentsHydrated(params: ListAppointmentsParams): 
   if (error) throw error;
   if (!data) return [];
 
-  return data.map((row: any) => {
+  return data.map((rawRow) => {
+    const row = rawRow as unknown as Record<string, unknown> & {
+      appointment_items?: Array<{ service?: { id?: string; name?: string } | null }>;
+      client?: { full_name?: string } | null;
+      professional?: { display_name?: string } | null;
+      unit?: { name?: string } | null;
+      resource?: { name?: string } | null;
+    };
     const appointment = toAppointment(row);
     const item = row.appointment_items?.[0] ?? null;
     

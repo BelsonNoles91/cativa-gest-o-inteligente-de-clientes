@@ -117,7 +117,7 @@ export function IncidentsTab() {
   async function handleUpdateStatus() {
     if (!selectedIncident) return;
     
-    const updates: any = { 
+    const updates: Partial<Incident> = { 
       status: updateForm.status,
       description: updateForm.message,
       updated_at: new Date().toISOString()
@@ -175,7 +175,7 @@ export function IncidentsTab() {
                   <Label>Severidade</Label>
                   <Select 
                     value={form.severity} 
-                    onValueChange={(v: any) => setForm({...form, severity: v})}
+                    onValueChange={(v) => setForm({...form, severity: v as Incident['severity']})}
                   >
                     <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -190,7 +190,7 @@ export function IncidentsTab() {
                   <Label>Status Inicial</Label>
                   <Select 
                     value={form.status} 
-                    onValueChange={(v: any) => setForm({...form, status: v})}
+                    onValueChange={(v) => setForm({...form, status: v as Incident['status']})}
                   >
                     <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
                     <SelectContent>

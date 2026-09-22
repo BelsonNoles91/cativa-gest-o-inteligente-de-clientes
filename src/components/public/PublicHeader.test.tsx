@@ -35,7 +35,7 @@ describe('PublicHeader Component', () => {
     const menuButton = screen.getByLabelText(/Abrir menu/i);
     
     // Assert initial state
-    expect(screen.queryByText('Entrar')).not.toBeVisible; // Button in sheet might be hidden by CSS, but here we check existence/visibility in DOM
+    expect(screen.queryAllByText('Entrar').length).toBeGreaterThan(0);
 
     // Act
     fireEvent.click(menuButton);

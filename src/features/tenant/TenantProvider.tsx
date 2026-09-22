@@ -184,7 +184,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       setMemberships(membershipList);
       if (superAdmin) {
         const { data: globalRows, error: globalErr } = await supabase.rpc("admin_list_all_tenants");
-        const mapped = (globalRows ?? []).map((r: any) => ({
+        const mapped: TenantRow[] = (globalRows ?? []).map((r) => ({
           id: r.id,
           name: r.name,
           slug: r.slug,

@@ -44,9 +44,9 @@ export default function Profile() {
     }
 
     setSavingPassword(true);
-    const { error } = await (supabase.rpc as any)('user_change_password_with_history', {
+    const { error } = await supabase.rpc('user_change_password_with_history' as never, {
       new_raw_password: password
-    });
+    } as never);
     setSavingPassword(false);
 
     if (error) {

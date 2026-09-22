@@ -334,7 +334,7 @@ export async function captureFailureReport(
   try {
     mkdirSync(REPORT_DIR, { recursive: true });
   } catch (err) {
-    // eslint-disable-next-line no-console
+     
     console.warn(`[safe-area-report] não consegui criar ${REPORT_DIR}`, err);
     return null;
   }
@@ -356,7 +356,7 @@ export async function captureFailureReport(
     try {
       diagnostics = await collectLayoutDiagnostics(page);
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.warn(`[safe-area-report] coleta de diagnóstico falhou`, err);
       diagnostics = {
         viewport: { width: 0, height: 0 },
@@ -389,7 +389,7 @@ export async function captureFailureReport(
     await page.screenshot({ path: screenshotPath, fullPage: false });
     screenshotOk = true;
   } catch (err) {
-    // eslint-disable-next-line no-console
+     
     console.warn(`[safe-area-report] screenshot falhou`, err);
   } finally {
     await removeOverlays(page);
@@ -423,7 +423,7 @@ export async function captureFailureReport(
     writeFileSync(jsonPath, JSON.stringify(report, null, 2), "utf8");
     jsonOk = true;
   } catch (err) {
-    // eslint-disable-next-line no-console
+     
     console.warn(`[safe-area-report] gravação do JSON falhou`, err);
   }
 
@@ -443,12 +443,12 @@ export async function captureFailureReport(
         });
       }
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.warn(`[safe-area-report] attach ao TestInfo falhou`, err);
     }
   }
 
-  // eslint-disable-next-line no-console
+   
   console.warn(
     `\n[safe-area-report] ⚠️  Falha capturada: ${label}\n` +
       `  Projeto:    ${projectName}\n` +
@@ -484,7 +484,7 @@ export async function withFailureReport<T>(
       try {
         extras = await buildPayload();
       } catch (buildErr) {
-        // eslint-disable-next-line no-console
+         
         console.warn(
           `[safe-area-report] buildPayload falhou para "${label}"`,
           buildErr,

@@ -14,14 +14,14 @@ import type { Page, BrowserContext } from "@playwright/test";
 const TAG = "[e2e]";
 
 export function logStep(scenario: string, step: string, extra?: unknown) {
-  // eslint-disable-next-line no-console
+   
   console.log(
     `${TAG} ${scenario} :: ${step}${extra !== undefined ? " " + JSON.stringify(extra) : ""}`,
   );
 }
 
 export function logWarn(scenario: string, msg: string, err?: unknown) {
-  // eslint-disable-next-line no-console
+   
   console.warn(
     `${TAG} WARN ${scenario} :: ${msg}` +
       (err instanceof Error ? ` :: ${err.message}` : ""),

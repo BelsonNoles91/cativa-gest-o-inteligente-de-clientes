@@ -70,7 +70,8 @@ export function QueueItemCard({
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          selection ? selection.toggleSelection(item.id) : onOpen(item);
+          if (selection) selection.toggleSelection(item.id);
+          else onOpen(item);
         }
       }}
       className={cn(

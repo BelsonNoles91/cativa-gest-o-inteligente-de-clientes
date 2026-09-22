@@ -129,7 +129,10 @@ export function useCatalogMutations() {
   });
 
   const updateCategory = useMutation({
-    mutationFn: ({ id, patch }: { id: string; patch: any }) => catalogRepo.updateCategory(id, patch),
+    mutationFn: ({ id, patch }: {
+      id: string;
+      patch: Parameters<typeof catalogRepo.updateCategory>[1];
+    }) => catalogRepo.updateCategory(id, patch),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["catalog", tenantId, "categories"] });
       toast.success("Categoria atualizada");

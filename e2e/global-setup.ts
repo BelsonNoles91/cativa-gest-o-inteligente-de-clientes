@@ -32,12 +32,12 @@ import { dirname, resolve } from "node:path";
 const TAG = "[playwright:setup]";
 
 function log(msg: string) {
-  // eslint-disable-next-line no-console
+   
   console.log(`${TAG} ${msg}`);
 }
 
 function warn(msg: string, err?: unknown) {
-  // eslint-disable-next-line no-console
+   
   console.warn(
     `${TAG} WARN ${msg}` +
       (err instanceof Error ? ` :: ${err.message}` : ""),

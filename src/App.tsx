@@ -1,4 +1,4 @@
-import { Suspense, lazy, type ComponentType, forwardRef } from "react";
+import { Suspense, lazy, type ComponentType, type LazyExoticComponent, forwardRef } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
@@ -36,9 +36,9 @@ const queryClient = new QueryClient({
  * after a deploy/HMR where the previous chunk hash no longer exists),
  * we force a single hard reload instead of crashing into a blank screen.
  */
-function lazyWithReload<T extends { default: ComponentType<any> }>(
-  factory: () => Promise<T>,
-) {
+function lazyWithReload<T extends ComponentType<never>>(
+  factory: () => Promise<{ default: T }>,
+): LazyExoticComponent<T> {
   return lazy(() =>
     factory().catch((error) => {
       const key = "__lovable_chunk_reload__";
@@ -46,7 +46,7 @@ function lazyWithReload<T extends { default: ComponentType<any> }>(
         sessionStorage.setItem(key, "1");
         window.location.reload();
         // Return a never-resolving promise while the page reloads.
-        return new Promise<T>(() => {});
+        return new Promise<{ default: T }>(() => {});
       }
       handleError(error, { category: 'NETWORK', context: { type: 'chunk_load_fail' } });
       throw error;

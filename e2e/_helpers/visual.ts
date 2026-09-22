@@ -40,7 +40,7 @@ export async function prepareForSnapshot(page: Page): Promise<void> {
     // Tentamos novamente após um pequeno settle.
     await page.waitForTimeout(100);
     await page.addStyleTag({ content: SNAPSHOT_CSS }).catch(() => {
-      // eslint-disable-next-line no-console
+       
       console.warn("[visual] prepareForSnapshot: addStyleTag falhou 2x", err);
     });
   }
@@ -308,7 +308,7 @@ export async function assertContentNotHiddenByBottomNav(
     scrollResult.scrolledBy === 0 &&
     scrollResult.finalScrollY === 0
   ) {
-    // eslint-disable-next-line no-console
+     
     console.warn(
       `[visual] assertContentNotHiddenByBottomNav: scroll não teve efeito ` +
         `(pageHeight=${scrollResult.pageHeight}, viewportH=${scrollResult.viewportH}). ` +
@@ -629,7 +629,7 @@ export async function goOffline(page: Page): Promise<() => Promise<void>> {
   try {
     await page.context().setOffline(true);
   } catch (err) {
-    // eslint-disable-next-line no-console
+     
     console.warn("[visual] goOffline: setOffline(true) falhou", err);
   }
   await page
@@ -656,7 +656,7 @@ export async function goOffline(page: Page): Promise<() => Promise<void>> {
       { timeout: 3000 },
     );
   } catch {
-    // eslint-disable-next-line no-console
+     
     console.warn(
       "[visual] goOffline: OfflineBanner não apareceu em 3s — " +
         "pode indicar regressão no useOnlineStatus ou render condicional.",
@@ -667,7 +667,7 @@ export async function goOffline(page: Page): Promise<() => Promise<void>> {
     try {
       await page.context().setOffline(false);
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.warn("[visual] restore: setOffline(false) falhou", err);
     }
     await page

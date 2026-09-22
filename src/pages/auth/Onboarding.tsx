@@ -278,7 +278,7 @@ export default function Onboarding() {
             ends_at: new Date(new Date().getTime() + 3 * 60 * 60 * 1000).toISOString(),
             status: 'confirmed',
             notes: 'Agendamento de teste do onboarding'
-          } as any);
+          } as never);
         }
       }
 
@@ -534,7 +534,12 @@ export default function Onboarding() {
                   id="pro-input" 
                   placeholder="Nome do profissional" 
                   className="rounded-xl h-11" 
-                  onKeyDown={(e) => { if (e.key === 'Enter') { addProDraft((e.target as any).value); (e.target as any).value = ''; } }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      addProDraft(e.currentTarget.value);
+                      e.currentTarget.value = '';
+                    }
+                  }}
                 />
                 <Button variant="outline" size="icon" onClick={() => { 
                   const el = document.getElementById('pro-input') as HTMLInputElement;

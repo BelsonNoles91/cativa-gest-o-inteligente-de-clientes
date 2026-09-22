@@ -24,13 +24,13 @@ export function useDebounce<T>(value: T, delay: number): T {
  * Hook para monitorar re-renders durante desenvolvimento.
  */
 export function useRenderLog(name: string) {
-  if (import.meta.env.DEV) {
-    const count = useRef(0);
-    useEffect(() => {
+  const count = useRef(0);
+  useEffect(() => {
+    if (import.meta.env.DEV) {
       count.current++;
       console.log(`[Perf] ${name} render count: ${count.current}`);
-    });
-  }
+    }
+  });
 }
 
 /**

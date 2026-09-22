@@ -44,11 +44,6 @@ const SAFE_AREA_CSS = `
   .z-40 { z-index: 40; }
 `;
 
-const routerFuture = {
-  v7_startTransition: true,
-  v7_relativeSplatPath: true,
-} as const;
-
 function injectSafeAreaCss() {
   const id = "safe-area-test-css";
   document.getElementById(id)?.remove();
@@ -60,7 +55,7 @@ function injectSafeAreaCss() {
 
 function renderNav() {
   return render(
-    <MemoryRouter initialEntries={["/app"]} future={routerFuture}>
+    <MemoryRouter initialEntries={["/app"]}>
       <BottomNav />
     </MemoryRouter>,
   );

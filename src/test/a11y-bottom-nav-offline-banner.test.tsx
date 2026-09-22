@@ -73,11 +73,6 @@ const axeOptions = {
   },
 };
 
-const routerFuture = {
-  v7_startTransition: true,
-  v7_relativeSplatPath: true,
-} as const;
-
 afterEach(() => {
   cleanup();
 });
@@ -88,7 +83,7 @@ afterEach(() => {
 describe("BottomNav — acessibilidade (axe)", () => {
   it("não tem violações de acessibilidade no estado padrão", async () => {
     const { container } = render(
-      <MemoryRouter initialEntries={["/app"]} future={routerFuture}>
+      <MemoryRouter initialEntries={["/app"]}>
         <BottomNav />
       </MemoryRouter>,
     );
@@ -98,7 +93,7 @@ describe("BottomNav — acessibilidade (axe)", () => {
 
   it("expõe nav com aria-label descritivo", () => {
     render(
-      <MemoryRouter initialEntries={["/app"]} future={routerFuture}>
+      <MemoryRouter initialEntries={["/app"]}>
         <BottomNav />
       </MemoryRouter>,
     );
@@ -109,7 +104,7 @@ describe("BottomNav — acessibilidade (axe)", () => {
 
   it('botão "Mais" expõe aria-expanded=false quando fechado', () => {
     render(
-      <MemoryRouter initialEntries={["/app"]} future={routerFuture}>
+      <MemoryRouter initialEntries={["/app"]}>
         <BottomNav />
       </MemoryRouter>,
     );
@@ -121,7 +116,7 @@ describe("BottomNav — acessibilidade (axe)", () => {
   it('botão "Mais" alterna aria-expanded=true ao abrir o sheet', async () => {
     const user = (await import("@testing-library/react")).fireEvent;
     render(
-      <MemoryRouter initialEntries={["/app"]} future={routerFuture}>
+      <MemoryRouter initialEntries={["/app"]}>
         <BottomNav />
       </MemoryRouter>,
     );
@@ -132,7 +127,7 @@ describe("BottomNav — acessibilidade (axe)", () => {
 
   it("todos os itens de navegação têm nome acessível (texto visível)", () => {
     render(
-      <MemoryRouter initialEntries={["/app"]} future={routerFuture}>
+      <MemoryRouter initialEntries={["/app"]}>
         <BottomNav />
       </MemoryRouter>,
     );
@@ -146,7 +141,7 @@ describe("BottomNav — acessibilidade (axe)", () => {
 
   it("ícones decorativos não introduzem texto duplicado para leitores de tela", () => {
     const { container } = render(
-      <MemoryRouter initialEntries={["/app"]} future={routerFuture}>
+      <MemoryRouter initialEntries={["/app"]}>
         <BottomNav />
       </MemoryRouter>,
     );
@@ -169,7 +164,7 @@ describe("BottomNav — acessibilidade (axe)", () => {
     // garantimos pelo menos que a marcação no código exige aria-label no Lock,
     // verificando que se houver Lock renderizado, ele tem nome acessível.
     const { container } = render(
-      <MemoryRouter initialEntries={["/app"]} future={routerFuture}>
+      <MemoryRouter initialEntries={["/app"]}>
         <BottomNav />
       </MemoryRouter>,
     );

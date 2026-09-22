@@ -21,6 +21,7 @@ confirmação de horários, retenção e visão gerencial.
 ## Stack
 
 - **Vite + React 18 + TypeScript**
+- **TypeSafe Jev** para recomendações estruturadas de retenção, sempre com decisão humana
 - **Tailwind CSS v3** + design system com tokens HSL semânticos
 - **shadcn/ui** customizado com a identidade Cativa
 - **React Router** para navegação SPA
@@ -87,6 +88,32 @@ npm run build    # bundle de produção
 npm run preview  # serve o bundle gerado
 npm run test     # vitest
 ```
+
+## Inteligência de retenção com Jev
+
+A ficha do cliente pode solicitar ao Jev uma próxima ação de retenção. A integração:
+
+- roda em `supabase/functions/retention-advisor`, nunca no navegador;
+- consulta somente dados do tenant e cliente autorizados pelo JWT e pelas RLS;
+- envia ao TypeSafe apenas métricas estruturadas, sem nome, telefone, e-mail ou notas;
+- combina `Choice`, `Score` e `Noul` em uma única chamada;
+- rebaixa baixa confiança, evidência insuficiente ou falta de canal de contato para revisão humana;
+- registra latência, uso de tokens e resultado no log de auditoria, sem conteúdo pessoal;
+- limita por padrão cada tenant a 200 avaliações concluídas por dia;
+- nunca envia mensagens, agenda horários ou grava alterações automaticamente.
+
+Para habilitar, configure e publique a função:
+
+```bash
+supabase secrets set TYPESAFE_API_KEY="sua-chave"
+supabase functions deploy retention-advisor
+```
+
+Os limites podem ser calibrados com `RETENTION_ACTION_CONFIDENCE_THRESHOLD`,
+`RETENTION_EVIDENCE_THRESHOLD` e `RETENTION_DAILY_TENANT_LIMIT`. Os padrões conservadores
+são `0.60`, `0.65` e `200`, respectivamente.
+
+Sem o secret, a aplicação preserva as métricas e a sugestão determinística existentes e exibe um erro recuperável ao solicitar o Jev.
 
 ## Status atual — Etapa 1
 

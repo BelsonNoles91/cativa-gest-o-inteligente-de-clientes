@@ -137,7 +137,10 @@ export async function withRetry<T>(
       lastError = error;
       
       // Não tenta novamente se for erro de validação ou auth (não vai mudar com retry)
-      if (category === 'AUTH' || category === 'VALIDATION' || (error as any)?.status === 401) {
+      const status = typeof error === "object" && error !== null && "status" in error
+        ? (error as { status?: unknown }).status
+        : undefined;
+      if (category === 'AUTH' || category === 'VALIDATION' || status === 401) {
         throw handleError(error, { category });
       }
 

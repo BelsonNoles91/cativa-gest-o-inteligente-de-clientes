@@ -55,7 +55,7 @@ export function logBackendInitDiagnostics(): void {
 
   if (missing.length > 0) {
     // Runtime: bundle publicado sem variáveis → cliente inicializará quebrado.
-    /* eslint-disable no-console */
+     
     console.error("[backend-init] falha de inicialização — variáveis ausentes", {
       mode: snap.mode,
       isDev: snap.isDev,
@@ -85,11 +85,11 @@ export function logBackendInitDiagnostics(): void {
       ].join("\n"),
     );
     console.groupEnd();
-    /* eslint-enable no-console */
+     
     return;
   }
 
-  // eslint-disable-next-line no-console
+   
   console.info("[backend-init] ok", {
     mode: snap.mode,
     isDev: snap.isDev,
@@ -110,7 +110,7 @@ export function installBackendInitErrorListener(): void {
     const message =
       (reason && (reason.message || String(reason))) || "";
     if (typeof message === "string" && /supabaseUrl is required/i.test(message)) {
-      // eslint-disable-next-line no-console
+       
       console.error(
         "[backend-init] erro capturado: supabaseUrl is required — redefinindo diagnóstico",
       );

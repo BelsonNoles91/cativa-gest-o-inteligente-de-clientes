@@ -6,7 +6,7 @@
 /**
  * Converte um array de objetos para uma string CSV.
  */
-export function jsonToCsv(data: any[], headers?: string[]): string {
+export function jsonToCsv(data: Record<string, unknown>[], headers?: string[]): string {
   if (data.length === 0) return "";
 
   const keys = Object.keys(data[0]);

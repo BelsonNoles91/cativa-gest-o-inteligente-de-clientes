@@ -76,6 +76,7 @@ import { computeCompleteness, clientStatusLabels, riskLevelLabels, type Client, 
 import { canAccess } from "@/domain/roles";
 import { isUsageBlocked } from "@/domain/billing";
 import { QuickFiltersBar } from "@/features/clients/QuickFiltersBar";
+import { RetentionIntelligenceCard } from "@/features/clients/RetentionIntelligenceCard";
 import { supabase } from "@/integrations/supabase/client";
 import { cn, debounce } from "@/lib/utils";
 
@@ -1131,39 +1132,7 @@ export default function ClientsPage() {
                       </Card>
                     </div>
                   </div>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Inteligência de Retenção</CardTitle>
-                      <CardDescription>Métricas de ciclo e risco calculadas pelo sistema.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid gap-4 sm:grid-cols-3">
-                      <InfoItem 
-                        label="Ciclo Médio" 
-                        value={selectedClient.averageCycleDays ? `${selectedClient.averageCycleDays} dias` : "Não calculado"} 
-                      />
-                      <InfoItem 
-                        label="Risco de Churn" 
-                        value={
-                          <div className="flex items-center gap-2">
-                            <div className="h-2 w-24 overflow-hidden rounded-full bg-muted">
-                              <div 
-                                className={cn(
-                                  "h-full transition-all",
-                                  selectedClient.churnRiskScore > 70 ? "bg-red-500" : selectedClient.churnRiskScore > 30 ? "bg-amber-500" : "bg-green-500"
-                                )}
-                                style={{ width: `${selectedClient.churnRiskScore}%` }}
-                              />
-                            </div>
-                            <span className="text-xs font-medium">{selectedClient.churnRiskScore}%</span>
-                          </div>
-                        } 
-                      />
-                      <InfoItem 
-                        label="Próxima Ação" 
-                        value={selectedClient.nextBestAction || "Nenhuma sugestão"} 
-                      />
-                    </CardContent>
-                  </Card>
+                  <RetentionIntelligenceCard client={selectedClient} />
                 </TabsContent>
 
                 <TabsContent value="timeline">

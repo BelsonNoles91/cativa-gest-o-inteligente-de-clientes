@@ -12,6 +12,6 @@ export default defineConfig({
     exclude: ["src/tests/e2e/**", "src/__tests__/Auth.test.ts"],
   },
   resolve: {
-    alias: { "@": path.resolve(__dirname, "./src") },
+    alias: { "@": path.resolve(import.meta.dirname, "./src") },
   },
 });

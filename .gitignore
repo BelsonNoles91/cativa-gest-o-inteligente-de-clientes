@@ -16,6 +16,7 @@ e2e/.artifacts/
 e2e/.artifacts-*
 e2e/.report/
 vite.config.ts.timestamp-*.mjs
+*.tsbuildinfo
 
 # Environment & secrets
 .env

@@ -5,9 +5,12 @@ import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
+import type { Database } from "@/integrations/supabase/types";
+
+type PublicPlan = Database["public"]["Tables"]["plans"]["Row"];
 
 export function PlansSection() {
-  const [plans, setPlans] = useState<any[]>([]);
+  const [plans, setPlans] = useState<PublicPlan[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,7 +25,7 @@ export function PlansSection() {
         if (error) throw error;
         
         // Remove duplicados por nome e filtra o Enterprise
-        const uniquePlans = data?.reduce((acc: any[], current) => {
+        const uniquePlans = data?.reduce<PublicPlan[]>((acc, current) => {
           const x = acc.find(item => item.name === current.name);
           if (!x) {
             return acc.concat([current]);
@@ -31,7 +34,7 @@ export function PlansSection() {
           }
         }, []);
 
-        const filteredPlans = (uniquePlans || []).filter((p: any) => 
+        const filteredPlans = (uniquePlans || []).filter((p) => 
           p.code !== 'enterprise' && p.name.toLowerCase() !== 'enterprise'
         );
         setPlans(filteredPlans);

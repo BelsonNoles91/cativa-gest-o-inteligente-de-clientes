@@ -1,8 +1,14 @@
 #!/usr/bin/env node
 import { createClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL = "https://uqskxftzmjsumykpkwus.supabase.co";
-const SERVICE_ROLE_KEY = "sb_secret_MuTi0QUaPfIjNeX5UzGH4w_XDDLw7hF";
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? process.env.SUPABASE_URL;
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
+  throw new Error(
+    "VITE_SUPABASE_URL (ou SUPABASE_URL) e SUPABASE_SERVICE_ROLE_KEY são obrigatórios.",
+  );
+}
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },

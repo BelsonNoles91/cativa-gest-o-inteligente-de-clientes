@@ -1,8 +1,15 @@
 #!/usr/bin/env node
 import { createClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL = "https://uqskxftzmjsumykpkwus.supabase.co";
-const SERVICE_ROLE_KEY = "sb_secret_MuTi0QUaPfIjNeX5UzGH4w_XDDLw7hF";
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? process.env.SUPABASE_URL;
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const E2E_PASSWORD = process.env.E2E_PASS;
+
+if (!SUPABASE_URL || !SERVICE_ROLE_KEY || !E2E_PASSWORD) {
+  throw new Error(
+    "VITE_SUPABASE_URL (ou SUPABASE_URL), SUPABASE_SERVICE_ROLE_KEY e E2E_PASS são obrigatórios.",
+  );
+}
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
@@ -98,15 +105,15 @@ async function ensureMembership(userId, tenantId, role) {
 async function main() {
   console.log("=== Cativa Create Test Users ===\n");
 
-  const ownerId = await createAuthUser("owner.studio-teste-qa@cativa.test", "Cativa@2026");
+  const ownerId = await createAuthUser("owner.studio-teste-qa@cativa.test", E2E_PASSWORD);
   const tenantId = await createTenant("Studio Teste QA", "studio-teste-qa", "salao", ownerId);
   await createUnit(tenantId, "Unidade Principal");
   await ensureMembership(ownerId, tenantId, "owner");
 
   const users = [
-    { email: "manager.studio-teste-qa@cativa.test", pass: "Cativa@2026", role: "manager" },
-    { email: "frontdesk.studio-teste-qa@cativa.test", pass: "Cativa@2026", role: "frontdesk" },
-    { email: "professional.studio-teste-qa@cativa.test", pass: "Cativa@2026", role: "professional" },
+    { email: "manager.studio-teste-qa@cativa.test", pass: E2E_PASSWORD, role: "manager" },
+    { email: "frontdesk.studio-teste-qa@cativa.test", pass: E2E_PASSWORD, role: "frontdesk" },
+    { email: "professional.studio-teste-qa@cativa.test", pass: E2E_PASSWORD, role: "professional" },
   ];
 
   for (const u of users) {

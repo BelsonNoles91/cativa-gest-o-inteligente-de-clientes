@@ -38,6 +38,7 @@ import {
   subscriptionStatusLabels,
   subscriptionStatusTone,
   trialDaysLeft,
+  type Plan,
 } from "@/domain/billing";
 
 export default function Subscription() {
@@ -46,7 +47,7 @@ export default function Subscription() {
   const { toast } = useToast();
   const [isActing, setIsActing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [welcomePlan, setWelcomePlan] = useState<any>(null);
+  const [welcomePlan, setWelcomePlan] = useState<Plan | null>(null);
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(false);
 
   const canManage = useMemo(
@@ -480,4 +481,3 @@ function SubscriptionSkeleton() {
     </div>
   );
 }
-
