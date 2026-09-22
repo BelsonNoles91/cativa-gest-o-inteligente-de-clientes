@@ -57,6 +57,12 @@ test.describe("rotas públicas", () => {
   test("/auth/login — sem overflow e baseline visual", async ({ page }) => {
     await page.goto("/auth/login");
     await prepareForSnapshot(page);
+    await expect(
+      page.getByRole("heading", { name: "Bem-vindo de volta" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Entrar no Sistema" }),
+    ).toBeVisible();
     await assertNoHorizontalOverflow(page);
     // BottomNav não existe em login — o helper retorna sem assert se desktop;
     // em mobile o login não tem BottomNav, então pulamos a asserção aqui.
