@@ -22,8 +22,18 @@ export function Footer() {
               A inteligência operacional que clínicas de estética e salões premium utilizam para escalar com consistência e design.
             </p>
             <div className="flex gap-6">
-              {[Instagram, Linkedin].map((Icon, i) => (
-                <a key={i} href="#" className="w-12 h-12 rounded-full border border-border/60 flex items-center justify-center text-primary-dark hover:bg-primary-dark hover:text-white transition-all duration-500">
+              {[
+                { Icon: Instagram, label: "Instagram da Cativa", href: "https://instagram.com/cativagestao" },
+                { Icon: Linkedin, label: "LinkedIn da Cativa", href: "https://linkedin.com/company/cativagestao" },
+              ].map(({ Icon, label, href }) => (
+                <a
+                  key={href}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="w-12 h-12 rounded-full border border-border/60 flex items-center justify-center text-primary-dark hover:bg-primary-dark hover:text-white transition-all duration-500"
+                >
                   <Icon className="h-5 w-5" />
                 </a>
               ))}
