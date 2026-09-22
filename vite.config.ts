@@ -101,8 +101,8 @@ export default defineConfig(({ mode, command }) => {
     // - precache: HTML/JS/CSS/fontes/imagens do build
     // - runtime "CacheFirst" para fontes/imagens externas
     // - Auth/REST/Storage Supabase NÃO são cacheados (dados sensíveis por tenant)
-    // - navigateFallback → /offline.html quando uma rota nova é
-    //   solicitada sem rede e sem cache
+    // - navigateFallback → /index.html (SPA); a tela offline fica a
+    //   cargo do OfflineBanner em runtime
     // ─────────────────────────────────────────────────────────────
     VitePWA({
       registerType: "autoUpdate",
