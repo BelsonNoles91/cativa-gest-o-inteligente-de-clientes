@@ -101,8 +101,8 @@ export default defineConfig(({ mode, command }) => {
     // - precache: HTML/JS/CSS/fontes/imagens do build
     // - runtime "CacheFirst" para fontes/imagens externas
     // - Auth/REST/Storage Supabase NÃO são cacheados (dados sensíveis por tenant)
-    // - navigateFallback → /offline.html quando uma rota nova é
-    //   solicitada sem rede e sem cache
+    // - navigateFallback → /index.html (SPA); a tela offline fica a
+    //   cargo do OfflineBanner em runtime
     // ─────────────────────────────────────────────────────────────
     VitePWA({
       registerType: "autoUpdate",
@@ -125,7 +125,10 @@ export default defineConfig(({ mode, command }) => {
         clientsClaim: true,
         skipWaiting: true,
         // Permite servir index.html para qualquer rota SPA (offline)
-        navigateFallback: "/offline.html",
+        // SPA: TODA navegação deve ser servida pelo index.html.
+        // Usar /offline.html aqui fazia o SW responder a tela "Sem conexão"
+        // em qualquer recarregamento/rota, mesmo com internet funcionando.
+        navigateFallback: "/index.html",
         navigateFallbackDenylist: [
           /^\/~oauth/,
           /^\/api\//,
