@@ -40,7 +40,6 @@ export async function prepareForSnapshot(page: Page): Promise<void> {
     // Tentamos novamente após um pequeno settle.
     await page.waitForTimeout(100);
     await page.addStyleTag({ content: SNAPSHOT_CSS }).catch(() => {
-
       console.warn("[visual] prepareForSnapshot: addStyleTag falhou 2x", err);
     });
   }
@@ -80,12 +79,44 @@ export async function assertNoHorizontalOverflow(page: Page): Promise<void> {
   const overflow = await page.evaluate(() => {
     const root = document.documentElement;
     const vw = root.clientWidth;
-    const offenders: { tag: string; cls: string; w: number; left: number; right: number }[] = [];
+    const offenders: {
+      tag: string;
+      cls: string;
+      w: number;
+      left: number;
+      right: number;
+    }[] = [];
+    const isClippedByAncestor = (element: Element, rect: DOMRect): boolean => {
+      let ancestor = element.parentElement;
+      while (ancestor && ancestor !== document.body) {
+        const overflowX = getComputedStyle(ancestor).overflowX;
+        if (["auto", "clip", "hidden", "scroll"].includes(overflowX)) {
+          const ancestorRect = ancestor.getBoundingClientRect();
+          if (
+            rect.left < ancestorRect.left - 1 ||
+            rect.right > ancestorRect.right + 1
+          ) {
+            return true;
+          }
+        }
+        ancestor = ancestor.parentElement;
+      }
+      return false;
+    };
     document.querySelectorAll("body *").forEach((el) => {
       const rect = (el as HTMLElement).getBoundingClientRect();
+      const style = getComputedStyle(el);
+      if (
+        rect.width <= 0 ||
+        rect.height <= 0 ||
+        style.display === "none" ||
+        style.visibility === "hidden"
+      ) {
+        return;
+      }
       const left = Math.round(rect.left);
       const right = Math.round(rect.right);
-      if (left < -1 || right > vw + 1) {
+      if ((left < -1 || right > vw + 1) && !isClippedByAncestor(el, rect)) {
         offenders.push({
           tag: el.tagName.toLowerCase(),
           cls: (el as HTMLElement).className?.toString().slice(0, 80) ?? "",
@@ -95,8 +126,16 @@ export async function assertNoHorizontalOverflow(page: Page): Promise<void> {
         });
       }
     });
-    return { vw, offenders: offenders.slice(0, 5) };
+    return {
+      vw,
+      documentWidth: root.scrollWidth,
+      offenders: offenders.slice(0, 5),
+    };
   });
+  expect(
+    overflow.documentWidth,
+    `A página possui overflow horizontal: documento=${overflow.documentWidth}px, viewport=${overflow.vw}px`,
+  ).toBeLessThanOrEqual(overflow.vw + 1);
   expect(
     overflow.offenders,
     `Elementos ultrapassam viewport (${overflow.vw}px): ` +
@@ -116,7 +155,9 @@ async function getBottomNavViewportRect(page: Page): Promise<Rect | null> {
     };
   }
   return page.evaluate(() => {
-    const nav = document.querySelector("[data-bottom-nav]") as HTMLElement | null;
+    const nav = document.querySelector(
+      "[data-bottom-nav]",
+    ) as HTMLElement | null;
     if (!nav) return null;
     const rect = nav.getBoundingClientRect();
     return {
@@ -276,22 +317,27 @@ export async function assertContentNotHiddenByBottomNav(
   // Retorna info de quanto rolou para validar que de fato aconteceu.
   const scrollResult = await page.evaluate(async () => {
     const scrollers: (HTMLElement | (Window & typeof globalThis))[] = [window];
-    document.querySelectorAll<HTMLElement>("[data-app-main], main").forEach(
-      (el) => {
+    document
+      .querySelectorAll<HTMLElement>("[data-app-main], main")
+      .forEach((el) => {
         // Considera scrollers internos caso o layout mude para overflow:auto.
         if (el.scrollHeight > el.clientHeight + 1) scrollers.push(el);
-      },
-    );
+      });
     const before = window.scrollY;
     for (const s of scrollers) {
       if (s === window) {
-        window.scrollTo({ top: document.body.scrollHeight, behavior: "instant" as ScrollBehavior });
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: "instant" as ScrollBehavior,
+        });
       } else {
         (s as HTMLElement).scrollTop = (s as HTMLElement).scrollHeight;
       }
     }
     // 2 RAFs para garantir layout final + repaint.
-    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r(null))));
+    await new Promise((r) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => r(null))),
+    );
     return {
       scrolledBy: window.scrollY - before,
       finalScrollY: window.scrollY,
@@ -308,7 +354,6 @@ export async function assertContentNotHiddenByBottomNav(
     scrollResult.scrolledBy === 0 &&
     scrollResult.finalScrollY === 0
   ) {
-
     console.warn(
       `[visual] assertContentNotHiddenByBottomNav: scroll não teve efeito ` +
         `(pageHeight=${scrollResult.pageHeight}, viewportH=${scrollResult.viewportH}). ` +
@@ -344,7 +389,10 @@ export async function assertContentNotHiddenByBottomNav(
     return chosen;
   });
 
-  expect(lastBottom, "Nenhum conteúdo encontrado em [data-app-main]").not.toBeNull();
+  expect(
+    lastBottom,
+    "Nenhum conteúdo encontrado em [data-app-main]",
+  ).not.toBeNull();
   // O último conteúdo deve terminar acima (ou na mesma linha) do topo do nav.
   // Tolerância de 2px para subpixel rounding.
   if (lastBottom && lastBottom.bottom > navTop + 2) {
@@ -434,9 +482,7 @@ export async function assertBottomNavItemsRespectSafeArea(
     if (!nav) return { found: false as const, safe };
 
     // Itens interativos: links + botões dentro do nav.
-    const items = Array.from(
-      nav.querySelectorAll<HTMLElement>("a, button"),
-    );
+    const items = Array.from(nav.querySelectorAll<HTMLElement>("a, button"));
     const offenders: {
       idx: number;
       label: string;
@@ -629,7 +675,6 @@ export async function goOffline(page: Page): Promise<() => Promise<void>> {
   try {
     await page.context().setOffline(true);
   } catch (err) {
-
     console.warn("[visual] goOffline: setOffline(true) falhou", err);
   }
   await page
@@ -656,7 +701,6 @@ export async function goOffline(page: Page): Promise<() => Promise<void>> {
       { timeout: 3000 },
     );
   } catch {
-
     console.warn(
       "[visual] goOffline: OfflineBanner não apareceu em 3s — " +
         "pode indicar regressão no useOnlineStatus ou render condicional.",
@@ -667,7 +711,6 @@ export async function goOffline(page: Page): Promise<() => Promise<void>> {
     try {
       await page.context().setOffline(false);
     } catch (err) {
-
       console.warn("[visual] restore: setOffline(false) falhou", err);
     }
     await page
