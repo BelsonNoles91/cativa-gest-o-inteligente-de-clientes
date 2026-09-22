@@ -9,6 +9,9 @@ on:
 jobs:
   vitest:
     runs-on: ubuntu-latest
+    env:
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
     steps:
       - uses: actions/checkout@v4
 
@@ -35,6 +38,11 @@ jobs:
   playwright-mobile:
     needs: vitest
     runs-on: ubuntu-latest
+    env:
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      E2E_USER: ${{ secrets.E2E_USER }}
+      E2E_PASS: ${{ secrets.E2E_PASS }}
     steps:
       - uses: actions/checkout@v4
 
@@ -56,8 +64,5 @@ jobs:
         run: npm run test:visual:public
 
       - name: Visual regression — rotas autenticadas críticas
-        env:
-          E2E_USER: ${{ secrets.E2E_USER }}
-          E2E_PASS: ${{ secrets.E2E_PASS }}
         run: npm run test:visual:auth:critical
         continue-on-error: ${{ !secrets.E2E_USER }}

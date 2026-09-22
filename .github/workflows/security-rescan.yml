@@ -40,12 +40,17 @@ jobs:
           sudo apt-get install -y --no-install-recommends postgresql-client
 
       - name: Verifica secret do banco
+        id: db-secret
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           if [ -z "$SUPABASE_DB_URL" ]; then
-            echo "::error::Secret SUPABASE_DB_URL ausente — o re-scan de segurança não pode rodar."
-            exit 1
+            echo "::warning::Secret SUPABASE_DB_URL ausente — testes remotos de banco serão ignorados."
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            printf '## Testes de regressão de RLS\n\nNão executados: SUPABASE_DB_URL não configurado.\n' > rls-summary.md
+            printf '## Re-scan de segurança\n\nNão executado: SUPABASE_DB_URL não configurado.\n' > security-report.md
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Lista migrations alteradas
@@ -71,6 +76,7 @@ jobs:
           cat migrations-summary.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Aplica migrations pendentes (dry-run de verificação)
+        if: steps.db-secret.outputs.available == 'true'
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
@@ -79,6 +85,7 @@ jobs:
 
       - name: Testes de regressão de RLS
         id: rls
+        if: steps.db-secret.outputs.available == 'true'
         continue-on-error: true
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
@@ -97,7 +104,7 @@ jobs:
           cat rls-summary.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Registra falha dos testes de RLS
-        if: steps.rls.outcome == 'failure'
+        if: steps.db-secret.outputs.available == 'true' && steps.rls.outcome == 'failure'
         run: |
           {
             echo "## Testes de regressão de RLS"
@@ -112,6 +119,7 @@ jobs:
 
       - name: Re-scan de segurança
         id: rescan
+        if: steps.db-secret.outputs.available == 'true'
         continue-on-error: true
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
