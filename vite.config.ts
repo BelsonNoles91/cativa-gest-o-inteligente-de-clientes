@@ -54,7 +54,30 @@ export default defineConfig(({ mode, command }) => {
     console.warn(message);
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // Fallback de build: se o ambiente de build não injetar o .env
+  // (caso do bundle publicado que subiu sem VITE_SUPABASE_URL e
+  // resultou em tela branca "supabaseUrl is required."), usamos as
+  // credenciais PÚBLICAS do projeto. A anon/publishable key é
+  // pública por design — já viaja no bundle do frontend.
+  // ─────────────────────────────────────────────────────────────
+  const FALLBACK_SUPABASE_URL = "https://pegvtrvqdvzxysndddts.supabase.co";
+  const FALLBACK_SUPABASE_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlZ3Z0cnZxZHZ6eHlzbmRkZHRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3OTY5MjksImV4cCI6MjA5MjM3MjkyOX0.oZH96G_G5GRHbuX4Gj-Kswb8VmMHC83oZuFqlBqQaSY";
+  const FALLBACK_PROJECT_ID = "pegvtrvqdvzxysndddts";
+
+  const resolvedUrl = supabaseUrl || FALLBACK_SUPABASE_URL;
+  const resolvedKey = supabaseKey || FALLBACK_SUPABASE_KEY;
+  const resolvedProjectId = env.VITE_SUPABASE_PROJECT_ID || FALLBACK_PROJECT_ID;
+
   return ({
+  define: {
+    "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(resolvedUrl),
+    "import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY": JSON.stringify(resolvedKey),
+    "import.meta.env.VITE_SUPABASE_ANON_KEY": JSON.stringify(resolvedKey),
+    "import.meta.env.VITE_SUPABASE_PROJECT_ID": JSON.stringify(resolvedProjectId),
+  },
+
   server: {
     host: "::",
     port: 8080,
