@@ -4552,29 +4552,15 @@ export type Database = {
       list_pending_invitations_for_current_user: {
         Args: never
         Returns: {
-          accepted_at: string | null
-          accepted_by: string | null
           created_at: string
           email: string
           expires_at: string
           id: string
-          invited_by: string | null
-          message: string | null
-          professional_id: string | null
-          revoked_at: string | null
+          message: string
           role: Database["public"]["Enums"]["app_role"]
           status: Database["public"]["Enums"]["team_invitation_status"]
           tenant_id: string
-          token: string
-          token_hash: string
-          updated_at: string
         }[]
-        SetofOptions: {
-          from: "*"
-          to: "team_invitations"
-          isOneToOne: false
-          isSetofReturn: true
-        }
       }
       list_professionals_with_commission: {
         Args: { _tenant_id: string }
@@ -4627,30 +4613,7 @@ export type Database = {
       redact_sensitive_data: { Args: { input_data: Json }; Returns: Json }
       revoke_team_invitation: {
         Args: { _invitation_id: string }
-        Returns: {
-          accepted_at: string | null
-          accepted_by: string | null
-          created_at: string
-          email: string
-          expires_at: string
-          id: string
-          invited_by: string | null
-          message: string | null
-          professional_id: string | null
-          revoked_at: string | null
-          role: Database["public"]["Enums"]["app_role"]
-          status: Database["public"]["Enums"]["team_invitation_status"]
-          tenant_id: string
-          token: string
-          token_hash: string
-          updated_at: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "team_invitations"
-          isOneToOne: true
-          isSetofReturn: false
-        }
+        Returns: string
       }
       start_default_trial: {
         Args: { _tenant_id: string }
