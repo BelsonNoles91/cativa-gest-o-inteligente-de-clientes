@@ -173,6 +173,8 @@ export default function AgendaPage() {
   const [professionals, setProfessionals] = useState<ProfessionalLite[]>([]);
   const [resources, setResources] = useState<Resource[]>([]);
   const [basePrices, setBasePrices] = useState<Map<string, number>>(new Map());
+  const [offlineSyncedAt, setOfflineSyncedAt] = useState<string | null>(null);
+  const [usingCache, setUsingCache] = useState(false);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<HydratedAppointment | null>(null);
