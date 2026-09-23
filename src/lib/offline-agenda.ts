@@ -129,8 +129,15 @@ export function readQueue(): PendingAction[] {
   }
 }
 
+export const QUEUE_CHANGED_EVENT = "cativa:agenda-queue-changed";
+
 function writeQueue(actions: PendingAction[]): void {
   safeSet(QUEUE_KEY, JSON.stringify(actions));
+  try {
+    window.dispatchEvent(new CustomEvent(QUEUE_CHANGED_EVENT));
+  } catch {
+    /* noop */
+  }
 }
 
 export function queueSize(tenantId?: string): number {
