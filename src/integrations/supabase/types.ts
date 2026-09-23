@@ -3174,6 +3174,7 @@ export type Database = {
           internal_code: string | null
           is_active: boolean
           is_featured: boolean
+          is_public: boolean
           max_advance_days: number
           min_advance_hours: number
           name: string
@@ -3201,6 +3202,7 @@ export type Database = {
           internal_code?: string | null
           is_active?: boolean
           is_featured?: boolean
+          is_public?: boolean
           max_advance_days?: number
           min_advance_hours?: number
           name: string
@@ -3228,6 +3230,7 @@ export type Database = {
           internal_code?: string | null
           is_active?: boolean
           is_featured?: boolean
+          is_public?: boolean
           max_advance_days?: number
           min_advance_hours?: number
           name?: string
@@ -3516,6 +3519,53 @@ export type Database = {
             foreignKeyName: "tenant_memberships_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_public_pages: {
+        Row: {
+          about: string | null
+          cover_url: string | null
+          created_at: string
+          headline: string | null
+          instagram: string | null
+          is_published: boolean
+          tenant_id: string
+          updated_at: string
+          website: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          about?: string | null
+          cover_url?: string | null
+          created_at?: string
+          headline?: string | null
+          instagram?: string | null
+          is_published?: boolean
+          tenant_id: string
+          updated_at?: string
+          website?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          about?: string | null
+          cover_url?: string | null
+          created_at?: string
+          headline?: string | null
+          instagram?: string | null
+          is_published?: boolean
+          tenant_id?: string
+          updated_at?: string
+          website?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_public_pages_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
@@ -3871,6 +3921,7 @@ export type Database = {
           id: string
           is_active: boolean
           is_default: boolean
+          is_public: boolean
           name: string
           phone: string | null
           postal_code: string | null
@@ -3887,6 +3938,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_default?: boolean
+          is_public?: boolean
           name: string
           phone?: string | null
           postal_code?: string | null
@@ -3903,6 +3955,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_default?: boolean
+          is_public?: boolean
           name?: string
           phone?: string | null
           postal_code?: string | null
@@ -4516,6 +4569,19 @@ export type Database = {
       }
       count_active_owners: { Args: { _tenant_id: string }; Returns: number }
       count_active_super_admins: { Args: never; Returns: number }
+      create_public_appointment: {
+        Args: {
+          _full_name?: string
+          _notes?: string
+          _phone?: string
+          _professional_id: string
+          _service_id: string
+          _slug: string
+          _starts_at: string
+          _unit_id: string
+        }
+        Returns: string
+      }
       create_team_invitation: {
         Args: {
           _email: string
@@ -4611,6 +4677,71 @@ export type Database = {
         }[]
       }
       get_my_commission: { Args: { _professional_id: string }; Returns: number }
+      get_public_availability: {
+        Args: {
+          _day: string
+          _professional_id?: string
+          _service_id: string
+          _slug: string
+          _unit_id: string
+        }
+        Returns: {
+          professional_id: string
+          professional_name: string
+          slot_end: string
+          slot_start: string
+        }[]
+      }
+      get_public_professionals: {
+        Args: { _slug: string; _unit_id?: string }
+        Returns: {
+          bio: string
+          display_name: string
+          id: string
+          role_title: string
+          specialty: string
+          unit_id: string
+        }[]
+      }
+      get_public_services: {
+        Args: { _slug: string }
+        Returns: {
+          description: string
+          duration_minutes: number
+          id: string
+          is_featured: boolean
+          name: string
+          price_cents: number
+        }[]
+      }
+      get_public_tenant_page: {
+        Args: { _slug: string }
+        Returns: {
+          about: string
+          cover_url: string
+          headline: string
+          instagram: string
+          logo_url: string
+          name: string
+          segment: string
+          slug: string
+          tenant_id: string
+          website: string
+          whatsapp: string
+        }[]
+      }
+      get_public_units: {
+        Args: { _slug: string }
+        Returns: {
+          address: string
+          city: string
+          hours: Json
+          id: string
+          name: string
+          phone: string
+          state: string
+        }[]
+      }
       get_tenant_ltv_estimate: { Args: { _tenant_id: string }; Returns: number }
       has_any_tenant_role: {
         Args: {
