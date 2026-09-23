@@ -43,6 +43,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { usePermissions } from "@/features/auth/usePermissions";
 import { listClients, type Client } from "@/repositories/clients";
 import { useTenantBilling } from "@/features/billing/useTenantBilling";
 import { isUsageBlocked } from "@/domain/billing";
