@@ -30,9 +30,10 @@ Status por fase: ✅ concluída · 🔜 próxima · ⏳ planejada
 - [x] Meta mensal de receita e de atendimentos por profissional (dono/gerente)
 - [x] Tela Metas e ranking com visão de semana e de mês, progresso e desempenho
 
-## Fase 6 — App instalável com notificações (Android/iOS) 🔜 em andamento
+## Fase 6 — App instalável com notificações (Android/iOS) ✅ concluída
 - [x] Convite de instalação no celular (Android nativo, passo a passo no iPhone)
-- [ ] Notificações push de lembrete e confirmação
+- [x] Notificações push: ativação por aparelho no perfil do cliente, envio de teste e lembrete automático 24h antes do horário (verificação de hora em hora)
+
 
 ## Opcionais aprovados ⏳
 - [ ] Fidelidade com pontos e recompensas

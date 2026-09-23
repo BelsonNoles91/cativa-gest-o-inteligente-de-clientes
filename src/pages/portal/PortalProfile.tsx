@@ -31,6 +31,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { handleError } from "@/lib/error-handler";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { PushNotificationsCard } from "@/features/notifications/PushNotificationsCard";
+
 import { usePortalClient } from "@/features/portal/PortalClientProvider";
 import {
   listMyPendingConsents,
@@ -220,7 +222,12 @@ export default function PortalProfile() {
         </section>
       )}
 
+      <PushNotificationsCard
+        description="Receba um aviso no celular um dia antes do seu horário, mesmo com o app fechado."
+      />
+
       {/* Dados */}
+
       <Card className="space-y-4 p-4">
         <h2 className="font-display text-lg font-semibold">Dados pessoais</h2>
         <div className="grid gap-3">

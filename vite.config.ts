@@ -127,6 +127,9 @@ export default defineConfig(({ mode, command }) => {
           /\/storage\/v1\//,
         ],
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff2}"],
+        // Handlers de notificação push (push / notificationclick)
+        importScripts: ["/push-sw.js"],
+
         runtimeCaching: [
           // Imagens
           {
