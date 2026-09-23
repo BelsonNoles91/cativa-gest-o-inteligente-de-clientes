@@ -63,7 +63,7 @@ export function OfflineBanner() {
         ) : (
           <>
             <CloudOff className="h-3.5 w-3.5" aria-hidden />
-            Você está offline — alterações não serão salvas
+            Você está offline — enviaremos as ações quando a conexão voltar
           </>
         )}
       </div>
