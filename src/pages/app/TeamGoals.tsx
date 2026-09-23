@@ -184,7 +184,7 @@ export default function TeamGoalsPage() {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-semibold">{money(ranking.totals.revenueGoalCents)}</p>
-            <Progress value={Math.min(100, ranking.totals.revenueProgressPct)} className="mt-2" />
+            <Progress aria-label="Progresso da meta de receita do mês" value={Math.min(100, ranking.totals.revenueProgressPct)} className="mt-2" />
             <p className="mt-1 text-xs text-muted-foreground">{ranking.totals.revenueProgressPct}% da meta</p>
           </CardContent>
         </Card>
@@ -234,13 +234,13 @@ export default function TeamGoalsPage() {
                     <p className="text-xs text-muted-foreground">
                       Receita: {money(row.revenueCents)} de {money(row.revenueGoalCents)}
                     </p>
-                    <Progress value={Math.min(100, row.revenueProgressPct)} className="mt-1" />
+                    <Progress aria-label={`Progresso da meta de receita de ${row.professionalName}`} value={Math.min(100, row.revenueProgressPct)} className="mt-1" />
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">
                       Atendimentos: {row.completed} de {row.appointmentsGoal}
                     </p>
-                    <Progress value={Math.min(100, row.appointmentsProgressPct)} className="mt-1" />
+                    <Progress aria-label={`Progresso da meta de atendimentos de ${row.professionalName}`} value={Math.min(100, row.appointmentsProgressPct)} className="mt-1" />
                   </div>
                 </div>
 
