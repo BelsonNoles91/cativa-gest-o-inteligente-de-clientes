@@ -241,7 +241,7 @@ export function buildManagerDashboard(
     services: {
       completed: completed.length,
       revenueCents,
-      averageTicketCents: Math.round(averageTicket(appts)),
+      averageTicketCents: Math.round(averageTicket(appts) * 100),
       rebookingRate: rebookingRate([...appts, ...future], 45).rate,
       monthly: monthlySeries(appts),
     },
