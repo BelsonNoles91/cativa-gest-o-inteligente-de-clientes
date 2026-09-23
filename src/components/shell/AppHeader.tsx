@@ -5,12 +5,15 @@
  * Mobile     : linha única compacta (avatar tenant + nome + busca + perfil).
  *               A busca abre num CommandDialog ao tocar no ícone.
  */
-import { useState, useMemo } from "react";
+import { useState, useMemo, lazy, Suspense } from "react";
 import { Bell, Search, ShieldCheck, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { TenantSwitcher } from "@/components/shell/TenantSwitcher";
-import { GlobalSearch } from "@/components/shell/GlobalSearch";
+/** Busca global carregada sob demanda: tira o pacote do command do carregamento inicial. */
+const GlobalSearch = lazy(() =>
+  import("@/components/shell/GlobalSearch").then((m) => ({ default: m.GlobalSearch })),
+);
 import { ThemeToggle } from "@/components/shell/ThemeToggle";
 import { UserMenu } from "@/components/shell/UserMenu";
 import { useTenant } from "@/features/tenant/TenantProvider";
@@ -54,7 +57,9 @@ export function AppHeader() {
           <TenantSwitcher />
         </div>
         <div className="mx-auto w-full max-w-xl">
-          <GlobalSearch />
+          <Suspense fallback={<div className="h-10 w-full rounded-lg bg-muted/50" />}>
+            <GlobalSearch />
+          </Suspense>
         </div>
         <Button variant="ghost" size="icon" className="rounded-full" aria-label="Notificações">
           < Bell className="h-4 w-4" />
@@ -140,11 +145,15 @@ export function AppHeader() {
       </div>
 
       {/* CommandDialog de busca controlado pelo botão mobile */}
-      <GlobalSearch
-        controlledOpen={searchOpen}
-        onControlledOpenChange={setSearchOpen}
-        hideTrigger
-      />
+      {searchOpen && (
+        <Suspense fallback={null}>
+          <GlobalSearch
+            controlledOpen={searchOpen}
+            onControlledOpenChange={setSearchOpen}
+            hideTrigger
+          />
+        </Suspense>
+      )}
     </header>
   );
 }
