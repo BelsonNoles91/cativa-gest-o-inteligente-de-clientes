@@ -50,3 +50,17 @@ Roadmap concluído: todas as fases (0 a 7) entregues.
 - [x] Resumo de comissões do mês no Painel do gestor (link para /app/comissoes)
 - [x] Studio New Visual populado: 3 profissionais, 6 serviços, horários, 20 clientes, 170 atendimentos, agenda futura, metas e comissões
 - [ ] Validação no celular (depende do usuário) e teste do portal com login Google/Apple (depende do usuário)
+
+## Auditoria pré-produção — Fase 4: motor de agendamento e concorrência 🔄 em validação
+- [x] Proteção atômica contra horários sobrepostos por profissional e por recurso físico
+- [x] Encaixe manual autorizado sem remover a proteção dos agendamentos regulares
+- [x] Horários de falta e cancelados liberam a vaga corretamente
+- [x] Disponibilidade calculada no fuso do estabelecimento, incluindo múltiplas janelas do profissional
+- [x] Criação de agendamento e item de serviço em uma única operação, sem registros parciais
+- [x] Transições inválidas de status bloqueadas também no servidor
+- [x] Valores inválidos de duração, intervalos e preço bloqueados no servidor
+- [x] Página pública validada com tenant realmente publicado; slug inexistente retorna indisponível como esperado
+- [x] Horários públicos exibidos no fuso do estabelecimento, independentemente do aparelho do cliente
+- [x] Trigger legado alinhado às constraints: buffers, recurso, encaixe autorizado e fuso do tenant
+- [ ] Cancelamento e reagendamento completos no portal com sessão real, incluindo liberação do horário anterior
+- [x] Corrida simultânea com duas transações independentes: uma gravação confirmada e a concorrente bloqueada
