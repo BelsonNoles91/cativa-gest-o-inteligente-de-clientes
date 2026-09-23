@@ -79,6 +79,7 @@ import { QuickFiltersBar } from "@/features/clients/QuickFiltersBar";
 import { RetentionIntelligenceCard } from "@/features/clients/RetentionIntelligenceCard";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { usePermissions } from "@/features/auth/usePermissions";
 
 type FiltersState = {
   search: string;
