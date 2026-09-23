@@ -259,7 +259,7 @@ export default function Outreach() {
                 key={row.clientId}
                 row={row}
                 badge={
-                  <StatusBadge tone={URGENCY_TONE[row.urgency]} label={URGENCY_LABEL[row.urgency]} />
+                  <StatusBadge tone={URGENCY_TONE[row.urgency]}>{URGENCY_LABEL[row.urgency]}</StatusBadge>
                 }
                 detail={`Última visita em ${shortDate(row.lastVisitAt)} · costuma voltar a cada ${row.averageIntervalDays} dias · ${row.visits} visita(s)`}
                 message={returnReminderMessage(
@@ -306,10 +306,9 @@ export default function Outreach() {
                 key={row.clientId}
                 row={row}
                 badge={
-                  <StatusBadge
-                    tone={row.segment === "lost" ? "danger" : "warning"}
-                    label={SEGMENT_LABEL[row.segment]}
-                  />
+                  <StatusBadge tone={row.segment === "lost" ? "danger" : "warning"}>
+                    {SEGMENT_LABEL[row.segment]}
+                  </StatusBadge>
                 }
                 detail={`${row.daysSinceLastVisit} dias sem vir · já deixou ${money(row.revenueCents)} · ticket médio ${money(row.averageTicketCents)}`}
                 message={reactivationMessage(row, businessName, incentive)}
