@@ -34,6 +34,8 @@ import { AnalyticsFiltersBar } from "@/features/analytics/AnalyticsFiltersBar";
 import { CativaIndexCard } from "@/features/analytics/CativaIndexCard";
 import { KpiCard } from "@/features/analytics/KpiCard";
 import { NextBestActions } from "@/features/analytics/NextBestActions";
+import { RetentionInsightsCard } from "@/features/analytics/RetentionInsightsCard";
+import { usePermissions } from "@/features/auth/usePermissions";
 import { useAnalytics } from "@/features/analytics/useAnalytics";
 import { cn } from "@/lib/utils";
 import { jsonToCsv, downloadFile, formatCurrencyForExport, formatDateForExport } from "@/lib/export-utils";
@@ -53,6 +55,9 @@ const SOURCE_LABELS: Record<string, string> = {
 export default function AnalyticsPage() {
   const [contextView, setContextView] = useState<"executive" | "operational" | "retention">("executive");
   const analytics = useAnalytics();
+  const { can } = usePermissions();
+  // Insights com IA ficam restritos à gestão (proprietário, gerente e super admin).
+  const canManage = can("settings.business");
   const { metrics, labels, cativa, nba, filters, range } = analytics;
 
   const scopeParts = [
@@ -442,6 +447,7 @@ export default function AnalyticsPage() {
           </TabsContent>
 
           <TabsContent value="retention" className="mt-0 space-y-6">
+            {canManage && <RetentionInsightsCard />}
             <div className="grid gap-6 xl:grid-cols-3">
               <SectionCard
                 title="Coortes de retorno"
