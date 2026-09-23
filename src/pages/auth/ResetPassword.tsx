@@ -42,7 +42,7 @@ export default function ResetPassword() {
     const { error } = await updatePassword(password);
     setSubmitting(false);
     if (error) {
-      toast.error("Não foi possível atualizar", { description: error.message });
+      toast.error("Não foi possível atualizar", { description: translateAuthError(error.message) });
       return;
     }
     toast.success("Senha atualizada!");

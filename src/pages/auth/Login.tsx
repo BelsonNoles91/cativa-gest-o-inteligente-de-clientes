@@ -30,7 +30,7 @@ export default function Login() {
         });
         return;
       }
-      toast.error("Não foi possível entrar", { description: error.message });
+      toast.error("Não foi possível entrar", { description: translateAuthError(error.message) });
       return;
     }
     toast.success("Bem-vindo de volta!");

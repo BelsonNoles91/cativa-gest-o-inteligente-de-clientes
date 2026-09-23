@@ -137,7 +137,7 @@ export default function Onboarding() {
     const { error, requiresEmailConfirmation } = await signUp(email.trim(), password, fullName.trim());
     setSubmitting(false);
     if (error) {
-      toast.error("Não foi possível criar a conta", { description: error.message });
+      toast.error("Não foi possível criar a conta", { description: translateAuthError(error.message) });
       return;
     }
 

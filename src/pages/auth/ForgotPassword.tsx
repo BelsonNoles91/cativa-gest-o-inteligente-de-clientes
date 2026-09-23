@@ -20,7 +20,7 @@ export default function ForgotPassword() {
     const { error } = await resetPassword(email.trim());
     setSubmitting(false);
     if (error) {
-      toast.error("Não foi possível enviar", { description: error.message });
+      toast.error("Não foi possível enviar", { description: translateAuthError(error.message) });
       return;
     }
     setSent(true);
