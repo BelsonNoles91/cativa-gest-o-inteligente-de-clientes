@@ -60,17 +60,23 @@ export default function PortalAgenda() {
   const [items, setItems] = useState<PortalAppointmentView[]>([]);
   const [loading, setLoading] = useState(true);
   const [cancelTarget, setCancelTarget] = useState<PortalAppointmentView | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [rules, setRules] = useState<SelfServiceStatus | null>(null);
 
   const load = async () => {
     if (!activeLink) return;
     setLoading(true);
     try {
-      const data = await listMyAppointments({
-        tenantId: activeLink.tenantId,
-        clientId: activeLink.clientId,
-        rangeStart: new Date().toISOString(),
-      });
+      const [data, status] = await Promise.all([
+        listMyAppointments({
+          tenantId: activeLink.tenantId,
+          clientId: activeLink.clientId,
+          rangeStart: new Date().toISOString(),
+        }),
+        fetchSelfServiceStatus(activeLink.tenantId, activeLink.clientId).catch(() => null),
+      ]);
       setItems(data.filter((a) => isUpcomingAppointment(a.appointment)));
+      setRules(status);
     } finally {
       setLoading(false);
     }
@@ -94,24 +100,26 @@ export default function PortalAgenda() {
 
   async function handleCancel() {
     if (!cancelTarget) return;
-    try {
-      const r = await cancelFromPortal({
-        appointmentId: cancelTarget.appointment.id,
-        startsAt: cancelTarget.appointment.startsAt,
-        policy: cancelTarget.policy,
-        reason: "Cancelado pelo cliente no portal",
-      });
+    if (rules?.requireCancelReason && cancelReason.trim().length < 3) {
       toast({
-        title: "Horário cancelado",
-        description: r.willChargeFee
-          ? `Atenção: pode haver cobrança de ${r.feePct}% conforme política.`
-          : undefined,
+        title: "Conte o motivo",
+        description: "Escreva rapidamente por que precisa cancelar.",
+        variant: "destructive",
       });
+      return;
+    }
+    try {
+      await cancelFromPortal({
+        appointmentId: cancelTarget.appointment.id,
+        reason: cancelReason.trim() || "Cancelado pelo cliente no portal",
+      });
+      toast({ title: "Horário cancelado" });
       setCancelTarget(null);
+      setCancelReason("");
       await load();
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Erro ao cancelar";
-      toast({ title: "Erro", description: msg, variant: "destructive" });
+      toast({ title: "Não foi possível cancelar", description: msg, variant: "destructive" });
     }
   }
 
