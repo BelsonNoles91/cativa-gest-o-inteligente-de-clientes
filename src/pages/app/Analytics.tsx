@@ -34,6 +34,8 @@ import { AnalyticsFiltersBar } from "@/features/analytics/AnalyticsFiltersBar";
 import { CativaIndexCard } from "@/features/analytics/CativaIndexCard";
 import { KpiCard } from "@/features/analytics/KpiCard";
 import { NextBestActions } from "@/features/analytics/NextBestActions";
+import { RetentionInsightsCard } from "@/features/analytics/RetentionInsightsCard";
+import { usePermissions } from "@/features/auth/usePermissions";
 import { useAnalytics } from "@/features/analytics/useAnalytics";
 import { cn } from "@/lib/utils";
 import { jsonToCsv, downloadFile, formatCurrencyForExport, formatDateForExport } from "@/lib/export-utils";
