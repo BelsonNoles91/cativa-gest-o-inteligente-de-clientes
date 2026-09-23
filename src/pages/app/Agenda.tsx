@@ -1268,12 +1268,25 @@ function AppointmentCard({
                 {quickActionLabel(status)}
               </Button>
             ))}
+            <Button size="sm" variant="outline" onClick={() => setSummaryOpen(true)}>
+              <Sparkles className="mr-2 h-4 w-4" /> Resumo
+            </Button>
             <Button size="sm" variant="outline" onClick={onEdit}>
               <Pencil className="mr-2 h-4 w-4" /> Editar
             </Button>
           </div>
         </div>
       </CardContent>
+      <AppointmentSummaryDialog
+        open={summaryOpen}
+        onOpenChange={setSummaryOpen}
+        appointmentId={item.appointment.id}
+        serviceName={item.serviceName}
+        clientName={item.clientName}
+        professionalName={item.professionalName}
+        initialNotes={item.appointment.internalNotes}
+        onSaved={onSaved}
+      />
     </Card>
   );
 }
