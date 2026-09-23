@@ -69,7 +69,7 @@ export function HeroSection() {
               </motion.svg>
             </span>
             {" "}— através de <br className="hidden sm:block" />
-            uma <span className="italic font-normal serif text-accent">gestão inteligente.</span></span>
+            uma <span className="italic font-normal serif text-accent-strong">gestão inteligente.</span></span>
           </motion.h1>
 
           <motion.p 

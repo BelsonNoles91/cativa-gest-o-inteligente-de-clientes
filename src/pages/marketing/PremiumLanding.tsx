@@ -86,7 +86,7 @@ export default function PremiumLanding() {
             <div className="max-w-4xl mx-auto text-center mb-20">
               <h2 className="font-display text-4xl md:text-6xl text-primary-dark tracking-tighter leading-none mb-6">
                 Criada para operações que querem <br />
-                <span className="text-accent italic serif font-normal">crescer com mais controle.</span>
+                <span className="text-accent-strong italic serif font-normal">crescer com mais controle.</span>
               </h2>
               <p className="text-lg md:text-xl text-muted-foreground font-light leading-relaxed">
                 A Cativa foi desenhada para negócios de beleza e estética que precisam organizar a rotina, melhorar a retenção e profissionalizar a experiência do cliente sem depender de controles improvisados.
@@ -232,12 +232,12 @@ export default function PremiumLanding() {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.6 }}
                 >
-                  <div className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-6 md:mb-8">
+                  <div className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-[10px] font-bold uppercase tracking-[0.2em] text-accent-strong mb-6 md:mb-8">
                     Foco em {segments[activeSegment].name}
                   </div>
                   <h3 className="font-display text-[2.5rem] md:text-7xl text-primary-dark tracking-tighter leading-[0.95] mb-6 md:mb-8">
                     O problema não é <br className="hidden md:block" />
-                    <span className="italic serif font-normal text-accent">apenas a agenda.</span>
+                    <span className="italic serif font-normal text-accent-strong">apenas a agenda.</span>
                   </h3>
                   <p className="text-lg md:text-xl text-primary-dark/80 leading-relaxed font-normal mb-6">
                     {activeSegment === 0 && "Para clínicas de estética, cada minuto conta. A Cativa ajuda você a fidelizar melhor, confirmar horários e crescer com segurança."}
@@ -287,12 +287,12 @@ export default function PremiumLanding() {
         {/* Seção de Planos */}
         <PremiumSection id="planos" variant="soft" padding="lg">
           <div className="max-w-4xl mx-auto text-center mb-16 md:mb-24 px-4">
-            <div className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-8">
+            <div className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-[10px] font-bold uppercase tracking-[0.2em] text-accent-strong mb-8">
               Investimento
             </div>
             <h3 className="font-display text-[2.5rem] md:text-8xl text-primary-dark tracking-tighter leading-[0.95]">
               Planos que <br className="hidden md:block" />
-              <span className="italic serif font-normal text-accent">crescem com você.</span>
+              <span className="italic serif font-normal text-accent-strong">crescem com você.</span>
             </h3>
           </div>
 
@@ -410,13 +410,13 @@ export default function PremiumLanding() {
            <div className="absolute bottom-[-30%] right-[-10%] w-[50%] h-[120%] bg-primary/10 blur-[100px] rounded-full -rotate-12" />
            
            <div className="max-w-6xl mx-auto relative z-10 px-4">
-              <div className="inline-block px-5 py-2 rounded-full bg-accent/10 text-[11px] font-bold uppercase tracking-[0.3em] text-accent mb-12 border border-accent/20">
+              <div className="inline-block px-5 py-2 rounded-full bg-accent/10 text-[11px] font-bold uppercase tracking-[0.3em] text-accent-strong mb-12 border border-accent/20">
                 Pronto para o Próximo Nível?
               </div>
               
               <h2 className="font-display text-[2.5rem] sm:text-7xl md:text-[9rem] text-white mb-12 md:mb-16 tracking-tighter leading-[0.9] animate-fade-in">
                 Sua operação, <br />
-                <span className="italic serif font-normal text-accent relative inline-block">
+                <span className="italic serif font-normal text-accent-strong relative inline-block">
                   elevada.
                   <svg className="absolute -bottom-4 left-0 w-full h-6 text-accent/20 -z-10" viewBox="0 0 400 24" fill="none">
                     <path d="M2 20C80 5 280 2 398 20" stroke="currentColor" strokeWidth="8" strokeLinecap="round"/>
