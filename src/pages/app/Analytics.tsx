@@ -442,6 +442,7 @@ export default function AnalyticsPage() {
           </TabsContent>
 
           <TabsContent value="retention" className="mt-0 space-y-6">
+            {canManage && <RetentionInsightsCard />}
             <div className="grid gap-6 xl:grid-cols-3">
               <SectionCard
                 title="Coortes de retorno"
