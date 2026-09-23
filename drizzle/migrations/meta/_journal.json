@@ -8,6 +8,13 @@
       "when": 1790128897074,
       "tag": "0000_professional_self_schedule",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790128941189,
+      "tag": "0001_professional_self_profile_update",
+      "breakpoints": true
     }
   ]
 }
