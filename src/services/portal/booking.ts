@@ -3,19 +3,17 @@
  *
  * - createBookingFromPortal: cria appointment com source=client_portal,
  *   status=pending, valida slot via RPC e respeita min_advance_hours.
- * - rescheduleFromPortal: reagenda respeitando política e disponibilidade.
- * - cancelFromPortal: cancela respeitando política (sem multa OU com aviso).
+ * - rescheduleFromPortal: reagenda validando as regras no servidor (RPC).
+ * - cancelFromPortal: cancela validando as regras no servidor (RPC).
  * - confirmFromPortal: o cliente confirma o próprio horário.
  */
 import {
   getAvailableSlots,
   insertAppointment,
-  updateAppointment,
   setAppointmentStatus,
 } from "@/repositories/scheduling";
 import { supabase } from "@/integrations/supabase/client";
 import type { CancellationPolicySnapshot } from "@/domain/portal";
-import { canCancelWithoutFee } from "@/domain/portal";
 
 export interface CreateBookingInput {
   tenantId: string;
@@ -93,17 +91,13 @@ export interface RescheduleInput {
   serviceId: string;
   startsAt: string;
   durationMinutes: number;
-  policy: CancellationPolicySnapshot | null;
+  policy?: CancellationPolicySnapshot | null;
   currentStartsAt: string;
 }
 
-export async function rescheduleFromPortal(input: RescheduleInput): Promise<void> {
-  const check = canCancelWithoutFee(input.currentStartsAt, input.policy);
-  if (!check.allowed && check.willChargeFee) {
-    // Permitimos reagendar mesmo dentro da janela, mas o cliente já viu o aviso
-    // na UI. Aqui não bloqueamos — apenas registramos como solicitação.
-  }
+type RpcFn = (fn: string, args: Record<string, unknown>) => Promise<{ error: unknown }>;
 
+export async function rescheduleFromPortal(input: RescheduleInput): Promise<void> {
   // valida o novo slot
   const startsAt = new Date(input.startsAt);
   const day = startsAt.toISOString().slice(0, 10);
@@ -122,26 +116,27 @@ export async function rescheduleFromPortal(input: RescheduleInput): Promise<void
   }
   const endsAt = new Date(startsAt.getTime() + input.durationMinutes * 60_000).toISOString();
 
-  await updateAppointment(input.appointmentId, {
-    startsAt: startsAt.toISOString(),
-    endsAt,
-    professionalId: input.professionalId,
+  // As regras de autoatendimento são validadas no servidor.
+  const { error } = await (supabase.rpc as never as RpcFn)("portal_reschedule_appointment", {
+    _appointment_id: input.appointmentId,
+    _starts_at: startsAt.toISOString(),
+    _ends_at: endsAt,
+    _professional_id: input.professionalId,
   });
-  // volta para pendente para a recepção reconfirmar
-  await setAppointmentStatus(input.appointmentId, "pending");
+  if (error) throw new Error((error as { message?: string }).message ?? "Erro ao reagendar");
 }
 
 export async function cancelFromPortal(input: {
   appointmentId: string;
   reason?: string | null;
-  policy: CancellationPolicySnapshot | null;
-  startsAt: string;
-}): Promise<{ feePct: number; willChargeFee: boolean }> {
-  const check = canCancelWithoutFee(input.startsAt, input.policy);
-  await setAppointmentStatus(input.appointmentId, "canceled", {
-    reason: input.reason ?? null,
+  policy?: CancellationPolicySnapshot | null;
+  startsAt?: string;
+}): Promise<void> {
+  const { error } = await (supabase.rpc as never as RpcFn)("portal_cancel_appointment", {
+    _appointment_id: input.appointmentId,
+    _reason: input.reason ?? null,
   });
-  return { feePct: check.feePct, willChargeFee: check.willChargeFee };
+  if (error) throw new Error((error as { message?: string }).message ?? "Erro ao cancelar");
 }
 
 export async function confirmFromPortal(appointmentId: string): Promise<void> {

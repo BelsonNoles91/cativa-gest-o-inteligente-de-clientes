@@ -194,6 +194,7 @@ export type Database = {
           canceled_reason: string | null
           cancellation_policy_id: string | null
           client_id: string
+          client_reschedule_count: number
           completed_at: string | null
           confirmed_at: string | null
           created_at: string
@@ -226,6 +227,7 @@ export type Database = {
           canceled_reason?: string | null
           cancellation_policy_id?: string | null
           client_id: string
+          client_reschedule_count?: number
           completed_at?: string | null
           confirmed_at?: string | null
           created_at?: string
@@ -258,6 +260,7 @@ export type Database = {
           canceled_reason?: string | null
           cancellation_policy_id?: string | null
           client_id?: string
+          client_reschedule_count?: number
           completed_at?: string | null
           confirmed_at?: string | null
           created_at?: string
@@ -1045,6 +1048,65 @@ export type Database = {
             foreignKeyName: "client_reviews_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_self_service_rules: {
+        Row: {
+          allow_client_cancel: boolean
+          allow_client_confirm: boolean
+          allow_client_reschedule: boolean
+          block_days_after_limit: number
+          max_cancellations_per_30d: number
+          max_no_shows_per_90d: number
+          max_reschedules_per_appointment: number
+          min_hours_to_cancel: number
+          min_hours_to_reschedule: number
+          policy_note: string | null
+          require_cancel_reason: boolean
+          tenant_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          allow_client_cancel?: boolean
+          allow_client_confirm?: boolean
+          allow_client_reschedule?: boolean
+          block_days_after_limit?: number
+          max_cancellations_per_30d?: number
+          max_no_shows_per_90d?: number
+          max_reschedules_per_appointment?: number
+          min_hours_to_cancel?: number
+          min_hours_to_reschedule?: number
+          policy_note?: string | null
+          require_cancel_reason?: boolean
+          tenant_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          allow_client_cancel?: boolean
+          allow_client_confirm?: boolean
+          allow_client_reschedule?: boolean
+          block_days_after_limit?: number
+          max_cancellations_per_30d?: number
+          max_no_shows_per_90d?: number
+          max_reschedules_per_appointment?: number
+          min_hours_to_cancel?: number
+          min_hours_to_reschedule?: number
+          policy_note?: string | null
+          require_cancel_reason?: boolean
+          tenant_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_self_service_rules_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
@@ -4563,6 +4625,10 @@ export type Database = {
         Args: { _appointment_id: string; _user_id: string }
         Returns: boolean
       }
+      client_self_service_status: {
+        Args: { _client_id: string; _tenant_id: string }
+        Returns: Json
+      }
       client_user_tenant: {
         Args: { _tenant_id: string; _user_id: string }
         Returns: string
@@ -4823,6 +4889,19 @@ export type Database = {
           status: Database["public"]["Enums"]["team_invitation_status"]
           tenant_id: string
         }[]
+      }
+      portal_cancel_appointment: {
+        Args: { _appointment_id: string; _reason?: string }
+        Returns: Json
+      }
+      portal_reschedule_appointment: {
+        Args: {
+          _appointment_id: string
+          _ends_at: string
+          _professional_id?: string
+          _starts_at: string
+        }
+        Returns: Json
       }
       process_client_reactivation: {
         Args: { _tenant_id: string }
