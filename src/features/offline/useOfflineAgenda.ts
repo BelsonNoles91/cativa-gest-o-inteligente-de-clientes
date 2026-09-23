@@ -8,7 +8,7 @@ import {
   type PendingAction,
 } from "@/lib/offline-agenda";
 import { setAppointmentStatus, updateAppointment } from "@/repositories/scheduling";
-import type { AppointmentStatus } from "@/domain/types";
+import type { AppointmentStatus } from "@/domain/scheduling";
 
 export interface OfflineAgendaState {
   online: boolean;
