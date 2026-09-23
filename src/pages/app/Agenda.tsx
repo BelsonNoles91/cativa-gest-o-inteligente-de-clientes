@@ -787,19 +787,23 @@ export default function AgendaPage() {
             <div className="flex flex-wrap items-end gap-4">
               <Field label="Período">
                 <Tabs value={view} onValueChange={(value) => setView(value as ViewMode)}>
-                  <TabsList className="h-10">
+                  <TabsList className="h-10" aria-label="Período da agenda">
                     <TabsTrigger value="day" className="px-4">Dia</TabsTrigger>
                     <TabsTrigger value="week" className="px-4">Semana</TabsTrigger>
                   </TabsList>
+                  <TabsContent value="day" className="sr-only" />
+                  <TabsContent value="week" className="sr-only" />
                 </Tabs>
               </Field>
 
               <Field label="Agrupar por">
                 <Tabs value={groupMode} onValueChange={(value) => setGroupMode(value as GroupMode)}>
-                  <TabsList className="h-10">
+                  <TabsList className="h-10" aria-label="Agrupamento da agenda">
                     <TabsTrigger value="professional" className="px-4">Profissional</TabsTrigger>
                     <TabsTrigger value="resource" className="px-4">Recurso / sala</TabsTrigger>
                   </TabsList>
+                  <TabsContent value="professional" className="sr-only" />
+                  <TabsContent value="resource" className="sr-only" />
                 </Tabs>
               </Field>
             </div>
@@ -807,7 +811,8 @@ export default function AgendaPage() {
             <div className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end lg:flex-1">
               <div className="w-full min-w-0 sm:flex-1 sm:min-w-[140px]">
                 <Field label="Data base">
-                  <Input type="date" value={selectedDate} onChange={(event) => setSelectedDate(event.target.value)} />
+                  <Input type="date" aria-label="Data base da agenda" value={selectedDate} onChange={(event) => setSelectedDate(event.target.value)} />
+
                 </Field>
               </div>
               <div className="w-full min-w-0 sm:flex-1 sm:min-w-[140px]">

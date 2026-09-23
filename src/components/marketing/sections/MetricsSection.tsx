@@ -107,16 +107,20 @@ export function MetricsSection() {
               
               {/* Dots Progress */}
               <div className="flex gap-2 mt-8 justify-center">
-                {metrics.map((_, i) => (
+                {metrics.map((metric, i) => (
                   <button 
                     key={i} 
                     onClick={() => setActiveMetric(i)}
+                    type="button"
+                    aria-label={`Ver indicador: ${metric.title}`}
+                    aria-current={activeMetric === i}
                     className={cn(
-                      "h-1 transition-all duration-500 rounded-full",
+                      "h-1 transition-all duration-500 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
                       activeMetric === i ? "w-8 bg-accent" : "w-2 bg-white/20 hover:bg-white/40"
                     )} 
                   />
                 ))}
+
               </div>
             </div>
           </div>

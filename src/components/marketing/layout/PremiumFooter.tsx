@@ -108,12 +108,13 @@ export function PremiumFooter() {
             </div>
           </div>
           <div className="flex items-center gap-6">
-            <a href="https://instagram.com/cativagestao" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:text-accent hover:border-accent transition-all">
-              <Instagram className="h-5 w-5" />
+            <a href="https://instagram.com/cativagestao" target="_blank" rel="noopener noreferrer" aria-label="Instagram da Cativa" className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:text-accent hover:border-accent transition-all">
+              <Instagram className="h-5 w-5" aria-hidden="true" />
             </a>
-            <a href="https://linkedin.com/company/cativagestao" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:text-accent hover:border-accent transition-all">
-              <Linkedin className="h-5 w-5" />
+            <a href="https://linkedin.com/company/cativagestao" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn da Cativa" className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:text-accent hover:border-accent transition-all">
+              <Linkedin className="h-5 w-5" aria-hidden="true" />
             </a>
+
           </div>
         </div>
       </div>
