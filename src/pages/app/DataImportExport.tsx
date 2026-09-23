@@ -26,6 +26,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { useTenant } from "@/features/tenant/TenantProvider";
+import { usePermissions } from "@/features/auth/usePermissions";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { toast } from "@/hooks/use-toast";
 import { parseCsv, downloadFile, downloadJson } from "@/utils/csv";
@@ -91,6 +92,9 @@ const ENTITY_OPTIONS: Array<{ key: EntityKey; label: string }> = [
 
 export default function DataImportExport() {
   const { currentTenant } = useTenant();
+  const { can } = usePermissions();
+  const canImport = can("data.import");
+  const canExport = can("data.export");
   const { user } = useAuth();
   const tenantId = currentTenant?.id;
 
@@ -107,23 +111,31 @@ export default function DataImportExport() {
           <AlertDescription>Selecione um negócio para usar import/export.</AlertDescription>
         </Alert>
       ) : (
-        <Tabs defaultValue="import" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="import" data-testid="import-export-tab-import">
-              <Upload className="mr-2 h-4 w-4" /> Importar
-            </TabsTrigger>
-            <TabsTrigger value="export" data-testid="import-export-tab-export">
-              <Download className="mr-2 h-4 w-4" /> Exportar
-            </TabsTrigger>
+        <Tabs defaultValue={canImport ? "import" : "export"} className="space-y-4">
+          <TabsList className={canImport && canExport ? "grid w-full grid-cols-2" : "grid w-full grid-cols-1"}>
+            {canImport && (
+              <TabsTrigger value="import" data-testid="import-export-tab-import">
+                <Upload className="mr-2 h-4 w-4" /> Importar
+              </TabsTrigger>
+            )}
+            {canExport && (
+              <TabsTrigger value="export" data-testid="import-export-tab-export">
+                <Download className="mr-2 h-4 w-4" /> Exportar
+              </TabsTrigger>
+            )}
           </TabsList>
 
-          <TabsContent value="import">
-            <ImportPanel tenantId={tenantId} userId={user?.id ?? ""} />
-          </TabsContent>
+          {canImport && (
+            <TabsContent value="import">
+              <ImportPanel tenantId={tenantId} userId={user?.id ?? ""} />
+            </TabsContent>
+          )}
 
-          <TabsContent value="export">
-            <ExportPanel tenantId={tenantId} />
-          </TabsContent>
+          {canExport && (
+            <TabsContent value="export">
+              <ExportPanel tenantId={tenantId} />
+            </TabsContent>
+          )}
         </Tabs>
       )}
     </div>

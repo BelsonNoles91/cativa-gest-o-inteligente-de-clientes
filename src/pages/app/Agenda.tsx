@@ -43,6 +43,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { usePermissions } from "@/features/auth/usePermissions";
 import { listClients, type Client } from "@/repositories/clients";
 import { useTenantBilling } from "@/features/billing/useTenantBilling";
 import { isUsageBlocked } from "@/domain/billing";
@@ -145,6 +146,7 @@ const EMPTY_BLOCK_FORM: BlockFormState = {
 export default function AgendaPage() {
   const [searchParams] = useSearchParams();
   const { currentTenant, currentUnit, availableUnits } = useTenant();
+  const { can } = usePermissions();
   const currentUnitId = currentUnit?.id ?? null;
   const { user } = useAuth();
   const { toast } = useToast();
@@ -630,9 +632,11 @@ export default function AgendaPage() {
               },
             ]}
             primary={
-              <PrimaryAction onClick={openCreateDialog}>
-                <Plus className="mr-2 h-4 w-4" /> Novo agendamento
-              </PrimaryAction>
+              can("appointments.create") ? (
+                <PrimaryAction onClick={openCreateDialog}>
+                  <Plus className="mr-2 h-4 w-4" /> Novo agendamento
+                </PrimaryAction>
+              ) : undefined
             }
           />
         }
@@ -844,6 +848,7 @@ export default function AgendaPage() {
         </section>
 
         <aside className="space-y-6">
+          {can("blocks.manage") && (
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-3">
@@ -914,6 +919,7 @@ export default function AgendaPage() {
               </div>
             </CardContent>
           </Card>
+          )}
         </aside>
       </div>
 
@@ -1205,6 +1211,7 @@ function AppointmentCard({
   onSaved?: () => void | Promise<void>;
   compact?: boolean;
 }) {
+  const { can } = usePermissions();
   const tone = mapTone(statusTone(item.appointment.status));
   const quickActions = actionCandidates(item.appointment.status);
   const [summaryOpen, setSummaryOpen] = useState(false);
@@ -1261,22 +1268,30 @@ function AppointmentCard({
           </div>
 
           <div className="flex flex-wrap gap-2 lg:max-w-xs lg:justify-end">
-            {quickActions.map((status) => (
-              <Button
-                key={status}
-                size="sm"
-                variant={status === "canceled" || status === "no_show" ? "outline" : "secondary"}
-                onClick={() => onStatusChange(status)}
-              >
-                {quickActionLabel(status)}
-              </Button>
-            ))}
+            {quickActions
+              .filter((status) =>
+                status === "canceled" || status === "no_show"
+                  ? can("appointments.cancel")
+                  : can("appointments.edit"),
+              )
+              .map((status) => (
+                <Button
+                  key={status}
+                  size="sm"
+                  variant={status === "canceled" || status === "no_show" ? "outline" : "secondary"}
+                  onClick={() => onStatusChange(status)}
+                >
+                  {quickActionLabel(status)}
+                </Button>
+              ))}
             <Button size="sm" variant="outline" onClick={() => setSummaryOpen(true)}>
               <Sparkles className="mr-2 h-4 w-4" /> Resumo
             </Button>
-            <Button size="sm" variant="outline" onClick={onEdit}>
-              <Pencil className="mr-2 h-4 w-4" /> Editar
-            </Button>
+            {can("appointments.edit") && (
+              <Button size="sm" variant="outline" onClick={onEdit}>
+                <Pencil className="mr-2 h-4 w-4" /> Editar
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>

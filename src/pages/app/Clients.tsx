@@ -79,6 +79,7 @@ import { QuickFiltersBar } from "@/features/clients/QuickFiltersBar";
 import { RetentionIntelligenceCard } from "@/features/clients/RetentionIntelligenceCard";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { usePermissions } from "@/features/auth/usePermissions";
 
 type FiltersState = {
   search: string;
@@ -147,6 +148,7 @@ type CustomValuesMap = Record<string, unknown>;
 export default function ClientsPage() {
   const [searchParams] = useSearchParams();
   const { currentTenant, availableUnits, currentRole } = useTenant();
+  const { can } = usePermissions();
   const tenantId = currentTenant?.id ?? null;
   const { limits, usage, refresh: refreshBilling } = useTenantBilling();
   const { user } = useAuth();
@@ -848,6 +850,7 @@ export default function ClientsPage() {
             usage.activeClientsCount >= limits.maxActiveClients ? (
               <StatusBadge tone="warning" dot={false} data-testid="clients-active-limit-badge">Limite de clientes ativos atingido</StatusBadge>
             ) : null}
+            {can("clients.create") && (
             <Dialog open={openCreate} onOpenChange={setOpenCreate}>
               <DialogTrigger asChild>
                 <Button
@@ -888,6 +891,7 @@ export default function ClientsPage() {
                 </div>
               </DialogContent>
             </Dialog>
+            )}
           </>
         }
       />
@@ -1221,9 +1225,11 @@ export default function ClientsPage() {
                                 <p className="text-xs uppercase tracking-wide text-muted-foreground">
                                   {note.isPinned ? "Fixada" : "Nota"} · {formatDateTime(note.createdAt)}
                                 </p>
-                                <Button variant="ghost" size="sm" onClick={() => handleDeleteNote(note.id)}>
-                                  Remover
-                                </Button>
+                                {can("clients.delete") && (
+                                  <Button variant="ghost" size="sm" onClick={() => handleDeleteNote(note.id)}>
+                                    Remover
+                                  </Button>
+                                )}
                               </div>
                               <p className="mt-2 text-sm">{note.body}</p>
                             </li>
@@ -1291,14 +1297,16 @@ export default function ClientsPage() {
                                       {formatBytes(file.sizeBytes)} · {formatDateTime(file.createdAt)}
                                     </p>
                                   </div>
-                                  <Button
-                                    data-testid="client-file-remove"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleDeleteFile(file)}
-                                  >
-                                    Remover
-                                  </Button>
+                                  {can("clients.delete") && (
+                                    <Button
+                                      data-testid="client-file-remove"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleDeleteFile(file)}
+                                    >
+                                      Remover
+                                    </Button>
+                                  )}
                                 </div>
                                 {file.description && <p className="mt-2 text-sm text-muted-foreground">{file.description}</p>}
                               </li>
@@ -1385,14 +1393,16 @@ export default function ClientsPage() {
                                     <StatusBadge tone={photo.photoType === "after" ? "success" : photo.photoType === "before" ? "warning" : "neutral"}>
                                       {photo.photoType === "before" ? "Antes" : photo.photoType === "after" ? "Depois" : "Geral"}
                                     </StatusBadge>
-                                    <Button
-                                      data-testid="client-photo-remove"
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleDeletePhoto(photo)}
-                                    >
-                                      Remover
-                                    </Button>
+                                    {can("clients.delete") && (
+                                      <Button
+                                        data-testid="client-photo-remove"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleDeletePhoto(photo)}
+                                      >
+                                        Remover
+                                      </Button>
+                                    )}
                                   </div>
                                   {photo.caption && <p className="text-sm">{photo.caption}</p>}
                                   <p className="text-xs text-muted-foreground">{formatDateTime(photo.takenAt || photo.createdAt)}</p>
@@ -1645,6 +1655,7 @@ function ClientHero({
   onEdit: () => void;
   completeness: number;
 }) {
+  const { can } = usePermissions();
   return (
     <Card className="overflow-hidden">
       <div className="bg-gradient-soft px-6 py-5">
@@ -1686,9 +1697,11 @@ function ClientHero({
                 <span className="pb-1 text-sm text-muted-foreground">/100</span>
               </div>
             </div>
-            <Button variant="outline" className="ml-auto rounded-xl lg:ml-0" onClick={onEdit}>
-              <Pencil className="mr-2 h-4 w-4" /> Editar ficha
-            </Button>
+            {can("clients.edit") && (
+              <Button variant="outline" className="ml-auto rounded-xl lg:ml-0" onClick={onEdit}>
+                <Pencil className="mr-2 h-4 w-4" /> Editar ficha
+              </Button>
+            )}
           </div>
         </div>
       </div>
