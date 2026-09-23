@@ -148,6 +148,7 @@ type CustomValuesMap = Record<string, unknown>;
 export default function ClientsPage() {
   const [searchParams] = useSearchParams();
   const { currentTenant, availableUnits, currentRole } = useTenant();
+  const { can } = usePermissions();
   const tenantId = currentTenant?.id ?? null;
   const { limits, usage, refresh: refreshBilling } = useTenantBilling();
   const { user } = useAuth();
@@ -1222,9 +1223,11 @@ export default function ClientsPage() {
                                 <p className="text-xs uppercase tracking-wide text-muted-foreground">
                                   {note.isPinned ? "Fixada" : "Nota"} · {formatDateTime(note.createdAt)}
                                 </p>
-                                <Button variant="ghost" size="sm" onClick={() => handleDeleteNote(note.id)}>
-                                  Remover
-                                </Button>
+                                {can("clients.delete") && (
+                                  <Button variant="ghost" size="sm" onClick={() => handleDeleteNote(note.id)}>
+                                    Remover
+                                  </Button>
+                                )}
                               </div>
                               <p className="mt-2 text-sm">{note.body}</p>
                             </li>
@@ -1292,14 +1295,16 @@ export default function ClientsPage() {
                                       {formatBytes(file.sizeBytes)} · {formatDateTime(file.createdAt)}
                                     </p>
                                   </div>
-                                  <Button
-                                    data-testid="client-file-remove"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleDeleteFile(file)}
-                                  >
-                                    Remover
-                                  </Button>
+                                  {can("clients.delete") && (
+                                    <Button
+                                      data-testid="client-file-remove"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleDeleteFile(file)}
+                                    >
+                                      Remover
+                                    </Button>
+                                  )}
                                 </div>
                                 {file.description && <p className="mt-2 text-sm text-muted-foreground">{file.description}</p>}
                               </li>
@@ -1386,14 +1391,16 @@ export default function ClientsPage() {
                                     <StatusBadge tone={photo.photoType === "after" ? "success" : photo.photoType === "before" ? "warning" : "neutral"}>
                                       {photo.photoType === "before" ? "Antes" : photo.photoType === "after" ? "Depois" : "Geral"}
                                     </StatusBadge>
-                                    <Button
-                                      data-testid="client-photo-remove"
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleDeletePhoto(photo)}
-                                    >
-                                      Remover
-                                    </Button>
+                                    {can("clients.delete") && (
+                                      <Button
+                                        data-testid="client-photo-remove"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleDeletePhoto(photo)}
+                                      >
+                                        Remover
+                                      </Button>
+                                    )}
                                   </div>
                                   {photo.caption && <p className="text-sm">{photo.caption}</p>}
                                   <p className="text-xs text-muted-foreground">{formatDateTime(photo.takenAt || photo.createdAt)}</p>
