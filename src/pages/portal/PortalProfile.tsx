@@ -31,6 +31,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { handleError } from "@/lib/error-handler";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { PushNotificationsCard } from "@/features/notifications/PushNotificationsCard";
+
 import { usePortalClient } from "@/features/portal/PortalClientProvider";
 import {
   listMyPendingConsents,
