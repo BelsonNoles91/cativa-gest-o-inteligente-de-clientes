@@ -120,6 +120,13 @@
       "when": 1790162172559,
       "tag": "0016_revoke_anon_execute_on_internal_security_definer_functions",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1790163389368,
+      "tag": "0017_harden_function_execute_grants_and_fix_public_timezone",
+      "breakpoints": true
     }
   ]
 }
