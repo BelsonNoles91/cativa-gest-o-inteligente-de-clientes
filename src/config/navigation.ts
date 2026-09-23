@@ -101,6 +101,14 @@ export const navItems: NavItem[] = [
     group: "gestao",
   },
   {
+    to: "/app/painel-gestor/clientes",
+    label: "Clientes (gestão)",
+    icon: Users,
+    roles: ["owner", "manager", "frontdesk"],
+    group: "gestao",
+  },
+
+  {
     to: "/app/metas",
     label: "Metas e ranking",
     icon: Trophy,
