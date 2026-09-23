@@ -8,6 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { ThemeProvider } from "@/features/theme/ThemeProvider";
 import { AuthProvider } from "@/features/auth/AuthProvider";
+import { OAuthRedirectHandler } from "@/features/auth/OAuthRedirectHandler";
 import { TenantProvider } from "@/features/tenant/TenantProvider";
 import { ProtectedRoute, RequireOnboarding, RoleGuard, OnboardingGuard } from "@/features/auth/guards";
 import { ErrorBoundary } from "@/components/feedback/ErrorBoundary";
@@ -109,6 +110,7 @@ const App = () => (
                 <Toaster />
                 <Sonner />
                 <BackendHealthBanner />
+                <OAuthRedirectHandler />
                 <Suspense fallback={<RouteFallback />}>
                   <Routes>
                     {/* Público */}
