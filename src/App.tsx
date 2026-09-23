@@ -193,6 +193,7 @@ const App = () => (
 
                           <Route element={<RoleGuard allowed={["owner", "manager"]} />}>
                             <Route path="painel-gestor" element={<ManagerDashboard />} />
+                            <Route path="metas" element={<TeamGoalsPage />} />
                             <Route path="servicos" element={<ServicesPage />} />
                             <Route
                               path="pacotes"
