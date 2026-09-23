@@ -60,6 +60,7 @@ const NotFound = lazyWithReload(() => import("./pages/NotFound"));
 const PremiumLanding = lazyWithReload(() => import("./pages/marketing/PremiumLanding"));
 // Demo page removed
 const StatusPage = lazyWithReload(() => import("./pages/public/Status"));
+const TenantPublic = lazyWithReload(() => import("./pages/public/TenantPublic"));
 const Login = lazyWithReload(() => import("./pages/auth/Login"));
 const ForgotPassword = lazyWithReload(() => import("./pages/auth/ForgotPassword"));
 const ResetPassword = lazyWithReload(() => import("./pages/auth/ResetPassword"));
@@ -122,6 +123,7 @@ const App = () => (
                     <Route path="/termos" element={<Terms />} />
                     {/* Demo route removed */}
                     <Route path="/status" element={<StatusPage />} />
+                    <Route path="/e/:slug" element={<TenantPublic />} />
 
                     {/* Auth */}
                     <Route path="/auth/login" element={<Login />} />

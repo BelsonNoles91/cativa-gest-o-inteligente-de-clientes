@@ -39,6 +39,7 @@ export const PERMISSIONS = [
   "settings.team",
   "settings.branding",
   "settings.prefs",
+  "settings.publicPage",
   "team.invite",
   "team.manageRoles",
 ] as const;
@@ -68,6 +69,7 @@ const MANAGER_PERMISSIONS: Permission[] = [
   "settings.business",
   "settings.branding",
   "settings.prefs",
+  "settings.publicPage",
   "settings.team",
   "team.invite",
 ];

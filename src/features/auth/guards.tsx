@@ -39,7 +39,7 @@ function LoadErrorScreen({ onRetry, retrying }: { onRetry: () => void; retrying:
             Verifique sua conexão com a internet e tente novamente.
           </p>
         </div>
-        <Button onClick={onRetry} disabled={retrying} className="min-h-[48px] min-w-[200px] rounded-2xl">
+        <Button onClick={onRetry} disabled={retrying} className="min-h-[48px] w-full rounded-2xl sm:w-auto sm:px-10">
           {retrying ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
           Tentar novamente
         </Button>

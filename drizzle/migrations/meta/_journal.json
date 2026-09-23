@@ -22,6 +22,27 @@
       "when": 1790129261429,
       "tag": "0002_members_read_tenant_subscription",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790131322455,
+      "tag": "0003_public_tenant_page",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790131672568,
+      "tag": "0004_public_page_allow_trialing",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790131803417,
+      "tag": "0005_public_page_status_trialing_all",
+      "breakpoints": true
     }
   ]
 }
