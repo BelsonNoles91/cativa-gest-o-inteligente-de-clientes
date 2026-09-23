@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import { fetchAppointments } from "@/repositories/analytics";
-import { listProfessionalsLite } from "@/repositories/professionals";
+import { listProfessionalsLite } from "@/repositories/scheduling";
 import { listClosings, listCommissionRules } from "@/repositories/commissions";
 import {
   buildCommissionRows,
