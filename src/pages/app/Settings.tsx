@@ -64,6 +64,11 @@ export default function Settings() {
           {can("settings.team") && <TabsContent value="team"><TeamSettings /></TabsContent>}
           {can("settings.branding") && <TabsContent value="branding"><BrandingSettings /></TabsContent>}
           {can("settings.prefs") && <TabsContent value="prefs"><PreferencesSettings /></TabsContent>}
+          {can("settings.publicPage") && (
+            <TabsContent value="publicpage" data-testid="settings-publicpage-panel">
+              <PublicPageSettings />
+            </TabsContent>
+          )}
         </div>
       </Tabs>
     </>
