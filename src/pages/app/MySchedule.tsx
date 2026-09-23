@@ -248,6 +248,63 @@ export default function MySchedule() {
     }
   }
 
+  const requestsCard = (
+            <Card className="rounded-2xl">
+              <CardHeader>
+                <CardTitle className="text-lg">
+                  {canApprove ? "Solicitações de horário da equipe" : "Minhas solicitações"}
+                </CardTitle>
+                <CardDescription>
+                  {canApprove
+                    ? "Aprove ou recuse pedidos de atendimento fora do horário de funcionamento."
+                    : "Acompanhe os pedidos enviados ao gestor."}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {requests.length === 0 && (
+                  <p className="text-sm text-muted-foreground">Nenhuma solicitação por aqui.</p>
+                )}
+                {requests.map((req) => (
+                  <div key={req.id} className="space-y-2 rounded-xl border border-border/60 p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-medium">
+                          {WEEKDAYS[req.weekday]} · {hhmm(req.startsAt)} às {hhmm(req.endsAt)}
+                        </p>
+                        {canApprove && req.professionalName && (
+                          <p className="text-xs text-muted-foreground">{req.professionalName}</p>
+                        )}
+                      </div>
+                      <Badge variant={req.status === "pending" ? "secondary" : "outline"}>
+                        {STATUS_LABEL[req.status]}
+                      </Badge>
+                    </div>
+                    {req.reason && <p className="text-xs text-muted-foreground">{req.reason}</p>}
+                    {canApprove && req.status === "pending" && (
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleReview(req.id, true)}
+                          className="h-10 rounded-xl"
+                        >
+                          <CheckCircle2 className="mr-2 h-4 w-4" /> Aprovar
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleReview(req.id, false)}
+                          className="h-10 rounded-xl"
+                        >
+                          <XCircle className="mr-2 h-4 w-4" /> Recusar
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+  );
+
   if (loading) {
     return (
       <div className="grid min-h-[50vh] place-items-center">
@@ -266,12 +323,14 @@ export default function MySchedule() {
         icon={<CalendarClock className="h-5 w-5" />}
       />
 
-      {!professional && (
+      {!professional && !canApprove && (
         <EmptyState
           title="Sua ficha de profissional ainda não está vinculada"
           description="Peça ao gerente ou proprietário para vincular o seu acesso à ficha de profissional do estabelecimento."
         />
       )}
+
+      {!professional && canApprove && <div className="space-y-6">{requestsCard}</div>}
 
       {professional && (
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -421,60 +480,7 @@ export default function MySchedule() {
               </CardContent>
             </Card>
 
-            <Card className="rounded-2xl">
-              <CardHeader>
-                <CardTitle className="text-lg">
-                  {canApprove ? "Solicitações de horário da equipe" : "Minhas solicitações"}
-                </CardTitle>
-                <CardDescription>
-                  {canApprove
-                    ? "Aprove ou recuse pedidos de atendimento fora do horário de funcionamento."
-                    : "Acompanhe os pedidos enviados ao gestor."}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {requests.length === 0 && (
-                  <p className="text-sm text-muted-foreground">Nenhuma solicitação por aqui.</p>
-                )}
-                {requests.map((req) => (
-                  <div key={req.id} className="space-y-2 rounded-xl border border-border/60 p-3">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div>
-                        <p className="text-sm font-medium">
-                          {WEEKDAYS[req.weekday]} · {hhmm(req.startsAt)} às {hhmm(req.endsAt)}
-                        </p>
-                        {canApprove && req.professionalName && (
-                          <p className="text-xs text-muted-foreground">{req.professionalName}</p>
-                        )}
-                      </div>
-                      <Badge variant={req.status === "pending" ? "secondary" : "outline"}>
-                        {STATUS_LABEL[req.status]}
-                      </Badge>
-                    </div>
-                    {req.reason && <p className="text-xs text-muted-foreground">{req.reason}</p>}
-                    {canApprove && req.status === "pending" && (
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() => handleReview(req.id, true)}
-                          className="h-10 rounded-xl"
-                        >
-                          <CheckCircle2 className="mr-2 h-4 w-4" /> Aprovar
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleReview(req.id, false)}
-                          className="h-10 rounded-xl"
-                        >
-                          <XCircle className="mr-2 h-4 w-4" /> Recusar
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+            {requestsCard}
           </div>
 
           <Card className="h-fit rounded-2xl">
