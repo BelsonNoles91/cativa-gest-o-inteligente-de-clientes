@@ -202,6 +202,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       setVerified(true);
     } catch (err) {
       handleError(err, { category: 'DATABASE', context: { action: 'loadBaseData' } });
+      setLoadError(err instanceof Error ? err.message : "Falha ao carregar dados da empresa");
     } finally {
       setLoading(false);
     }
@@ -212,6 +213,14 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     if (!ignore) void loadBaseData();
     return () => { ignore = true; };
   }, [loadBaseData]);
+
+  // Retenta automaticamente quando a conexão é restabelecida
+  useEffect(() => {
+    if (!loadError) return;
+    const onOnline = () => { void loadBaseData(true); };
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
+  }, [loadError, loadBaseData]);
 
   // Cálculo do Tenant Efetivo (memoizado para evitar re-renderers desnecessários)
   const availableTenants = useMemo(() => {
