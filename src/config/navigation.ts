@@ -17,6 +17,7 @@ import {
   Hourglass,
   BarChart3,
   Gauge,
+  Trophy,
   HeartHandshake,
   Settings,
   ShieldCheck,
