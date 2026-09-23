@@ -67,6 +67,13 @@ export const navItems: NavItem[] = [
     group: "operacao",
   },
   {
+    to: "/app/minha-agenda",
+    label: "Minha agenda",
+    icon: CalendarClock,
+    roles: ["owner", "manager", "professional"],
+    group: "operacao",
+  },
+  {
     to: "/app/lista-de-espera",
     label: "Espera",
     icon: Hourglass,
