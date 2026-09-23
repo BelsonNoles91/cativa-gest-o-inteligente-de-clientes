@@ -42,6 +42,8 @@ interface TenantContextValue {
   loading: boolean;
   /** True when the initial server verification of memberships has completed */
   verified: boolean;
+  /** Message of the last failed base-data load, or null when healthy */
+  loadError: string | null;
   /** Whether the user has at least one active tenant membership or is a super admin */
   hasActiveTenant: boolean;
   /** Flag for internal support/admin users with global access */
@@ -93,6 +95,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [verified, setVerified] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [memberships, setMemberships] = useState<MembershipRow[]>([]);
@@ -153,6 +156,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     }
     setLoading(true);
     setVerified(false);
+    setLoadError(null);
     try {
       const [
         { data: profile, error: profileErr }, 
@@ -198,6 +202,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       setVerified(true);
     } catch (err) {
       handleError(err, { category: 'DATABASE', context: { action: 'loadBaseData' } });
+      setLoadError(err instanceof Error ? err.message : "Falha ao carregar dados da empresa");
     } finally {
       setLoading(false);
     }
@@ -208,6 +213,14 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     if (!ignore) void loadBaseData();
     return () => { ignore = true; };
   }, [loadBaseData]);
+
+  // Retenta automaticamente quando a conexão é restabelecida
+  useEffect(() => {
+    if (!loadError) return;
+    const onOnline = () => { void loadBaseData(true); };
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
+  }, [loadError, loadBaseData]);
 
   // Cálculo do Tenant Efetivo (memoizado para evitar re-renderers desnecessários)
   const availableTenants = useMemo(() => {
@@ -319,6 +332,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     return {
       loading,
       verified,
+      loadError,
       hasActiveTenant,
       isSuperAdmin,
       currentTenant,
@@ -336,7 +350,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       refresh: () => loadBaseData(true),
     };
   }, [
-    loading, verified, memberships, availableTenants, effectiveTenantId, 
+    loading, verified, loadError, memberships, availableTenants, effectiveTenantId, 
     units, currentUnitId, isSuperAdmin, logosByTenant, loadBaseData,
     location.pathname, isClient, setCurrentTenantId, setCurrentUnitId,
     impersonateTenant, endImpersonation

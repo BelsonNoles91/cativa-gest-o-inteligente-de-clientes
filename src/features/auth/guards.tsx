@@ -16,13 +16,34 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import { canAccess, type Role } from "@/domain/roles";
-import { Loader2 } from "lucide-react";
+import { Loader2, RefreshCw, WifiOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { listPendingInvitationsForCurrentUser } from "@/services/team/inviteMember";
 
 function FullScreenLoader() {
   return (
     <div className="grid min-h-screen place-items-center bg-background">
       <Loader2 className="h-6 w-6 animate-spin text-primary" />
+    </div>
+  );
+}
+
+function LoadErrorScreen({ onRetry, retrying }: { onRetry: () => void; retrying: boolean }) {
+  return (
+    <div className="grid min-h-screen place-items-center bg-background px-6">
+      <div className="flex max-w-sm flex-col items-center gap-4 text-center">
+        <WifiOff className="h-10 w-10 text-muted-foreground" aria-hidden />
+        <div className="space-y-1">
+          <p className="text-base font-semibold text-foreground">Não foi possível carregar seus dados</p>
+          <p className="text-sm text-muted-foreground">
+            Verifique sua conexão com a internet e tente novamente.
+          </p>
+        </div>
+        <Button onClick={onRetry} disabled={retrying} className="min-h-[48px] min-w-[200px] rounded-2xl">
+          {retrying ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+          Tentar novamente
+        </Button>
+      </div>
     </div>
   );
 }
@@ -57,7 +78,7 @@ export function ProtectedRoute({ children }: { children?: ReactNode }) {
  */
 export function RequireOnboarding({ children }: { children?: ReactNode }) {
   const { user } = useAuth();
-  const { loading, verified, hasActiveTenant, isClient, isSuperAdmin } = useTenant();
+  const { loading, verified, loadError, hasActiveTenant, isClient, isSuperAdmin, refresh } = useTenant();
   const [checkingInvites, setCheckingInvites] = useState(false);
   const [pendingInviteToken, setPendingInviteToken] = useState<string | null | undefined>(undefined);
 
@@ -91,7 +112,11 @@ export function RequireOnboarding({ children }: { children?: ReactNode }) {
     return () => { active = false; };
   }, [loading, verified, hasActiveTenant, isSuperAdmin, isClient, user]);
 
-  if (loading || !verified) return <FullScreenLoader />;
+  if (loading) return <FullScreenLoader />;
+  if (!verified) {
+    if (loadError) return <LoadErrorScreen onRetry={() => void refresh()} retrying={loading} />;
+    return <FullScreenLoader />;
+  }
   
   // Super Admin não precisa de onboarding de negócio
   if (isSuperAdmin) return <>{children ?? <Outlet />}</>;
@@ -123,14 +148,18 @@ export function RequireOnboarding({ children }: { children?: ReactNode }) {
  */
 export function OnboardingGuard({ children }: { children?: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
-  const { loading: tenantLoading, verified, hasActiveTenant, isClient, isSuperAdmin } = useTenant();
+  const { loading: tenantLoading, verified, loadError, hasActiveTenant, isClient, isSuperAdmin, refresh } = useTenant();
   const location = useLocation();
 
   if (authLoading) return <FullScreenLoader />;
   if (!user) return <>{children ?? <Outlet />}</>;
   
   // Se ainda está carregando ou não verificou, espera.
-  if (tenantLoading || !verified) return <FullScreenLoader />;
+  if (tenantLoading) return <FullScreenLoader />;
+  if (!verified) {
+    if (loadError) return <LoadErrorScreen onRetry={() => void refresh()} retrying={tenantLoading} />;
+    return <FullScreenLoader />;
+  }
 
   // Super Admin não faz onboarding
   if (isSuperAdmin && location.pathname === "/onboarding") {
