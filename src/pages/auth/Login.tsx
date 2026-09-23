@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { SocialAuthButtons } from "@/features/auth/SocialAuthButtons";
 
 export default function Login() {
   const { signIn } = useAuth();
