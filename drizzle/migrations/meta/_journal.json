@@ -29,6 +29,13 @@
       "when": 1790131322455,
       "tag": "0003_public_tenant_page",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790131672568,
+      "tag": "0004_public_page_allow_trialing",
+      "breakpoints": true
     }
   ]
 }
