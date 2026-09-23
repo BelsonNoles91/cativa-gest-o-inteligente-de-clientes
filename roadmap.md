@@ -21,13 +21,18 @@ Status por fase: ✅ concluída · 🔜 próxima · ⏳ planejada
 - [x] Listas automáticas de clientes em risco e perdidos
 - [x] Mensagens modelo, frase de incentivo e registro do resultado do contato
 
-## Fase 4 — Lista de espera automática 🔜 próxima
-- [ ] Ao cancelar, oferecer a vaga ao próximo da fila
+## Fase 4 — Lista de espera automática ✅ concluída
+- [x] Ao cancelar (ou marcar falta), a agenda oferece a vaga a quem combina na fila
+- [x] Ranking por serviço, profissional, unidade, janela desejada e prioridade
+- [x] Mensagem pronta por WhatsApp, cópia do texto e reserva em um toque
 
-## Fase 5 — Metas e ranking da equipe ⏳
-- [ ] Metas semanais/mensais por profissional e acompanhamento
+## Fase 5 — Metas e ranking da equipe ✅ concluída
+- [x] Meta mensal de receita e de atendimentos por profissional (dono/gerente)
+- [x] Tela Metas e ranking com visão de semana e de mês, progresso e desempenho
 
-## Fase 6 — App instalável com notificações (Android/iOS) ⏳
+## Fase 6 — App instalável com notificações (Android/iOS) 🔜 em andamento
+- [x] Convite de instalação no celular (Android nativo, passo a passo no iPhone)
+- [ ] Notificações push de lembrete e confirmação
 
 ## Opcionais aprovados ⏳
 - [ ] Fidelidade com pontos e recompensas
