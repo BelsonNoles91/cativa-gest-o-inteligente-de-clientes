@@ -57,11 +57,11 @@ export default function Settings() {
         </div>
 
         <div className="mt-6">
-          <TabsContent value="business"><BusinessSettings /></TabsContent>
-          <TabsContent value="units" data-testid="settings-units-panel"><UnitsSettings /></TabsContent>
-          <TabsContent value="team"><TeamSettings /></TabsContent>
-          <TabsContent value="branding"><BrandingSettings /></TabsContent>
-          <TabsContent value="prefs"><PreferencesSettings /></TabsContent>
+          {can("settings.business") && <TabsContent value="business"><BusinessSettings /></TabsContent>}
+          {can("settings.units") && <TabsContent value="units" data-testid="settings-units-panel"><UnitsSettings /></TabsContent>}
+          {can("settings.team") && <TabsContent value="team"><TeamSettings /></TabsContent>}
+          {can("settings.branding") && <TabsContent value="branding"><BrandingSettings /></TabsContent>}
+          {can("settings.prefs") && <TabsContent value="prefs"><PreferencesSettings /></TabsContent>}
         </div>
       </Tabs>
     </>
