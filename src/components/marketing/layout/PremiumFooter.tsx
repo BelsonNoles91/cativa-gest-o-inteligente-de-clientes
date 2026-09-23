@@ -99,7 +99,7 @@ export function PremiumFooter() {
 
         {/* Bottom Section */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-8 border-t border-white/10">
-          <div className="flex flex-col md:flex-row items-center gap-8 text-white/40 text-sm">
+          <div className="flex flex-col md:flex-row items-center gap-8 text-white/70 text-sm">
             <p>© 2026 Cativa Gestão Inteligente. Todos os direitos reservados.</p>
             <div className="flex gap-6">
               <Link to="/termos" className="hover:text-white transition-colors">Termos de Uso</Link>
@@ -108,10 +108,10 @@ export function PremiumFooter() {
             </div>
           </div>
           <div className="flex items-center gap-6">
-            <a href="https://instagram.com/cativagestao" target="_blank" rel="noopener noreferrer" aria-label="Instagram da Cativa" className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:text-accent hover:border-accent transition-all">
+            <a href="https://instagram.com/cativagestao" target="_blank" rel="noopener noreferrer" aria-label="Instagram da Cativa" className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/70 hover:text-accent hover:border-accent transition-all">
               <Instagram className="h-5 w-5" aria-hidden="true" />
             </a>
-            <a href="https://linkedin.com/company/cativagestao" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn da Cativa" className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:text-accent hover:border-accent transition-all">
+            <a href="https://linkedin.com/company/cativagestao" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn da Cativa" className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/70 hover:text-accent hover:border-accent transition-all">
               <Linkedin className="h-5 w-5" aria-hidden="true" />
             </a>
 

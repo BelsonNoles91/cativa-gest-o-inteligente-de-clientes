@@ -62,7 +62,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
 
         </div>
 
-        <p className="relative z-10 text-[10px] font-bold uppercase tracking-[0.3em] text-primary-dark/40">
+        <p className="relative z-10 text-[10px] font-bold uppercase tracking-[0.3em] text-primary-dark/70">
           © {new Date().getFullYear()} Cativa. Desenvolvido com excelência.
         </p>
       </aside>

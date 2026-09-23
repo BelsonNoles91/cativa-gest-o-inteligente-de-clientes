@@ -89,7 +89,7 @@ export function HeroSection() {
                   <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
-              <p className="text-[11px] text-muted-foreground/70 font-medium text-center px-4 leading-tight">
+              <p className="text-[11px] text-muted-foreground font-medium text-center px-4 leading-tight">
                 Crie sua conta em 30 segundos <br className="hidden sm:block" /> e organize sua agenda hoje.
               </p>
             </div>
@@ -98,7 +98,7 @@ export function HeroSection() {
               <Button asChild variant="outline" size="lg" className="h-16 px-10 rounded-2xl w-full sm:w-[300px] text-lg font-bold" aria-label="Ver planos e preços">
                 <Link to="/planos">Ver planos e preços</Link>
               </Button>
-              <p className="text-[11px] text-muted-foreground/70 font-medium text-center px-4 leading-tight">
+              <p className="text-[11px] text-muted-foreground font-medium text-center px-4 leading-tight">
                 Opções para profissionais <br className="hidden sm:block" /> individuais até grandes clínicas.
               </p>
             </div>
@@ -118,7 +118,7 @@ export function HeroSection() {
 
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 mb-12">
             {["Sem API de WhatsApp", "Mobile-first", "Foco em Retenção"].map((item, i) => (
-              <div key={i} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary-dark/40">
+              <div key={i} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary-dark/70">
                 <div className="w-1.5 h-1.5 rounded-full bg-accent" />
                 {item}
               </div>
@@ -168,13 +168,13 @@ export function HeroSection() {
                         </div>
                         <div className="flex gap-2">
                            <div className="px-2 py-1 rounded-md bg-white border border-border/40 text-[8px] font-bold text-primary-dark">Hoje</div>
-                           <div className="px-2 py-1 rounded-md bg-accent text-[8px] font-bold text-white shadow-sm">Nova Agenda</div>
+                           <div className="px-2 py-1 rounded-md bg-accent text-[8px] font-bold text-primary-dark shadow-sm">Nova Agenda</div>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8">
                          {[
-                           { label: "Receita", val: "R$ 12.4k", icon: TrendingUp, color: "text-emerald-500 bg-emerald-500/10", trend: "+12%" },
+                           { label: "Receita", val: "R$ 12.4k", icon: TrendingUp, color: "text-emerald-700 bg-emerald-500/10", trend: "+12%" },
                            { label: "Agendas", val: "142", icon: Calendar, color: "text-blue-500 bg-blue-500/10", trend: "+5%" },
                            { label: "Clientes", val: "24", icon: Users, color: "text-accent bg-accent/10", trend: "+8%" }
                          ].map((stat, i) => (
@@ -192,7 +192,7 @@ export function HeroSection() {
                               </div>
                               <div className="flex items-baseline gap-1">
                                 <div className="text-sm md:text-xl font-display font-bold text-primary-dark">{stat.val}</div>
-                                <span className="text-[7px] md:text-[8px] font-bold text-emerald-500">{stat.trend}</span>
+                                <span className="text-[7px] md:text-[8px] font-bold text-emerald-700">{stat.trend}</span>
                               </div>
                            </motion.div>
                          ))}
