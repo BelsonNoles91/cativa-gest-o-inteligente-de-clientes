@@ -100,6 +100,13 @@ export const navItems: NavItem[] = [
     group: "gestao",
   },
   {
+    to: "/app/metas",
+    label: "Metas e ranking",
+    icon: Trophy,
+    roles: ["owner", "manager"],
+    group: "gestao",
+  },
+  {
     to: "/app/servicos",
     label: "Serviços",
     icon: Sparkles,
