@@ -64,6 +64,13 @@
       "when": 1790137058244,
       "tag": "0008_push_subscriptions",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790138115867,
+      "tag": "0009_loyalty_commissions_coupons_reviews_anamnesis",
+      "breakpoints": true
     }
   ]
 }
