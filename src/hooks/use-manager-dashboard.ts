@@ -27,7 +27,7 @@ import {
   type ClientFact,
 } from "@/domain/analytics";
 
-export type ManagerDashboardPeriod = 30 | 90 | 180;
+export type ManagerDashboardPeriod = 30 | 90 | 180 | 365;
 
 const DAY = 86_400_000;
 const AT_RISK_DAYS = 45;

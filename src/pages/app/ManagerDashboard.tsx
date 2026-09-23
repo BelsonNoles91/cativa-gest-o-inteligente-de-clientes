@@ -30,6 +30,7 @@ const PERIODS: Array<{ value: ManagerDashboardPeriod; label: string }> = [
   { value: 30, label: "30 dias" },
   { value: 90, label: "90 dias" },
   { value: 180, label: "180 dias" },
+  { value: 365, label: "1 ano" },
 ];
 
 function money(cents: number): string {
