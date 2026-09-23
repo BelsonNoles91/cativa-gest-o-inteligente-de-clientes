@@ -639,7 +639,12 @@ export async function listWaitlistHydrated(
   if (professionals.error) throw professionals.error;
   if (units.error) throw units.error;
 
-  const clientMap = new Map((clients.data ?? []).map((row) => [row.id, row.full_name]));
+  const clientMap = new Map(
+    (clients.data ?? []).map((row) => [
+      row.id,
+      { name: row.full_name as string | null, phone: (row.whatsapp_phone ?? row.phone) as string | null },
+    ]),
+  );
   const serviceMap = new Map((services.data ?? []).map((row) => [row.id, row.name]));
   const professionalMap = new Map((professionals.data ?? []).map((row) => [row.id, row.display_name]));
   const unitMap = new Map((units.data ?? []).map((row) => [row.id, row.name]));
