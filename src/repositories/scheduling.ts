@@ -651,7 +651,8 @@ export async function listWaitlistHydrated(
 
   return entries.map((entry) => ({
     entry,
-    clientName: clientMap.get(entry.clientId) ?? null,
+    clientName: clientMap.get(entry.clientId)?.name ?? null,
+    clientPhone: clientMap.get(entry.clientId)?.phone ?? null,
     serviceName: entry.serviceId ? (serviceMap.get(entry.serviceId) ?? null) : null,
     professionalName: entry.preferredProfessionalId
       ? (professionalMap.get(entry.preferredProfessionalId) ?? null)
