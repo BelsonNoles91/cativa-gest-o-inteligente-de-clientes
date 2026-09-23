@@ -9,6 +9,7 @@
 import {
   LayoutDashboard,
   CalendarDays,
+  CalendarClock,
   Users,
   Sparkles,
   PackageOpen,
