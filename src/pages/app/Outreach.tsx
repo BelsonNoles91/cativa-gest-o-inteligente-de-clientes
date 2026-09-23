@@ -66,11 +66,13 @@ interface RowProps {
   detail: string;
   message: string;
   logEntry?: OutreachLogEntry;
+  extraActions?: React.ReactNode;
   onLog: (clientId: string, outcome: OutreachOutcome) => void;
   onClearLog: (clientId: string) => void;
 }
 
-function OutreachRow({ row, badge, detail, message, logEntry, onLog, onClearLog }: RowProps) {
+function OutreachRow({ row, badge, detail, message, logEntry, extraActions, onLog, onClearLog }: RowProps) {
+
   const { toast } = useToast();
   const link = whatsappLink(row.phone, message);
 
