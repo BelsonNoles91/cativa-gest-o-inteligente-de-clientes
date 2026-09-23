@@ -82,3 +82,15 @@ Corrigido:
 - Barras de progresso sem nome: TeamGoals.
 - Links sociais sem nome: PremiumFooter.
 - Contraste: novo token --accent-strong e --success-strong; StatusBadge success, botão premium, textos de apoio da landing, rodapé e seção escura final.
+
+## FASE 7 — Segurança e privacidade — CONCLUÍDA
+- Pacotes vulneráveis atualizados: @supabase/supabase-js 2.104 → 2.117 (corrige ws) e baseline-browser-mapping 2.11.25.
+- Migration 0016/0017: funções internas SECURITY DEFINER deixaram de ser executáveis sem login (revogado EXECUTE de PUBLIC/anon); continuam públicas apenas as da página de divulgação e a consulta de convite.
+- get_public_tenant_timezone alinhada à mesma regra da página pública (agora responde também em período de teste).
+- Índices/limites de arquivos: bucket de mídia de clientes 10MB, logos 2MB (ambos com política por estabelecimento já ativa).
+- Verificado: página pública responde 200; funções administrativas retornam "permissão negada" sem login; 448 testes e compilação OK.
+- Avisos aceitos pelo usuário permanecem como estão (status público e SECURITY DEFINER para usuários logados).
+
+## FASE 8 — Desempenho 🔄 em andamento
+- Migration 0018: índices criados em 64 chaves estrangeiras sem índice (joins e exclusões em cascata).
+- Busca global agora carrega sob demanda: pacote de 60 kB comprimidos sai do carregamento inicial do app.
