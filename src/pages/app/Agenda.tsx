@@ -470,6 +470,26 @@ export default function AgendaPage() {
     setDialogOpen(true);
   }
 
+  function offerFreedSlot(item: HydratedAppointment) {
+    if (new Date(item.appointment.startsAt).getTime() <= Date.now()) return;
+    const service = item.serviceId ? servicesMap.get(item.serviceId) ?? null : null;
+    setOfferSlot({
+      unitId: item.appointment.unitId,
+      professionalId: item.appointment.professionalId,
+      professionalName: item.professionalName,
+      serviceId: item.serviceId,
+      serviceName: item.serviceName,
+      startsAt: item.appointment.startsAt,
+      endsAt: item.appointment.endsAt,
+      durationMinutes: item.appointment.durationMinutes,
+      bufferBeforeMinutes: service?.bufferBeforeMinutes ?? 0,
+      bufferAfterMinutes: service?.bufferAfterMinutes ?? 0,
+      cancellationPolicyId: service?.cancellationPolicyId ?? null,
+      priceCents: (item.serviceId ? basePrices.get(item.serviceId) : undefined) ?? item.appointment.totalPriceCents,
+    });
+    setOfferOpen(true);
+  }
+
   async function handleQuickStatus(item: HydratedAppointment, nextStatus: AppointmentStatus) {
     if (!offline.online) {
       enqueueAction({
