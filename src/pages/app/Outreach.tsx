@@ -6,7 +6,15 @@
  * é gerado aqui e o envio é sempre manual, pelo WhatsApp da pessoa.
  */
 import { useEffect, useMemo, useState } from "react";
-import { CalendarHeart, Copy, MessageCircle, RefreshCw, Sparkles, UserPlus } from "lucide-react";
+import { CalendarHeart, Copy, MessageCircle, RefreshCw, Sparkles, Ticket, UserPlus } from "lucide-react";
+import {
+  couponDescription,
+  createCoupon,
+  generateCouponCode,
+  listCoupons,
+  type ReactivationCoupon,
+} from "@/repositories/coupons";
+
 
 import { PageHeader } from "@/components/shell/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -66,11 +74,13 @@ interface RowProps {
   detail: string;
   message: string;
   logEntry?: OutreachLogEntry;
+  extraActions?: React.ReactNode;
   onLog: (clientId: string, outcome: OutreachOutcome) => void;
   onClearLog: (clientId: string) => void;
 }
 
-function OutreachRow({ row, badge, detail, message, logEntry, onLog, onClearLog }: RowProps) {
+function OutreachRow({ row, badge, detail, message, logEntry, extraActions, onLog, onClearLog }: RowProps) {
+
   const { toast } = useToast();
   const link = whatsappLink(row.phone, message);
 
@@ -130,7 +140,9 @@ function OutreachRow({ row, badge, detail, message, logEntry, onLog, onClearLog 
         >
           Sem resposta
         </Button>
+        {extraActions}
       </div>
+
 
       {logEntry ? (
         <p className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -158,10 +170,60 @@ export default function Outreach() {
   const [search, setSearch] = useState("");
   const [incentive, setIncentive] = useState("");
   const [hideContacted, setHideContacted] = useState(true);
+  const [couponPercent, setCouponPercent] = useState(15);
+  const [couponsByClient, setCouponsByClient] = useState<Record<string, ReactivationCoupon>>({});
+  const { toast: notify } = useToast();
 
   useEffect(() => {
     if (tenantId) setLog(readOutreachLog(tenantId));
   }, [tenantId]);
+
+  useEffect(() => {
+    if (!tenantId) return;
+    let alive = true;
+    void listCoupons(tenantId)
+      .then((list) => {
+        if (!alive) return;
+        const map: Record<string, ReactivationCoupon> = {};
+        for (const c of list) {
+          if (c.status === "active" && !map[c.clientId]) map[c.clientId] = c;
+        }
+        setCouponsByClient(map);
+      })
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, [tenantId]);
+
+  const handleCoupon = async (clientId: string) => {
+    if (!tenantId) return;
+    try {
+      const expires = new Date(Date.now() + 30 * 86400000).toISOString();
+      const coupon = await createCoupon({
+        tenantId,
+        clientId,
+        code: generateCouponCode(),
+        label: `${couponPercent}% de desconto no retorno`,
+        discountPercent: couponPercent,
+        expiresAt: expires,
+      });
+      setCouponsByClient((m) => ({ ...m, [clientId]: coupon }));
+      notify({ title: `Cupom ${coupon.code} criado`, description: "Ele já aparece no portal do cliente." });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Erro";
+      notify({ title: "Não foi possível criar o cupom", description: msg, variant: "destructive" });
+    }
+  };
+
+  const couponLine = (clientId: string): string => {
+    const c = couponsByClient[clientId];
+    if (!c) return "";
+    const until = c.expiresAt
+      ? ` (vale até ${new Date(c.expiresAt).toLocaleDateString("pt-BR")})`
+      : "";
+    return `\n\nSeu desconto: ${couponDescription(c)} com o código ${c.code}${until}.`;
+  };
 
   const handleLog = (clientId: string, outcome: OutreachOutcome) => {
     if (!tenantId) return;
@@ -171,6 +233,7 @@ export default function Outreach() {
     if (!tenantId) return;
     setLog(clearOutreachEntry(tenantId, clientId));
   };
+
 
   const filter = <T extends OutreachClient>(rows: T[]): T[] => {
     const term = search.trim().toLowerCase();
@@ -292,6 +355,27 @@ export default function Outreach() {
             <p className="mt-2 text-xs text-muted-foreground">
               O que você escrever aqui entra no fim de todas as mensagens de reativação.
             </p>
+            <div className="mt-3 flex flex-wrap items-end gap-2">
+              <div>
+                <label className="text-xs font-medium" htmlFor="coupon-percent">
+                  Desconto do cupom (%)
+                </label>
+                <Input
+                  id="coupon-percent"
+                  type="number"
+                  min={1}
+                  max={90}
+                  value={couponPercent}
+                  onChange={(e) =>
+                    setCouponPercent(Math.min(90, Math.max(1, Number(e.target.value) || 1)))
+                  }
+                  className="mt-1 h-11 w-32"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                O cupom vale 30 dias e aparece no portal do cliente.
+              </p>
+            </div>
           </Card>
 
           {isLoading ? (
@@ -311,12 +395,30 @@ export default function Outreach() {
                   </StatusBadge>
                 }
                 detail={`${row.daysSinceLastVisit} dias sem vir · já deixou ${money(row.revenueCents)} · ticket médio ${money(row.averageTicketCents)}`}
-                message={reactivationMessage(row, businessName, incentive)}
+                message={`${reactivationMessage(row, businessName, incentive)}${couponLine(row.clientId)}`}
                 logEntry={log[row.clientId]}
+                extraActions={
+                  couponsByClient[row.clientId] ? (
+                    <StatusBadge tone="success">
+                      Cupom {couponsByClient[row.clientId].code}
+                    </StatusBadge>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="min-h-[44px]"
+                      onClick={() => void handleCoupon(row.clientId)}
+                    >
+                      <Ticket className="mr-2 h-4 w-4" />
+                      Gerar cupom
+                    </Button>
+                  )
+                }
                 onLog={handleLog}
                 onClearLog={handleClearLog}
               />
             ))
+
           )}
         </TabsContent>
       </Tabs>

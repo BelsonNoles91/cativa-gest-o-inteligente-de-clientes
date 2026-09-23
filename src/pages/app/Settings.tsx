@@ -4,7 +4,7 @@
 import { useMemo, useState } from "react";
 import { usePermissions } from "@/features/auth/usePermissions";
 import type { Permission } from "@/domain/permissions";
-import { Settings as SettingsIcon, Building2, MapPin, Users, Palette, SlidersHorizontal, Lock, Link2, ShieldCheck } from "lucide-react";
+import { Settings as SettingsIcon, Building2, MapPin, Users, Palette, SlidersHorizontal, Lock, Link2, ShieldCheck, Gift, Star, ClipboardList } from "lucide-react";
 import { useTenantBilling } from "@/features/billing/useTenantBilling";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -15,6 +15,9 @@ import { BrandingSettings } from "@/features/settings/BrandingSettings";
 import { PreferencesSettings } from "@/features/settings/PreferencesSettings";
 import { PublicPageSettings } from "@/features/settings/PublicPageSettings";
 import { SelfServiceSettings } from "@/features/settings/SelfServiceSettings";
+import { LoyaltySettings } from "@/features/settings/LoyaltySettings";
+import { ReviewSettings } from "@/features/settings/ReviewSettings";
+import { AnamnesisSettings } from "@/features/settings/AnamnesisSettings";
 
 const TABS: { v: string; label: string; icon: typeof Building2; permission: Permission }[] = [
   { v: "business", label: "Negócio", icon: Building2, permission: "settings.business" },
@@ -23,8 +26,12 @@ const TABS: { v: string; label: string; icon: typeof Building2; permission: Perm
   { v: "branding", label: "Branding", icon: Palette, permission: "settings.branding" },
   { v: "prefs", label: "Preferências", icon: SlidersHorizontal, permission: "settings.prefs" },
   { v: "selfservice", label: "Autoatendimento", icon: ShieldCheck, permission: "settings.business" },
+  { v: "loyalty", label: "Fidelidade", icon: Gift, permission: "settings.business" },
+  { v: "reviews", label: "Avaliações", icon: Star, permission: "settings.business" },
+  { v: "anamnesis", label: "Anamnese", icon: ClipboardList, permission: "settings.business" },
   { v: "publicpage", label: "Link público", icon: Link2, permission: "settings.publicPage" },
 ];
+
 
 export default function Settings() {
   const { hasFeature } = useTenantBilling();
@@ -71,6 +78,22 @@ export default function Settings() {
               <SelfServiceSettings />
             </TabsContent>
           )}
+          {can("settings.business") && (
+            <TabsContent value="loyalty" data-testid="settings-loyalty-panel">
+              <LoyaltySettings />
+            </TabsContent>
+          )}
+          {can("settings.business") && (
+            <TabsContent value="reviews" data-testid="settings-reviews-panel">
+              <ReviewSettings />
+            </TabsContent>
+          )}
+          {can("settings.business") && (
+            <TabsContent value="anamnesis" data-testid="settings-anamnesis-panel">
+              <AnamnesisSettings />
+            </TabsContent>
+          )}
+
           {can("settings.publicPage") && (
             <TabsContent value="publicpage" data-testid="settings-publicpage-panel">
               <PublicPageSettings />

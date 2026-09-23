@@ -14,6 +14,108 @@ export type Database = {
   }
   public: {
     Tables: {
+      anamnesis_responses: {
+        Row: {
+          answers: Json
+          client_id: string
+          created_at: string
+          id: string
+          signature_name: string
+          signed_at: string
+          signed_by: string | null
+          template_id: string
+          tenant_id: string
+        }
+        Insert: {
+          answers?: Json
+          client_id: string
+          created_at?: string
+          id?: string
+          signature_name: string
+          signed_at?: string
+          signed_by?: string | null
+          template_id: string
+          tenant_id: string
+        }
+        Update: {
+          answers?: Json
+          client_id?: string
+          created_at?: string
+          id?: string
+          signature_name?: string
+          signed_at?: string
+          signed_by?: string | null
+          template_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anamnesis_responses_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "anamnesis_responses_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "anamnesis_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "anamnesis_responses_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      anamnesis_templates: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          intro: string | null
+          name: string
+          questions: Json
+          tenant_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          intro?: string | null
+          name: string
+          questions?: Json
+          tenant_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          intro?: string | null
+          name?: string
+          questions?: Json
+          tenant_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anamnesis_templates_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointment_items: {
         Row: {
           appointment_id: string
@@ -1900,6 +2002,102 @@ export type Database = {
         }
         Relationships: []
       }
+      loyalty_ledger: {
+        Row: {
+          appointment_id: string | null
+          client_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          points: number
+          reason: string
+          tenant_id: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          points: number
+          reason: string
+          tenant_id: string
+        }
+        Update: {
+          appointment_id?: string | null
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          points?: number
+          reason?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_ledger_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_ledger_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_ledger_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_settings: {
+        Row: {
+          enabled: boolean
+          points_per_real: number
+          points_per_visit: number
+          reward_description: string | null
+          reward_threshold_points: number
+          tenant_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          enabled?: boolean
+          points_per_real?: number
+          points_per_visit?: number
+          reward_description?: string | null
+          reward_threshold_points?: number
+          tenant_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          enabled?: boolean
+          points_per_real?: number
+          points_per_visit?: number
+          reward_description?: string | null
+          reward_threshold_points?: number
+          tenant_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       membership_benefits: {
         Row: {
           created_at: string
@@ -2379,6 +2577,116 @@ export type Database = {
           },
         ]
       }
+      professional_closings: {
+        Row: {
+          appointments_count: number
+          closed_at: string
+          closed_by: string | null
+          commission_cents: number
+          id: string
+          notes: string | null
+          percent: number
+          period_month: string
+          professional_id: string
+          revenue_cents: number
+          tenant_id: string
+        }
+        Insert: {
+          appointments_count?: number
+          closed_at?: string
+          closed_by?: string | null
+          commission_cents?: number
+          id?: string
+          notes?: string | null
+          percent?: number
+          period_month: string
+          professional_id: string
+          revenue_cents?: number
+          tenant_id: string
+        }
+        Update: {
+          appointments_count?: number
+          closed_at?: string
+          closed_by?: string | null
+          commission_cents?: number
+          id?: string
+          notes?: string | null
+          percent?: number
+          period_month?: string
+          professional_id?: string
+          revenue_cents?: number
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_closings_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_closings_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_closings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      professional_commission_rules: {
+        Row: {
+          percent: number
+          professional_id: string
+          tenant_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          percent?: number
+          professional_id: string
+          tenant_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          percent?: number
+          professional_id?: string
+          tenant_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_commission_rules_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_commission_rules_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_commission_rules_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professional_goals: {
         Row: {
           appointments_goal: number
@@ -2844,6 +3152,76 @@ export type Database = {
           },
         ]
       }
+      reactivation_coupons: {
+        Row: {
+          appointment_id: string | null
+          client_id: string
+          code: string
+          created_at: string
+          created_by: string | null
+          discount_cents: number
+          discount_percent: number
+          expires_at: string | null
+          id: string
+          label: string | null
+          redeemed_at: string | null
+          status: string
+          tenant_id: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          client_id: string
+          code: string
+          created_at?: string
+          created_by?: string | null
+          discount_cents?: number
+          discount_percent?: number
+          expires_at?: string | null
+          id?: string
+          label?: string | null
+          redeemed_at?: string | null
+          status?: string
+          tenant_id: string
+        }
+        Update: {
+          appointment_id?: string | null
+          client_id?: string
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          discount_cents?: number
+          discount_percent?: number
+          expires_at?: string | null
+          id?: string
+          label?: string | null
+          redeemed_at?: string | null
+          status?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reactivation_coupons_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reactivation_coupons_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reactivation_coupons_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recurring_blocks: {
         Row: {
           created_at: string
@@ -2965,6 +3343,93 @@ export type Database = {
             columns: ["unit_id"]
             isOneToOne: false
             referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_requests: {
+        Row: {
+          appointment_id: string | null
+          client_id: string
+          id: string
+          outcome: string
+          sent_at: string
+          sent_by: string | null
+          tenant_id: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          client_id: string
+          id?: string
+          outcome?: string
+          sent_at?: string
+          sent_by?: string | null
+          tenant_id: string
+        }
+        Update: {
+          appointment_id?: string | null
+          client_id?: string
+          id?: string
+          outcome?: string
+          sent_at?: string
+          sent_by?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_requests_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_requests_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_settings: {
+        Row: {
+          enabled: boolean
+          google_review_url: string | null
+          message_template: string | null
+          tenant_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          enabled?: boolean
+          google_review_url?: string | null
+          message_template?: string | null
+          tenant_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          enabled?: boolean
+          google_review_url?: string | null
+          message_template?: string | null
+          tenant_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -4965,6 +5430,10 @@ export type Database = {
         Returns: boolean
       }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_tenant_client: {
+        Args: { _client_id?: string; _tenant_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_tenant_member: {
         Args: { _tenant_id: string; _user_id: string }
         Returns: boolean

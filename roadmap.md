@@ -35,8 +35,11 @@ Status por fase: ✅ concluída · 🔜 próxima · ⏳ planejada
 - [x] Notificações push: ativação por aparelho no perfil do cliente, envio de teste e lembrete automático 24h antes do horário (verificação de hora em hora)
 
 
-## Opcionais aprovados ⏳
-- [ ] Fidelidade com pontos e recompensas
-- [ ] Avaliação pós-atendimento → Google Meu Negócio
-- [ ] Comissões e fechamento por profissional com extrato
-- [ ] Anamnese digital assinada
+## Fase 7 — Opcionais aprovados ✅ concluída
+- [x] Fidelidade com pontos e recompensas (configuração em Configurações → Fidelidade; saldo e meta no portal do cliente)
+- [x] Avaliação pós-atendimento → Google Meu Negócio (Configurações → Avaliações + tela Avaliações com convite por WhatsApp e registro de envio)
+- [x] Comissões e fechamento por profissional com extrato (tela Comissões: percentual por profissional, extrato do mês, fechar e reabrir mês)
+- [x] Anamnese digital assinada (modelos em Configurações → Anamnese; cliente preenche e assina em /portal/anamnese)
+- [x] Cupons de reativação: gerados na fila de reativação e exibidos no portal do cliente
+
+Roadmap concluído: todas as fases (0 a 7) entregues.

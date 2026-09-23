@@ -21,6 +21,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { useToast } from "@/hooks/use-toast";
 import { usePortalClient } from "@/features/portal/PortalClientProvider";
+import { PortalPerksCard } from "@/features/portal/PortalPerksCard";
+
 import {
   listMyAppointments,
   listMyPendingConsents,
@@ -208,11 +210,14 @@ export default function PortalHome() {
         />
       )}
 
+      <PortalPerksCard />
+
       {/* Ações rápidas */}
       <section>
         <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
           Ações rápidas
         </h3>
+
         <div className="grid grid-cols-2 gap-3">
           <Link
             to="/portal/agendar"

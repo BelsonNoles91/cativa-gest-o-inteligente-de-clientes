@@ -18,7 +18,10 @@ import {
   BarChart3,
   Gauge,
   Trophy,
+  Star,
+  Coins,
   HeartHandshake,
+
   Settings,
   ShieldCheck,
   CreditCard,
@@ -107,6 +110,21 @@ export const navItems: NavItem[] = [
     roles: ["owner", "manager", "frontdesk"],
     group: "gestao",
   },
+  {
+    to: "/app/avaliacoes",
+    label: "Avaliações",
+    icon: Star,
+    roles: ["owner", "manager", "frontdesk"],
+    group: "gestao",
+  },
+  {
+    to: "/app/comissoes",
+    label: "Comissões",
+    icon: Coins,
+    roles: ["owner", "manager"],
+    group: "gestao",
+  },
+
 
   {
     to: "/app/metas",

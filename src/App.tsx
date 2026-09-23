@@ -94,6 +94,10 @@ const PortalBooking = lazyWithReload(() => import("./pages/portal/PortalBooking"
 const PortalHistory = lazyWithReload(() => import("./pages/portal/PortalHistory"));
 const PortalPackages = lazyWithReload(() => import("./pages/portal/PortalPackages"));
 const PortalProfile = lazyWithReload(() => import("./pages/portal/PortalProfile"));
+const PortalAnamnesis = lazyWithReload(() => import("./pages/portal/PortalAnamnesis"));
+const CommissionsPage = lazyWithReload(() => import("./pages/app/Commissions"));
+const ReviewsPage = lazyWithReload(() => import("./pages/app/Reviews"));
+
 const PortalAccess = lazyWithReload(() => import("./pages/portal/PortalAccess"));
 const AppLayout = lazyWithReload(() =>
   import("@/components/shell/AppLayout").then((module) => ({ default: module.AppLayout })),
@@ -165,6 +169,8 @@ const App = () => (
                         <Route path="historico" element={<PortalHistory />} />
                         <Route path="pacotes" element={<PortalPackages />} />
                         <Route path="perfil" element={<PortalProfile />} />
+                        <Route path="anamnese" element={<PortalAnamnesis />} />
+
                       </Route>
                     </Route>
 
@@ -195,10 +201,13 @@ const App = () => (
                               path="painel-gestor/clientes"
                               element={<ManagerClientsPage />}
                             />
+                            <Route path="avaliacoes" element={<ReviewsPage />} />
 
                           </Route>
 
                           <Route element={<RoleGuard allowed={["owner", "manager"]} />}>
+                            <Route path="comissoes" element={<CommissionsPage />} />
+
                             <Route path="painel-gestor" element={<ManagerDashboard />} />
                             <Route path="metas" element={<TeamGoalsPage />} />
                             <Route path="servicos" element={<ServicesPage />} />
