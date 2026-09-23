@@ -1193,15 +1193,18 @@ function AppointmentCard({
   item,
   onEdit,
   onStatusChange,
+  onSaved,
   compact = false,
 }: {
   item: HydratedAppointment;
   onEdit: () => void;
   onStatusChange: (status: AppointmentStatus) => void;
+  onSaved?: () => void | Promise<void>;
   compact?: boolean;
 }) {
   const tone = mapTone(statusTone(item.appointment.status));
   const quickActions = actionCandidates(item.appointment.status);
+  const [summaryOpen, setSummaryOpen] = useState(false);
 
   return (
     <Card>
