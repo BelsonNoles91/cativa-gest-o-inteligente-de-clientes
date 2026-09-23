@@ -1211,6 +1211,7 @@ function AppointmentCard({
   onSaved?: () => void | Promise<void>;
   compact?: boolean;
 }) {
+  const { can } = usePermissions();
   const tone = mapTone(statusTone(item.appointment.status));
   const quickActions = actionCandidates(item.appointment.status);
   const [summaryOpen, setSummaryOpen] = useState(false);
