@@ -40,17 +40,41 @@ export function PremiumHeader() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden lg:flex items-center gap-6 xl:gap-8 overflow-x-auto no-scrollbar">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.label}
-              to={link.href}
-              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors relative group whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-accent rounded-md px-1"
-            >
-              {link.label}
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
-            </Link>
-          ))}
+        <nav
+          className={cn(
+            "hidden lg:flex items-center gap-1 rounded-full border p-1 transition-colors duration-300",
+            isScrolled
+              ? "border-border/50 bg-secondary/40"
+              : "border-border/40 bg-background/60 backdrop-blur-md"
+          )}
+        >
+          {NAV_LINKS.map((link) => {
+            const isActive = activeHash === link.href;
+            return (
+              <Link
+                key={link.label}
+                to={link.href}
+                aria-current={isActive ? "page" : undefined}
+                onClick={() => setActiveHash(link.href)}
+                className={cn(
+                  "relative whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                  isActive
+                    ? "text-primary-foreground"
+                    : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+                )}
+              >
+                {isActive && (
+                  <motion.span
+                    layoutId="nav-pill"
+                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                    className="absolute inset-0 rounded-full bg-primary shadow-sm"
+                  />
+                )}
+                <span className="relative z-10">{link.label}</span>
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="hidden lg:flex items-center gap-2 xl:gap-3 shrink-0">
