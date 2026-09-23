@@ -419,6 +419,14 @@ export default function AgendaPage() {
   }
 
   function openCreateDialog() {
+    if (!offline.online) {
+      toast({
+        title: "Sem conexão",
+        description: "Novos agendamentos precisam de internet. Consulte a agenda salva e tente novamente quando a conexão voltar.",
+        variant: "destructive",
+      });
+      return;
+    }
     if (isBlockedByLimit) {
       toast({
         title: "Limite de agendamentos atingido",
