@@ -5,7 +5,7 @@
  * (lembrete de retorno) e quem parou de vir (reativação). O texto da mensagem
  * é gerado aqui e o envio é sempre manual, pelo WhatsApp da pessoa.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { CalendarHeart, Copy, MessageCircle, RefreshCw, Sparkles, Ticket, UserPlus } from "lucide-react";
 import {
   couponDescription,
@@ -235,20 +235,20 @@ export default function Outreach() {
   };
 
 
-  const filter = <T extends OutreachClient>(rows: T[]): T[] => {
-    const term = search.trim().toLowerCase();
-    return rows.filter((row) => {
-      if (term && !row.name.toLowerCase().includes(term)) return false;
-      if (hideContacted && log[row.clientId]) return false;
-      return true;
-    });
-  };
-
-  const reminders = useMemo(() => filter(data?.reminders ?? []), [data, search, hideContacted, log]);
-  const reactivation = useMemo(
-    () => filter(data?.reactivation ?? []),
-    [data, search, hideContacted, log],
+  const filter = useCallback(
+    <T extends OutreachClient>(rows: T[]): T[] => {
+      const term = search.trim().toLowerCase();
+      return rows.filter((row) => {
+        if (term && !row.name.toLowerCase().includes(term)) return false;
+        if (hideContacted && log[row.clientId]) return false;
+        return true;
+      });
+    },
+    [search, hideContacted, log],
   );
+
+  const reminders = useMemo(() => filter(data?.reminders ?? []), [data, filter]);
+  const reactivation = useMemo(() => filter(data?.reactivation ?? []), [data, filter]);
 
   const potential = reactivation.reduce((sum, row) => sum + row.averageTicketCents, 0);
 
