@@ -155,7 +155,11 @@ export function OnboardingGuard({ children }: { children?: ReactNode }) {
   if (!user) return <>{children ?? <Outlet />}</>;
   
   // Se ainda está carregando ou não verificou, espera.
-  if (tenantLoading || !verified) return <FullScreenLoader />;
+  if (tenantLoading) return <FullScreenLoader />;
+  if (!verified) {
+    if (loadError) return <LoadErrorScreen onRetry={() => void refresh()} retrying={tenantLoading} />;
+    return <FullScreenLoader />;
+  }
 
   // Super Admin não faz onboarding
   if (isSuperAdmin && location.pathname === "/onboarding") {
