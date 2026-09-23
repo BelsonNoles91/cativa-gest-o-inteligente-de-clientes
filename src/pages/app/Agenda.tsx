@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   CalendarDays,
@@ -18,6 +18,9 @@ import {
   Sparkles,
 } from "lucide-react";
 import { AppointmentSummaryDialog } from "@/features/appointments/AppointmentSummaryDialog";
+import { OfflineAgendaBanner } from "@/features/offline/OfflineAgendaBanner";
+import { useOfflineAgenda } from "@/features/offline/useOfflineAgenda";
+import { enqueueAction, readAgendaSnapshot, saveAgendaSnapshot } from "@/lib/offline-agenda";
 
 import { PageHeader } from "@/components/shell/PageHeader";
 import { PageActionCluster, PrimaryAction } from "@/components/shell/PageActionCluster";
