@@ -43,3 +43,10 @@ Status por fase: ✅ concluída · 🔜 próxima · ⏳ planejada
 - [x] Cupons de reativação: gerados na fila de reativação e exibidos no portal do cliente
 
 Roadmap concluído: todas as fases (0 a 7) entregues.
+
+## Fase 8 — Dados reais e notificações (23/09/2026) ✅
+- [x] Push de lembrete 24h (cron horário) e push de confirmação do cliente (avisa recepção e cliente)
+- [x] Cartão "Avisos no celular" também no perfil da equipe (/app/perfil)
+- [x] Resumo de comissões do mês no Painel do gestor (link para /app/comissoes)
+- [x] Studio New Visual populado: 3 profissionais, 6 serviços, horários, 20 clientes, 170 atendimentos, agenda futura, metas e comissões
+- [ ] Validação no celular (depende do usuário) e teste do portal com login Google/Apple (depende do usuário)
