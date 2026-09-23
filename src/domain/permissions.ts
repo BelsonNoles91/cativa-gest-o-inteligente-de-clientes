@@ -17,6 +17,8 @@ export const PERMISSIONS = [
   "appointments.cancel",
   "appointments.viewAll",
   "blocks.manage",
+  "schedule.self",
+  "schedule.approve",
   // Clientes
   "clients.view",
   "clients.create",
