@@ -90,7 +90,9 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="px-3 py-3">
+        <InstallAppMenuItem collapsed={collapsed} />
         {!collapsed && (
+
           <>
             {!loading && !subscription && !isSuperAdmin ? (
               <NoSubscriptionBanner variant="sidebar" />
