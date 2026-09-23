@@ -16,6 +16,7 @@ import { LogoUploader } from "@/components/brand/LogoUploader";
 
 export function BrandingSettings() {
   const { currentTenant } = useTenant();
+  const tenantId = currentTenant?.id ?? null;
   const { loading: billingLoading, hasFeature } = useTenantBilling();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -27,12 +28,12 @@ export function BrandingSettings() {
   const [whatsapp, setWhatsapp] = useState("");
 
   useEffect(() => {
-    if (!currentTenant) return;
+    if (!tenantId) return;
     setLoading(true);
     supabase
       .from("tenant_settings")
       .select("brand_primary, brand_secondary, brand_accent, logo_url, whatsapp_phone")
-      .eq("tenant_id", currentTenant.id)
+      .eq("tenant_id", tenantId)
       .maybeSingle()
       .then(({ data }) => {
         if (data) {
@@ -44,7 +45,7 @@ export function BrandingSettings() {
         }
         setLoading(false);
       });
-  }, [currentTenant?.id]);
+  }, [tenantId]);
 
   const onSave = async () => {
     if (!currentTenant) return;

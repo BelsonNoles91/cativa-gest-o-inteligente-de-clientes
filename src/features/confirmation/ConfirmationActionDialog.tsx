@@ -22,7 +22,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import { renderForTemplate } from "@/services/confirmation/renderTemplate";
@@ -217,14 +216,14 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-2rem)] max-h-[90vh] max-w-2xl overflow-hidden p-0 sm:w-full">
-        <ScrollArea className="max-h-[90vh]">
-          <div className="p-6">
+      <DialogContent className="w-[calc(100vw-2rem)] max-h-[90vh] min-w-0 max-w-2xl overflow-hidden p-0 sm:w-full">
+        <div className="max-h-[90vh] min-w-0 overflow-x-hidden overflow-y-auto">
+          <div className="min-w-0 p-4 sm:p-6">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
+              <DialogTitle className="break-words pr-8">
                 {item.clientName}
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="break-words">
                 {item.serviceName ?? "Atendimento"} •{" "}
                 {new Date(item.appointmentStartsAt).toLocaleString("pt-BR", {
                   day: "2-digit",
@@ -236,8 +235,8 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
               </DialogDescription>
             </DialogHeader>
 
-            <Tabs defaultValue="message" className="mt-4">
-              <TabsList className="flex w-full justify-start overflow-x-auto">
+            <Tabs defaultValue="message" className="mt-4 min-w-0">
+              <TabsList className="flex w-full max-w-full justify-start overflow-x-auto">
                 <TabsTrigger value="message" className="shrink-0 whitespace-nowrap">Mensagem</TabsTrigger>
                 <TabsTrigger value="call" className="shrink-0 whitespace-nowrap">Ligação</TabsTrigger>
                 <TabsTrigger value="status" className="shrink-0 whitespace-nowrap">Status</TabsTrigger>
@@ -572,7 +571,7 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
               </TabsContent>
             </Tabs>
           </div>
-        </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );

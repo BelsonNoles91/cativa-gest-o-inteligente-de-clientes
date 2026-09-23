@@ -13,18 +13,19 @@ import { Textarea } from "@/components/ui/textarea";
 
 export function PreferencesSettings() {
   const { currentTenant } = useTenant();
+  const tenantId = currentTenant?.id ?? null;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [buffer, setBuffer] = useState(0);
   const [policy, setPolicy] = useState("");
 
   useEffect(() => {
-    if (!currentTenant) return;
+    if (!tenantId) return;
     setLoading(true);
     supabase
       .from("tenant_settings")
       .select("appointment_buffer_minutes, cancellation_policy")
-      .eq("tenant_id", currentTenant.id)
+      .eq("tenant_id", tenantId)
       .maybeSingle()
       .then(({ data }) => {
         if (data) {
@@ -33,7 +34,7 @@ export function PreferencesSettings() {
         }
         setLoading(false);
       });
-  }, [currentTenant?.id]);
+  }, [tenantId]);
 
   const onSave = async () => {
     if (!currentTenant) return;

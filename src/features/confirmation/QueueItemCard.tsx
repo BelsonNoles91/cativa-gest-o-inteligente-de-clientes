@@ -2,7 +2,7 @@
  * QueueItemCard — cartão de um item da fila de confirmação.
  * Exibe cliente, agendamento e ações rápidas (abrir contato).
  */
-import { Phone, MessageCircle, Mail, Clock, CalendarClock, AlertTriangle, Crown, ExternalLink, CheckCircle2, CheckSquare, Square } from "lucide-react";
+import { MessageCircle, Clock, CalendarClock, AlertTriangle, Crown, ExternalLink, CheckCircle2, CheckSquare, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
@@ -64,31 +64,31 @@ export function QueueItemCard({
 
   return (
     <Card
-      role="button"
-      tabIndex={0}
-      onClick={() => selection ? selection.toggleSelection(item.id) : onOpen(item)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          if (selection) selection.toggleSelection(item.id);
-          else onOpen(item);
-        }
-      }}
+      data-queue-item
       className={cn(
-        "cursor-pointer p-4 transition hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "min-w-0 w-full max-w-full overflow-hidden p-4 transition hover:border-primary/40 hover:shadow-md",
         isSelected && "border-primary bg-primary/5 ring-1 ring-primary"
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0 flex-1">
           {selection && (
-            <div className="mt-1 shrink-0">
+            <button
+              type="button"
+              className="mt-1 shrink-0 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label={isSelected ? `Desmarcar ${item.clientName}` : `Selecionar ${item.clientName}`}
+              aria-pressed={isSelected}
+              onClick={(event) => {
+                event.stopPropagation();
+                selection.toggleSelection(item.id);
+              }}
+            >
               {isSelected ? (
                 <CheckSquare className="h-5 w-5 text-primary" />
               ) : (
                 <Square className="h-5 w-5 text-muted-foreground/40" />
               )}
-            </div>
+            </button>
           )}
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
@@ -134,21 +134,18 @@ export function QueueItemCard({
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        {!selection && (
-          <Button
+        <Button
             size="sm"
             variant="secondary"
             className="flex-1 rounded-xl h-10 md:flex-none"
             onClick={(e) => {
-              e.stopPropagation();
               onOpen(item);
             }}
           >
             <MessageCircle className="mr-1.5 h-4 w-4" /> Ações
-          </Button>
-        )}
+        </Button>
         
-        {phoneDigits && !selection && (
+        {phoneDigits && (
           <Button
             size="sm"
             variant="outline"
@@ -162,7 +159,7 @@ export function QueueItemCard({
           </Button>
         )}
 
-        {onConfirmQuick && !selection && (
+        {onConfirmQuick && (
           <Button
             size="sm"
             variant="default"
@@ -178,7 +175,7 @@ export function QueueItemCard({
         
         {selection && (
           <p className="text-xs text-muted-foreground italic">
-            {isSelected ? "Item selecionado para ação em lote" : "Toque para selecionar"}
+            {isSelected ? "Item selecionado para ação em lote" : "Use a caixa para selecionar"}
           </p>
         )}
       </div>

@@ -19,6 +19,7 @@ const CURRENCIES = ["BRL", "USD", "EUR"];
 
 export function BusinessSettings() {
   const { currentTenant, refresh } = useTenant();
+  const tenantId = currentTenant?.id ?? null;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -28,12 +29,12 @@ export function BusinessSettings() {
   const [currency, setCurrency] = useState("BRL");
 
   useEffect(() => {
-    if (!currentTenant) return;
+    if (!tenantId) return;
     setLoading(true);
     supabase
       .from("tenants")
       .select("name, segment, timezone, currency")
-      .eq("id", currentTenant.id)
+      .eq("id", tenantId)
       .maybeSingle()
       .then(({ data }) => {
         if (data) {
@@ -44,7 +45,7 @@ export function BusinessSettings() {
         }
         setLoading(false);
       });
-  }, [currentTenant?.id]);
+  }, [tenantId]);
 
   const onSave = async () => {
     if (!currentTenant) return;

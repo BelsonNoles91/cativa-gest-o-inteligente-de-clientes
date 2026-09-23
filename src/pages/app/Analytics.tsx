@@ -129,7 +129,7 @@ export default function AnalyticsPage() {
 
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 max-w-full space-y-6">
       <PageHeader
         title="Analytics"
         description="Retenção, conversão, confirmação, ocupação e próximos movimentos recomendados."
@@ -231,7 +231,7 @@ export default function AnalyticsPage() {
 
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-[1.3fr_0.9fr]">
+          <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,0.9fr)]">
             <CativaIndexCard breakdown={cativa} scope={scopeLabel} />
             <NextBestActions actions={nba} />
           </div>

@@ -38,6 +38,7 @@ import {
 
 const MAIN_TIMEOUT = 20_000;
 const SCENARIO_TIMEOUT = 75_000;
+const REQUIRE_CONFIRMATION_FIXTURE = process.env.E2E_SEED_FIXTURES === "true";
 
 /** Aguarda `[data-app-main]` aparecer com mensagem de erro útil. */
 async function waitForMain(page: Page, route: string): Promise<void> {
@@ -59,8 +60,8 @@ async function waitForMain(page: Page, route: string): Promise<void> {
 
 /**
  * Verifica que com um modal/dialog aberto, a safe-area inferior continua
- * sendo respeitada pelo conteúdo do dialog (último botão clicável não pode
- * passar abaixo da linha viewport - safe-area-inset-bottom).
+ * sendo respeitada pelo conteúdo rolável do dialog. O último controle deve
+ * poder ser trazido para a área visível sem o contêiner sair do viewport.
  *
  * Não falha se o dialog não tiver botões clicáveis no rodapé — apenas valida
  * o que estiver presente.
@@ -88,21 +89,43 @@ async function assertDialogRespectsSafeAreaBottom(page: Page): Promise<void> {
       const r = el.getBoundingClientRect();
       return r.width > 0 && r.height > 0;
     });
+    const dialogRect = dialog.getBoundingClientRect();
     if (interactive.length === 0) {
       return {
         found: true as const,
         safeBottom,
         lastBottom: null,
+        dialogBottom: dialogRect.bottom,
+        scrollBottom: dialogRect.bottom,
         viewportH: window.innerHeight,
       };
     }
-    const lastBottom = Math.max(
-      ...interactive.map((b) => b.getBoundingClientRect().bottom),
+    const last = interactive.reduce((candidate, element) =>
+      element.getBoundingClientRect().bottom > candidate.getBoundingClientRect().bottom
+        ? element
+        : candidate,
     );
+    let scrollContainer: HTMLElement = dialog;
+    let ancestor = last.parentElement;
+    while (ancestor && ancestor !== dialog) {
+      const style = getComputedStyle(ancestor);
+      if (
+        ancestor.scrollHeight > ancestor.clientHeight + 1 &&
+        (style.overflowY === "auto" || style.overflowY === "scroll")
+      ) {
+        scrollContainer = ancestor;
+        break;
+      }
+      ancestor = ancestor.parentElement;
+    }
+    scrollContainer.scrollTop = scrollContainer.scrollHeight;
+    const scrollRect = scrollContainer.getBoundingClientRect();
     return {
       found: true as const,
       safeBottom,
-      lastBottom,
+      lastBottom: last.getBoundingClientRect().bottom,
+      dialogBottom: dialogRect.bottom,
+      scrollBottom: scrollRect.bottom,
       viewportH: window.innerHeight,
     };
   });
@@ -111,12 +134,18 @@ async function assertDialogRespectsSafeAreaBottom(page: Page): Promise<void> {
   if (result.found && result.lastBottom !== null) {
     const limit = result.viewportH - result.safeBottom + 4; // tolerância subpixel
     expect(
-      result.lastBottom,
-      `Último elemento interativo do dialog (bottom=${result.lastBottom}px) ` +
-        `ultrapassa o limite de safe-area inferior (${limit}px = viewportH ` +
-        `${result.viewportH} - safeBottom ${result.safeBottom}). ` +
-        `Verifique pb-safe / max-h em DialogContent e ScrollArea interna.`,
+      result.dialogBottom,
+      `Dialog ultrapassa a safe-area inferior: bottom=${result.dialogBottom}px, limite=${limit}px.`,
     ).toBeLessThanOrEqual(limit);
+    expect(
+      result.scrollBottom,
+      `Área rolável ultrapassa a safe-area inferior: bottom=${result.scrollBottom}px, limite=${limit}px.`,
+    ).toBeLessThanOrEqual(limit);
+    expect(
+      result.lastBottom,
+      `O último elemento interativo não ficou visível após rolar o dialog: ` +
+        `bottom=${result.lastBottom}px, área rolável termina em ${result.scrollBottom}px.`,
+    ).toBeLessThanOrEqual(result.scrollBottom + 4);
   }
 }
 
@@ -221,12 +250,10 @@ test.describe("cenário: Agenda → Confirmações → modal de ação", () => {
     logStep(scenario, "3.aguardar fila ou empty");
     const queueState = await waitForListOrEmpty(page, {
       label: "fila-load",
-      // QueueItemCard usa Card com role="button" — selector estável.
-      contentSelectors: ['[data-app-main] [role="button"].cursor-pointer'],
+      contentSelectors: ["[data-app-main] [data-queue-item]"],
       emptySelectors: [
         "text=/nenhum item/i",
         "text=/fila vazia/i",
-        "text=/gerar fila/i",
         '[data-empty-state="true"]',
       ],
     }).catch((err) => {
@@ -239,6 +266,11 @@ test.describe("cenário: Agenda → Confirmações → modal de ação", () => {
     // empty state e encerramos sem falhar. Isso evita que o teste quebre
     // em tenants seed sem dados de fila.
     if (queueState === "empty") {
+      if (REQUIRE_CONFIRMATION_FIXTURE) {
+        throw new Error(
+          "A fixture autenticada foi solicitada, mas nenhum item apareceu na fila de confirmação.",
+        );
+      }
       logStep(scenario, "fila vazia — encerrando sem testar modal");
       await assertNoHorizontalOverflow(page);
       await assertBottomNavVisible(page);
@@ -246,14 +278,14 @@ test.describe("cenário: Agenda → Confirmações → modal de ação", () => {
       return;
     }
 
+    await assertNoHorizontalOverflow(page);
+
     // ---- 4. Abrir modal de ação ----
     logStep(scenario, "4.abrir modal do primeiro item da fila");
-    const firstItem = page
-      .locator('[data-app-main] [role="button"].cursor-pointer')
-      .first();
+    const firstItem = page.locator("[data-app-main] [data-queue-item]").first();
     try {
       await firstItem.scrollIntoViewIfNeeded({ timeout: 3000 });
-      await firstItem.click({ timeout: 3000 });
+      await firstItem.getByRole("button", { name: "Ações" }).click({ timeout: 3000 });
     } catch (err) {
       const debug = await captureDebugInfo(page, "click queue item");
       throw new Error(

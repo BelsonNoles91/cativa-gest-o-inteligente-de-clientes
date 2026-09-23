@@ -254,6 +254,35 @@ async function attemptDirectAuthLogin(
       weak_password: null,
     });
 
+    const localStorage = [
+      {
+        name: tokenStorageKey(projectId, supabaseUrl),
+        value: sessionPayload,
+      },
+    ];
+    const tenantSlug = process.env.E2E_TENANT_SLUG?.trim();
+    if (tenantSlug) {
+      const { data: membership, error: membershipError } = await supabase
+        .from("tenant_memberships")
+        .select("tenant_id, tenants!inner(slug)")
+        .eq("user_id", data.user.id)
+        .eq("status", "active")
+        .eq("tenants.slug", tenantSlug)
+        .maybeSingle();
+      if (membershipError || !membership?.tenant_id) {
+        return {
+          ok: false,
+          reason:
+            membershipError?.message ??
+            `vínculo ativo não encontrado para o tenant ${tenantSlug}`,
+        };
+      }
+      localStorage.push({
+        name: "cativa.currentTenantId",
+        value: membership.tenant_id,
+      });
+    }
+
     writeFileSync(
       storagePath,
       JSON.stringify(
@@ -262,12 +291,7 @@ async function attemptDirectAuthLogin(
           origins: [
             {
               origin: new URL(baseURL).origin,
-              localStorage: [
-                {
-                  name: tokenStorageKey(projectId, supabaseUrl),
-                  value: sessionPayload,
-                },
-              ],
+              localStorage,
             },
           ],
         },

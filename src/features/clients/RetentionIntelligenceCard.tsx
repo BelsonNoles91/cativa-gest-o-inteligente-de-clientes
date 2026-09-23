@@ -56,7 +56,7 @@ export function RetentionIntelligenceCard({ client }: { client: Client }) {
           <InfoItem
             label="Risco de Churn"
             value={
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" data-volatile>
                 <Progress value={client.churnRiskScore} className="h-2 w-24" />
                 <span className="text-xs font-medium">{client.churnRiskScore}%</span>
               </div>

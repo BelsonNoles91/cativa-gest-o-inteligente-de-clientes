@@ -134,7 +134,8 @@ export async function assertNoHorizontalOverflow(page: Page): Promise<void> {
   });
   expect(
     overflow.documentWidth,
-    `A página possui overflow horizontal: documento=${overflow.documentWidth}px, viewport=${overflow.vw}px`,
+    `A página possui overflow horizontal: documento=${overflow.documentWidth}px, viewport=${overflow.vw}px; ` +
+      `elementos=${JSON.stringify(overflow.offenders)}`,
   ).toBeLessThanOrEqual(overflow.vw + 1);
   expect(
     overflow.offenders,

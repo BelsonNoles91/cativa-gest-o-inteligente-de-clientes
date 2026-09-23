@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   AlertCircle,
@@ -78,7 +78,7 @@ import { isUsageBlocked } from "@/domain/billing";
 import { QuickFiltersBar } from "@/features/clients/QuickFiltersBar";
 import { RetentionIntelligenceCard } from "@/features/clients/RetentionIntelligenceCard";
 import { supabase } from "@/integrations/supabase/client";
-import { cn, debounce } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 type FiltersState = {
   search: string;
@@ -147,6 +147,7 @@ type CustomValuesMap = Record<string, unknown>;
 export default function ClientsPage() {
   const [searchParams] = useSearchParams();
   const { currentTenant, availableUnits, currentRole } = useTenant();
+  const tenantId = currentTenant?.id ?? null;
   const { limits, usage, refresh: refreshBilling } = useTenantBilling();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -154,23 +155,22 @@ export default function ClientsPage() {
   const [filters, setFilters] = useState<FiltersState>(DEFAULT_FILTERS);
   const [debouncedSearch, setDebouncedSearch] = useState(filters.search);
 
-  const updateDebouncedSearch = useCallback(
-    debounce((val: string) => setDebouncedSearch(val), 300),
-    []
-  );
-
   useEffect(() => {
-    updateDebouncedSearch(filters.search);
-  }, [filters.search, updateDebouncedSearch]);
+    const timeoutId = window.setTimeout(
+      () => setDebouncedSearch(filters.search),
+      300,
+    );
+    return () => window.clearTimeout(timeoutId);
+  }, [filters.search]);
 
   const clientFilterKey = useMemo(
     () =>
       JSON.stringify({
-        tenantId: currentTenant?.id,
+        tenantId,
         debouncedSearch,
         filters,
       }),
-    [currentTenant?.id, debouncedSearch, filters],
+    [tenantId, debouncedSearch, filters],
   );
 
   const [clients, setClients] = useState<Client[]>([]);
@@ -238,12 +238,12 @@ export default function ClientsPage() {
   }, [clients]);
 
   useEffect(() => {
-    if (!currentTenant) return;
+    if (!tenantId) return;
     void (async () => {
       try {
         const [pros, allTags] = await Promise.all([
-          listProfessionalsLite(currentTenant.id),
-          listTags(currentTenant.id),
+          listProfessionalsLite(tenantId),
+          listTags(tenantId),
         ]);
         setProfessionals(pros);
         setTags(allTags);
@@ -255,7 +255,7 @@ export default function ClientsPage() {
         });
       }
     })();
-  }, [currentTenant, toast]);
+  }, [tenantId, toast]);
 
   // Descobre o profissional vinculado ao usuário logado dentro do tenant atual,
   // para habilitar o atalho "Meus clientes". RLS garante isolamento por tenant.
@@ -286,7 +286,7 @@ export default function ClientsPage() {
   }, [clientFilterKey]);
 
   useEffect(() => {
-    if (!currentTenant) return;
+    if (!tenantId) return;
     let ignore = false;
     const isFirstPage = clientOffset === 0;
     if (isFirstPage) setLoadingList(true);
@@ -294,7 +294,7 @@ export default function ClientsPage() {
     void (async () => {
       try {
         const page = await listClients({
-          tenantId: currentTenant.id,
+          tenantId,
           search: debouncedSearch || undefined,
           status: filters.status,
           vipOnly: filters.vipOnly,
@@ -336,7 +336,23 @@ export default function ClientsPage() {
     return () => {
       ignore = true;
     };
-  }, [currentTenant?.id, clientFilterKey, clientOffset]);
+  }, [
+    clientFilterKey,
+    clientOffset,
+    debouncedSearch,
+    filters.birthdayMonth,
+    filters.churnRiskScore,
+    filters.highRiskOnly,
+    filters.inactiveOnly,
+    filters.needsReactivationOnly,
+    filters.origin,
+    filters.preferredProfessionalId,
+    filters.preferredUnitId,
+    filters.status,
+    filters.vipOnly,
+    tenantId,
+    toast,
+  ]);
 
   useEffect(() => {
     if (!currentTenant || !selectedId) {

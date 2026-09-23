@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -84,11 +84,7 @@ export function SecurityScansTab() {
   const [advisorAnswer, setAdvisorAnswer] = useState("");
   const [advisorLoading, setAdvisorLoading] = useState(false);
 
-  useEffect(() => {
-    void load();
-  }, []);
-
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const { data: scanRows, error } = await supabase
@@ -126,7 +122,11 @@ export function SecurityScansTab() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [toast]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   const filteredScans = useMemo(() => {
     return scans.filter((scan) => {

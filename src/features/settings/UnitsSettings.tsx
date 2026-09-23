@@ -1,7 +1,7 @@
 /**
  * UnitsSettings — listar, criar e editar unidades.
  */
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Loader2, MapPin, Plus, Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,6 +27,7 @@ interface UnitRow {
 
 export function UnitsSettings() {
   const { currentTenant, refresh } = useTenant();
+  const tenantId = currentTenant?.id ?? null;
   const { limits, usage, hasFeature } = useTenantBilling();
   const [units, setUnits] = useState<UnitRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,19 +38,19 @@ export function UnitsSettings() {
   const [phone, setPhone] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const load = async () => {
-    if (!currentTenant) return;
+  const load = useCallback(async () => {
+    if (!tenantId) return;
     setLoading(true);
     const { data } = await supabase
       .from("units")
       .select("id, name, is_default, is_active, city, phone")
-      .eq("tenant_id", currentTenant.id)
+      .eq("tenant_id", tenantId)
       .order("is_default", { ascending: false });
     setUnits((data ?? []) as UnitRow[]);
     setLoading(false);
-  };
+  }, [tenantId]);
 
-  useEffect(() => { void load(); }, [currentTenant?.id]);
+  useEffect(() => { void load(); }, [load]);
 
   const onCreate = async () => {
     if (!currentTenant || !name.trim()) return;

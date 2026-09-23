@@ -21,12 +21,12 @@ const impactLabel = {
 
 export function NextBestActions({ actions }: { actions: NextBestAction[] }) {
   return (
-    <section className="surface-card p-5 md:p-6">
+    <section className="surface-card min-w-0 max-w-full p-5 md:p-6">
       <header className="mb-4 flex items-center gap-2">
         <div className="grid h-9 w-9 place-items-center rounded-lg bg-accent-soft text-accent-foreground">
           <Lightbulb className="h-4 w-4" />
         </div>
-        <div>
+        <div className="min-w-0">
           <h2 className="font-display text-lg font-semibold">Next Best Action</h2>
           <p className="text-xs text-muted-foreground">
             Recomendações acionáveis com base nas métricas atuais

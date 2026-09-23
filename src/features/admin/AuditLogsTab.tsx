@@ -1,7 +1,7 @@
 /**
  * AuditLogsTab — auditoria global navegável (super admin vê tudo, owner/manager vê apenas seu tenant).
  */
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { 
   CalendarRange, 
   Filter, 
@@ -83,7 +83,7 @@ export function AuditLogsTab({
 
   const isSuperAdmin = user?.role === 'super_admin';
 
-  function resolveRange(): { from: string | null; to: string | null } {
+  const resolveRange = useCallback((): { from: string | null; to: string | null } => {
     if (periodPreset === "custom") {
       return {
         from: fromDate ? new Date(fromDate + "T00:00:00").toISOString() : null,
@@ -96,9 +96,9 @@ export function AuditLogsTab({
     const from = new Date();
     from.setDate(from.getDate() - days);
     return { from: from.toISOString(), to: null };
-  }
+  }, [fromDate, periodPreset, toDate]);
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const range = resolveRange();
@@ -132,7 +132,7 @@ export function AuditLogsTab({
     } finally {
       setLoading(false);
     }
-  }
+  }, [actionFilter, cursors, limit, page, resolveRange, sortOrder, tenantFilter, toast]);
 
   useEffect(() => {
     setPage(0);
@@ -141,7 +141,7 @@ export function AuditLogsTab({
 
   useEffect(() => {
     void load();
-  }, [tenantFilter, actionFilter, limit, periodPreset, fromDate, toDate, page, sortOrder]);
+  }, [load]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return rows;
@@ -481,4 +481,3 @@ function formatVal(v: unknown): string {
   if (typeof v === "object") return JSON.stringify(v);
   return String(v);
 }
-

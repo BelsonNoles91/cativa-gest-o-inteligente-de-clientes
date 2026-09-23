@@ -143,7 +143,7 @@ export function TenantBillingProvider({ children }: { children: ReactNode }) {
     } finally {
       setInitialLoading(false);
     }
-  }, [tenantId]);
+  }, [isSuperAdmin, tenantId]);
 
   useEffect(() => {
     void load();
@@ -202,7 +202,7 @@ export function TenantBillingProvider({ children }: { children: ReactNode }) {
     },
     flagValue: (flagKey: string) => flagMap.get(flagKey),
     refresh: load,
-  }), [initialLoading, subscription, plan, allPlans, features, flags, events, usage, limits, flagMap, featureMap, load]);
+  }), [initialLoading, subscription, plan, allPlans, features, flags, events, usage, limits, flagMap, featureMap, isSuperAdmin, load]);
 
   return <TenantBillingContext.Provider value={value}>{children}</TenantBillingContext.Provider>;
 }

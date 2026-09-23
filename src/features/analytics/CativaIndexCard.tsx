@@ -17,12 +17,12 @@ export function CativaIndexCard({ breakdown, scope }: Props) {
   const strengths = breakdown.components.filter((c) => c.isStrength);
 
   return (
-    <section className="surface-card overflow-hidden">
-      <div className="bg-gradient-brand p-5 text-primary-foreground md:p-6">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wider opacity-80">
-          <Sparkles className="h-3.5 w-3.5" /> Índice Cativa · {scope}
+    <section className="surface-card min-w-0 w-full max-w-full overflow-hidden">
+      <div className="min-w-0 bg-gradient-brand p-5 text-primary-foreground md:p-6">
+        <div className="flex min-w-0 flex-wrap items-center gap-2 text-xs uppercase tracking-wider opacity-80">
+          <Sparkles className="h-3.5 w-3.5 shrink-0" /> Índice Cativa · {scope}
         </div>
-        <div className="mt-2 flex items-end gap-3">
+        <div className="mt-2 flex min-w-0 flex-wrap items-end gap-3">
           <span className="font-display text-5xl font-semibold leading-none">{breakdown.score}</span>
           <span className="pb-1 text-sm opacity-85">/ 100</span>
           <StatusBadge tone={tone} className="ml-2 mb-1">

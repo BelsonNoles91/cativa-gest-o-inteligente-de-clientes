@@ -11,7 +11,7 @@
  * - Filtros sticky no topo (busca + tenant + papel + status)
  * - Sheet lateral/inferior para edição (mobile-first)
  */
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Building2,
   Crown,
@@ -134,7 +134,7 @@ export function MembersTab() {
     destructive?: boolean;
   } | null>(null);
 
-  async function reload() {
+  const reload = useCallback(async () => {
     setLoading(true);
     try {
       // RPC ainda não tipada nos types gerados — usa cast para any apenas aqui.
@@ -151,11 +151,11 @@ export function MembersTab() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [toast]);
 
   useEffect(() => {
     void reload();
-  }, []);
+  }, [reload]);
 
   const tenants = useMemo(() => {
     const map = new Map<string, string>();

@@ -88,6 +88,7 @@ const STORAGE_KEY_UNIT = "cativa.currentUnitId";
 
 export function TenantProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
+  const userId = user?.id ?? null;
   const location = useLocation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -105,17 +106,17 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     () => localStorage.getItem(STORAGE_KEY_UNIT),
   );
 
-  const setCurrentTenantId = (id: string) => {
+  const setCurrentTenantId = useCallback((id: string) => {
     localStorage.setItem(STORAGE_KEY_TENANT, id);
     setCurrentTenantIdState(id);
     localStorage.removeItem(STORAGE_KEY_UNIT);
     setCurrentUnitIdState(null);
-  };
+  }, []);
 
-  const setCurrentUnitId = (id: string) => {
+  const setCurrentUnitId = useCallback((id: string) => {
     localStorage.setItem(STORAGE_KEY_UNIT, id);
     setCurrentUnitIdState(id);
-  };
+  }, []);
 
   const lastUserIdRef = useRef<string | null>(null);
 
@@ -127,12 +128,12 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       setVerified(true);
       return;
     }
-    const currentUserId = user?.id || null;
+    const currentUserId = userId;
     const isSameUser = lastUserIdRef.current === currentUserId;
     if (verified && !force && isSameUser) return;
     
     lastUserIdRef.current = currentUserId;
-    if (!user) {
+    if (!userId) {
       setMemberships([]);
       setAllTenants([]);
       setUnits([]);
@@ -158,16 +159,16 @@ export function TenantProvider({ children }: { children: ReactNode }) {
         { data: memb, error: membErr },
         { data: clientLinks, error: clientErr }
       ] = await Promise.all([
-        supabase.from("profiles").select("is_super_admin").eq("id", user.id).maybeSingle(),
+        supabase.from("profiles").select("is_super_admin").eq("id", userId).maybeSingle(),
         supabase
           .from("tenant_memberships")
           .select("tenant_id, role, tenants:tenants!inner(id, name, slug, segment)")
-          .eq("user_id", user.id)
+          .eq("user_id", userId)
           .eq("status", "active"),
         supabase
           .from("client_users")
           .select("id")
-          .eq("user_id", user.id)
+          .eq("user_id", userId)
           .eq("status", "active")
           .limit(1)
       ]);
@@ -200,7 +201,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [user?.id, authLoading, verified]);
+  }, [userId, authLoading, verified]);
 
   useEffect(() => {
     let ignore = false;
@@ -223,7 +224,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       }
     }
     return result;
-  }, [memberships, allTenants, isSuperAdmin]);
+  }, [memberships, allTenants, isSuperAdmin, location.pathname]);
 
   const effectiveTenantId = useMemo(() => {
     if (currentTenantId && availableTenants.some((t) => t.id === currentTenantId)) {
@@ -270,7 +271,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     return () => { ignore = true; };
   }, [effectiveTenantId]);
 
-  async function impersonateTenant(id: string, reason?: string | null) {
+  const impersonateTenant = useCallback(async (id: string, reason?: string | null) => {
     if (!isSuperAdmin) return;
     try {
       await supabase.rpc("admin_log_impersonation_start", { _tenant_id: id, _reason: reason ?? null });
@@ -278,9 +279,9 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       console.error("Falha ao registrar impersonação", err);
     }
     setCurrentTenantId(id);
-  }
+  }, [isSuperAdmin, setCurrentTenantId]);
 
-  async function endImpersonation() {
+  const endImpersonation = useCallback(async () => {
     if (!isSuperAdmin || !currentTenantId) return;
     try {
       await supabase.rpc("admin_log_impersonation_end", { _tenant_id: currentTenantId });
@@ -296,7 +297,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       setCurrentTenantIdState(null);
       setCurrentUnitIdState(null);
     }
-  }
+  }, [currentTenantId, isSuperAdmin, memberships, setCurrentTenantId]);
 
   const contextValue = useMemo<TenantContextValue>(() => {
     const currentTenant = availableTenants.find((t) => t.id === effectiveTenantId) ?? null;
@@ -336,7 +337,9 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     };
   }, [
     loading, verified, memberships, availableTenants, effectiveTenantId, 
-    units, currentUnitId, isSuperAdmin, logosByTenant, loadBaseData
+    units, currentUnitId, isSuperAdmin, logosByTenant, loadBaseData,
+    location.pathname, isClient, setCurrentTenantId, setCurrentUnitId,
+    impersonateTenant, endImpersonation
   ]);
 
   return <TenantContext.Provider value={contextValue}>{children}</TenantContext.Provider>;

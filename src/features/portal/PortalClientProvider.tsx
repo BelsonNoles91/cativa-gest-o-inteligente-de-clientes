@@ -133,7 +133,7 @@ export function PortalClientProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [user?.id, activeTenantId, authLoading]);
+  }, [user, activeTenantId, authLoading]);
 
   useEffect(() => {
     let ignore = false;

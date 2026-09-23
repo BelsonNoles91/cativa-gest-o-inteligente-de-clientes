@@ -52,6 +52,7 @@ const projectId = env("VITE_SUPABASE_PROJECT_ID");
 const email = env("E2E_USER");
 const password = env("E2E_PASS");
 const baseUrl = env("E2E_BASE_URL") || "http://127.0.0.1:4173";
+const tenantSlug = env("E2E_TENANT_SLUG");
 const storagePath = resolve(process.cwd(), "e2e/.auth/storageState.json");
 
 if (!supabaseUrl || !publishableKey || !email || !password) {
@@ -79,6 +80,40 @@ if (error || !data.session) {
   process.exit(1);
 }
 
+let tenantId = "";
+if (tenantSlug) {
+  const { data: membership, error: membershipError } = await supabase
+    .from("tenant_memberships")
+    .select("tenant_id, tenants!inner(slug)")
+    .eq("user_id", data.user.id)
+    .eq("status", "active")
+    .eq("tenants.slug", tenantSlug)
+    .maybeSingle();
+
+  if (membershipError || !membership?.tenant_id) {
+    console.error(
+      `Falha ao selecionar tenant E2E: ${membershipError?.message ?? "vínculo ativo não encontrado"}`,
+    );
+    await supabase.auth.signOut();
+    process.exit(1);
+  }
+  tenantId = membership.tenant_id;
+}
+
+const localStorage = [
+  {
+    name: tokenStorageKey(projectId, supabaseUrl),
+    value: JSON.stringify({
+      ...data.session,
+      user: data.user ?? data.session.user,
+      weak_password: null,
+    }),
+  },
+];
+if (tenantId) {
+  localStorage.push({ name: "cativa.currentTenantId", value: tenantId });
+}
+
 writeFileSync(
   storagePath,
   JSON.stringify(
@@ -87,16 +122,7 @@ writeFileSync(
       origins: [
         {
           origin: new URL(baseUrl).origin,
-          localStorage: [
-            {
-              name: tokenStorageKey(projectId, supabaseUrl),
-              value: JSON.stringify({
-                ...data.session,
-                user: data.user ?? data.session.user,
-                weak_password: null,
-              }),
-            },
-          ],
+          localStorage,
         },
       ],
     },

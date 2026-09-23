@@ -143,6 +143,7 @@ const EMPTY_BLOCK_FORM: BlockFormState = {
 export default function AgendaPage() {
   const [searchParams] = useSearchParams();
   const { currentTenant, currentUnit, availableUnits } = useTenant();
+  const currentUnitId = currentUnit?.id ?? null;
   const { user } = useAuth();
   const { toast } = useToast();
   const { usage, limits, plan } = useTenantBilling();
@@ -253,16 +254,16 @@ export default function AgendaPage() {
   }, [currentTenant, unitFilter, professionalFilter, range, refreshToken, toast]);
 
   useEffect(() => {
-    if (!currentUnit && availableUnits.length === 0) return;
+    if (!currentUnitId && availableUnits.length === 0) return;
     if (form.unitId !== "none") return;
     setForm((current) => ({
       ...current,
       unitId: unitFilter !== "all"
         ? unitFilter
-        : currentUnit?.id ?? availableUnits[0]?.id ?? "none",
+        : currentUnitId ?? availableUnits[0]?.id ?? "none",
       date: current.date || selectedDate,
     }));
-  }, [availableUnits, currentUnit?.id, form.unitId, selectedDate, unitFilter]);
+  }, [availableUnits, currentUnitId, form.unitId, selectedDate, unitFilter]);
 
   useEffect(() => {
     const shouldLoadSlots =
