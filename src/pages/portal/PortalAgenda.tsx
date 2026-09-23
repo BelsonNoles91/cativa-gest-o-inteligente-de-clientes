@@ -163,7 +163,12 @@ export default function PortalAgenda() {
           {items.map((view) => {
             const a = view.appointment;
             const start = new Date(a.startsAt);
-            const cancelInfo = canCancelWithoutFee(a.startsAt, view.policy);
+            const cancelCheck = canClientCancel(a.startsAt, rules);
+            const rescheduleCheck = canClientReschedule(
+              a.startsAt,
+              rules,
+              (a as unknown as { clientRescheduleCount?: number }).clientRescheduleCount ?? 0,
+            );
             return (
               <Card key={a.id} className="p-4">
                 <div className="flex items-start justify-between gap-3">
@@ -203,37 +208,49 @@ export default function PortalAgenda() {
                   )}
                 </div>
 
-                {!cancelInfo.allowed && view.policy && (
-                  <p className="mt-2 rounded-md bg-warning/10 px-2 py-1 text-xs text-warning-foreground/90">
-                    Atenção: cancelamento dentro de {view.policy.hoursBeforeNoCharge}h
-                    pode gerar taxa de {view.policy.lateCancelFeePct}%.
+                {(!cancelCheck.allowed || !rescheduleCheck.allowed) && (
+                  <p className="mt-2 rounded-md bg-muted px-2 py-1.5 text-xs text-muted-foreground">
+                    {cancelCheck.message ?? rescheduleCheck.message}
                   </p>
                 )}
 
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {a.status !== "confirmed" && (
+                  {a.status !== "confirmed" && rules?.allowConfirm !== false && (
                     <Button size="sm" onClick={() => handleConfirm(view)}>
                       <CheckCircle2 className="mr-1.5 h-4 w-4" /> Confirmar
                     </Button>
                   )}
-                  <Button asChild size="sm" variant="outline">
-                    <Link to={`/portal/agendar?reschedule=${a.id}`}>
-                      <RotateCcw className="mr-1.5 h-4 w-4" /> Reagendar
-                    </Link>
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setCancelTarget(view)}
-                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                  >
-                    <XCircle className="mr-1.5 h-4 w-4" /> Cancelar
-                  </Button>
+                  {rescheduleCheck.allowed && (
+                    <Button asChild size="sm" variant="outline">
+                      <Link to={`/portal/agendar?reschedule=${a.id}`}>
+                        <RotateCcw className="mr-1.5 h-4 w-4" /> Reagendar
+                      </Link>
+                    </Button>
+                  )}
+                  {cancelCheck.allowed && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setCancelReason("");
+                        setCancelTarget(view);
+                      }}
+                      className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    >
+                      <XCircle className="mr-1.5 h-4 w-4" /> Cancelar
+                    </Button>
+                  )}
                 </div>
               </Card>
             );
           })}
         </ul>
+      )}
+
+      {rules?.policyNote && (
+        <p className="rounded-xl bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
+          {rules.policyNote}
+        </p>
       )}
 
       <AlertDialog
@@ -244,20 +261,22 @@ export default function PortalAgenda() {
           <AlertDialogHeader>
             <AlertDialogTitle>Cancelar este horário?</AlertDialogTitle>
             <AlertDialogDescription>
-              {cancelTarget?.policy && cancelTarget &&
-              !canCancelWithoutFee(cancelTarget.appointment.startsAt, cancelTarget.policy)
-                .allowed ? (
-                <>
-                  Você está cancelando dentro da janela de{" "}
-                  {cancelTarget.policy.hoursBeforeNoCharge}h. Isso pode gerar uma taxa
-                  de {cancelTarget.policy.lateCancelFeePct}% conforme a política do
-                  estabelecimento.
-                </>
-              ) : (
-                "Você não será cobrado por este cancelamento."
-              )}
+              {rules?.policyNote ??
+                "O horário fica livre para outra pessoa e você poderá marcar de novo quando quiser."}
             </AlertDialogDescription>
           </AlertDialogHeader>
+          <div className="space-y-1.5">
+            <label htmlFor="cancel-reason" className="text-sm font-medium">
+              Motivo{rules?.requireCancelReason ? "" : " (opcional)"}
+            </label>
+            <Textarea
+              id="cancel-reason"
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              placeholder="Ex.: imprevisto no trabalho"
+              rows={3}
+            />
+          </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Voltar</AlertDialogCancel>
             <AlertDialogAction
