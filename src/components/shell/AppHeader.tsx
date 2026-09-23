@@ -57,7 +57,9 @@ export function AppHeader() {
           <TenantSwitcher />
         </div>
         <div className="mx-auto w-full max-w-xl">
-          <GlobalSearch />
+          <Suspense fallback={<div className="h-10 w-full rounded-lg bg-muted/50" />}>
+            <GlobalSearch />
+          </Suspense>
         </div>
         <Button variant="ghost" size="icon" className="rounded-full" aria-label="Notificações">
           < Bell className="h-4 w-4" />
