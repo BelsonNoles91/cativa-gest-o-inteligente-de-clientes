@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
         .limit(5000),
       supabase
         .from("clients")
-        .select("id, created_at, is_active")
+        .select("id, created_at, status")
         .eq("tenant_id", tenantId)
         .limit(5000),
       supabase.from("services").select("id, name, duration_minutes").eq("tenant_id", tenantId).limit(500),
@@ -130,7 +130,7 @@ Deno.serve(async (req) => {
       `Por status: ${fmtMap(byStatus)}.`,
       `Por origem: ${fmtMap(bySource)}.`,
       `Volume por mês: ${fmtMap(byMonth)}.`,
-      `Clientes cadastrados: ${clients.length} (ativos: ${clients.filter((c) => c.is_active).length}).`,
+      `Clientes cadastrados: ${clients.length} (ativos: ${clients.filter((c) => c.status === "active").length}).`,
       `Clientes atendidos na janela: ${attended.size}.`,
       `Clientes com mais de uma visita: ${returning}. Com visita única: ${oneTime}.`,
       `Clientes sem retorno há mais de 60 dias: ${dormant}.`,
