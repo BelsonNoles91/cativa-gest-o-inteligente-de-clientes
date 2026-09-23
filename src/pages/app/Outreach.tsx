@@ -347,6 +347,27 @@ export default function Outreach() {
             <p className="mt-2 text-xs text-muted-foreground">
               O que você escrever aqui entra no fim de todas as mensagens de reativação.
             </p>
+            <div className="mt-3 flex flex-wrap items-end gap-2">
+              <div>
+                <label className="text-xs font-medium" htmlFor="coupon-percent">
+                  Desconto do cupom (%)
+                </label>
+                <Input
+                  id="coupon-percent"
+                  type="number"
+                  min={1}
+                  max={90}
+                  value={couponPercent}
+                  onChange={(e) =>
+                    setCouponPercent(Math.min(90, Math.max(1, Number(e.target.value) || 1)))
+                  }
+                  className="mt-1 h-11 w-32"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                O cupom vale 30 dias e aparece no portal do cliente.
+              </p>
+            </div>
           </Card>
 
           {isLoading ? (
@@ -366,12 +387,30 @@ export default function Outreach() {
                   </StatusBadge>
                 }
                 detail={`${row.daysSinceLastVisit} dias sem vir · já deixou ${money(row.revenueCents)} · ticket médio ${money(row.averageTicketCents)}`}
-                message={reactivationMessage(row, businessName, incentive)}
+                message={`${reactivationMessage(row, businessName, incentive)}${couponLine(row.clientId)}`}
                 logEntry={log[row.clientId]}
+                extraActions={
+                  couponsByClient[row.clientId] ? (
+                    <StatusBadge tone="success">
+                      Cupom {couponsByClient[row.clientId].code}
+                    </StatusBadge>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="min-h-[44px]"
+                      onClick={() => void handleCoupon(row.clientId)}
+                    >
+                      <Ticket className="mr-2 h-4 w-4" />
+                      Gerar cupom
+                    </Button>
+                  )
+                }
                 onLog={handleLog}
                 onClearLog={handleClearLog}
               />
             ))
+
           )}
         </TabsContent>
       </Tabs>
