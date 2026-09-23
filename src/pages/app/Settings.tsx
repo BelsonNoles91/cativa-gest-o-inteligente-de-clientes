@@ -21,6 +21,7 @@ const TABS: { v: string; label: string; icon: typeof Building2; permission: Perm
   { v: "team", label: "Equipe", icon: Users, permission: "settings.team" },
   { v: "branding", label: "Branding", icon: Palette, permission: "settings.branding" },
   { v: "prefs", label: "Preferências", icon: SlidersHorizontal, permission: "settings.prefs" },
+  { v: "publicpage", label: "Link público", icon: Link2, permission: "settings.publicPage" },
 ];
 
 export default function Settings() {
