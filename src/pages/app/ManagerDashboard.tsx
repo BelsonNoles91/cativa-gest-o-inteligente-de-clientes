@@ -10,7 +10,9 @@ import {
   ArrowUpRight,
   CalendarCheck,
   CalendarClock,
+  Gem,
   HeartHandshake,
+  LineChart,
   RefreshCw,
   TrendingUp,
   Users,
@@ -36,6 +38,20 @@ const PERIODS: Array<{ value: ManagerDashboardPeriod; label: string }> = [
 function money(cents: number): string {
   return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
+
+const TIER_LABELS: Record<string, string> = {
+  top: "Top",
+  fiel: "Fiel",
+  ocasional: "Ocasional",
+  novo: "Novo",
+};
+
+const TIER_TONES: Record<string, "success" | "info" | "warning" | "neutral"> = {
+  top: "success",
+  fiel: "info",
+  ocasional: "warning",
+  novo: "neutral",
+};
 
 function monthLabel(key: string): string {
   const [year, month] = key.split("-");
@@ -342,6 +358,157 @@ export default function ManagerDashboard() {
                 <p className="text-xs text-muted-foreground">Gerada por quem parou de vir</p>
               </div>
             </div>
+          </Card>
+
+          <Card className="rounded-2xl p-5">
+            <ErrorBoundary name="ManagerClientValue">
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="font-display text-lg font-semibold">Valor do cliente</h2>
+                  <p className="text-xs text-muted-foreground">
+                    Quanto cada pessoa já deixou no caixa e quanto tende a deixar em 12 meses.
+                  </p>
+                </div>
+                <Gem className="h-5 w-5 text-primary" />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="rounded-2xl bg-muted/40 p-4">
+                  <p className="text-sm text-muted-foreground">Valor médio por cliente</p>
+                  <p className="font-display text-2xl font-semibold">
+                    {money(data.clientValue.averageValueCents)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {data.clientValue.payingClients} clientes atendidos
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-muted/40 p-4">
+                  <p className="text-sm text-muted-foreground">Valor típico (mediana)</p>
+                  <p className="font-display text-2xl font-semibold">
+                    {money(data.clientValue.medianValueCents)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Metade gasta mais, metade menos</p>
+                </div>
+                <div className="rounded-2xl bg-muted/40 p-4">
+                  <p className="text-sm text-muted-foreground">Concentração nos maiores</p>
+                  <p className="font-display text-2xl font-semibold">{data.clientValue.topSharePct}%</p>
+                  <p className="text-xs text-muted-foreground">Receita vinda dos 20% que mais gastam</p>
+                </div>
+                <div className="rounded-2xl bg-muted/40 p-4">
+                  <p className="text-sm text-muted-foreground">Potencial em 12 meses</p>
+                  <p className="font-display text-2xl font-semibold">
+                    {money(data.clientValue.projectedAnnualCents)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Se mantiverem a frequência atual</p>
+                </div>
+              </div>
+
+              {data.clientValue.rows.length > 0 ? (
+                <ul className="mt-5 divide-y">
+                  {data.clientValue.rows.slice(0, 10).map((row) => (
+                    <li key={row.clientId} className="flex items-center justify-between gap-3 py-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{row.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {row.visits} {row.visits === 1 ? "visita" : "visitas"} · ticket{" "}
+                          {money(row.averageTicketCents)}
+                          {row.averageIntervalDays
+                            ? ` · volta a cada ${row.averageIntervalDays} dias`
+                            : ""}
+                          {row.daysSinceLastVisit !== null
+                            ? ` · última há ${row.daysSinceLastVisit} dias`
+                            : ""}
+                        </p>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className="font-display text-sm font-semibold">{money(row.revenueCents)}</p>
+                        <StatusBadge tone={TIER_TONES[row.tier]} className="px-2 py-0.5 text-[11px] font-normal">
+                          {TIER_LABELS[row.tier]}
+                        </StatusBadge>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-5 text-sm text-muted-foreground">
+                  Ainda não há atendimentos concluídos para calcular o valor dos clientes.
+                </p>
+              )}
+            </ErrorBoundary>
+          </Card>
+
+          <Card className="rounded-2xl p-5">
+            <ErrorBoundary name="ManagerForecast">
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="font-display text-lg font-semibold">Previsão de faturamento</h2>
+                  <p className="text-xs text-muted-foreground">
+                    Usa a média dos meses fechados e o que já está marcado na agenda.
+                  </p>
+                </div>
+                <LineChart className="h-5 w-5 text-primary" />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="rounded-2xl bg-muted/40 p-4">
+                  <p className="text-sm text-muted-foreground">Média mensal</p>
+                  <p className="font-display text-2xl font-semibold">
+                    {money(data.forecast.baselineMonthlyCents)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Últimos meses fechados</p>
+                </div>
+                <div className="rounded-2xl bg-muted/40 p-4">
+                  <p className="text-sm text-muted-foreground">Próximos 30 dias</p>
+                  <p className="font-display text-2xl font-semibold">{money(data.forecast.next30Cents)}</p>
+                  <p className="text-xs text-muted-foreground">Previsão</p>
+                </div>
+                <div className="rounded-2xl bg-muted/40 p-4">
+                  <p className="text-sm text-muted-foreground">Próximos 90 dias</p>
+                  <p className="font-display text-2xl font-semibold">{money(data.forecast.next90Cents)}</p>
+                  <p className="text-xs text-muted-foreground">Previsão</p>
+                </div>
+                <div className="rounded-2xl bg-muted/40 p-4">
+                  <p className="text-sm text-muted-foreground">Já marcado à frente</p>
+                  <p className="font-display text-2xl font-semibold">
+                    {money(data.forecast.bookedAheadCents)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Tendência do último mês: {data.forecast.trendPct > 0 ? "+" : ""}
+                    {data.forecast.trendPct}%
+                  </p>
+                </div>
+              </div>
+
+              {data.forecast.points.length > 0 && (
+                <div className="mt-5 flex items-end gap-3 overflow-x-auto pb-2">
+                  {data.forecast.points.map((point) => {
+                    const max = Math.max(1, ...data.forecast.points.map((p) => p.forecastCents));
+                    return (
+                      <div
+                        key={point.month}
+                        className="flex min-w-[64px] flex-1 flex-col items-center gap-2"
+                      >
+                        <div className="flex h-32 w-full items-end justify-center">
+                          <div
+                            className={cn(
+                              "w-6 rounded-t-lg",
+                              point.isFuture ? "bg-primary/30 ring-1 ring-primary/40" : "bg-primary",
+                            )}
+                            style={{ height: `${Math.max(4, (point.forecastCents / max) * 100)}%` }}
+                            title={money(point.forecastCents)}
+                          />
+                        </div>
+                        <span className="text-xs text-muted-foreground">{monthLabel(point.month)}</span>
+                        <span className="text-[11px] font-medium">{money(point.forecastCents)}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              <p className="mt-3 text-xs text-muted-foreground">
+                Barras cheias são meses já realizados; barras claras são previsão.
+              </p>
+            </ErrorBoundary>
           </Card>
 
           <RetentionInsightsCard />

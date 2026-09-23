@@ -26,6 +26,12 @@ import {
   type ApptFact,
   type ClientFact,
 } from "@/domain/analytics";
+import {
+  clientValueReport,
+  revenueForecast,
+  type ClientValueReport,
+  type RevenueForecast,
+} from "@/domain/client-value";
 
 export type ManagerDashboardPeriod = 30 | 90 | 180 | 365;
 
@@ -85,6 +91,8 @@ export interface ManagerDashboardData {
     reactivationCandidates: number;
     atRiskRevenueCents: number;
   };
+  clientValue: ClientValueReport;
+  forecast: RevenueForecast;
 }
 
 const sourceLabels: Record<string, string> = {
@@ -253,6 +261,8 @@ export function buildManagerDashboard(
       reactivationCandidates: atRisk + lost,
       atRiskRevenueCents,
     },
+    clientValue: clientValueReport(appts, clients),
+    forecast: revenueForecast(appts, future),
   };
 }
 
