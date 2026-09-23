@@ -39,6 +39,20 @@ function money(cents: number): string {
   return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+const TIER_LABELS: Record<string, string> = {
+  top: "Top",
+  fiel: "Fiel",
+  ocasional: "Ocasional",
+  novo: "Novo",
+};
+
+const TIER_TONES: Record<string, "success" | "info" | "warning" | "neutral"> = {
+  top: "success",
+  fiel: "info",
+  ocasional: "warning",
+  novo: "neutral",
+};
+
 function monthLabel(key: string): string {
   const [year, month] = key.split("-");
   const date = new Date(Number(year), Number(month) - 1, 1);
