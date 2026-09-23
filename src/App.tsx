@@ -79,6 +79,7 @@ const ServicesPage = lazyWithReload(() => import("./pages/app/Services"));
 const PackagesPage = lazyWithReload(() => import("./pages/app/Packages"));
 const AgendaPage = lazyWithReload(() => import("./pages/app/Agenda"));
 const WaitlistPage = lazyWithReload(() => import("./pages/app/Waitlist"));
+const MySchedulePage = lazyWithReload(() => import("./pages/app/MySchedule"));
 const AnalyticsPage = lazyWithReload(() => import("./pages/app/Analytics"));
 const ConfirmationCenter = lazyWithReload(() => import("./pages/app/ConfirmationCenter"));
 const PortalHome = lazyWithReload(() => import("./pages/portal/PortalHome"));
