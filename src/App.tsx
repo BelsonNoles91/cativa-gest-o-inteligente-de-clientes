@@ -169,6 +169,8 @@ const App = () => (
                         <Route path="historico" element={<PortalHistory />} />
                         <Route path="pacotes" element={<PortalPackages />} />
                         <Route path="perfil" element={<PortalProfile />} />
+                        <Route path="anamnese" element={<PortalAnamnesis />} />
+
                       </Route>
                     </Route>
 
