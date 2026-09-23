@@ -21,6 +21,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { useToast } from "@/hooks/use-toast";
 import { usePortalClient } from "@/features/portal/PortalClientProvider";
+import { PortalPerksCard } from "@/features/portal/PortalPerksCard";
+
 import {
   listMyAppointments,
   listMyPendingConsents,
