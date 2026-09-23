@@ -5,12 +5,15 @@
  * Mobile     : linha única compacta (avatar tenant + nome + busca + perfil).
  *               A busca abre num CommandDialog ao tocar no ícone.
  */
-import { useState, useMemo } from "react";
+import { useState, useMemo, lazy, Suspense } from "react";
 import { Bell, Search, ShieldCheck, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { TenantSwitcher } from "@/components/shell/TenantSwitcher";
-import { GlobalSearch } from "@/components/shell/GlobalSearch";
+/** Busca global carregada sob demanda: tira o pacote do command do carregamento inicial. */
+const GlobalSearch = lazy(() =>
+  import("@/components/shell/GlobalSearch").then((m) => ({ default: m.GlobalSearch })),
+);
 import { ThemeToggle } from "@/components/shell/ThemeToggle";
 import { UserMenu } from "@/components/shell/UserMenu";
 import { useTenant } from "@/features/tenant/TenantProvider";
