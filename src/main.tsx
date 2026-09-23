@@ -1,5 +1,4 @@
 import { createRoot } from "react-dom/client";
-import App from "./App.tsx";
 import "./index.css";
 import { registerServiceWorker } from "./pwa/registerSW";
 import {
@@ -23,7 +22,11 @@ if (!env.VITE_SUPABASE_PUBLISHABLE_KEY && !env.VITE_SUPABASE_ANON_KEY) {
   missingBackendVars.push("VITE_SUPABASE_PUBLISHABLE_KEY");
 }
 
-const rootEl = document.getElementById("root")!;
+const rootEl = document.getElementById("root");
+
+if (!rootEl) {
+  throw new Error("Elemento raiz da aplicação não encontrado.");
+}
 
 if (missingBackendVars.length > 0) {
   createRoot(rootEl).render(
@@ -33,10 +36,14 @@ if (missingBackendVars.length > 0) {
     />,
   );
 } else {
-  createRoot(rootEl).render(<App />);
-  // Registra (ou desregistra) o SW de acordo com o ambiente.
-  // Ver src/pwa/registerSW.ts para detalhes dos guards.
-  void registerServiceWorker();
+  // O carregamento dinâmico impede que o cliente do backend seja criado antes
+  // da guarda acima. Assim, uma configuração ausente nunca resulta em tela branca.
+  void import("./App.tsx").then(({ default: App }) => {
+    createRoot(rootEl).render(<App />);
+    // Registra (ou desregistra) o SW de acordo com o ambiente.
+    // Ver src/pwa/registerSW.ts para detalhes dos guards.
+    void registerServiceWorker();
+  });
 }
 
 
