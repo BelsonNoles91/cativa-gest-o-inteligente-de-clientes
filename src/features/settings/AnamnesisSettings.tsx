@@ -204,7 +204,7 @@ export function AnamnesisSettings() {
               <Input
                 value={q.label}
                 placeholder="Pergunta"
-                className="h-11 min-w-[200px] flex-1"
+                className="h-11 w-full flex-1 sm:w-auto"
                 aria-label={`Pergunta ${i + 1}`}
                 onChange={(e) =>
                   setDraft((d) => ({
