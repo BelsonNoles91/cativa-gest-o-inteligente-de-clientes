@@ -622,7 +622,7 @@ export async function listWaitlistHydrated(
   );
 
   const [clients, services, professionals, units] = await Promise.all([
-    supabase.from("clients").select("id, full_name").in("id", clientIds),
+    supabase.from("clients").select("id, full_name, phone, whatsapp_phone").in("id", clientIds),
     serviceIds.length
       ? supabase.from("services").select("id, name").in("id", serviceIds)
       : Promise.resolve({ data: [], error: null }),
