@@ -583,6 +583,7 @@ export default function AgendaPage() {
             form.status,
             form.status === "canceled" ? { reason: "Cancelado manualmente pela equipe" } : undefined,
           );
+          if (form.status === "canceled") offerFreedSlot(editing);
         }
         toast({ title: "Agendamento atualizado" });
       } else {
