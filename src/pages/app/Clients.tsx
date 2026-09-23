@@ -1655,6 +1655,7 @@ function ClientHero({
   onEdit: () => void;
   completeness: number;
 }) {
+  const { can } = usePermissions();
   return (
     <Card className="overflow-hidden">
       <div className="bg-gradient-soft px-6 py-5">
@@ -1696,9 +1697,11 @@ function ClientHero({
                 <span className="pb-1 text-sm text-muted-foreground">/100</span>
               </div>
             </div>
-            <Button variant="outline" className="ml-auto rounded-xl lg:ml-0" onClick={onEdit}>
-              <Pencil className="mr-2 h-4 w-4" /> Editar ficha
-            </Button>
+            {can("clients.edit") && (
+              <Button variant="outline" className="ml-auto rounded-xl lg:ml-0" onClick={onEdit}>
+                <Pencil className="mr-2 h-4 w-4" /> Editar ficha
+              </Button>
+            )}
           </div>
         </div>
       </div>
