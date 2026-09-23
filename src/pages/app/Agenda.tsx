@@ -919,6 +919,7 @@ export default function AgendaPage() {
               </div>
             </CardContent>
           </Card>
+          )}
         </aside>
       </div>
 
