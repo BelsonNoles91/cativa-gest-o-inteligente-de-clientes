@@ -115,3 +115,12 @@ Testado no banco real, com contas reais de cada função do Studio Teste QA.
 - Cliente (portal): vê só a própria ficha, nenhum agendamento de terceiros, não altera catálogo. OK.
 - Nenhuma função enxerga dados de outro estabelecimento (0 registros em todos os casos).
 - ITEM ABERTO: o profissional enxerga a agenda e a lista de clientes do estabelecimento inteiro, não só os próprios. Decidir se restringe (privacidade) ou mantém (visibilidade de equipe).
+
+## FASE 11 — Checklist final de produção — CONCLUÍDA
+- Build de produção gerado sem erros (maior arquivo inicial ~78 KB comprimido; telas pesadas carregam sob demanda).
+- Título, descrição e imagem de compartilhamento configurados; app instalável com atalhos (Agenda, Confirmações, Novo cliente).
+- Adicionados mapa do site (sitemap.xml) e referência dele no robots.txt.
+- Nenhuma chave secreta no pacote publicado; único registro de depuração é exclusivo do modo desenvolvimento.
+- Página fora do ar (offline) e página "não encontrada" presentes; página pública de status funcionando.
+- Verificação de segurança do banco: só 7 funções abertas a visitantes, todas da página pública e da leitura de convite (esperado). Demais avisos já aceitos.
+- 448 testes passando.
