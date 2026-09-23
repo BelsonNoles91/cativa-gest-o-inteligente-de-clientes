@@ -148,7 +148,7 @@ export function RequireOnboarding({ children }: { children?: ReactNode }) {
  */
 export function OnboardingGuard({ children }: { children?: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
-  const { loading: tenantLoading, verified, hasActiveTenant, isClient, isSuperAdmin } = useTenant();
+  const { loading: tenantLoading, verified, loadError, hasActiveTenant, isClient, isSuperAdmin, refresh } = useTenant();
   const location = useLocation();
 
   if (authLoading) return <FullScreenLoader />;
