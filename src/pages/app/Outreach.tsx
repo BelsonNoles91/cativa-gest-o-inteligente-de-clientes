@@ -132,7 +132,9 @@ function OutreachRow({ row, badge, detail, message, logEntry, extraActions, onLo
         >
           Sem resposta
         </Button>
+        {extraActions}
       </div>
+
 
       {logEntry ? (
         <p className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
