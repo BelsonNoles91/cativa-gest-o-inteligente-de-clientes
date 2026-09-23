@@ -55,6 +55,9 @@ const SOURCE_LABELS: Record<string, string> = {
 export default function AnalyticsPage() {
   const [contextView, setContextView] = useState<"executive" | "operational" | "retention">("executive");
   const analytics = useAnalytics();
+  const { can } = usePermissions();
+  // Insights com IA ficam restritos à gestão (proprietário, gerente e super admin).
+  const canManage = can("settings.business");
   const { metrics, labels, cativa, nba, filters, range } = analytics;
 
   const scopeParts = [
