@@ -97,3 +97,12 @@ Corrigido:
 - Cache de dados já configurado (10 min de validade, 60 min em memória, sem recarregar ao voltar à aba).
 - Consultas lentas do banco revisadas: nenhuma consulta de uso real acima de 40 ms.
 - Compilação e 448 testes OK após as mudanças.
+
+## FASE 9 — Bateria automatizada de testes — CONCLUÍDA
+- 448 testes automatizados em 38 arquivos: todos passando.
+- Checagem de qualidade de código: 0 erros (antes 1, em arquivo gerado pela plataforma, agora fora da checagem) e 16 avisos sem impacto.
+- Corrigido aviso real em "Retorno e reativação": o filtro de busca agora é recalculado de forma estável.
+- Testes de segurança do banco: acrescentado o caso "dono não consegue virar administrador geral" comparando o valor antes/depois (o teste antigo media a coisa errada). Rodados contra o banco real: visitante não vê incidentes, clientes nem agendamentos; token de convite protegido; dono vê os 8 membros; profissional só a própria ficha; autoelevação bloqueada.
+- Páginas públicas (início, entrar, status, preços e página do estabelecimento) abertas no navegador em tela de celular: todas carregam, sem rolagem lateral e sem erros de aplicação.
+- Aviso de "ref" no console vem da ferramenta de desenvolvimento da plataforma (lovable-tagger) e não existe no app publicado.
+- Limitação do ambiente: as suítes de navegador (Playwright) que exigem login não rodam aqui por falta de conta de teste e de bibliotecas de sistema dos navegadores; devem rodar no CI.
