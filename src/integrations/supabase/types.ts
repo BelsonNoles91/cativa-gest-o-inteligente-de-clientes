@@ -2379,6 +2379,64 @@ export type Database = {
           },
         ]
       }
+      professional_goals: {
+        Row: {
+          appointments_goal: number
+          created_at: string
+          id: string
+          period_month: string
+          professional_id: string
+          revenue_goal_cents: number
+          tenant_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          appointments_goal?: number
+          created_at?: string
+          id?: string
+          period_month: string
+          professional_id: string
+          revenue_goal_cents?: number
+          tenant_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          appointments_goal?: number
+          created_at?: string
+          id?: string
+          period_month?: string
+          professional_id?: string
+          revenue_goal_cents?: number
+          tenant_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_goals_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_goals_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_goals_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professional_schedule_requests: {
         Row: {
           created_at: string
