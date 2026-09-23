@@ -60,6 +60,7 @@ const NotFound = lazyWithReload(() => import("./pages/NotFound"));
 const PremiumLanding = lazyWithReload(() => import("./pages/marketing/PremiumLanding"));
 // Demo page removed
 const StatusPage = lazyWithReload(() => import("./pages/public/Status"));
+const OutreachPage = lazyWithReload(() => import("./pages/app/Outreach"));
 const TenantPublic = lazyWithReload(() => import("./pages/public/TenantPublic"));
 const Login = lazyWithReload(() => import("./pages/auth/Login"));
 const ForgotPassword = lazyWithReload(() => import("./pages/auth/ForgotPassword"));
@@ -182,6 +183,12 @@ const App = () => (
                           <Route path="lista-de-espera" element={<WaitlistPage />} />
                           <Route path="minha-agenda" element={<MySchedulePage />} />
                           <Route path="perfil" element={<ProfilePage />} />
+
+                          <Route
+                            element={<RoleGuard allowed={["owner", "manager", "frontdesk"]} />}
+                          >
+                            <Route path="retorno" element={<OutreachPage />} />
+                          </Route>
 
                           <Route element={<RoleGuard allowed={["owner", "manager"]} />}>
                             <Route path="painel-gestor" element={<ManagerDashboard />} />
