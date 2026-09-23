@@ -28,12 +28,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { usePortalClient } from "@/features/portal/PortalClientProvider";
 import { listMyAppointments } from "@/repositories/portal";
+import { fetchSelfServiceStatus } from "@/repositories/self-service-rules";
 import { cancelFromPortal, confirmFromPortal } from "@/services/portal/booking";
 import {
-  canCancelWithoutFee,
+  canClientCancel,
+  canClientReschedule,
+  type SelfServiceStatus,
+} from "@/domain/self-service";
+import {
   isUpcomingAppointment,
   type PortalAppointmentView,
 } from "@/domain/portal";
