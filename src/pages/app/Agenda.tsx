@@ -15,7 +15,9 @@ import {
   Stethoscope,
   Hourglass,
   Search,
+  Sparkles,
 } from "lucide-react";
+import { AppointmentSummaryDialog } from "@/features/appointments/AppointmentSummaryDialog";
 
 import { PageHeader } from "@/components/shell/PageHeader";
 import { PageActionCluster, PrimaryAction } from "@/components/shell/PageActionCluster";
@@ -796,6 +798,7 @@ export default function AgendaPage() {
                         compact={view === "week"}
                         onEdit={() => openEditDialog(item)}
                         onStatusChange={(status) => void handleQuickStatus(item, status)}
+                        onSaved={() => refreshAgenda()}
                       />
                     ))}
                   </CardContent>
@@ -810,6 +813,7 @@ export default function AgendaPage() {
                   item={item}
                   onEdit={() => openEditDialog(item)}
                   onStatusChange={(status) => void handleQuickStatus(item, status)}
+                        onSaved={() => refreshAgenda()}
                 />
               ))}
             </div>
@@ -829,6 +833,7 @@ export default function AgendaPage() {
                         compact
                         onEdit={() => openEditDialog(item)}
                         onStatusChange={(status) => void handleQuickStatus(item, status)}
+                        onSaved={() => refreshAgenda()}
                       />
                     ))}
                   </CardContent>
@@ -1191,15 +1196,18 @@ function AppointmentCard({
   item,
   onEdit,
   onStatusChange,
+  onSaved,
   compact = false,
 }: {
   item: HydratedAppointment;
   onEdit: () => void;
   onStatusChange: (status: AppointmentStatus) => void;
+  onSaved?: () => void | Promise<void>;
   compact?: boolean;
 }) {
   const tone = mapTone(statusTone(item.appointment.status));
   const quickActions = actionCandidates(item.appointment.status);
+  const [summaryOpen, setSummaryOpen] = useState(false);
 
   return (
     <Card>
@@ -1263,12 +1271,25 @@ function AppointmentCard({
                 {quickActionLabel(status)}
               </Button>
             ))}
+            <Button size="sm" variant="outline" onClick={() => setSummaryOpen(true)}>
+              <Sparkles className="mr-2 h-4 w-4" /> Resumo
+            </Button>
             <Button size="sm" variant="outline" onClick={onEdit}>
               <Pencil className="mr-2 h-4 w-4" /> Editar
             </Button>
           </div>
         </div>
       </CardContent>
+      <AppointmentSummaryDialog
+        open={summaryOpen}
+        onOpenChange={setSummaryOpen}
+        appointmentId={item.appointment.id}
+        serviceName={item.serviceName}
+        clientName={item.clientName}
+        professionalName={item.professionalName}
+        initialNotes={item.appointment.internalNotes}
+        onSaved={onSaved}
+      />
     </Card>
   );
 }
