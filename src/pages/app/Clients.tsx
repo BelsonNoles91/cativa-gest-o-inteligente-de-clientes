@@ -850,6 +850,7 @@ export default function ClientsPage() {
             usage.activeClientsCount >= limits.maxActiveClients ? (
               <StatusBadge tone="warning" dot={false} data-testid="clients-active-limit-badge">Limite de clientes ativos atingido</StatusBadge>
             ) : null}
+            {can("clients.create") && (
             <Dialog open={openCreate} onOpenChange={setOpenCreate}>
               <DialogTrigger asChild>
                 <Button
