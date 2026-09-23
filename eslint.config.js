@@ -5,7 +5,8 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  // Arquivos gerados automaticamente pela plataforma (não editáveis no projeto).
+  { ignores: ["dist", "src/integrations/supabase/client.ts", "src/integrations/supabase/types.ts", "src/integrations/supabase/previewAuthStorage.ts"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
