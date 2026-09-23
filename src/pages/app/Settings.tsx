@@ -4,7 +4,7 @@
 import { useMemo, useState } from "react";
 import { usePermissions } from "@/features/auth/usePermissions";
 import type { Permission } from "@/domain/permissions";
-import { Settings as SettingsIcon, Building2, MapPin, Users, Palette, SlidersHorizontal, Lock } from "lucide-react";
+import { Settings as SettingsIcon, Building2, MapPin, Users, Palette, SlidersHorizontal, Lock, Link2 } from "lucide-react";
 import { useTenantBilling } from "@/features/billing/useTenantBilling";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
