@@ -85,7 +85,7 @@ export function PremiumHeader() {
 
         {/* Mobile Toggle */}
         <button
-          className="lg:hidden p-2 text-primary-dark rounded-full hover:bg-accent/10 focus:outline-none focus:ring-2 focus:ring-accent"
+          className="lg:hidden inline-flex h-11 w-11 items-center justify-center rounded-full text-primary-dark hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           aria-expanded={mobileMenuOpen}
           aria-label={mobileMenuOpen ? "Fechar menu" : "Abrir menu"}
@@ -110,24 +110,25 @@ export function PremiumHeader() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="lg:hidden fixed inset-y-0 right-0 w-[280px] bg-white z-[100] shadow-2xl flex flex-col"
+              className="lg:hidden fixed inset-y-0 right-0 w-[86vw] max-w-[320px] bg-white z-[100] shadow-2xl flex flex-col"
             >
               <div className="flex items-center justify-between p-6 border-b border-border/40">
                 <Logo size="sm" className="h-8 w-auto" />
                 <button 
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-2 text-primary-dark rounded-full hover:bg-accent/10"
+                  aria-label="Fechar menu"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full text-primary-dark hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   <X className="w-6 h-6" />
                 </button>
               </div>
               <div className="p-6 flex flex-col gap-6 overflow-y-auto">
-                <nav className="flex flex-col gap-4">
+                <nav className="flex flex-col gap-1">
                   {NAV_LINKS.map((link) => (
                     <Link
                       key={link.label}
                       to={link.href}
-                      className="text-lg font-medium text-primary-dark hover:text-accent transition-colors py-2"
+                      className="flex min-h-[48px] items-center rounded-xl px-3 text-lg font-medium text-primary-dark transition-colors hover:bg-muted hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       {link.label}
