@@ -91,6 +91,9 @@ Corrigido:
 - Verificado: página pública responde 200; funções administrativas retornam "permissão negada" sem login; 448 testes e compilação OK.
 - Avisos aceitos pelo usuário permanecem como estão (status público e SECURITY DEFINER para usuários logados).
 
-## FASE 8 — Desempenho 🔄 em andamento
+## FASE 8 — Desempenho — CONCLUÍDA
 - Migration 0018: índices criados em 64 chaves estrangeiras sem índice (joins e exclusões em cascata).
 - Busca global agora carrega sob demanda: pacote de 60 kB comprimidos sai do carregamento inicial do app.
+- Cache de dados já configurado (10 min de validade, 60 min em memória, sem recarregar ao voltar à aba).
+- Consultas lentas do banco revisadas: nenhuma consulta de uso real acima de 40 ms.
+- Compilação e 448 testes OK após as mudanças.
