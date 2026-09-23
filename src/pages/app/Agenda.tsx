@@ -848,6 +848,7 @@ export default function AgendaPage() {
         </section>
 
         <aside className="space-y-6">
+          {can("blocks.manage") && (
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-3">
