@@ -410,13 +410,13 @@ export default function PremiumLanding() {
            <div className="absolute bottom-[-30%] right-[-10%] w-[50%] h-[120%] bg-primary/10 blur-[100px] rounded-full -rotate-12" />
            
            <div className="max-w-6xl mx-auto relative z-10 px-4">
-              <div className="inline-block px-5 py-2 rounded-full bg-accent/10 text-[11px] font-bold uppercase tracking-[0.3em] text-accent-strong mb-12 border border-accent/20">
+              <div className="inline-block px-5 py-2 rounded-full bg-accent/10 text-[11px] font-bold uppercase tracking-[0.3em] text-accent mb-12 border border-accent/20">
                 Pronto para o Próximo Nível?
               </div>
               
               <h2 className="font-display text-[2.5rem] sm:text-7xl md:text-[9rem] text-white mb-12 md:mb-16 tracking-tighter leading-[0.9] animate-fade-in">
                 Sua operação, <br />
-                <span className="italic serif font-normal text-accent-strong relative inline-block">
+                <span className="italic serif font-normal text-accent relative inline-block">
                   elevada.
                   <svg className="absolute -bottom-4 left-0 w-full h-6 text-accent/20 -z-10" viewBox="0 0 400 24" fill="none">
                     <path d="M2 20C80 5 280 2 398 20" stroke="currentColor" strokeWidth="8" strokeLinecap="round"/>
@@ -461,7 +461,7 @@ export default function PremiumLanding() {
                           <CheckCircle2 className="h-5 w-5 text-accent" />
                           <span className="text-lg md:text-xl font-bold text-white tracking-tight">{item.text}</span>
                        </div>
-                       <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/30">{item.sub}</span>
+                       <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/70">{item.sub}</span>
                     </div>
                   ))}
                </div>
