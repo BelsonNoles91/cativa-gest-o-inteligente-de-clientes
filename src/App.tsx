@@ -67,6 +67,7 @@ const ResetPassword = lazyWithReload(() => import("./pages/auth/ResetPassword"))
 const AcceptInvite = lazyWithReload(() => import("./pages/auth/AcceptInvite"));
 const Onboarding = lazyWithReload(() => import("./pages/auth/Onboarding"));
 const Dashboard = lazyWithReload(() => import("./pages/app/Dashboard"));
+const ManagerDashboard = lazyWithReload(() => import("./pages/app/ManagerDashboard"));
 const Privacy = lazyWithReload(() => import("./pages/public/Privacy"));
 const Terms = lazyWithReload(() => import("./pages/public/Terms"));
 const Settings = lazyWithReload(() => import("./pages/app/Settings"));
@@ -183,6 +184,7 @@ const App = () => (
                           <Route path="perfil" element={<ProfilePage />} />
 
                           <Route element={<RoleGuard allowed={["owner", "manager"]} />}>
+                            <Route path="painel-gestor" element={<ManagerDashboard />} />
                             <Route path="servicos" element={<ServicesPage />} />
                             <Route
                               path="pacotes"

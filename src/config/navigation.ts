@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   Hourglass,
   BarChart3,
+  Gauge,
   Settings,
   ShieldCheck,
   CreditCard,
@@ -82,6 +83,13 @@ export const navItems: NavItem[] = [
     group: "operacao",
   },
 
+  {
+    to: "/app/painel-gestor",
+    label: "Painel do gestor",
+    icon: Gauge,
+    roles: ["owner", "manager"],
+    group: "gestao",
+  },
   {
     to: "/app/servicos",
     label: "Serviços",
