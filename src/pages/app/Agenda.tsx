@@ -1293,6 +1293,16 @@ export default function AgendaPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <SlotOfferDialog
+        open={offerOpen}
+        onOpenChange={setOfferOpen}
+        tenantId={currentTenant?.id ?? ""}
+        businessName={currentTenant?.name ?? null}
+        slot={offerSlot}
+        userId={user?.id ?? null}
+        onScheduled={refreshAgenda}
+      />
     </div>
   );
 }
