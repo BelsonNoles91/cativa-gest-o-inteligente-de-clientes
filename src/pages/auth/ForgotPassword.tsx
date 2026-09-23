@@ -1,3 +1,4 @@
+import { translateAuthError } from "@/lib/auth-errors";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Mail, ArrowLeft, Loader2, ArrowRight } from "lucide-react";
@@ -20,7 +21,7 @@ export default function ForgotPassword() {
     const { error } = await resetPassword(email.trim());
     setSubmitting(false);
     if (error) {
-      toast.error("Não foi possível enviar", { description: error.message });
+      toast.error("Não foi possível enviar", { description: translateAuthError(error.message) });
       return;
     }
     setSent(true);

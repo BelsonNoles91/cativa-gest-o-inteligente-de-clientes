@@ -1,3 +1,4 @@
+import { translateAuthError } from "@/lib/auth-errors";
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Mail, Lock, Loader2, Eye, EyeOff, ArrowRight, Sparkles } from "lucide-react";
@@ -30,7 +31,7 @@ export default function Login() {
         });
         return;
       }
-      toast.error("Não foi possível entrar", { description: error.message });
+      toast.error("Não foi possível entrar", { description: translateAuthError(error.message) });
       return;
     }
     toast.success("Bem-vindo de volta!");

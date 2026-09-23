@@ -2,6 +2,7 @@
  * Página de redefinição de senha (link que vem do e-mail).
  * Rota pública: /auth/reset-password
  */
+import { translateAuthError } from "@/lib/auth-errors";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lock, Loader2, ArrowRight } from "lucide-react";
@@ -42,7 +43,7 @@ export default function ResetPassword() {
     const { error } = await updatePassword(password);
     setSubmitting(false);
     if (error) {
-      toast.error("Não foi possível atualizar", { description: error.message });
+      toast.error("Não foi possível atualizar", { description: translateAuthError(error.message) });
       return;
     }
     toast.success("Senha atualizada!");
