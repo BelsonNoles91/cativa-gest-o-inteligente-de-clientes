@@ -891,6 +891,7 @@ export default function ClientsPage() {
                 </div>
               </DialogContent>
             </Dialog>
+            )}
           </>
         }
       />
