@@ -39,6 +39,7 @@ export const PERMISSIONS = [
   "settings.team",
   "settings.branding",
   "settings.prefs",
+  "settings.publicPage",
   "team.invite",
   "team.manageRoles",
 ] as const;
