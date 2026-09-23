@@ -24,6 +24,8 @@ import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { ErrorBoundary } from "@/components/feedback/ErrorBoundary";
 import { RetentionInsightsCard } from "@/features/analytics/RetentionInsightsCard";
+import { CommissionsSummaryCard } from "@/features/commissions/CommissionsSummaryCard";
+
 import { useManagerDashboard, type ManagerDashboardPeriod } from "@/hooks/use-manager-dashboard";
 import type { ManagerFlowStep } from "@/hooks/use-manager-dashboard";
 import { cn } from "@/lib/utils";
