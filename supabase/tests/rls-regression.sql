@@ -246,6 +246,22 @@ BEGIN
   ELSE RAISE NOTICE 'ok  memberships: manager atualiza membros do próprio tenant'; END IF;
 
   -- =========================================================================
+  -- 4. profiles — autoelevação a super admin
+  -- Os triggers revertem o valor silenciosamente (o UPDATE afeta 1 linha),
+  -- por isso a asserção compara o valor antes/depois, não o ROW_COUNT.
+  -- =========================================================================
+  EXECUTE 'SET LOCAL ROLE authenticated';
+  PERFORM set_config('request.jwt.claims', json_build_object('sub', u_own, 'role','authenticated')::text, true);
+  BEGIN
+    EXECUTE format('UPDATE public.profiles SET is_super_admin = true WHERE id = %L', u_own);
+  EXCEPTION WHEN OTHERS THEN NULL;
+  END;
+  RESET ROLE; PERFORM set_config('request.jwt.claims', NULL, true);
+  SELECT COALESCE(is_super_admin, false) INTO flag FROM public.profiles WHERE id = u_own;
+  IF flag THEN failures := failures + 1; RAISE WARNING 'FALHOU: owner se promoveu a super admin';
+  ELSE RAISE NOTICE 'ok  profiles: owner não se promove a super admin'; END IF;
+
+  -- =========================================================================
   -- Limpeza (best-effort: o papel de execução pode não ter DELETE em todas
   -- as tabelas; isso não invalida os testes de RLS acima)
   -- =========================================================================
