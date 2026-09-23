@@ -10,6 +10,7 @@
  *
  * Toda persistência usa o service createTenantWithOwner (regras fora da UI).
  */
+import { translateAuthError } from "@/lib/auth-errors";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {

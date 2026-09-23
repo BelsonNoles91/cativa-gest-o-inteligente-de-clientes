@@ -1,3 +1,4 @@
+import { translateAuthError } from "@/lib/auth-errors";
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Mail, Lock, Loader2, Eye, EyeOff, ArrowRight, Sparkles } from "lucide-react";

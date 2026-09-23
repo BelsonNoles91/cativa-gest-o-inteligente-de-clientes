@@ -2,6 +2,7 @@
  * Página de redefinição de senha (link que vem do e-mail).
  * Rota pública: /auth/reset-password
  */
+import { translateAuthError } from "@/lib/auth-errors";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lock, Loader2, ArrowRight } from "lucide-react";
