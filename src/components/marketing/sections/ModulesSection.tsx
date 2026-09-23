@@ -71,7 +71,7 @@ export function ModulesSection() {
           Tudo o que sua operação precisa, <br className="hidden md:block" />
           <span className="text-accent italic serif font-normal">em um único sistema.</span>
         </h2>
-        <p className="text-lg md:text-xl text-muted-foreground/80 font-light leading-relaxed max-w-2xl mx-auto">
+        <p className="text-lg md:text-xl text-muted-foreground font-light leading-relaxed max-w-2xl mx-auto">
           Cada parte da Cativa foi desenhada para resolver um problema real do dia a dia e, ao mesmo tempo, fortalecer a fidelidade dos seus clientes.
         </p>
       </motion.div>

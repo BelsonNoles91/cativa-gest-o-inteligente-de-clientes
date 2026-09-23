@@ -59,7 +59,7 @@ export function FeaturesSection() {
             <span className="text-accent italic serif font-normal">transformar rotina em resultado.</span>
           </h2>
         </div>
-        <p className="text-lg md:text-xl text-muted-foreground/80 max-w-xl font-light leading-relaxed">
+        <p className="text-lg md:text-xl text-muted-foreground max-w-xl font-light leading-relaxed">
           A Cativa organiza o que normalmente fica espalhado entre agenda física, mensagens e decisões de última hora.
         </p>
       </motion.div>

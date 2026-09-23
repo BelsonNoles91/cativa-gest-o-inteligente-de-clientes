@@ -76,7 +76,7 @@ export function HeroSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className="text-lg md:text-xl text-muted-foreground/80 leading-relaxed max-w-xl mx-auto mb-10 font-light"
+            className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl mx-auto mb-10 font-light"
           >
             A Cativa centraliza agenda, clientes, confirmações, protocolos e indicadores para clínicas e salões que querem reduzir faltas, melhorar o rebooking e crescer com mais previsibilidade.
           </motion.p>
@@ -288,7 +288,7 @@ export function HeroSection() {
                      className="h-full bg-accent" 
                    />
                 </div>
-                <p className="text-[9px] md:text-[11px] text-muted-foreground/80 leading-relaxed font-light">"A Cativa reduziu nossas faltas em 40% no primeiro mês."</p>
+                <p className="text-[9px] md:text-[11px] text-muted-foreground leading-relaxed font-light">"A Cativa reduziu nossas faltas em 40% no primeiro mês."</p>
              </motion.div>
           </div>
 
