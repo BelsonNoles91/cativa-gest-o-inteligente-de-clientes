@@ -2317,6 +2317,89 @@ export type Database = {
           },
         ]
       }
+      professional_schedule_requests: {
+        Row: {
+          created_at: string
+          ends_at: string
+          id: string
+          professional_id: string
+          reason: string | null
+          requested_by: string | null
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          starts_at: string
+          status: Database["public"]["Enums"]["schedule_request_status"]
+          tenant_id: string
+          unit_id: string | null
+          updated_at: string
+          weekday: number
+        }
+        Insert: {
+          created_at?: string
+          ends_at: string
+          id?: string
+          professional_id: string
+          reason?: string | null
+          requested_by?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          starts_at: string
+          status?: Database["public"]["Enums"]["schedule_request_status"]
+          tenant_id: string
+          unit_id?: string | null
+          updated_at?: string
+          weekday: number
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string
+          id?: string
+          professional_id?: string
+          reason?: string | null
+          requested_by?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          starts_at?: string
+          status?: Database["public"]["Enums"]["schedule_request_status"]
+          tenant_id?: string
+          unit_id?: string | null
+          updated_at?: string
+          weekday?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_schedule_requests_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_schedule_requests_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_schedule_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_schedule_requests_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professionals: {
         Row: {
           bio: string | null
@@ -4408,6 +4491,10 @@ export type Database = {
         }
         Returns: string
       }
+      approve_schedule_request: {
+        Args: { _note?: string; _request_id: string }
+        Returns: string
+      }
       calculate_queue_priority: {
         Args: {
           _appointment_id: string
@@ -4444,6 +4531,7 @@ export type Database = {
         }[]
       }
       current_auth_email: { Args: never; Returns: string }
+      current_professional_id: { Args: { _tenant_id: string }; Returns: string }
       effective_subscription_limits: {
         Args: { _tenant_id: string }
         Returns: Json
@@ -4544,6 +4632,10 @@ export type Database = {
         Args: { _client_id: string; _user_id: string }
         Returns: boolean
       }
+      is_professional_owner: {
+        Args: { _professional_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       is_tenant_member: {
         Args: { _tenant_id: string; _user_id: string }
@@ -4611,6 +4703,10 @@ export type Database = {
         }[]
       }
       redact_sensitive_data: { Args: { input_data: Json }; Returns: Json }
+      reject_schedule_request: {
+        Args: { _note?: string; _request_id: string }
+        Returns: undefined
+      }
       revoke_team_invitation: {
         Args: { _invitation_id: string }
         Returns: string
@@ -4754,6 +4850,7 @@ export type Database = {
         | "custom"
       plan_status: "public" | "private" | "archived"
       resource_type: "room" | "equipment" | "chair" | "station" | "other"
+      schedule_request_status: "pending" | "approved" | "rejected" | "canceled"
       subscription_event_type:
         | "created"
         | "trial_started"
@@ -5036,6 +5133,7 @@ export const Constants = {
       ],
       plan_status: ["public", "private", "archived"],
       resource_type: ["room", "equipment", "chair", "station", "other"],
+      schedule_request_status: ["pending", "approved", "rejected", "canceled"],
       subscription_event_type: [
         "created",
         "trial_started",

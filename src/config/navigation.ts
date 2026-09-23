@@ -9,6 +9,7 @@
 import {
   LayoutDashboard,
   CalendarDays,
+  CalendarClock,
   Users,
   Sparkles,
   PackageOpen,
@@ -64,6 +65,13 @@ export const navItems: NavItem[] = [
     label: "Clientes",
     icon: Users,
     roles: ["owner", "manager", "frontdesk"],
+    group: "operacao",
+  },
+  {
+    to: "/app/minha-agenda",
+    label: "Minha agenda",
+    icon: CalendarClock,
+    roles: ["owner", "manager", "professional"],
     group: "operacao",
   },
   {
