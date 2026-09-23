@@ -189,6 +189,8 @@ export default function AgendaPage() {
   const [blockDialogOpen, setBlockDialogOpen] = useState(false);
   const [blockForm, setBlockForm] = useState<BlockFormState>(EMPTY_BLOCK_FORM);
   const [savingBlock, setSavingBlock] = useState(false);
+  const [offerSlot, setOfferSlot] = useState<FreedSlotInfo | null>(null);
+  const [offerOpen, setOfferOpen] = useState(false);
 
   const handleSynced = useCallback(() => {
     setRefreshToken((current) => current + 1);
