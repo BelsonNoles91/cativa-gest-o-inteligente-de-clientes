@@ -145,6 +145,7 @@ const EMPTY_BLOCK_FORM: BlockFormState = {
 export default function AgendaPage() {
   const [searchParams] = useSearchParams();
   const { currentTenant, currentUnit, availableUnits } = useTenant();
+  const { can } = usePermissions();
   const currentUnitId = currentUnit?.id ?? null;
   const { user } = useAuth();
   const { toast } = useToast();
