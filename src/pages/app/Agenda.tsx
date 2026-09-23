@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   CalendarDays,
@@ -18,6 +18,9 @@ import {
   Sparkles,
 } from "lucide-react";
 import { AppointmentSummaryDialog } from "@/features/appointments/AppointmentSummaryDialog";
+import { OfflineAgendaBanner } from "@/features/offline/OfflineAgendaBanner";
+import { useOfflineAgenda } from "@/features/offline/useOfflineAgenda";
+import { enqueueAction, readAgendaSnapshot, saveAgendaSnapshot } from "@/lib/offline-agenda";
 
 import { PageHeader } from "@/components/shell/PageHeader";
 import { PageActionCluster, PrimaryAction } from "@/components/shell/PageActionCluster";
@@ -173,6 +176,8 @@ export default function AgendaPage() {
   const [professionals, setProfessionals] = useState<ProfessionalLite[]>([]);
   const [resources, setResources] = useState<Resource[]>([]);
   const [basePrices, setBasePrices] = useState<Map<string, number>>(new Map());
+  const [offlineSyncedAt, setOfflineSyncedAt] = useState<string | null>(null);
+  const [usingCache, setUsingCache] = useState(false);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<HydratedAppointment | null>(null);
@@ -183,6 +188,11 @@ export default function AgendaPage() {
   const [blockDialogOpen, setBlockDialogOpen] = useState(false);
   const [blockForm, setBlockForm] = useState<BlockFormState>(EMPTY_BLOCK_FORM);
   const [savingBlock, setSavingBlock] = useState(false);
+
+  const handleSynced = useCallback(() => {
+    setRefreshToken((current) => current + 1);
+  }, []);
+  const offline = useOfflineAgenda(currentTenant?.id ?? null, handleSynced);
 
   useEffect(() => {
     const date = searchParams.get("date");
@@ -206,6 +216,17 @@ export default function AgendaPage() {
     weekEnd.setDate(weekEnd.getDate() + 7);
     return { start: weekStart, end: weekEnd };
   }, [selectedDate, view]);
+
+  const cacheKey = useMemo(
+    () => ({
+      tenantId: currentTenant?.id ?? "none",
+      unitId: unitFilter,
+      professionalId: professionalFilter,
+      rangeStart: range.start.toISOString(),
+      rangeEnd: range.end.toISOString(),
+    }),
+    [currentTenant?.id, professionalFilter, range, unitFilter],
+  );
 
   useEffect(() => {
     if (!currentTenant) return;
@@ -231,6 +252,9 @@ export default function AgendaPage() {
         ]);
         if (ignore) return;
         setAppointments(nextAppointments);
+        setUsingCache(false);
+        setOfflineSyncedAt(new Date().toISOString());
+        saveAgendaSnapshot(cacheKey, nextAppointments);
         setTimeOffBlocks(nextTimeOff);
         setRecurringBlocks(nextRecurring);
         setServices(nextServices);
@@ -240,11 +264,22 @@ export default function AgendaPage() {
         setBasePrices(new Map(Array.from(nextBasePrices.entries()).map(([id, row]) => [id, row.amountCents])));
       } catch (error) {
         if (ignore) return;
-        toast({
-          title: "Erro ao carregar agenda",
-          description: error instanceof Error ? error.message : "Erro inesperado.",
-          variant: "destructive",
-        });
+        const snapshot = readAgendaSnapshot<HydratedAppointment[]>(cacheKey);
+        if (snapshot) {
+          setAppointments(snapshot.data);
+          setUsingCache(true);
+          setOfflineSyncedAt(snapshot.syncedAt);
+          toast({
+            title: "Mostrando agenda salva neste aparelho",
+            description: "Sem conexão com o servidor. Os dados podem estar desatualizados.",
+          });
+        } else {
+          toast({
+            title: "Erro ao carregar agenda",
+            description: error instanceof Error ? error.message : "Erro inesperado.",
+            variant: "destructive",
+          });
+        }
       } finally {
         if (!ignore) {
           setLoading(false);
@@ -255,7 +290,7 @@ export default function AgendaPage() {
     return () => {
       ignore = true;
     };
-  }, [currentTenant, unitFilter, professionalFilter, range, refreshToken, toast]);
+  }, [cacheKey, currentTenant, unitFilter, professionalFilter, range, refreshToken, toast]);
 
   useEffect(() => {
     if (!currentUnitId && availableUnits.length === 0) return;
@@ -384,6 +419,14 @@ export default function AgendaPage() {
   }
 
   function openCreateDialog() {
+    if (!offline.online) {
+      toast({
+        title: "Sem conexão",
+        description: "Novos agendamentos precisam de internet. Consulte a agenda salva e tente novamente quando a conexão voltar.",
+        variant: "destructive",
+      });
+      return;
+    }
     if (isBlockedByLimit) {
       toast({
         title: "Limite de agendamentos atingido",
@@ -425,6 +468,28 @@ export default function AgendaPage() {
   }
 
   async function handleQuickStatus(item: HydratedAppointment, nextStatus: AppointmentStatus) {
+    if (!offline.online) {
+      enqueueAction({
+        tenantId: currentTenant?.id ?? "",
+        appointmentId: item.appointment.id,
+        type: "status",
+        status: nextStatus,
+        reason: nextStatus === "canceled" ? "Cancelado pela equipe na agenda (offline)" : undefined,
+        label: `${item.clientName ?? "Atendimento"} → ${appointmentStatusLabels[nextStatus]}`,
+      });
+      setAppointments((current) =>
+        current.map((row) =>
+          row.appointment.id === item.appointment.id
+            ? { ...row, appointment: { ...row.appointment, status: nextStatus } }
+            : row,
+        ),
+      );
+      toast({
+        title: "Ação salva para envio",
+        description: "Sem conexão agora. Vamos sincronizar assim que a internet voltar.",
+      });
+      return;
+    }
     try {
       await setAppointmentStatus(
         item.appointment.id,
@@ -640,6 +705,15 @@ export default function AgendaPage() {
             }
           />
         }
+      />
+
+      <OfflineAgendaBanner
+        online={offline.online}
+        usingCache={usingCache}
+        syncedAt={offlineSyncedAt}
+        pendingCount={offline.pendingCount}
+        syncing={offline.syncing}
+        onSync={() => void offline.syncNow()}
       />
 
       <div className="grid gap-3 sm:grid-cols-2 md:gap-4 xl:grid-cols-4">
