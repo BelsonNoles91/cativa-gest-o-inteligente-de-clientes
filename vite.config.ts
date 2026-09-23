@@ -13,13 +13,21 @@ export default defineConfig(({ mode, command }) => {
   // Em dev / build:dev apenas avisa — não bloqueia.
   // ─────────────────────────────────────────────────────────────
   const env = { ...process.env, ...loadEnv(mode, process.cwd(), "") };
-  const supabaseUrl = env.VITE_SUPABASE_URL;
-  const supabaseKey =
+  // Credenciais públicas do cliente. O fallback mantém o bundle funcional
+  // quando o ambiente de publicação não injeta as variáveis gerenciadas.
+  // Nunca incluir aqui service role, senha do banco ou qualquer segredo.
+  const managedPublicUrl = "https://pegvtrvqdvzxysndddts.supabase.co";
+  const managedPublishableKey =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlZ3Z0cnZxZHZ6eHlzbmRkZHRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3OTY5MjksImV4cCI6MjA5MjM3MjkyOX0.oZH96G_G5GRHbuX4Gj-Kswb8VmMHC83oZuFqlBqQaSY";
+  const configuredSupabaseUrl = env.VITE_SUPABASE_URL;
+  const configuredSupabaseKey =
     env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY;
+  const supabaseUrl = configuredSupabaseUrl || managedPublicUrl;
+  const supabaseKey = configuredSupabaseKey || managedPublishableKey;
 
   const missing: string[] = [];
-  if (!supabaseUrl) missing.push("VITE_SUPABASE_URL");
-  if (!supabaseKey)
+  if (!configuredSupabaseUrl) missing.push("VITE_SUPABASE_URL");
+  if (!configuredSupabaseKey)
     missing.push("VITE_SUPABASE_PUBLISHABLE_KEY (ou VITE_SUPABASE_ANON_KEY)");
 
   if (missing.length > 0) {
@@ -55,6 +63,10 @@ export default defineConfig(({ mode, command }) => {
   }
 
   return ({
+  define: {
+    "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(supabaseUrl),
+    "import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY": JSON.stringify(supabaseKey),
+  },
   server: {
     host: "::",
     port: 8080,
