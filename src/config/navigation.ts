@@ -18,7 +18,10 @@ import {
   BarChart3,
   Gauge,
   Trophy,
+  Star,
+  Coins,
   HeartHandshake,
+
   Settings,
   ShieldCheck,
   CreditCard,
