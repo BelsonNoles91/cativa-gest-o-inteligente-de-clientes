@@ -124,3 +124,8 @@ Testado no banco real, com contas reais de cada função do Studio Teste QA.
 - Página fora do ar (offline) e página "não encontrada" presentes; página pública de status funcionando.
 - Verificação de segurança do banco: só 7 funções abertas a visitantes, todas da página pública e da leitura de convite (esperado). Demais avisos já aceitos.
 - 448 testes passando.
+
+## FASE 12 — Correção final — CONCLUÍDA
+- Último aviso corrigível de qualidade de código eliminado (tipagem de teste). Restam 15 avisos, todos do recurso de recarregamento rápido do ambiente de desenvolvimento — sem efeito no app publicado.
+- Compilação limpa, 448 testes passando, build de produção OK.
+- Decisão pendente do cliente (visão do profissional sobre agenda/clientes do estabelecimento) mantida como está, registrada como ressalva.
