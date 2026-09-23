@@ -15,7 +15,9 @@ import {
   Stethoscope,
   Hourglass,
   Search,
+  Sparkles,
 } from "lucide-react";
+import { AppointmentSummaryDialog } from "@/features/appointments/AppointmentSummaryDialog";
 
 import { PageHeader } from "@/components/shell/PageHeader";
 import { PageActionCluster, PrimaryAction } from "@/components/shell/PageActionCluster";
