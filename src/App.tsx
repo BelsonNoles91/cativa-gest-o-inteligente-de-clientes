@@ -201,10 +201,13 @@ const App = () => (
                               path="painel-gestor/clientes"
                               element={<ManagerClientsPage />}
                             />
+                            <Route path="avaliacoes" element={<ReviewsPage />} />
 
                           </Route>
 
                           <Route element={<RoleGuard allowed={["owner", "manager"]} />}>
+                            <Route path="comissoes" element={<CommissionsPage />} />
+
                             <Route path="painel-gestor" element={<ManagerDashboard />} />
                             <Route path="metas" element={<TeamGoalsPage />} />
                             <Route path="servicos" element={<ServicesPage />} />
