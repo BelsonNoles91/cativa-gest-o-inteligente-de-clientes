@@ -5,7 +5,7 @@
  * (lembrete de retorno) e quem parou de vir (reativação). O texto da mensagem
  * é gerado aqui e o envio é sempre manual, pelo WhatsApp da pessoa.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { CalendarHeart, Copy, MessageCircle, RefreshCw, Sparkles, Ticket, UserPlus } from "lucide-react";
 import {
   couponDescription,
