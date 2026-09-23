@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { AppointmentSummaryDialog } from "@/features/appointments/AppointmentSummaryDialog";
 import { OfflineAgendaBanner } from "@/features/offline/OfflineAgendaBanner";
+import { SlotOfferDialog, type FreedSlotInfo } from "@/features/waitlist/SlotOfferDialog";
 import { useOfflineAgenda } from "@/features/offline/useOfflineAgenda";
 import { enqueueAction, readAgendaSnapshot, saveAgendaSnapshot } from "@/lib/offline-agenda";
 
