@@ -597,6 +597,7 @@ export async function listWaitlist(tenantId: string, status?: WaitlistStatus): P
 export interface HydratedWaitlistEntry {
   entry: WaitlistEntry;
   clientName: string | null;
+  clientPhone: string | null;
   serviceName: string | null;
   professionalName: string | null;
   unitName: string | null;
