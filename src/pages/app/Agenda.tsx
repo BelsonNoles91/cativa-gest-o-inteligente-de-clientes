@@ -521,6 +521,7 @@ export default function AgendaPage() {
       );
       toast({ title: `Status alterado para ${appointmentStatusLabels[nextStatus].toLowerCase()}` });
       await refreshAgenda();
+      if (nextStatus === "canceled" || nextStatus === "no_show") offerFreedSlot(item);
     } catch (error) {
       toast({
         title: "Falha ao atualizar status",
