@@ -156,6 +156,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     }
     setLoading(true);
     setVerified(false);
+    setLoadError(null);
     try {
       const [
         { data: profile, error: profileErr }, 
