@@ -798,6 +798,7 @@ export default function AgendaPage() {
                         compact={view === "week"}
                         onEdit={() => openEditDialog(item)}
                         onStatusChange={(status) => void handleQuickStatus(item, status)}
+                        onSaved={() => refreshAgenda()}
                       />
                     ))}
                   </CardContent>
@@ -812,6 +813,7 @@ export default function AgendaPage() {
                   item={item}
                   onEdit={() => openEditDialog(item)}
                   onStatusChange={(status) => void handleQuickStatus(item, status)}
+                        onSaved={() => refreshAgenda()}
                 />
               ))}
             </div>
@@ -831,6 +833,7 @@ export default function AgendaPage() {
                         compact
                         onEdit={() => openEditDialog(item)}
                         onStatusChange={(status) => void handleQuickStatus(item, status)}
+                        onSaved={() => refreshAgenda()}
                       />
                     ))}
                   </CardContent>
