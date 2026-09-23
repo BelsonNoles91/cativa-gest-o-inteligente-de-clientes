@@ -71,6 +71,48 @@
       "when": 1790138115867,
       "tag": "0009_loyalty_commissions_coupons_reviews_anamnesis",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790141821651,
+      "tag": "0010_harden_scheduling_slots_and_constraints",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1790141859805,
+      "tag": "0011_add_atomic_appointment_creation",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1790141966540,
+      "tag": "0012_enforce_buffered_occupancy_and_safe_portal_reschedule",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1790142035785,
+      "tag": "0013_secure_scheduling_mutations_and_portal_creation",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1790142127687,
+      "tag": "0014_align_appointment_conflict_trigger",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1790142242224,
+      "tag": "0015_expose_public_tenant_timezone",
+      "breakpoints": true
     }
   ]
 }

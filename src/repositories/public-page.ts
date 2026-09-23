@@ -18,6 +18,7 @@ export interface PublicTenantPage {
   whatsapp: string | null;
   instagram: string | null;
   website: string | null;
+  timezone: string;
 }
 
 export interface PublicBusinessHour {
@@ -63,8 +64,12 @@ export interface PublicSlot {
 }
 
 export async function getPublicTenantPage(slug: string): Promise<PublicTenantPage | null> {
-  const { data, error } = await supabase.rpc("get_public_tenant_page", { _slug: slug });
+  const [{ data, error }, { data: timezone, error: timezoneError }] = await Promise.all([
+    supabase.rpc("get_public_tenant_page", { _slug: slug }),
+    supabase.rpc("get_public_tenant_timezone", { _slug: slug }),
+  ]);
   if (error) throw error;
+  if (timezoneError) throw timezoneError;
   const row = (data ?? [])[0];
   if (!row) return null;
   return {
@@ -79,6 +84,7 @@ export async function getPublicTenantPage(slug: string): Promise<PublicTenantPag
     whatsapp: row.whatsapp ?? null,
     instagram: row.instagram ?? null,
     website: row.website ?? null,
+    timezone: timezone ?? "America/Sao_Paulo",
   };
 }
 

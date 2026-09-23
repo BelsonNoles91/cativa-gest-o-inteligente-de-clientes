@@ -63,6 +63,10 @@ function dayKey(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+function formatInTimezone(value: string, timezone: string, options: Intl.DateTimeFormatOptions): string {
+  return new Intl.DateTimeFormat("pt-BR", { ...options, timeZone: timezone }).format(new Date(value));
+}
+
 interface Draft {
   unitId: string | null;
   serviceId: string | null;
@@ -523,7 +527,7 @@ export default function TenantPublic() {
                       <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                         {slots.map((s) => {
                           const active = s.startsAt === draft.startsAt;
-                          const time = new Date(s.startsAt).toLocaleTimeString("pt-BR", {
+                          const time = formatInTimezone(s.startsAt, page.timezone, {
                             hour: "2-digit",
                             minute: "2-digit",
                           });
@@ -573,7 +577,7 @@ export default function TenantPublic() {
                     </li>
                     <li className="flex items-center gap-2">
                       <CalendarDays className="h-4 w-4 text-primary" />
-                      {new Date(selectedSlot.startsAt).toLocaleString("pt-BR", {
+                      {formatInTimezone(selectedSlot.startsAt, page.timezone, {
                         dateStyle: "full",
                         timeStyle: "short",
                       })}

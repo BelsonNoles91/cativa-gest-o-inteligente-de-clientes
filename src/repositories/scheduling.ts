@@ -433,45 +433,33 @@ export interface CreateAppointmentInput {
 }
 
 export async function insertAppointment(input: CreateAppointmentInput): Promise<Appointment> {
-  const { data, error } = await supabase
-    .from("appointments")
-    .insert({
-      tenant_id: input.tenantId,
-      unit_id: input.unitId,
-      client_id: input.clientId,
-      professional_id: input.professionalId,
-      resource_id: input.resourceId ?? null,
-      cancellation_policy_id: input.cancellationPolicyId ?? null,
-      status: input.status ?? "pending",
-      source: input.source ?? "frontdesk",
-      starts_at: input.startsAt,
-      ends_at: input.endsAt,
-      duration_minutes: input.durationMinutes,
-      buffer_before_minutes: input.bufferBeforeMinutes ?? 0,
-      buffer_after_minutes: input.bufferAfterMinutes ?? 0,
-      is_walk_in: input.isWalkIn ?? false,
-      is_overbooked: input.isOverbooked ?? false,
-      total_price_cents: input.totalPriceCents ?? 0,
-      notes: input.notes ?? null,
-      internal_notes: input.internalNotes ?? null,
-      created_by: input.createdBy ?? null,
-    })
-    .select(APPOINTMENT_COLS)
-    .single();
-  if (error) throw error;
-  const created = toAppointment(data as Record<string, unknown>);
-
-  // Item de serviço (1 item por agendamento na v1)
-  await supabase.from("appointment_items").insert({
-    tenant_id: input.tenantId,
-    appointment_id: created.id,
-    service_id: input.serviceId,
-    duration_minutes: input.durationMinutes,
-    price_cents: input.itemPriceCents ?? input.totalPriceCents ?? 0,
-    position: 0,
+  const { data, error } = await supabase.rpc("create_appointment_atomic", {
+    _tenant_id: input.tenantId,
+    _unit_id: input.unitId,
+    _client_id: input.clientId,
+    _professional_id: input.professionalId,
+    _service_id: input.serviceId,
+    _starts_at: input.startsAt,
+    _ends_at: input.endsAt,
+    _duration_minutes: input.durationMinutes,
+    _buffer_before_minutes: input.bufferBeforeMinutes ?? 0,
+    _buffer_after_minutes: input.bufferAfterMinutes ?? 0,
+    _resource_id: input.resourceId ?? undefined,
+    _cancellation_policy_id: input.cancellationPolicyId ?? undefined,
+    _source: input.source ?? "frontdesk",
+    _status: input.status ?? "pending",
+    _notes: input.notes ?? undefined,
+    _internal_notes: input.internalNotes ?? undefined,
+    _total_price_cents: input.totalPriceCents ?? 0,
+    _is_walk_in: input.isWalkIn ?? false,
+    _is_overbooked: input.isOverbooked ?? false,
+    _created_by: input.createdBy ?? undefined,
+    _item_price_cents: input.itemPriceCents ?? input.totalPriceCents ?? 0,
   });
-
-  return created;
+  if (error) throw error;
+  const created = data?.[0];
+  if (!created) throw new Error("O agendamento não foi criado.");
+  return toAppointment(created as Record<string, unknown>);
 }
 
 export async function updateAppointment(

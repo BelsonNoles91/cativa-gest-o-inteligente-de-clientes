@@ -309,6 +309,8 @@ export type Database = {
           is_walk_in: boolean
           no_show_at: string | null
           notes: string | null
+          occupied_ends_at: string | null
+          occupied_starts_at: string | null
           professional_id: string
           reminded_at: string | null
           resource_id: string | null
@@ -342,6 +344,8 @@ export type Database = {
           is_walk_in?: boolean
           no_show_at?: string | null
           notes?: string | null
+          occupied_ends_at?: string | null
+          occupied_starts_at?: string | null
           professional_id: string
           reminded_at?: string | null
           resource_id?: string | null
@@ -375,6 +379,8 @@ export type Database = {
           is_walk_in?: boolean
           no_show_at?: string | null
           notes?: string | null
+          occupied_ends_at?: string | null
+          occupied_starts_at?: string | null
           professional_id?: string
           reminded_at?: string | null
           resource_id?: string | null
@@ -5231,6 +5237,72 @@ export type Database = {
       }
       count_active_owners: { Args: { _tenant_id: string }; Returns: number }
       count_active_super_admins: { Args: never; Returns: number }
+      create_appointment_atomic: {
+        Args: {
+          _buffer_after_minutes?: number
+          _buffer_before_minutes?: number
+          _cancellation_policy_id?: string
+          _client_id: string
+          _created_by?: string
+          _duration_minutes: number
+          _ends_at: string
+          _internal_notes?: string
+          _is_overbooked?: boolean
+          _is_walk_in?: boolean
+          _item_price_cents?: number
+          _notes?: string
+          _professional_id: string
+          _resource_id?: string
+          _service_id: string
+          _source?: Database["public"]["Enums"]["appointment_source"]
+          _starts_at: string
+          _status?: Database["public"]["Enums"]["appointment_status"]
+          _tenant_id: string
+          _total_price_cents?: number
+          _unit_id: string
+        }
+        Returns: {
+          arrived_at: string | null
+          buffer_after_minutes: number
+          buffer_before_minutes: number
+          canceled_at: string | null
+          canceled_reason: string | null
+          cancellation_policy_id: string | null
+          client_id: string
+          client_reschedule_count: number
+          completed_at: string | null
+          confirmed_at: string | null
+          created_at: string
+          created_by: string | null
+          duration_minutes: number
+          ends_at: string
+          id: string
+          internal_notes: string | null
+          is_overbooked: boolean
+          is_walk_in: boolean
+          no_show_at: string | null
+          notes: string | null
+          occupied_ends_at: string | null
+          occupied_starts_at: string | null
+          professional_id: string
+          reminded_at: string | null
+          resource_id: string | null
+          source: Database["public"]["Enums"]["appointment_source"]
+          started_at: string | null
+          starts_at: string
+          status: Database["public"]["Enums"]["appointment_status"]
+          tenant_id: string
+          total_price_cents: number
+          unit_id: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "appointments"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       create_public_appointment: {
         Args: {
           _full_name?: string
@@ -5392,6 +5464,7 @@ export type Database = {
           whatsapp: string
         }[]
       }
+      get_public_tenant_timezone: { Args: { _slug: string }; Returns: string }
       get_public_units: {
         Args: { _slug: string }
         Returns: {
