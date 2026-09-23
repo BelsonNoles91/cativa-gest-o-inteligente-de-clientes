@@ -1267,22 +1267,30 @@ function AppointmentCard({
           </div>
 
           <div className="flex flex-wrap gap-2 lg:max-w-xs lg:justify-end">
-            {quickActions.map((status) => (
-              <Button
-                key={status}
-                size="sm"
-                variant={status === "canceled" || status === "no_show" ? "outline" : "secondary"}
-                onClick={() => onStatusChange(status)}
-              >
-                {quickActionLabel(status)}
-              </Button>
-            ))}
+            {quickActions
+              .filter((status) =>
+                status === "canceled" || status === "no_show"
+                  ? can("appointments.cancel")
+                  : can("appointments.edit"),
+              )
+              .map((status) => (
+                <Button
+                  key={status}
+                  size="sm"
+                  variant={status === "canceled" || status === "no_show" ? "outline" : "secondary"}
+                  onClick={() => onStatusChange(status)}
+                >
+                  {quickActionLabel(status)}
+                </Button>
+              ))}
             <Button size="sm" variant="outline" onClick={() => setSummaryOpen(true)}>
               <Sparkles className="mr-2 h-4 w-4" /> Resumo
             </Button>
-            <Button size="sm" variant="outline" onClick={onEdit}>
-              <Pencil className="mr-2 h-4 w-4" /> Editar
-            </Button>
+            {can("appointments.edit") && (
+              <Button size="sm" variant="outline" onClick={onEdit}>
+                <Pencil className="mr-2 h-4 w-4" /> Editar
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>
