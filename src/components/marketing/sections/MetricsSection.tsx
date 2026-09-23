@@ -69,7 +69,7 @@ export function MetricsSection() {
             </div>
             <h2 className="text-4xl md:text-7xl font-display font-bold text-primary-dark leading-[0.95] tracking-tight mb-8">
               Os números que você <br />
-              <span className="text-accent italic serif font-normal">precisa enxergar.</span>
+              <span className="text-accent-strong italic serif font-normal">precisa enxergar.</span>
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground/80 font-light leading-relaxed mb-10 md:mb-12">
               A Cativa ajuda seu negócio a acompanhar indicadores que impactam diretamente a saúde da agenda e a previsibilidade de receita.

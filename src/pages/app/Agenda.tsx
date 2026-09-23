@@ -818,7 +818,8 @@ export default function AgendaPage() {
               <div className="w-full min-w-0 sm:flex-1 sm:min-w-[140px]">
                 <Field label="Unidade">
                   <Select value={unitFilter} onValueChange={setUnitFilter}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger aria-label="Filtrar por unidade"><SelectValue /></SelectTrigger>
+
                     <SelectContent>
                       <SelectItem value="all">Todas as unidades</SelectItem>
                       {availableUnits.map((unit) => (
@@ -831,7 +832,8 @@ export default function AgendaPage() {
               <div className="w-full min-w-0 sm:flex-1 sm:min-w-[140px]">
                 <Field label="Profissional">
                   <Select value={professionalFilter} onValueChange={setProfessionalFilter}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger aria-label="Filtrar por profissional"><SelectValue /></SelectTrigger>
+
                     <SelectContent>
                       <SelectItem value="all">Todos os profissionais</SelectItem>
                       {professionals.map((professional) => (
