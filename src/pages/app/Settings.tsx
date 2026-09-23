@@ -47,8 +47,9 @@ export default function Settings() {
       />
 
       <Tabs value={tab} onValueChange={setTab}>
-        <div className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
-          <TabsList className="inline-flex w-auto rounded-xl bg-muted/60 p-1">
+        <div className="-mx-4 overflow-x-auto px-4 md:mx-0 md:overflow-x-visible md:px-0">
+          <TabsList className="inline-flex w-auto rounded-xl bg-muted/60 p-1 md:flex md:h-auto md:w-full md:flex-wrap md:justify-start md:gap-1">
+
             {visibleTabs.map((t) => {
               const isLocked = t.v === "branding" && !hasFeature("custom_logo");
               return (
