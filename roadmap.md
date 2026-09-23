@@ -126,6 +126,6 @@ Testado no banco real, com contas reais de cada função do Studio Teste QA.
 - 448 testes passando.
 
 ## FASE 12 — Correção final — CONCLUÍDA
-- Último aviso corrigível de qualidade de código eliminado (tipagem de teste). Restam 15 avisos, todos do recurso de recarregamento rápido do ambiente de desenvolvimento — sem efeito no app publicado.
+- Avaliado o último aviso corrigível de qualidade de código: a correção quebrava a checagem de tipos, então foi revertida. Restam 16 avisos, todos do recurso de recarregamento rápido do ambiente de desenvolvimento e de tipagem de teste — sem efeito no app publicado.
 - Compilação limpa, 448 testes passando, build de produção OK.
 - Decisão pendente do cliente (visão do profissional sobre agenda/clientes do estabelecimento) mantida como está, registrada como ressalva.
