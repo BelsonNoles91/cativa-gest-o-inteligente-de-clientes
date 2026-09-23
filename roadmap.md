@@ -106,3 +106,12 @@ Corrigido:
 - Páginas públicas (início, entrar, status, preços e página do estabelecimento) abertas no navegador em tela de celular: todas carregam, sem rolagem lateral e sem erros de aplicação.
 - Aviso de "ref" no console vem da ferramenta de desenvolvimento da plataforma (lovable-tagger) e não existe no app publicado.
 - Limitação do ambiente: as suítes de navegador (Playwright) que exigem login não rodam aqui por falta de conta de teste e de bibliotecas de sistema dos navegadores; devem rodar no CI.
+
+## FASE 10 — Regressão por perfil — CONCLUÍDA (com 1 decisão pendente)
+Testado no banco real, com contas reais de cada função do Studio Teste QA.
+- Dono e gestor: leem clientes (22) e agendamentos (28), editam clientes, catálogo, dados do estabelecimento e convidam equipe. OK.
+- Recepção: lê e edita clientes e agendamentos; NÃO altera catálogo, NÃO altera dados do estabelecimento, NÃO vê a lista da equipe, NÃO convida. OK.
+- Profissional: lê agenda e clientes; NÃO edita cliente, catálogo nem estabelecimento; NÃO vê equipe nem convida. OK, exceto item aberto abaixo.
+- Cliente (portal): vê só a própria ficha, nenhum agendamento de terceiros, não altera catálogo. OK.
+- Nenhuma função enxerga dados de outro estabelecimento (0 registros em todos os casos).
+- ITEM ABERTO: o profissional enxerga a agenda e a lista de clientes do estabelecimento inteiro, não só os próprios. Decidir se restringe (privacidade) ou mantém (visibilidade de equipe).
