@@ -16,6 +16,17 @@ const NAV_LINKS = [
 export function PremiumHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeHash, setActiveHash] = useState(() =>
+    typeof window !== "undefined" && window.location.hash
+      ? `/${window.location.hash}`
+      : ""
+  );
+
+  useEffect(() => {
+    const syncHash = () => setActiveHash(window.location.hash ? `/${window.location.hash}` : "");
+    window.addEventListener("hashchange", syncHash);
+    return () => window.removeEventListener("hashchange", syncHash);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
