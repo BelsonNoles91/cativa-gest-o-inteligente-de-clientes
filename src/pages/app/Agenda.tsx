@@ -632,9 +632,11 @@ export default function AgendaPage() {
               },
             ]}
             primary={
-              <PrimaryAction onClick={openCreateDialog}>
-                <Plus className="mr-2 h-4 w-4" /> Novo agendamento
-              </PrimaryAction>
+              can("appointments.create") ? (
+                <PrimaryAction onClick={openCreateDialog}>
+                  <Plus className="mr-2 h-4 w-4" /> Novo agendamento
+                </PrimaryAction>
+              ) : undefined
             }
           />
         }
