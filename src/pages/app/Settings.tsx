@@ -13,6 +13,7 @@ import { UnitsSettings } from "@/features/settings/UnitsSettings";
 import { TeamSettings } from "@/features/settings/TeamSettings";
 import { BrandingSettings } from "@/features/settings/BrandingSettings";
 import { PreferencesSettings } from "@/features/settings/PreferencesSettings";
+import { PublicPageSettings } from "@/features/settings/PublicPageSettings";
 
 const TABS: { v: string; label: string; icon: typeof Building2; permission: Permission }[] = [
   { v: "business", label: "Negócio", icon: Building2, permission: "settings.business" },
