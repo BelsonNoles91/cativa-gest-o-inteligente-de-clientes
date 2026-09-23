@@ -54,6 +54,8 @@ const MANAGER_PERMISSIONS: Permission[] = [
   "appointments.cancel",
   "appointments.viewAll",
   "blocks.manage",
+  "schedule.self",
+  "schedule.approve",
   "clients.view",
   "clients.create",
   "clients.edit",
@@ -84,6 +86,7 @@ const FRONTDESK_PERMISSIONS: Permission[] = [
 const PROFESSIONAL_PERMISSIONS: Permission[] = [
   "appointments.view",
   "appointments.edit",
+  "schedule.self",
   "clients.view",
 ];
 
