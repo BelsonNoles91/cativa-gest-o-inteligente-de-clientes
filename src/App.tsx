@@ -109,6 +109,7 @@ const App = () => (
                 <Toaster />
                 <Sonner />
                 <BackendHealthBanner />
+                <OAuthRedirectHandler />
                 <Suspense fallback={<RouteFallback />}>
                   <Routes>
                     {/* Público */}
