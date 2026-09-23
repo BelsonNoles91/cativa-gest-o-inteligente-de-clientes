@@ -51,14 +51,7 @@ export function PremiumHeader() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav
-          className={cn(
-            "hidden lg:flex items-center gap-1 rounded-full border p-1 transition-colors duration-300",
-            isScrolled
-              ? "border-border/50 bg-secondary/40"
-              : "border-border/40 bg-background/60 backdrop-blur-md"
-          )}
-        >
+        <nav className="hidden lg:flex items-center gap-1">
           {NAV_LINKS.map((link) => {
             const isActive = activeHash === link.href;
             return (
@@ -68,21 +61,14 @@ export function PremiumHeader() {
                 aria-current={isActive ? "page" : undefined}
                 onClick={() => setActiveHash(link.href)}
                 className={cn(
-                  "relative whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                  "whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                   isActive
-                    ? "text-primary-foreground"
-                    : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-primary"
                 )}
               >
-                {isActive && (
-                  <motion.span
-                    layoutId="nav-pill"
-                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                    className="absolute inset-0 rounded-full bg-primary shadow-sm"
-                  />
-                )}
-                <span className="relative z-10">{link.label}</span>
+                {link.label}
               </Link>
             );
           })}
