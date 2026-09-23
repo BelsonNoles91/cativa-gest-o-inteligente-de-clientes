@@ -72,7 +72,8 @@ function ToggleRow({
 }
 
 export function SelfServiceSettings() {
-  const { activeTenantId } = useTenant();
+  const { currentTenant } = useTenant();
+  const activeTenantId = currentTenant?.id ?? null;
   const { toast } = useToast();
   const [rules, setRules] = useState<SelfServiceRules>(defaultSelfServiceRules);
   const [loading, setLoading] = useState(true);
