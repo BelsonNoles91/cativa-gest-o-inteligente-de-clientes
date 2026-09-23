@@ -6,7 +6,15 @@
  * é gerado aqui e o envio é sempre manual, pelo WhatsApp da pessoa.
  */
 import { useEffect, useMemo, useState } from "react";
-import { CalendarHeart, Copy, MessageCircle, RefreshCw, Sparkles, UserPlus } from "lucide-react";
+import { CalendarHeart, Copy, MessageCircle, RefreshCw, Sparkles, Ticket, UserPlus } from "lucide-react";
+import {
+  couponDescription,
+  createCoupon,
+  generateCouponCode,
+  listCoupons,
+  type ReactivationCoupon,
+} from "@/repositories/coupons";
+
 
 import { PageHeader } from "@/components/shell/PageHeader";
 import { Button } from "@/components/ui/button";
