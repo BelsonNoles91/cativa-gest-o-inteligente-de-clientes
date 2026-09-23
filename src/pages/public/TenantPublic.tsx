@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
+import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { EmptyState } from "@/components/feedback/EmptyState";
@@ -502,6 +503,7 @@ export default function TenantPublic() {
                     mode="single"
                     selected={draft.day ? new Date(`${draft.day}T12:00:00`) : undefined}
                     onSelect={(date) => patch({ day: date ? dayKey(date) : null, startsAt: null })}
+                    locale={ptBR}
                     disabled={{ before: new Date() }}
                     className="mx-auto"
                   />
