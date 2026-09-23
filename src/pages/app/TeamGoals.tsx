@@ -20,7 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import { useAuth } from "@/features/auth/AuthProvider";
@@ -150,11 +150,14 @@ export default function TeamGoalsPage() {
       />
 
       <Tabs value={mode} onValueChange={(value) => setMode(value as PeriodMode)}>
-        <TabsList>
+        <TabsList aria-label="Período das metas">
           <TabsTrigger value="week" className="min-h-[40px]">Semana</TabsTrigger>
           <TabsTrigger value="month" className="min-h-[40px]">Mês</TabsTrigger>
         </TabsList>
+        <TabsContent value="week" className="sr-only" />
+        <TabsContent value="month" className="sr-only" />
       </Tabs>
+
 
       <div className="grid gap-3 sm:grid-cols-3">
         <Card className="rounded-2xl">
