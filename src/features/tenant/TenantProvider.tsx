@@ -332,6 +332,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     return {
       loading,
       verified,
+      loadError,
       hasActiveTenant,
       isSuperAdmin,
       currentTenant,
@@ -349,7 +350,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       refresh: () => loadBaseData(true),
     };
   }, [
-    loading, verified, memberships, availableTenants, effectiveTenantId, 
+    loading, verified, loadError, memberships, availableTenants, effectiveTenantId, 
     units, currentUnitId, isSuperAdmin, logosByTenant, loadBaseData,
     location.pathname, isClient, setCurrentTenantId, setCurrentUnitId,
     impersonateTenant, endImpersonation
