@@ -78,6 +78,22 @@ export default function Settings() {
               <SelfServiceSettings />
             </TabsContent>
           )}
+          {can("settings.business") && (
+            <TabsContent value="loyalty" data-testid="settings-loyalty-panel">
+              <LoyaltySettings />
+            </TabsContent>
+          )}
+          {can("settings.business") && (
+            <TabsContent value="reviews" data-testid="settings-reviews-panel">
+              <ReviewSettings />
+            </TabsContent>
+          )}
+          {can("settings.business") && (
+            <TabsContent value="anamnesis" data-testid="settings-anamnesis-panel">
+              <AnamnesisSettings />
+            </TabsContent>
+          )}
+
           {can("settings.publicPage") && (
             <TabsContent value="publicpage" data-testid="settings-publicpage-panel">
               <PublicPageSettings />
