@@ -27,8 +27,7 @@ expect.extend(matchers);
 
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 declare module "vitest" {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  interface Assertion<T = any> extends matchers.AxeMatchers {}
+  interface Assertion<T = unknown> extends matchers.AxeMatchers {}
   interface AsymmetricMatchersContaining extends matchers.AxeMatchers {}
 }
 /* eslint-enable @typescript-eslint/no-empty-object-type */
