@@ -9,6 +9,7 @@ import { AppSidebar } from "@/components/shell/AppSidebar";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { BottomNav } from "@/components/shell/BottomNav";
 import { OfflineBanner } from "@/components/shell/OfflineBanner";
+import { InstallAppBanner } from "@/components/shell/InstallAppBanner";
 import { SafeAreaDebugOverlay } from "@/components/debug/SafeAreaDebugOverlay";
 import { TenantBillingProvider } from "@/features/billing/TenantBillingProvider";
 import { SubscriptionBlocker } from "@/features/billing/SubscriptionBlocker";
@@ -31,7 +32,8 @@ export function AppLayout() {
               data-app-context="tenant"
               className="flex-1 px-4 pt-4 pb-bottom-nav md:px-8 md:pb-10 md:pt-6"
             >
-              <div className="mx-auto w-full max-w-7xl">
+              <div className="mx-auto w-full max-w-7xl space-y-3">
+                <InstallAppBanner />
                 <SubscriptionBlocker>
                   <Outlet />
                 </SubscriptionBlocker>

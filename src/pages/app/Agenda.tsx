@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { AppointmentSummaryDialog } from "@/features/appointments/AppointmentSummaryDialog";
 import { OfflineAgendaBanner } from "@/features/offline/OfflineAgendaBanner";
+import { SlotOfferDialog, type FreedSlotInfo } from "@/features/waitlist/SlotOfferDialog";
 import { useOfflineAgenda } from "@/features/offline/useOfflineAgenda";
 import { enqueueAction, readAgendaSnapshot, saveAgendaSnapshot } from "@/lib/offline-agenda";
 
@@ -188,6 +189,8 @@ export default function AgendaPage() {
   const [blockDialogOpen, setBlockDialogOpen] = useState(false);
   const [blockForm, setBlockForm] = useState<BlockFormState>(EMPTY_BLOCK_FORM);
   const [savingBlock, setSavingBlock] = useState(false);
+  const [offerSlot, setOfferSlot] = useState<FreedSlotInfo | null>(null);
+  const [offerOpen, setOfferOpen] = useState(false);
 
   const handleSynced = useCallback(() => {
     setRefreshToken((current) => current + 1);
@@ -467,6 +470,26 @@ export default function AgendaPage() {
     setDialogOpen(true);
   }
 
+  function offerFreedSlot(item: HydratedAppointment) {
+    if (new Date(item.appointment.startsAt).getTime() <= Date.now()) return;
+    const service = item.serviceId ? servicesMap.get(item.serviceId) ?? null : null;
+    setOfferSlot({
+      unitId: item.appointment.unitId,
+      professionalId: item.appointment.professionalId,
+      professionalName: item.professionalName,
+      serviceId: item.serviceId,
+      serviceName: item.serviceName,
+      startsAt: item.appointment.startsAt,
+      endsAt: item.appointment.endsAt,
+      durationMinutes: item.appointment.durationMinutes,
+      bufferBeforeMinutes: service?.bufferBeforeMinutes ?? 0,
+      bufferAfterMinutes: service?.bufferAfterMinutes ?? 0,
+      cancellationPolicyId: service?.cancellationPolicyId ?? null,
+      priceCents: (item.serviceId ? basePrices.get(item.serviceId) : undefined) ?? item.appointment.totalPriceCents,
+    });
+    setOfferOpen(true);
+  }
+
   async function handleQuickStatus(item: HydratedAppointment, nextStatus: AppointmentStatus) {
     if (!offline.online) {
       enqueueAction({
@@ -498,6 +521,7 @@ export default function AgendaPage() {
       );
       toast({ title: `Status alterado para ${appointmentStatusLabels[nextStatus].toLowerCase()}` });
       await refreshAgenda();
+      if (nextStatus === "canceled" || nextStatus === "no_show") offerFreedSlot(item);
     } catch (error) {
       toast({
         title: "Falha ao atualizar status",
@@ -559,6 +583,7 @@ export default function AgendaPage() {
             form.status,
             form.status === "canceled" ? { reason: "Cancelado manualmente pela equipe" } : undefined,
           );
+          if (form.status === "canceled") offerFreedSlot(editing);
         }
         toast({ title: "Agendamento atualizado" });
       } else {
@@ -1268,6 +1293,16 @@ export default function AgendaPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <SlotOfferDialog
+        open={offerOpen}
+        onOpenChange={setOfferOpen}
+        tenantId={currentTenant?.id ?? ""}
+        businessName={currentTenant?.name ?? null}
+        slot={offerSlot}
+        userId={user?.id ?? null}
+        onScheduled={refreshAgenda}
+      />
     </div>
   );
 }
