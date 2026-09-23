@@ -177,6 +177,7 @@ const App = () => (
                             }
                           />
                           <Route path="lista-de-espera" element={<WaitlistPage />} />
+                          <Route path="minha-agenda" element={<MySchedulePage />} />
                           <Route path="perfil" element={<ProfilePage />} />
 
                           <Route element={<RoleGuard allowed={["owner", "manager"]} />}>
