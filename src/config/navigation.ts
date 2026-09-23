@@ -17,6 +17,7 @@ import {
   Hourglass,
   BarChart3,
   Gauge,
+  HeartHandshake,
   Settings,
   ShieldCheck,
   CreditCard,
@@ -79,6 +80,14 @@ export const navItems: NavItem[] = [
     to: "/app/lista-de-espera",
     label: "Espera",
     icon: Hourglass,
+    roles: ["owner", "manager", "frontdesk"],
+    group: "operacao",
+  },
+
+  {
+    to: "/app/retorno",
+    label: "Retorno e reativação",
+    icon: HeartHandshake,
     roles: ["owner", "manager", "frontdesk"],
     group: "operacao",
   },

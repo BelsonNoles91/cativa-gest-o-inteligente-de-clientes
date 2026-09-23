@@ -13,15 +13,15 @@ Status por fase: ✅ concluída · 🔜 próxima · ⏳ planejada
 - [x] Previsão de faturamento para 30 e 90 dias com média mensal, tendência e agenda marcada
 - [x] Blocos no Painel do gestor + testes automatizados
 
-## Fase 2 — Lembretes inteligentes de retorno 🔜 próxima
-- [ ] Sugerir o momento ideal de retorno a partir do intervalo médio de cada cliente
-- [ ] Fila de lembretes na Central de Confirmações (texto pronto, envio manual)
+## Fase 2 — Lembretes inteligentes de retorno ✅ concluída
+- [x] Sugerir o momento ideal de retorno a partir do intervalo médio de cada cliente
+- [x] Fila de lembretes na tela Retorno e reativação (texto pronto, envio manual por WhatsApp)
 
-## Fase 3 — Campanhas de reativação ⏳
-- [ ] Listas automáticas de clientes em risco e perdidos
-- [ ] Mensagens modelo e registro do resultado do contato
+## Fase 3 — Campanhas de reativação ✅ concluída
+- [x] Listas automáticas de clientes em risco e perdidos
+- [x] Mensagens modelo, frase de incentivo e registro do resultado do contato
 
-## Fase 4 — Lista de espera automática ⏳
+## Fase 4 — Lista de espera automática 🔜 próxima
 - [ ] Ao cancelar, oferecer a vaga ao próximo da fila
 
 ## Fase 5 — Metas e ranking da equipe ⏳
