@@ -123,6 +123,7 @@ const App = () => (
                     <Route path="/termos" element={<Terms />} />
                     {/* Demo route removed */}
                     <Route path="/status" element={<StatusPage />} />
+                    <Route path="/e/:slug" element={<TenantPublic />} />
 
                     {/* Auth */}
                     <Route path="/auth/login" element={<Login />} />
