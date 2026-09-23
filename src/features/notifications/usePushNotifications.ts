@@ -107,7 +107,7 @@ export function usePushNotifications(tenantId?: string | null) {
         (await registration.pushManager.getSubscription()) ??
         (await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(publicKey),
+          applicationServerKey: urlBase64ToArrayBuffer(publicKey),
         }));
 
       const raw = sub.toJSON() as { endpoint?: string; keys?: { p256dh?: string; auth?: string } };
