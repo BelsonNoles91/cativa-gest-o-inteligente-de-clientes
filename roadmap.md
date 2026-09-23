@@ -62,5 +62,12 @@ Roadmap concluído: todas as fases (0 a 7) entregues.
 - [x] Página pública validada com tenant realmente publicado; slug inexistente retorna indisponível como esperado
 - [x] Horários públicos exibidos no fuso do estabelecimento, independentemente do aparelho do cliente
 - [x] Trigger legado alinhado às constraints: buffers, recurso, encaixe autorizado e fuso do tenant
-- [ ] Cancelamento e reagendamento completos no portal com sessão real, incluindo liberação do horário anterior
+- [ ] Cancelamento e reagendamento completos no portal com sessão real (bloqueado: conta de teste sem vínculo com estabelecimento)
 - [x] Corrida simultânea com duas transações independentes: uma gravação confirmada e a concorrente bloqueada
+
+## Auditoria pré-produção — Fase 5: layouts e responsividade 🔄 em validação
+- [x] Varredura automática de 13 telas em celular (390px), tablet (768px) e computador (1440px)
+- [x] Nenhuma tela com rolagem horizontal indevida
+- [x] Abas de Configurações: no computador agora quebram em duas linhas (a aba "Link público" ficava escondida)
+- [x] Página pública, Agenda, Clientes e Painel conferidos visualmente no celular
+- [ ] Revisão de telas restantes com sessão de recepção/profissional (conta de teste pendente)
