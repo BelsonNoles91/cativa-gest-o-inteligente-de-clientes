@@ -261,6 +261,8 @@ export function buildManagerDashboard(
       reactivationCandidates: atRisk + lost,
       atRiskRevenueCents,
     },
+    clientValue: clientValueReport(appts, clients),
+    forecast: revenueForecast(appts, future),
   };
 }
 
