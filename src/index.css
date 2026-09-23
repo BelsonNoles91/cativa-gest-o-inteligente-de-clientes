@@ -34,6 +34,7 @@
     --accent: 156 19% 59%;                /* #7FAE9B */
     --accent-foreground: 319 35% 22%;
     --accent-soft: 156 22% 90%;
+    --accent-strong: 156 42% 27%;
 
     --muted: 320 18% 94%;
     --muted-foreground: 215 14% 42%;
@@ -101,6 +102,7 @@
     --accent: 156 28% 55%;
     --accent-foreground: 156 35% 12%;
     --accent-soft: 156 22% 20%;
+    --accent-strong: 156 40% 72%;
 
     --muted: 319 18% 16%;
     --muted-foreground: 320 12% 65%;
