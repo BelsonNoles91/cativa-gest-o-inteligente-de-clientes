@@ -191,6 +191,11 @@ const App = () => (
                             element={<RoleGuard allowed={["owner", "manager", "frontdesk"]} />}
                           >
                             <Route path="retorno" element={<OutreachPage />} />
+                            <Route
+                              path="painel-gestor/clientes"
+                              element={<ManagerClientsPage />}
+                            />
+
                           </Route>
 
                           <Route element={<RoleGuard allowed={["owner", "manager"]} />}>
