@@ -31,7 +31,8 @@ export function AppLayout() {
               data-app-context="tenant"
               className="flex-1 px-4 pt-4 pb-bottom-nav md:px-8 md:pb-10 md:pt-6"
             >
-              <div className="mx-auto w-full max-w-7xl">
+              <div className="mx-auto w-full max-w-7xl space-y-3">
+                <InstallAppBanner />
                 <SubscriptionBlocker>
                   <Outlet />
                 </SubscriptionBlocker>
