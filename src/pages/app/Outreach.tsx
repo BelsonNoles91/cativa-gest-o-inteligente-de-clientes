@@ -162,10 +162,60 @@ export default function Outreach() {
   const [search, setSearch] = useState("");
   const [incentive, setIncentive] = useState("");
   const [hideContacted, setHideContacted] = useState(true);
+  const [couponPercent, setCouponPercent] = useState(15);
+  const [couponsByClient, setCouponsByClient] = useState<Record<string, ReactivationCoupon>>({});
+  const { toast: notify } = useToast();
 
   useEffect(() => {
     if (tenantId) setLog(readOutreachLog(tenantId));
   }, [tenantId]);
+
+  useEffect(() => {
+    if (!tenantId) return;
+    let alive = true;
+    void listCoupons(tenantId)
+      .then((list) => {
+        if (!alive) return;
+        const map: Record<string, ReactivationCoupon> = {};
+        for (const c of list) {
+          if (c.status === "active" && !map[c.clientId]) map[c.clientId] = c;
+        }
+        setCouponsByClient(map);
+      })
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, [tenantId]);
+
+  const handleCoupon = async (clientId: string) => {
+    if (!tenantId) return;
+    try {
+      const expires = new Date(Date.now() + 30 * 86400000).toISOString();
+      const coupon = await createCoupon({
+        tenantId,
+        clientId,
+        code: generateCouponCode(),
+        label: `${couponPercent}% de desconto no retorno`,
+        discountPercent: couponPercent,
+        expiresAt: expires,
+      });
+      setCouponsByClient((m) => ({ ...m, [clientId]: coupon }));
+      notify({ title: `Cupom ${coupon.code} criado`, description: "Ele já aparece no portal do cliente." });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Erro";
+      notify({ title: "Não foi possível criar o cupom", description: msg, variant: "destructive" });
+    }
+  };
+
+  const couponLine = (clientId: string): string => {
+    const c = couponsByClient[clientId];
+    if (!c) return "";
+    const until = c.expiresAt
+      ? ` (vale até ${new Date(c.expiresAt).toLocaleDateString("pt-BR")})`
+      : "";
+    return `\n\nSeu desconto: ${couponDescription(c)} com o código ${c.code}${until}.`;
+  };
 
   const handleLog = (clientId: string, outcome: OutreachOutcome) => {
     if (!tenantId) return;
@@ -175,6 +225,7 @@ export default function Outreach() {
     if (!tenantId) return;
     setLog(clearOutreachEntry(tenantId, clientId));
   };
+
 
   const filter = <T extends OutreachClient>(rows: T[]): T[] => {
     const term = search.trim().toLowerCase();
