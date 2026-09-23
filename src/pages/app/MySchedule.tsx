@@ -34,9 +34,8 @@ import {
   deleteAvailability,
   listBusinessHours,
   listProfessionalAvailability,
-  type ProfessionalAvailability,
-  type UnitBusinessHour,
 } from "@/repositories/scheduling";
+import type { ProfessionalAvailability, UnitBusinessHour } from "@/domain/scheduling";
 import {
   approveScheduleRequest,
   createScheduleRequest,
