@@ -1,7 +1,9 @@
 /**
  * Configurações — shell com tabs internas (negócio, unidades, equipe, branding, preferências).
  */
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { usePermissions } from "@/features/auth/usePermissions";
+import type { Permission } from "@/domain/permissions";
 import { Settings as SettingsIcon, Building2, MapPin, Users, Palette, SlidersHorizontal, Lock } from "lucide-react";
 import { useTenantBilling } from "@/features/billing/useTenantBilling";
 import { PageHeader } from "@/components/shell/PageHeader";
