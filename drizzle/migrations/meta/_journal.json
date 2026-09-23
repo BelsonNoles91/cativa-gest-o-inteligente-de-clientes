@@ -113,6 +113,13 @@
       "when": 1790142242224,
       "tag": "0015_expose_public_tenant_timezone",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1790162172559,
+      "tag": "0016_revoke_anon_execute_on_internal_security_definer_functions",
+      "breakpoints": true
     }
   ]
 }
