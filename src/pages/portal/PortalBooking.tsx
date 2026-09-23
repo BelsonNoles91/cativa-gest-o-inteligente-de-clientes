@@ -484,8 +484,8 @@ export default function PortalBooking() {
 
           {service.cancellationPolicyId && (
             <p className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
-              Ao agendar, você concorda com a política de cancelamento do
-              estabelecimento. Cancelamentos próximos do horário podem gerar taxa.
+              Ao agendar, você concorda com as regras de remarcação e cancelamento
+              do estabelecimento.
             </p>
           )}
 
