@@ -78,7 +78,7 @@ export function ProtectedRoute({ children }: { children?: ReactNode }) {
  */
 export function RequireOnboarding({ children }: { children?: ReactNode }) {
   const { user } = useAuth();
-  const { loading, verified, hasActiveTenant, isClient, isSuperAdmin } = useTenant();
+  const { loading, verified, loadError, hasActiveTenant, isClient, isSuperAdmin, refresh } = useTenant();
   const [checkingInvites, setCheckingInvites] = useState(false);
   const [pendingInviteToken, setPendingInviteToken] = useState<string | null | undefined>(undefined);
 
@@ -112,7 +112,11 @@ export function RequireOnboarding({ children }: { children?: ReactNode }) {
     return () => { active = false; };
   }, [loading, verified, hasActiveTenant, isSuperAdmin, isClient, user]);
 
-  if (loading || !verified) return <FullScreenLoader />;
+  if (loading) return <FullScreenLoader />;
+  if (!verified) {
+    if (loadError) return <LoadErrorScreen onRetry={() => void refresh()} retrying={loading} />;
+    return <FullScreenLoader />;
+  }
   
   // Super Admin não precisa de onboarding de negócio
   if (isSuperAdmin) return <>{children ?? <Outlet />}</>;
