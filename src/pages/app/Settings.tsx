@@ -38,7 +38,7 @@ export default function Settings() {
       <Tabs value={tab} onValueChange={setTab}>
         <div className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
           <TabsList className="inline-flex w-auto rounded-xl bg-muted/60 p-1">
-            {TABS.map((t) => {
+            {visibleTabs.map((t) => {
               const isLocked = t.v === "branding" && !hasFeature("custom_logo");
               return (
                 <TabsTrigger
