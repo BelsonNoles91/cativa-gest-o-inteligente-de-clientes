@@ -32,15 +32,18 @@
     --secondary-foreground: 319 35% 22%;
 
     --accent: 156 19% 59%;                /* #7FAE9B */
-    --accent-foreground: 0 0% 100%;
+    --accent-foreground: 319 35% 22%;
     --accent-soft: 156 22% 90%;
+    --accent-strong: 156 42% 27%;
 
     --muted: 320 18% 94%;
     --muted-foreground: 215 14% 42%;
 
     /* Status */
     --success: 146 50% 36%;               /* #2E8B57 */
+    --success-strong: 146 62% 22%;        /* texto sobre fundos claros (WCAG AA) */
     --success-foreground: 0 0% 100%;
+
     --warning: 35 80% 57%;                /* #E9A23B */
     --warning-foreground: 28 40% 15%;
     --destructive: 0 54% 54%;             /* #C94A4A */
@@ -99,12 +102,15 @@
     --accent: 156 28% 55%;
     --accent-foreground: 156 35% 12%;
     --accent-soft: 156 22% 20%;
+    --accent-strong: 156 40% 72%;
 
     --muted: 319 18% 16%;
     --muted-foreground: 320 12% 65%;
 
     --success: 146 45% 50%;
+    --success-strong: 146 45% 72%;
     --success-foreground: 146 35% 10%;
+
     --warning: 35 80% 60%;
     --warning-foreground: 28 40% 12%;
     --destructive: 0 60% 58%;

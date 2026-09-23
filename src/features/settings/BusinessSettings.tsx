@@ -70,13 +70,13 @@ export function BusinessSettings() {
     <div className="surface-card p-5 md:p-6">
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2 md:col-span-2">
-          <Label>Nome do estabelecimento</Label>
-          <Input value={name} onChange={(e) => setName(e.target.value)} className="h-11 rounded-xl" />
+          <Label htmlFor="business-name">Nome do estabelecimento</Label>
+          <Input id="business-name" value={name} onChange={(e) => setName(e.target.value)} className="h-11 rounded-xl" />
         </div>
         <div className="space-y-2">
           <Label>Segmento</Label>
           <Select value={segment} onValueChange={(v) => setSegment(v as TenantSegment)}>
-            <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
+            <SelectTrigger aria-label="Segmento do estabelecimento" className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
             <SelectContent>
               {(Object.keys(segmentLabels) as TenantSegment[]).map((s) => <SelectItem key={s} value={s}>{segmentLabels[s]}</SelectItem>)}
             </SelectContent>
@@ -85,17 +85,18 @@ export function BusinessSettings() {
         <div className="space-y-2">
           <Label>Fuso horário</Label>
           <Select value={timezone} onValueChange={setTimezone}>
-            <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
+            <SelectTrigger aria-label="Fuso horário" className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
             <SelectContent>{TIMEZONES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
           </Select>
         </div>
         <div className="space-y-2">
           <Label>Moeda</Label>
           <Select value={currency} onValueChange={setCurrency}>
-            <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
+            <SelectTrigger aria-label="Moeda" className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
             <SelectContent>{CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
           </Select>
         </div>
+
       </div>
 
       <div className="mt-6 flex justify-end">

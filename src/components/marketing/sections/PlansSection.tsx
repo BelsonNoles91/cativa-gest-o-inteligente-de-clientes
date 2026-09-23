@@ -130,11 +130,11 @@ export function PlansSection() {
                   <div className="h-12" />
 
                   {plan.code === 'free' ? (
-                    <p className={cn("text-center mt-2 text-[9px] font-bold uppercase tracking-widest opacity-40")}>
+                    <p className={cn("text-center mt-2 text-[9px] font-bold uppercase tracking-widest opacity-80")}>
                       Grátis para sempre para pequenos negócios
                     </p>
                   ) : plan.trial_days > 0 ? (
-                    <p className={cn("text-center mt-2 text-[9px] font-bold uppercase tracking-widest opacity-40")}>
+                    <p className={cn("text-center mt-2 text-[9px] font-bold uppercase tracking-widest opacity-80")}>
                       Experimente todos os recursos por {plan.trial_days} dias
                     </p>
                   ) : (

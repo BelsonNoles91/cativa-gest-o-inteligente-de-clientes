@@ -71,3 +71,14 @@ Roadmap concluído: todas as fases (0 a 7) entregues.
 - [x] Abas de Configurações: no computador agora quebram em duas linhas (a aba "Link público" ficava escondida)
 - [x] Página pública, Agenda, Clientes e Painel conferidos visualmente no celular
 - [ ] Revisão de telas restantes com sessão de recepção/profissional (conta de teste pendente)
+
+## FASE 6 — UX e acessibilidade (WCAG AA) — CONCLUÍDA
+Varredura axe-core (wcag2a/2aa/21a/21aa) em 12 rotas, viewport 390px: 0 violações ao final.
+Corrigido:
+- index.html: removido maximum-scale=1.0 (zoom bloqueado no celular) — violação crítica em todas as rotas.
+- Botões sem nome acessível: pontos do carrossel (MetricsSection), selects de unidade/profissional (Agenda), segmento/fuso/moeda (BusinessSettings).
+- Campos sem rótulo: data base da agenda, nome do estabelecimento.
+- Abas Radix sem conteúdo associado (aria-controls inválido): Agenda e TeamGoals + aria-label nas TabsList.
+- Barras de progresso sem nome: TeamGoals.
+- Links sociais sem nome: PremiumFooter.
+- Contraste: novo token --accent-strong e --success-strong; StatusBadge success, botão premium, textos de apoio da landing, rodapé e seção escura final.

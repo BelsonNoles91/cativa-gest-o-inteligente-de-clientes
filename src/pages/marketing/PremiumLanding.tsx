@@ -86,7 +86,7 @@ export default function PremiumLanding() {
             <div className="max-w-4xl mx-auto text-center mb-20">
               <h2 className="font-display text-4xl md:text-6xl text-primary-dark tracking-tighter leading-none mb-6">
                 Criada para operações que querem <br />
-                <span className="text-accent italic serif font-normal">crescer com mais controle.</span>
+                <span className="text-accent-strong italic serif font-normal">crescer com mais controle.</span>
               </h2>
               <p className="text-lg md:text-xl text-muted-foreground font-light leading-relaxed">
                 A Cativa foi desenhada para negócios de beleza e estética que precisam organizar a rotina, melhorar a retenção e profissionalizar a experiência do cliente sem depender de controles improvisados.
@@ -232,12 +232,12 @@ export default function PremiumLanding() {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.6 }}
                 >
-                  <div className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-6 md:mb-8">
+                  <div className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-[10px] font-bold uppercase tracking-[0.2em] text-accent-strong mb-6 md:mb-8">
                     Foco em {segments[activeSegment].name}
                   </div>
                   <h3 className="font-display text-[2.5rem] md:text-7xl text-primary-dark tracking-tighter leading-[0.95] mb-6 md:mb-8">
                     O problema não é <br className="hidden md:block" />
-                    <span className="italic serif font-normal text-accent">apenas a agenda.</span>
+                    <span className="italic serif font-normal text-accent-strong">apenas a agenda.</span>
                   </h3>
                   <p className="text-lg md:text-xl text-primary-dark/80 leading-relaxed font-normal mb-6">
                     {activeSegment === 0 && "Para clínicas de estética, cada minuto conta. A Cativa ajuda você a fidelizar melhor, confirmar horários e crescer com segurança."}
@@ -287,12 +287,12 @@ export default function PremiumLanding() {
         {/* Seção de Planos */}
         <PremiumSection id="planos" variant="soft" padding="lg">
           <div className="max-w-4xl mx-auto text-center mb-16 md:mb-24 px-4">
-            <div className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-8">
+            <div className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-[10px] font-bold uppercase tracking-[0.2em] text-accent-strong mb-8">
               Investimento
             </div>
             <h3 className="font-display text-[2.5rem] md:text-8xl text-primary-dark tracking-tighter leading-[0.95]">
               Planos que <br className="hidden md:block" />
-              <span className="italic serif font-normal text-accent">crescem com você.</span>
+              <span className="italic serif font-normal text-accent-strong">crescem com você.</span>
             </h3>
           </div>
 
@@ -461,7 +461,7 @@ export default function PremiumLanding() {
                           <CheckCircle2 className="h-5 w-5 text-accent" />
                           <span className="text-lg md:text-xl font-bold text-white tracking-tight">{item.text}</span>
                        </div>
-                       <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/30">{item.sub}</span>
+                       <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/70">{item.sub}</span>
                     </div>
                   ))}
                </div>

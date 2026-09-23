@@ -69,9 +69,9 @@ export function MetricsSection() {
             </div>
             <h2 className="text-4xl md:text-7xl font-display font-bold text-primary-dark leading-[0.95] tracking-tight mb-8">
               Os números que você <br />
-              <span className="text-accent italic serif font-normal">precisa enxergar.</span>
+              <span className="text-accent-strong italic serif font-normal">precisa enxergar.</span>
             </h2>
-            <p className="text-lg md:text-xl text-muted-foreground/80 font-light leading-relaxed mb-10 md:mb-12">
+            <p className="text-lg md:text-xl text-muted-foreground font-light leading-relaxed mb-10 md:mb-12">
               A Cativa ajuda seu negócio a acompanhar indicadores que impactam diretamente a saúde da agenda e a previsibilidade de receita.
             </p>
             
@@ -100,23 +100,27 @@ export function MetricsSection() {
                   </p>
                   <div className="flex items-center gap-4">
                     <div className="h-px flex-1 bg-white/20" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest opacity-40">{metrics[activeMetric].title}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest opacity-80">{metrics[activeMetric].title}</span>
                   </div>
                 </motion.div>
               </AnimatePresence>
               
               {/* Dots Progress */}
               <div className="flex gap-2 mt-8 justify-center">
-                {metrics.map((_, i) => (
+                {metrics.map((metric, i) => (
                   <button 
                     key={i} 
                     onClick={() => setActiveMetric(i)}
+                    type="button"
+                    aria-label={`Ver indicador: ${metric.title}`}
+                    aria-current={activeMetric === i}
                     className={cn(
-                      "h-1 transition-all duration-500 rounded-full",
+                      "h-1 transition-all duration-500 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
                       activeMetric === i ? "w-8 bg-accent" : "w-2 bg-white/20 hover:bg-white/40"
                     )} 
                   />
                 ))}
+
               </div>
             </div>
           </div>
