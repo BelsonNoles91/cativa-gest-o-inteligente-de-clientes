@@ -141,7 +141,17 @@ export async function cancelFromPortal(input: {
 
 export async function confirmFromPortal(appointmentId: string): Promise<void> {
   await setAppointmentStatus(appointmentId, "confirmed");
+  // Avisa a recepção e devolve o aviso de confirmação ao cliente.
+  // Falhas aqui não podem impedir a confirmação em si.
+  try {
+    await supabase.functions.invoke("push-dispatch", {
+      body: { action: "confirmed", appointmentId },
+    });
+  } catch {
+    /* aviso é secundário */
+  }
 }
+
 
 /** Lê uma política de cancelamento por id (snapshot). */
 export async function fetchCancellationPolicy(

@@ -107,7 +107,91 @@ Deno.serve(async (req) => {
       return json({ sent });
     }
 
+    if (action === "confirmed") {
+      // O cliente confirmou pelo portal: avisa a recepção/gestão do estabelecimento
+      // e devolve um aviso de confirmação para os aparelhos do próprio cliente.
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader) return json({ error: "Não autenticado." }, 401);
+      const appointmentId = typeof body.appointmentId === "string" ? body.appointmentId : "";
+      if (!appointmentId) return json({ error: "Atendimento não informado." }, 400);
+
+      const userClient = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+        { global: { headers: { Authorization: authHeader } }, auth: { persistSession: false } },
+      );
+      const { data: userData, error: userError } = await userClient.auth.getUser();
+      if (userError || !userData.user) return json({ error: "Sessão inválida." }, 401);
+
+      // A leitura sob RLS garante que a pessoa realmente tem acesso ao atendimento.
+      const { data: appt } = await userClient
+        .from("appointments")
+        .select("id, tenant_id, client_id, starts_at")
+        .eq("id", appointmentId)
+        .maybeSingle();
+      if (!appt) return json({ error: "Atendimento não encontrado." }, 404);
+
+      const { data: already } = await admin
+        .from("push_notifications_log")
+        .select("id")
+        .eq("appointment_id", appt.id)
+        .eq("kind", "confirmed")
+        .maybeSingle();
+      if (already) return json({ sent: 0, skipped: true });
+
+      const [{ data: tenant }, { data: client }] = await Promise.all([
+        admin.from("tenants").select("name").eq("id", appt.tenant_id).maybeSingle(),
+        admin.from("clients").select("full_name").eq("id", appt.client_id).maybeSingle(),
+      ]);
+
+      const when = new Date(appt.starts_at as string).toLocaleString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        day: "2-digit",
+        month: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      const { data: members } = await admin
+        .from("tenant_memberships")
+        .select("user_id, role, status")
+        .eq("tenant_id", appt.tenant_id)
+        .eq("status", "active")
+        .in("role", ["owner", "manager", "frontdesk"]);
+      const staffIds = (members ?? []).map((m) => m.user_id as string);
+
+      let sent = 0;
+      if (staffIds.length > 0) {
+        const { data: staffSubs } = await admin
+          .from("push_subscriptions")
+          .select("id, endpoint, p256dh, auth")
+          .in("user_id", staffIds);
+        sent += await sendTo(admin, (staffSubs ?? []) as PushRow[], {
+          title: (tenant?.name as string) ?? "Cativa",
+          body: `${(client?.full_name as string) ?? "Cliente"} confirmou o horário de ${when}.`,
+          url: "/app/agenda",
+        });
+      }
+
+      const { data: clientSubs } = await admin
+        .from("push_subscriptions")
+        .select("id, endpoint, p256dh, auth")
+        .eq("user_id", userData.user.id);
+      sent += await sendTo(admin, (clientSubs ?? []) as PushRow[], {
+        title: (tenant?.name as string) ?? "Cativa",
+        body: `Horário confirmado para ${when}. Até lá!`,
+        url: "/portal/agenda",
+      });
+
+      await admin
+        .from("push_notifications_log")
+        .insert({ appointment_id: appt.id, kind: "confirmed" });
+
+      return json({ sent });
+    }
+
     if (action === "reminders") {
+
       if (!CRON_SECRET || req.headers.get("x-cron-secret") !== CRON_SECRET) {
         return json({ error: "Não autorizado." }, 401);
       }

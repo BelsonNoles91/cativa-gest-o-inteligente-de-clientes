@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { PageHeader } from "@/components/shell/PageHeader";
+import { PushNotificationsCard } from "@/features/notifications/PushNotificationsCard";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -77,7 +79,10 @@ export default function Profile() {
         </div>
       )}
 
+      <PushNotificationsCard />
+
       <div className="grid gap-6 md:grid-cols-2">
+
         <section className="surface-card p-5">
           <h3 className="font-display text-lg font-semibold flex items-center gap-2">
             <Mail className="h-5 w-5 text-muted-foreground" /> E-mail de Acesso
