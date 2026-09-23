@@ -511,7 +511,10 @@ export default function ManagerDashboard() {
             </ErrorBoundary>
           </Card>
 
+          <CommissionsSummaryCard />
+
           <RetentionInsightsCard />
+
         </div>
       )}
     </>
