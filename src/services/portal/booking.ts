@@ -3,19 +3,17 @@
  *
  * - createBookingFromPortal: cria appointment com source=client_portal,
  *   status=pending, valida slot via RPC e respeita min_advance_hours.
- * - rescheduleFromPortal: reagenda respeitando política e disponibilidade.
- * - cancelFromPortal: cancela respeitando política (sem multa OU com aviso).
+ * - rescheduleFromPortal: reagenda validando as regras no servidor (RPC).
+ * - cancelFromPortal: cancela validando as regras no servidor (RPC).
  * - confirmFromPortal: o cliente confirma o próprio horário.
  */
 import {
   getAvailableSlots,
   insertAppointment,
-  updateAppointment,
   setAppointmentStatus,
 } from "@/repositories/scheduling";
 import { supabase } from "@/integrations/supabase/client";
 import type { CancellationPolicySnapshot } from "@/domain/portal";
-import { canCancelWithoutFee } from "@/domain/portal";
 
 export interface CreateBookingInput {
   tenantId: string;
