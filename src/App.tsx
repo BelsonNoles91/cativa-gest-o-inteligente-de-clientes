@@ -69,6 +69,8 @@ const AcceptInvite = lazyWithReload(() => import("./pages/auth/AcceptInvite"));
 const Onboarding = lazyWithReload(() => import("./pages/auth/Onboarding"));
 const Dashboard = lazyWithReload(() => import("./pages/app/Dashboard"));
 const ManagerDashboard = lazyWithReload(() => import("./pages/app/ManagerDashboard"));
+const ManagerClientsPage = lazyWithReload(() => import("./pages/app/ManagerClients"));
+
 const TeamGoalsPage = lazyWithReload(() => import("./pages/app/TeamGoals"));
 const Privacy = lazyWithReload(() => import("./pages/public/Privacy"));
 const Terms = lazyWithReload(() => import("./pages/public/Terms"));
