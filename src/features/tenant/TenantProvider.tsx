@@ -42,6 +42,8 @@ interface TenantContextValue {
   loading: boolean;
   /** True when the initial server verification of memberships has completed */
   verified: boolean;
+  /** Message of the last failed base-data load, or null when healthy */
+  loadError: string | null;
   /** Whether the user has at least one active tenant membership or is a super admin */
   hasActiveTenant: boolean;
   /** Flag for internal support/admin users with global access */
@@ -93,6 +95,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [verified, setVerified] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [memberships, setMemberships] = useState<MembershipRow[]>([]);
