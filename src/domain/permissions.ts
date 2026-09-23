@@ -69,6 +69,7 @@ const MANAGER_PERMISSIONS: Permission[] = [
   "settings.business",
   "settings.branding",
   "settings.prefs",
+  "settings.publicPage",
   "settings.team",
   "team.invite",
 ];
