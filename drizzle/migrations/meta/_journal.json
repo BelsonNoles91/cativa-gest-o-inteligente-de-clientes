@@ -15,6 +15,13 @@
       "when": 1790128941189,
       "tag": "0001_professional_self_profile_update",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790129261429,
+      "tag": "0002_members_read_tenant_subscription",
+      "breakpoints": true
     }
   ]
 }
