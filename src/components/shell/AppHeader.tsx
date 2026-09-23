@@ -145,11 +145,15 @@ export function AppHeader() {
       </div>
 
       {/* CommandDialog de busca controlado pelo botão mobile */}
-      <GlobalSearch
-        controlledOpen={searchOpen}
-        onControlledOpenChange={setSearchOpen}
-        hideTrigger
-      />
+      {searchOpen && (
+        <Suspense fallback={null}>
+          <GlobalSearch
+            controlledOpen={searchOpen}
+            onControlledOpenChange={setSearchOpen}
+            hideTrigger
+          />
+        </Suspense>
+      )}
     </header>
   );
 }
