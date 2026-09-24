@@ -240,19 +240,19 @@ export default function PremiumLanding() {
                     <span className="italic serif font-normal text-accent-strong">apenas a agenda.</span>
                   </h3>
                   <p className="text-lg md:text-xl text-primary-dark/80 leading-relaxed font-normal mb-6">
-                    {activeSegment === 0 && "Para clínicas de estética, cada minuto conta. A Cativa ajuda você a fidelizar melhor, confirmar horários e crescer com segurança."}
-                    {activeSegment === 1 && "Salões premium precisam de fluxo constante. Nossa inteligência reduz buracos na agenda e otimiza o trabalho da sua equipe."}
-                    {activeSegment === 2 && "Barbearias modernas exigem agilidade total. O portal do cliente e as confirmações rápidas garantem que ninguém perca tempo."}
+                    {activeSegment === 0 && "Para clínicas de estética, o valor está no tratamento completo. Pacotes de sessões, anamnese online e data ideal de retorno mantêm cada cliente no protocolo."}
+                    {activeSegment === 1 && "Salões precisam de agenda cheia e equipe motivada. Lista de espera, metas com ranking e comissões automáticas resolvem isso no mesmo sistema."}
+                    {activeSegment === 2 && "Barbearias não podem parar o corte para responder mensagem. Com o link de agendamento e a confirmação em 1 toque, o cliente se organiza sozinho."}
                   </p>
                 </motion.div>
               </AnimatePresence>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
                 {[
-                  { icon: CheckCircle2, text: "Fidelidade Total", desc: "Aumente o retorno médio." },
-                  { icon: ShieldCheck, text: "Dados Blindados", desc: "Segurança total das informações." },
-                  { icon: Users, text: "Espaço do Cliente", desc: "Autonomia para quem você atende." },
-                  { icon: Calendar, text: "Fluxo Inteligente", desc: "Rapidez que o dia a dia exige." },
+                  { icon: CheckCircle2, text: "Clientes que voltam", desc: "Alerta de sumiço e cupom de retorno." },
+                  { icon: ShieldCheck, text: "Acesso por função", desc: "Cada pessoa vê só o que precisa." },
+                  { icon: Users, text: "Espaço do Cliente", desc: "Entra com Google ou Apple e agenda sozinho." },
+                  { icon: Calendar, text: "Lista de espera", desc: "Cancelou? O horário já tem dono." },
                 ].map((item, i) => (
                   <motion.div 
                     initial={{ opacity: 0, y: 10 }}
