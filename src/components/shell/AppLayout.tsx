@@ -3,6 +3,7 @@
  *  - desktop: sidebar (collapsible icon) + header + main
  *  - mobile : header + main + bottom nav
  */
+import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/shell/AppSidebar";
@@ -35,7 +36,19 @@ export function AppLayout() {
               <div className="mx-auto w-full max-w-7xl space-y-3">
                 <InstallAppBanner />
                 <SubscriptionBlocker>
-                  <Outlet />
+                  <Suspense
+                    fallback={
+                      <div className="space-y-3" aria-busy="true" aria-label="Carregando">
+                        <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
+                          <div className="h-full w-1/3 animate-pulse rounded-full bg-primary" />
+                        </div>
+                        <div className="h-24 animate-pulse rounded-2xl bg-muted" />
+                        <div className="h-40 animate-pulse rounded-2xl bg-muted" />
+                      </div>
+                    }
+                  >
+                    <Outlet />
+                  </Suspense>
                 </SubscriptionBlocker>
               </div>
             </main>
