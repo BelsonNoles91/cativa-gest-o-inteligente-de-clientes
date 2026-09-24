@@ -5517,6 +5517,10 @@ export type Database = {
         Args: { _tenant_id: string; _user_id: string }
         Returns: boolean
       }
+      join_tenant_via_public_link: {
+        Args: { _full_name: string; _phone: string; _slug: string }
+        Returns: string
+      }
       list_pending_invitations_for_current_user: {
         Args: never
         Returns: {

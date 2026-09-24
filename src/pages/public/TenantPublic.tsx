@@ -201,6 +201,31 @@ export default function TenantPublic() {
     }
   }, [contact, contactKey]);
 
+  // Vincula o cliente ao estabelecimento assim que ele entra pelo link:
+  // acesso imediato ao portal, sem precisar de agendamento prévio.
+  const [portalReady, setPortalReady] = useState(false);
+  useEffect(() => {
+    if (!user || !page || !contactLoaded || !contactValid) return;
+    let alive = true;
+    supabase
+      .rpc("join_tenant_via_public_link", {
+        _slug: slug,
+        _full_name: contact.fullName,
+        _phone: contact.whatsapp,
+      })
+      .then(({ error }) => {
+        if (!alive) return;
+        if (error) {
+          toast.error("Não foi possível liberar seu portal", { description: error.message });
+        } else {
+          setPortalReady(true);
+        }
+      });
+    return () => {
+      alive = false;
+    };
+  }, [user, page, slug, contactLoaded, contactValid, contact.fullName, contact.whatsapp]);
+
   const saveContact = () => {
     setContactTouched(true);
     if (!isValidFullName(contactForm.fullName) || !isValidMobileBR(contactForm.whatsapp)) return;
@@ -428,6 +453,17 @@ export default function TenantPublic() {
         <meta property="og:url" content={canonical} />
         <meta name="twitter:card" content="summary_large_image" />
       </Helmet>
+
+      {portalReady && !confirmedId && (
+        <div className="border-b bg-secondary/60">
+          <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-2 text-sm">
+            <span className="text-foreground">Seu portal do cliente já está liberado.</span>
+            <Button asChild size="sm" variant="outline" className="rounded-2xl">
+              <a href="/portal">Acessar meu portal</a>
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Capa + identidade */}
       <header className="relative">
