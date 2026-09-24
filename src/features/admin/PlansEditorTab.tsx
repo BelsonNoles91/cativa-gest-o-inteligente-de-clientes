@@ -68,6 +68,8 @@ export function PlansEditorTab() {
     setLoading(false);
   }
 
+  // Carrega uma única vez ao abrir a aba; `load` é recriada a cada render.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { void load(); }, []);
 
   const patch = (id: string, v: Partial<Draft>) => setDrafts((d) => ({ ...d, [id]: { ...d[id], ...v } }));
