@@ -14,6 +14,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LogoUploader } from "@/components/brand/LogoUploader";
 
+function readableTextColor(background: string) {
+  const value = background.replace("#", "");
+  if (!/^[0-9a-f]{6}$/i.test(value)) return "#1F2933";
+  const channels = [0, 2, 4].map((offset) => {
+    const channel = Number.parseInt(value.slice(offset, offset + 2), 16) / 255;
+    return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+  });
+  const luminance = 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+  const whiteContrast = 1.05 / (luminance + 0.05);
+  return whiteContrast >= 4.5 ? "#FFFFFF" : "#1F2933";
+}
+
 export function BrandingSettings() {
   const { currentTenant } = useTenant();
   const tenantId = currentTenant?.id ?? null;
@@ -117,7 +129,7 @@ export function BrandingSettings() {
         <div className="space-y-2">
           <Label>WhatsApp do negócio</Label>
           <Input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="(11) 99999-0000" className="h-11 rounded-xl" />
-          <p className="text-[11px] text-muted-foreground">Usado para gerar mensagens e abrir conversas manualmente. Nenhum envio automático.</p>
+          <p className="text-xs text-muted-foreground">Usado para gerar mensagens e abrir conversas manualmente. Nenhum envio automático.</p>
         </div>
 
         <div className="flex justify-end">
@@ -133,7 +145,7 @@ export function BrandingSettings() {
           <h3 className="mt-1 font-display text-lg">Sua marca</h3>
         </div>
         <div className="px-5 pb-5 space-y-3">
-          <div className="rounded-2xl p-5 text-white shadow-md" style={{ background: `linear-gradient(135deg, ${primary}, ${primary}dd)` }}>
+          <div className="rounded-2xl p-5 shadow-md" style={{ background: `linear-gradient(135deg, ${primary}, ${primary}dd)`, color: readableTextColor(primary) }}>
             <div className="flex items-center gap-3">
               {logoUrl ? (
                 <img
@@ -143,17 +155,17 @@ export function BrandingSettings() {
                 />
               ) : null}
               <div className="min-w-0">
-                <p className="text-xs opacity-80">Cativa</p>
+                <p className="text-xs font-medium">Cativa</p>
                 <p className="mt-0.5 font-display text-xl truncate">{currentTenant.name}</p>
               </div>
             </div>
-            <button className="mt-4 rounded-lg px-3 py-1.5 text-xs font-medium" style={{ background: accent, color: "#fff" }}>
+            <button className="mt-4 rounded-lg px-3 py-1.5 text-xs font-medium" style={{ background: accent, color: readableTextColor(accent) }}>
               Botão de ação
             </button>
           </div>
-          <div className="rounded-xl p-4" style={{ background: secondary, color: primary }}>
+          <div className="rounded-xl p-4" style={{ background: secondary, color: readableTextColor(secondary) }}>
             <p className="text-sm font-medium">Cartão secundário</p>
-            <p className="text-xs opacity-80">Texto em superfície clara da marca</p>
+            <p className="text-xs">Texto em superfície clara da marca</p>
           </div>
         </div>
       </div>

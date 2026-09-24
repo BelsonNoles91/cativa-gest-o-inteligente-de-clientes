@@ -35,6 +35,7 @@
     --accent-foreground: 319 35% 22%;
     --accent-soft: 156 22% 90%;
     --accent-strong: 156 42% 27%;
+    --accent-strong-foreground: 0 0% 100%;
 
     --muted: 320 18% 94%;
     --muted-foreground: 215 14% 42%;
@@ -103,6 +104,7 @@
     --accent-foreground: 156 35% 12%;
     --accent-soft: 156 22% 20%;
     --accent-strong: 156 40% 72%;
+    --accent-strong-foreground: 156 35% 12%;
 
     --muted: 319 18% 16%;
     --muted-foreground: 320 14% 74%;
@@ -120,7 +122,9 @@
     --input: 319 18% 20%;
     --ring: 321 45% 74%;
 
-    --gradient-brand: linear-gradient(135deg, hsl(321 38% 45%) 0%, hsl(319 35% 22%) 100%);
+    /* O texto sobre a marca usa --primary-foreground escuro neste tema.
+       Ambos os extremos precisam permanecer claros o bastante para AA. */
+    --gradient-brand: linear-gradient(135deg, hsl(321 38% 60%) 0%, hsl(319 35% 68%) 100%);
     --gradient-soft: linear-gradient(160deg, hsl(319 22% 14%) 0%, hsl(319 22% 8%) 100%);
     --gradient-accent: linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(156 30% 35%) 100%);
 

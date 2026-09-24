@@ -36,7 +36,7 @@ export function UsageBar({ label, used, limit, suffix }: Props) {
         value={value}
         className={cn("h-1.5", blocked && "[&>div]:bg-destructive", warn && !blocked && "[&>div]:bg-warning")}
       />
-      {limit === null && <p className="text-[10px] text-muted-foreground">Sem limite no seu plano</p>}
+      {limit === null && <p className="text-xs text-muted-foreground">Sem limite no seu plano</p>}
     </div>
   );
 }
