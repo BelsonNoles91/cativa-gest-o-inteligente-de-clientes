@@ -10,42 +10,42 @@ const metrics = [
     title: "Fidelidade de clientes",
     desc: "Entenda quantos clientes estão voltando e onde a recorrência está falhando.",
     icon: Users,
-    detail: "Crescimento médio de 24% na retenção em 3 meses."
+    detail: "Lista de quem está sumindo, com cupom de retorno pronto para enviar."
   },
   {
     id: "retorno",
     title: "Taxa de Retorno",
     desc: "Saiba se seus atendimentos estão gerando novas visitas de forma imediata.",
     icon: TrendingUp,
-    detail: "Aumento de 15% no agendamento da próxima visita."
+    detail: "Cada cliente com a data ideal de volta calculada pelo histórico."
   },
   {
     id: "faltas",
     title: "Faltas e Cancelamentos",
     desc: "Identifique perdas silenciosas e aja com antecedência para evitar prejuízos.",
     icon: CalendarX,
-    detail: "Redução de até 40% nos no-shows no primeiro mês."
+    detail: "Horário cancelado vira oferta para a lista de espera na hora."
   },
   {
     id: "ocupacao",
     title: "Ocupação da Agenda",
     desc: "Veja com clareza onde há horários livres e como melhorar o uso da sua equipe.",
     icon: Clock,
-    detail: "Otimização de 30% no uso dos espaços físicos."
+    detail: "Ocupação por profissional, com metas e ranking da equipe."
   },
   {
     id: "novos",
     title: "Novos vs Recorrentes",
     desc: "Equilibre novos clientes e fidelização para um crescimento sustentável.",
     icon: UserPlus,
-    detail: "Visão clara do custo de aquisição por cliente."
+    detail: "Veja quanto cada cliente vale e quem são os mais fiéis."
   },
   {
     id: "receita",
     title: "Previsão de Receita",
     desc: "Tenha uma noção concreta do faturamento esperado para as próximas semanas.",
     icon: DollarSign,
-    detail: "Previsibilidade financeira com 95% de precisão."
+    detail: "Previsão de faturamento e comissões fechadas no fim do mês."
   },
 ];
 

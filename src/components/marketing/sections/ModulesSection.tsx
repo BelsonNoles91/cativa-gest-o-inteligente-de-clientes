@@ -1,57 +1,84 @@
 import { PremiumSection } from "../layout/PremiumSection";
-import { Users, Calendar, Settings, Shield, Globe, BarChart, Activity, CheckCircle2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Users, Calendar, Globe, BarChart, MessageSquare, CheckCircle2, Sparkles, Hourglass, Trophy, Smartphone, Gift, Package } from "lucide-react";
 import { motion } from "framer-motion";
 
 const modules = [
   {
-    title: "Gestão de Clientes",
-    desc: "Tenha uma visão completa de cada cliente com cadastro, histórico, fotos e acompanhamento em um só lugar.",
-    benefit: "Quanto melhor sua equipe entende o cliente, melhor ela atende e estimula o retorno.",
-    icon: Users,
+    title: "Agenda sem conflitos",
+    desc: "Agenda por profissional, sala e unidade. O sistema bloqueia horários duplicados automaticamente, mesmo com várias pessoas marcando ao mesmo tempo.",
+    benefit: "Fim do encaixe errado e do cliente esperando por horário que já estava ocupado.",
+    icon: Calendar,
     id: "01"
   },
   {
-    title: "Agenda Inteligente",
-    desc: "Visualize horários, profissionais, unidades e disponibilidade com muito mais controle.",
-    benefit: "Uma agenda bem organizada reduz perdas, melhora a ocupação e torna a recepção mais ágil.",
-    icon: Calendar,
+    title: "Página de agendamento própria",
+    desc: "Um link exclusivo do seu negócio, com QR code para o balcão e Instagram. O cliente vê os horários livres e marca sozinho, 24 horas por dia.",
+    benefit: "Sua agenda enche até de madrugada, sem a recepção precisar responder mensagem.",
+    icon: Globe,
     id: "02"
   },
   {
-    title: "Serviços e Pacotes",
-    desc: "Cadastre serviços, valores, pacotes de tratamento e regras de uso padronizadas.",
-    benefit: "Isso permite organização e melhor acompanhamento do tratamento de cada cliente.",
-    icon: Settings,
+    title: "Central de Confirmação",
+    desc: "Lista do dia com mensagem pronta: um toque abre o WhatsApp do cliente e você registra a resposta. Sem robô e sem custo por mensagem.",
+    benefit: "Menos faltas, sem risco de bloqueio do seu número.",
+    icon: MessageSquare,
     id: "03"
   },
   {
-    title: "Avisos e Confirmações",
-    desc: "Use rotinas de confirmação, avisos automáticos e histórico organizado de contatos.",
-    benefit: "Menos faltas, mais controle sobre o dia e mais eficiência para a sua recepção.",
-    icon: Shield,
+    title: "Lista de espera inteligente",
+    desc: "Quando alguém cancela, o sistema mostra quem está esperando aquele horário para você oferecer na hora.",
+    benefit: "Cancelamento deixa de ser prejuízo e vira atendimento.",
+    icon: Hourglass,
     id: "04"
   },
   {
-    title: "Portal do Cliente",
-    desc: "O cliente pode agendar, confirmar e acompanhar suas informações de forma moderna.",
-    benefit: "Você reduz o trabalho manual e melhora o profissionalismo da sua marca.",
-    icon: Globe,
+    title: "Clientes e retorno",
+    desc: "Histórico, ficha de anamnese, fotos e a data ideal de volta de cada cliente. Veja quem está sumindo e envie um cupom de retorno.",
+    benefit: "Você para de perder cliente em silêncio.",
+    icon: Users,
     id: "05"
   },
   {
-    title: "Relatórios e Índices",
-    desc: "Acompanhe fidelidade, novas marcações, faltas, ocupação e previsão de faturamento.",
-    benefit: "Negócios que decidem com base em dados reais crescem com muito mais segurança.",
-    icon: BarChart,
+    title: "Resumo com IA",
+    desc: "Ao fim do atendimento, a IA organiza as anotações em um resumo claro para o próximo profissional.",
+    benefit: "Todo atendimento começa sabendo o que o cliente fez e prefere.",
+    icon: Sparkles,
     id: "06"
   },
   {
-    title: "Índice Cativa",
-    desc: "Um indicador exclusivo que mede a saúde real da sua operação e marca.",
-    benefit: "Você para de olhar apenas o volume e passa a enxergar a qualidade da sua gestão.",
-    icon: Activity,
+    title: "Espaço do Cliente",
+    desc: "O cliente entra com Google ou Apple, agenda, remarca, cancela, acompanha pacotes, preenche a anamnese e avalia o atendimento.",
+    benefit: "Menos trabalho na recepção e uma marca com cara profissional.",
+    icon: Smartphone,
     id: "07"
+  },
+  {
+    title: "Serviços, pacotes e fidelidade",
+    desc: "Cadastre serviços e pacotes de sessões, controle o saldo de cada cliente e premie os mais fiéis.",
+    benefit: "Venda o tratamento completo, não só a sessão avulsa.",
+    icon: Package,
+    id: "08"
+  },
+  {
+    title: "Equipe, metas e comissões",
+    desc: "Portal do profissional, metas com ranking e fechamento mensal de comissões calculado automaticamente.",
+    benefit: "Equipe motivada e acerto do mês sem planilha.",
+    icon: Trophy,
+    id: "09"
+  },
+  {
+    title: "Relatórios e Índice Cativa",
+    desc: "Faltas, ocupação, retorno, valor de cada cliente, previsão de faturamento e um índice único da saúde do negócio, com sugestões do que fazer.",
+    benefit: "Decisões com base em números reais, não em achismo.",
+    icon: BarChart,
+    id: "10"
+  },
+  {
+    title: "Avisos no celular e app instalável",
+    desc: "Instale a Cativa na tela do celular e receba aviso de novo agendamento e cancelamento. A agenda do dia funciona até sem internet.",
+    benefit: "Você sabe o que acontece no negócio de qualquer lugar.",
+    icon: Gift,
+    id: "11"
   }
 ];
 
