@@ -34,6 +34,7 @@ const FOOTER_LINKS = [
 ];
 
 export function PremiumFooter() {
+  const signupsOpen = useSignupsOpen();
   return (
     <footer className="bg-primary-dark text-white pt-24 pb-12 border-t border-white/5 overflow-hidden relative">
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent/10 blur-[150px] rounded-full -z-10 translate-x-1/2 translate-y-1/2" />
