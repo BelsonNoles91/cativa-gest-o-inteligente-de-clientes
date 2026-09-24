@@ -134,6 +134,13 @@
       "when": 1790163492725,
       "tag": "0018_add_missing_foreign_key_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1790256576594,
+      "tag": "0019_professional_visibility_setting",
+      "breakpoints": true
     }
   ]
 }

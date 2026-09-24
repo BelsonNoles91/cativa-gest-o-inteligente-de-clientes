@@ -4246,6 +4246,7 @@ export type Database = {
           default_unit_id: string | null
           logo_url: string | null
           preferences: Json
+          professional_sees_all: boolean
           tenant_id: string
           updated_at: string
           whatsapp_phone: string | null
@@ -4260,6 +4261,7 @@ export type Database = {
           default_unit_id?: string | null
           logo_url?: string | null
           preferences?: Json
+          professional_sees_all?: boolean
           tenant_id: string
           updated_at?: string
           whatsapp_phone?: string | null
@@ -4274,6 +4276,7 @@ export type Database = {
           default_unit_id?: string | null
           logo_url?: string | null
           preferences?: Json
+          professional_sees_all?: boolean
           tenant_id?: string
           updated_at?: string
           whatsapp_phone?: string | null
@@ -5584,6 +5587,10 @@ export type Database = {
           estimated_ltv: number
           full_name: string
         }[]
+      }
+      professional_is_restricted: {
+        Args: { _tenant_id: string; _user_id: string }
+        Returns: boolean
       }
       redact_sensitive_data: { Args: { input_data: Json }; Returns: Json }
       reject_schedule_request: {
