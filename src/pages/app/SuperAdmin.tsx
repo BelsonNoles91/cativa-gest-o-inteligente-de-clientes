@@ -19,6 +19,7 @@ import { AuditLogsTab } from "@/features/admin/AuditLogsTab";
 import { IncidentsTab as AdminIncidentsTab } from "@/features/admin/IncidentsTab";
 import { FeatureFlagsConsole } from "@/features/admin/FeatureFlagsConsole";
 import { SecurityScansTab } from "@/features/admin/SecurityScansTab";
+import { PlansEditorTab } from "@/features/admin/PlansEditorTab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -105,7 +106,8 @@ export default function SuperAdmin() {
             <AdminIncidentsTab />
           </TabsContent>
 
-          <TabsContent value="plans" className="mt-0 focus-visible:ring-0">
+          <TabsContent value="plans" className="mt-0 space-y-8 focus-visible:ring-0">
+            <PlansEditorTab />
             <TrialLogsTab tenants={tenants} />
           </TabsContent>
 

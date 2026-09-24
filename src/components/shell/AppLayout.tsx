@@ -15,6 +15,14 @@ import { SafeAreaDebugOverlay } from "@/components/debug/SafeAreaDebugOverlay";
 import { TenantBillingProvider } from "@/features/billing/TenantBillingProvider";
 import { SubscriptionBlocker } from "@/features/billing/SubscriptionBlocker";
 import { TenantRealtimeSync } from "@/features/realtime/TenantRealtimeSync";
+import { MaintenanceGate } from "@/features/system/SystemGates";
+import { useTenant } from "@/features/tenant/TenantProvider";
+import type { ReactNode } from "react";
+
+function MaintenanceGateForTenant({ children }: { children: ReactNode }) {
+  const { isSuperAdmin } = useTenant();
+  return <MaintenanceGate bypass={isSuperAdmin}>{children}</MaintenanceGate>;
+}
 
 export function AppLayout() {
   return (
@@ -37,6 +45,7 @@ export function AppLayout() {
             >
               <div className="mx-auto w-full max-w-7xl space-y-3">
                 <InstallAppBanner />
+                <MaintenanceGateForTenant>
                 <SubscriptionBlocker>
                   <Suspense
                     fallback={
@@ -52,6 +61,7 @@ export function AppLayout() {
                     <Outlet />
                   </Suspense>
                 </SubscriptionBlocker>
+                </MaintenanceGateForTenant>
               </div>
             </main>
             <BottomNav />

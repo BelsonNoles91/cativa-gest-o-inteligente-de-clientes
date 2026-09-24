@@ -237,7 +237,7 @@ export default function AnalyticsPage() {
           </div>
 
           <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,0.9fr)]">
-            <CativaIndexCard breakdown={cativa} scope={scopeLabel} />
+            {systemFlags.show_cativa_index && <CativaIndexCard breakdown={cativa} scope={scopeLabel} />}
             <NextBestActions actions={nba} />
           </div>
 

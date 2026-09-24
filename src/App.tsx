@@ -198,7 +198,9 @@ const App = () => (
                       path="/onboarding"
                       element={
                         <OnboardingGuard>
-                          <Onboarding />
+                          <SignupsGate>
+                            <Onboarding />
+                          </SignupsGate>
                         </OnboardingGuard>
                       }
                     />
