@@ -1,3 +1,4 @@
+import { SignupLink } from "@/features/system/SignupLink";
 import { Link } from "react-router-dom";
 import { ArrowRight, Star, Clock, Calendar, Users, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -84,10 +85,10 @@ export function HeroSection() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-5 mb-10">
             <div className="flex flex-col gap-3 w-full sm:w-auto">
               <Button asChild size="lg" variant="premium" className="group h-16 px-10 w-full sm:w-[300px] text-lg rounded-2xl" aria-label="Começar agora gratuitamente">
-                <Link to="/onboarding" className="flex items-center justify-center gap-2">
+                <SignupLink className="flex items-center justify-center gap-2">
                   Começar agora grátis
                   <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-                </Link>
+                </SignupLink>
               </Button>
               <p className="text-[11px] text-muted-foreground font-medium text-center px-4 leading-tight">
                 Crie sua conta em 30 segundos <br className="hidden sm:block" /> e organize sua agenda hoje.

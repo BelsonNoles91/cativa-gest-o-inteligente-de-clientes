@@ -1,3 +1,4 @@
+import { SignupLink } from "@/features/system/SignupLink";
 import { PremiumHeader as Navbar } from "@/components/marketing/layout/PremiumHeader";
 import { PremiumFooter as Footer } from "@/components/marketing/layout/PremiumFooter";
 import { HeroSection } from "@/components/marketing/sections/HeroSection";
@@ -271,10 +272,10 @@ export default function PremiumLanding() {
 
               <div className="pt-6 md:pt-8">
                 <Button asChild size="lg" variant="premium" className="w-full md:w-auto h-16 px-10 rounded-2xl group">
-                  <Link to="/onboarding" className="flex items-center justify-center gap-2">
+                  <SignupLink className="flex items-center justify-center gap-2">
                     Começar agora como {segments[activeSegment].name}
                     <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-                  </Link>
+                  </SignupLink>
                 </Button>
               </div>
             </div>
@@ -373,7 +374,7 @@ export default function PremiumLanding() {
                        <h2 className="font-display text-5xl md:text-6xl text-primary-dark tracking-tighter leading-none mb-8">Dúvidas <br />Comuns.</h2>
                        <p className="text-muted-foreground font-light text-lg mb-10">Tudo o que você precisa saber para elevar seu negócio hoje.</p>
                        <Button asChild size="lg" className="rounded-full bg-primary-dark text-white px-8 py-6 h-auto text-sm font-bold uppercase tracking-widest gap-2 hover:scale-[1.02] transition-all shadow-lg">
-                          <Link to="/onboarding" className="flex items-center gap-2">Começar agora grátis <ArrowRight className="h-4 w-4" /></Link>
+                          <SignupLink className="flex items-center gap-2">Começar agora grátis <ArrowRight className="h-4 w-4" /></SignupLink>
                        </Button>
                     </div>
                  </div>
@@ -433,13 +434,13 @@ export default function PremiumLanding() {
                <div className="flex flex-col sm:flex-row justify-center items-center gap-6 mb-24">
                   <div className="flex flex-col gap-2">
                     <Button asChild size="lg" variant="premium" className="group relative overflow-hidden h-20 px-12">
-                       <Link to="/onboarding">
+                       <SignupLink>
                          <span className="relative z-10 flex items-center gap-3 text-xl">
                            Começar Agora Grátis
                            <ArrowRight className="h-6 w-6" />
                          </span>
                          <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover:translate-y-0" />
-                       </Link>
+                       </SignupLink>
                     </Button>
                     <span className="text-xs text-white/70 font-bold uppercase tracking-widest">Acesso imediato à sua nova gestão.</span>
                   </div>
@@ -487,7 +488,7 @@ export default function PremiumLanding() {
                 <Link to="/auth/login">Entrar</Link>
               </Button>
               <Button asChild className="flex-1 rounded-full bg-primary-dark h-14 font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20">
-                <Link to="/onboarding">Começar Grátis</Link>
+                <SignupLink>Começar Grátis</SignupLink>
               </Button>
             </div>
           </motion.div>

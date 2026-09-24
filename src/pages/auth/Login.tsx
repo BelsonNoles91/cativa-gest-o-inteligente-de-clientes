@@ -1,3 +1,4 @@
+import { SignupLink } from "@/features/system/SignupLink";
 import { translateAuthError } from "@/lib/auth-errors";
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -174,13 +175,12 @@ export default function Login() {
             </div>
           </div>
 
-          <Link
-            to="/onboarding"
+          <SignupLink
             className="flex h-16 w-full items-center justify-center gap-3 rounded-full border-2 border-primary-dark/10 bg-white text-lg font-bold text-primary-dark transition-all hover:border-accent hover:text-accent group"
           >
             Criar conta grátis
             <Sparkles className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-all -translate-y-1 group-hover:translate-y-0" />
-          </Link>
+          </SignupLink>
 
           <p className="text-center text-[10px] leading-relaxed text-muted-foreground font-medium px-8">
             Ao continuar você concorda com os{" "}

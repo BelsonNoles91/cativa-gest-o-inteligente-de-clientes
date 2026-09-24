@@ -1,3 +1,4 @@
+import { SignupLink } from "@/features/system/SignupLink";
 /**
  * PublicHeader — cabeçalho compartilhado da presença pública (Landing,
  * Planos, futuras páginas institucionais).
@@ -61,7 +62,7 @@ export function PublicHeader() {
             <Link to="/auth/login">Entrar</Link>
           </Button>
           <Button asChild size="sm" className="rounded-xl bg-gradient-brand">
-            <Link to="/onboarding">Começar grátis</Link>
+            <SignupLink>Começar grátis</SignupLink>
           </Button>
         </div>
 
@@ -105,7 +106,7 @@ export function PublicHeader() {
                 <Link to="/auth/login">Entrar</Link>
               </Button>
               <Button asChild className="flex-1 bg-gradient-brand">
-                <Link to="/onboarding">Começar grátis</Link>
+                <SignupLink>Começar grátis</SignupLink>
               </Button>
             </div>
           </div>

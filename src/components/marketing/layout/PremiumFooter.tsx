@@ -1,3 +1,4 @@
+import { SignupLink } from "@/features/system/SignupLink";
 import { Link } from "react-router-dom";
 import { ArrowRight, Instagram, Linkedin, Mail, MapPin, Phone } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
@@ -92,7 +93,7 @@ export function PremiumFooter() {
            </div>
            <div className="flex flex-col sm:flex-row gap-4 relative z-10 w-full md:w-auto">
              <Button asChild size="lg" className="h-16 px-10 rounded-full bg-primary-dark text-white shadow-xl">
-                <Link to="/onboarding">Começar agora grátis</Link>
+                <SignupLink>Começar agora grátis</SignupLink>
              </Button>
            </div>
         </div>
