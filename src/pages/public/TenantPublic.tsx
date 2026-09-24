@@ -28,6 +28,17 @@ import { Calendar } from "@/components/ui/calendar";
 import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  FULL_NAME_ERROR,
+  WHATSAPP_ERROR,
+  isValidFullName,
+  isValidMobileBR,
+  maskMobileBR,
+} from "@/lib/client-validation";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { SocialAuthButtons } from "@/features/auth/SocialAuthButtons";
@@ -111,6 +122,21 @@ export default function TenantPublic() {
   const [submitting, setSubmitting] = useState(false);
   const [confirmedId, setConfirmedId] = useState<string | null>(null);
 
+  // Dados obrigatórios do cliente (nome com 2+ palavras e WhatsApp com DDD).
+  const contactKey = `cativa:public_contact:${slug}`;
+  const [contact, setContact] = useState<{ fullName: string; whatsapp: string }>(() => {
+    try {
+      const raw = sessionStorage.getItem(`cativa:public_contact:${slug}`);
+      return raw ? JSON.parse(raw) : { fullName: "", whatsapp: "" };
+    } catch {
+      return { fullName: "", whatsapp: "" };
+    }
+  });
+  const [contactLoaded, setContactLoaded] = useState(false);
+  const [contactForm, setContactForm] = useState({ fullName: "", whatsapp: "" });
+  const [contactTouched, setContactTouched] = useState(false);
+  const contactValid = isValidFullName(contact.fullName) && isValidMobileBR(contact.whatsapp);
+
   const patch = useCallback((next: Partial<Draft>) => {
     setDraft((prev) => ({ ...prev, ...next }));
   }, []);
@@ -122,6 +148,65 @@ export default function TenantPublic() {
       /* ignora indisponibilidade de storage */
     }
   }, [draft, draftKey]);
+
+  // Pré-preenche com o cadastro existente do cliente neste estabelecimento.
+  useEffect(() => {
+    if (!user || !page) {
+      setContactLoaded(false);
+      return;
+    }
+    let alive = true;
+    (async () => {
+      let fullName = contact.fullName;
+      let whatsapp = contact.whatsapp;
+      try {
+        const { data } = await supabase
+          .from("client_users")
+          .select("clients(full_name, phone, whatsapp_phone)")
+          .eq("user_id", user.id)
+          .eq("tenant_id", page.tenantId)
+          .eq("status", "active")
+          .limit(1)
+          .maybeSingle();
+        const c = (data as { clients?: { full_name?: string; phone?: string; whatsapp_phone?: string } } | null)
+          ?.clients;
+        if (c) {
+          if (!isValidFullName(fullName)) fullName = c.full_name ?? fullName;
+          if (!isValidMobileBR(whatsapp)) whatsapp = c.whatsapp_phone || c.phone || whatsapp;
+        }
+      } catch {
+        /* segue com o que tiver */
+      }
+      if (!isValidFullName(fullName)) {
+        const meta = user.user_metadata as Record<string, unknown> | undefined;
+        fullName = String(meta?.full_name ?? meta?.name ?? fullName ?? "");
+      }
+      if (!alive) return;
+      const next = { fullName: fullName.trim(), whatsapp: maskMobileBR(whatsapp) };
+      setContact(next);
+      setContactForm(next);
+      setContactLoaded(true);
+    })();
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, page?.tenantId]);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(contactKey, JSON.stringify(contact));
+    } catch {
+      /* noop */
+    }
+  }, [contact, contactKey]);
+
+  const saveContact = () => {
+    setContactTouched(true);
+    if (!isValidFullName(contactForm.fullName) || !isValidMobileBR(contactForm.whatsapp)) return;
+    setContact({ fullName: contactForm.fullName.trim().replace(/\s+/g, " "), whatsapp: contactForm.whatsapp });
+    setContactTouched(false);
+  };
 
   useEffect(() => {
     let alive = true;
@@ -211,6 +296,11 @@ export default function TenantPublic() {
 
   const confirm = async () => {
     if (!draft.unitId || !draft.serviceId || !selectedSlot) return;
+    if (!contactValid) {
+      setContactForm(contact);
+      setContactLoaded(true);
+      return;
+    }
     setSubmitting(true);
     try {
       const id = await createPublicAppointment({
@@ -219,6 +309,8 @@ export default function TenantPublic() {
         serviceId: draft.serviceId,
         professionalId: selectedSlot.professionalId,
         startsAt: selectedSlot.startsAt,
+        fullName: contact.fullName,
+        phone: contact.whatsapp,
         notes: draft.notes || null,
       });
       setConfirmedId(id);
@@ -268,8 +360,64 @@ export default function TenantPublic() {
     page.headline || `Agende online em ${page.name}. Serviços, unidades e horários disponíveis.`;
   const canonical = `https://cativapp.lovable.app/e/${page.slug}`;
 
+  const needsContact = Boolean(user) && contactLoaded && !contactValid && !confirmedId;
+  const nameError = contactTouched && !isValidFullName(contactForm.fullName);
+  const phoneError = contactTouched && !isValidMobileBR(contactForm.whatsapp);
+
   return (
     <div className="min-h-screen bg-background pb-24">
+      <Dialog open={needsContact}>
+        <DialogContent
+          className="max-w-md rounded-2xl [&>button]:hidden"
+          onEscapeKeyDown={(e) => e.preventDefault()}
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
+        >
+          <DialogHeader>
+            <DialogTitle>Complete seu cadastro</DialogTitle>
+            <DialogDescription>
+              Para {page.name} confirmar seu horário, precisamos do seu nome completo e WhatsApp com DDD. Depois é
+              só continuar o agendamento.
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            className="space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              saveContact();
+            }}
+          >
+            <div className="space-y-1.5">
+              <Label htmlFor="pc-name">Nome e sobrenome</Label>
+              <Input
+                id="pc-name"
+                autoComplete="name"
+                value={contactForm.fullName}
+                onChange={(e) => setContactForm((p) => ({ ...p, fullName: e.target.value }))}
+                aria-invalid={nameError}
+              />
+              {nameError && <p className="text-xs text-destructive">{FULL_NAME_ERROR}</p>}
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="pc-wa">WhatsApp (com DDD)</Label>
+              <Input
+                id="pc-wa"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel-national"
+                placeholder="(11) 99999-9999"
+                value={contactForm.whatsapp}
+                onChange={(e) => setContactForm((p) => ({ ...p, whatsapp: maskMobileBR(e.target.value) }))}
+                aria-invalid={phoneError}
+              />
+              {phoneError && <p className="text-xs text-destructive">{WHATSAPP_ERROR}</p>}
+            </div>
+            <Button type="submit" className="min-h-[48px] w-full rounded-2xl">
+              Salvar e continuar
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
       <Helmet>
         <title>{`${page.name} | Agende online`}</title>
         <meta name="description" content={description} />
@@ -597,6 +745,22 @@ export default function TenantPublic() {
                       <Loader2 className="h-4 w-4 animate-spin" /> Verificando sua conta…
                     </div>
                   ) : user ? (
+                    <>
+                    {contactValid && (
+                      <p className="text-sm text-muted-foreground">
+                        {contact.fullName} · {contact.whatsapp}{" "}
+                        <button
+                          type="button"
+                          className="underline underline-offset-2"
+                          onClick={() => {
+                            setContactForm(contact);
+                            setContact((c) => ({ ...c, whatsapp: "" }));
+                          }}
+                        >
+                          alterar
+                        </button>
+                      </p>
+                    )}
                     <Button
                       onClick={confirm}
                       disabled={submitting}
@@ -605,6 +769,7 @@ export default function TenantPublic() {
                       {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                       Confirmar horário
                     </Button>
+                    </>
                   ) : (
                     <div className="space-y-3">
                       <p className="text-sm text-muted-foreground">
