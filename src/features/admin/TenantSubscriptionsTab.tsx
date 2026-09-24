@@ -8,7 +8,6 @@ import {
   History,
   Loader2,
   Pencil,
-  RefreshCcw,
   Search,
   SlidersHorizontal,
 } from "lucide-react";
@@ -266,7 +265,7 @@ export function TenantSubscriptionsTab({
 
   return (
     <div className="space-y-5" data-testid="tenant-subscriptions-tab">
-      <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
         <Summary label="Em teste" value={stats.trialing} tone="brand" icon={<Clock3 className="h-4 w-4" />} />
         <Summary label="Ativas" value={stats.active} tone="success" icon={<CheckCircle2 className="h-4 w-4" />} />
         <Summary label="Em atraso" value={stats.overdue} tone="warning" icon={<AlertTriangle className="h-4 w-4" />} />

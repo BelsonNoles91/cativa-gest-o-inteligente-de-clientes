@@ -149,8 +149,8 @@ export default function SuperAdmin() {
               </div>
 
               <Tabs defaultValue="members" className="space-y-6">
-                <div className="border-b border-border/60">
-                  <TabsList className="flex h-auto justify-start gap-5 bg-transparent p-0">
+                <div className="overflow-x-auto border-b border-border/60">
+                  <TabsList className="flex h-auto w-max min-w-full flex-nowrap justify-start gap-5 bg-transparent p-0">
                     <TabsTrigger value="members" className="gap-1.5 rounded-none border-b-2 border-transparent px-0 pb-3 text-sm font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
                       <Users className="h-3.5 w-3.5" /> Perfis e acessos
                     </TabsTrigger>
