@@ -1983,8 +1983,8 @@ function CustomFieldEditor({
 function clientToForm(client: Client): ClientFormState {
   return {
     fullName: client.fullName,
-    phone: client.phone ?? "",
-    whatsappPhone: client.whatsappPhone ?? "",
+    phone: maskMobileBR(client.phone),
+    whatsappPhone: maskMobileBR(client.whatsappPhone || client.phone),
     email: client.email ?? "",
     birthDate: client.birthDate ?? "",
     origin: client.origin ?? "",

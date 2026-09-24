@@ -6,6 +6,7 @@
  * - Assinar termos pendentes
  */
 import { useEffect, useMemo, useState } from "react";
+import { FULL_NAME_ERROR, WHATSAPP_ERROR, isValidFullName, isValidMobileBR, maskMobileBR } from "@/lib/client-validation";
 import { FileText, Loader2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -99,8 +100,8 @@ export default function PortalProfile() {
   useEffect(() => {
     if (!profile) return;
     setFullName(profile.fullName ?? "");
-    setPhone(profile.phone ?? "");
-    setWhatsapp(profile.whatsappPhone ?? "");
+    setPhone(maskMobileBR(profile.phone));
+    setWhatsapp(maskMobileBR(profile.whatsappPhone || profile.phone));
     setBirthDate(profile.birthDate ?? "");
     setCity(profile.city ?? "");
     setState(profile.state ?? "");
@@ -117,6 +118,14 @@ export default function PortalProfile() {
 
   async function handleSave() {
     if (!activeLink || !profile) return;
+    if (!isValidFullName(fullName)) {
+      toast({ title: "Nome incompleto", description: FULL_NAME_ERROR, variant: "destructive" });
+      return;
+    }
+    if (!isValidMobileBR(whatsapp)) {
+      toast({ title: "WhatsApp obrigatório", description: WHATSAPP_ERROR, variant: "destructive" });
+      return;
+    }
     setSaving(true);
     try {
       await updateClientProfile(profile.id, {
@@ -245,16 +254,18 @@ export default function PortalProfile() {
               <Input
                 id="phone"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                inputMode="tel"
+                onChange={(e) => setPhone(maskMobileBR(e.target.value))}
                 placeholder="(11) 99999-0000"
               />
             </div>
             <div>
-              <Label htmlFor="wa">WhatsApp</Label>
+              <Label htmlFor="wa">WhatsApp (com DDD) *</Label>
               <Input
                 id="wa"
                 value={whatsapp}
-                onChange={(e) => setWhatsapp(e.target.value)}
+                inputMode="tel"
+                onChange={(e) => setWhatsapp(maskMobileBR(e.target.value))}
                 placeholder="(11) 99999-0000"
               />
             </div>
