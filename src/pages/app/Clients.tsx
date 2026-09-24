@@ -1,3 +1,4 @@
+import { FULL_NAME_ERROR, WHATSAPP_ERROR, isValidFullName, isValidMobileBR, maskMobileBR, onlyDigits } from "@/lib/client-validation";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
