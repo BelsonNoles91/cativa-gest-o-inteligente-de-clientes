@@ -1,4 +1,4 @@
-import { Suspense, lazy, type ComponentType, type LazyExoticComponent, forwardRef } from "react";
+import { Suspense, lazy, useEffect, type ComponentType, type LazyExoticComponent, forwardRef } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
@@ -8,7 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { ThemeProvider } from "@/features/theme/ThemeProvider";
 import { ForceLightOnPublicRoutes } from "@/features/theme/ForceLightOnPublicRoutes";
-import { AuthProvider } from "@/features/auth/AuthProvider";
+import { AuthProvider, useAuth } from "@/features/auth/AuthProvider";
 import { OAuthRedirectHandler } from "@/features/auth/OAuthRedirectHandler";
 import { TenantProvider } from "@/features/tenant/TenantProvider";
 import { ProtectedRoute, RequireOnboarding, RoleGuard, OnboardingGuard } from "@/features/auth/guards";
@@ -110,12 +110,60 @@ const PortalClientProvider = lazyWithReload(() =>
   import("@/features/portal/PortalClientProvider").then((module) => ({ default: module.PortalClientProvider })),
 );
 
+/**
+ * Pré-carrega em segundo plano os módulos do painel logo depois que o
+ * usuário entra, para que o clique no menu abra a tela na hora.
+ */
+const APP_MODULE_IMPORTS: Array<() => Promise<unknown>> = [
+  () => import("@/components/shell/AppLayout"),
+  () => import("./pages/app/Dashboard"),
+  () => import("./pages/app/Agenda"),
+  () => import("./pages/app/Clients"),
+  () => import("./pages/app/ConfirmationCenter"),
+  () => import("./pages/app/Services"),
+  () => import("./pages/app/Packages"),
+  () => import("./pages/app/Waitlist"),
+  () => import("./pages/app/MySchedule"),
+  () => import("./pages/app/Analytics"),
+  () => import("./pages/app/Outreach"),
+  () => import("./pages/app/Commissions"),
+  () => import("./pages/app/TeamGoals"),
+  () => import("./pages/app/Reviews"),
+  () => import("./pages/app/ManagerDashboard"),
+  () => import("./pages/app/ManagerClients"),
+  () => import("./pages/app/Settings"),
+  () => import("./pages/app/Profile"),
+  () => import("./pages/app/Billing"),
+  () => import("./pages/app/Subscription"),
+  () => import("./pages/app/DataImportExport"),
+  () => import("./pages/app/SuperAdmin"),
+];
+
+function PreloadAppModules() {
+  const { user } = useAuth();
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    const run = async () => {
+      for (const load of APP_MODULE_IMPORTS) {
+        if (cancelled) return;
+        try { await load(); } catch { /* ignora; carregará no clique */ }
+      }
+    };
+    const w = window as Window & { requestIdleCallback?: (cb: () => void) => number };
+    const id = w.requestIdleCallback ? w.requestIdleCallback(() => void run()) : window.setTimeout(() => void run(), 800);
+    return () => { cancelled = true; if (!w.requestIdleCallback) clearTimeout(id); };
+  }, [user]);
+  return null;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <HelmetProvider>
       <ErrorBoundary name="Root">
         <ThemeProvider defaultTheme={appConfig.defaultTheme}>
-        <BrowserRouter>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <PreloadAppModules />
           <AuthProvider>
             <TenantProvider>
               <TooltipProvider>
