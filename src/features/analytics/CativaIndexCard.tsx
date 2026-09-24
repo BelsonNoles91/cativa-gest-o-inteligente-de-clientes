@@ -19,17 +19,17 @@ export function CativaIndexCard({ breakdown, scope }: Props) {
   return (
     <section className="surface-card min-w-0 w-full max-w-full overflow-hidden">
       <div className="min-w-0 bg-gradient-brand p-5 text-primary-foreground md:p-6">
-        <div className="flex min-w-0 flex-wrap items-center gap-2 text-xs uppercase tracking-wider opacity-80">
+        <div className="flex min-w-0 flex-wrap items-center gap-2 text-xs font-medium uppercase tracking-wider">
           <Sparkles className="h-3.5 w-3.5 shrink-0" /> Índice Cativa · {scope}
         </div>
         <div className="mt-2 flex min-w-0 flex-wrap items-end gap-3">
           <span className="font-display text-5xl font-semibold leading-none">{breakdown.score}</span>
-          <span className="pb-1 text-sm opacity-85">/ 100</span>
+          <span className="pb-1 text-sm">/ 100</span>
           <StatusBadge tone={tone} className="ml-2 mb-1">
             {label}
           </StatusBadge>
         </div>
-        <p className="mt-2 text-sm opacity-90">
+        <p className="mt-2 text-sm">
           Score proprietário que combina retenção, rebooking, confirmação, ocupação,
           recuperação de no-show, adesão à janela ideal, completude do CRM e valor futuro.
         </p>
@@ -63,7 +63,7 @@ export function CativaIndexCard({ breakdown, scope }: Props) {
             <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-warning-foreground">
               <TrendingDown className="h-3.5 w-3.5" /> Principais gargalos
             </p>
-            <ul className="space-y-0.5 text-xs text-warning-foreground/90">
+            <ul className="space-y-0.5 text-xs text-warning-foreground">
               {bottlenecks.map((b) => (
                 <li key={b.key}>
                   • {b.label} — {b.valuePct.toFixed(0)}% (peso {b.weight})
@@ -78,7 +78,7 @@ export function CativaIndexCard({ breakdown, scope }: Props) {
             <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-success">
               <TrendingUp className="h-3.5 w-3.5" /> Pontos fortes
             </p>
-            <ul className="space-y-0.5 text-xs text-success/90">
+            <ul className="space-y-0.5 text-xs text-success-strong">
               {strengths.map((s) => (
                 <li key={s.key}>
                   • {s.label} — {s.valuePct.toFixed(0)}%

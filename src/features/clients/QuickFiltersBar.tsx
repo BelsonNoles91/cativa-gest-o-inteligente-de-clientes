@@ -133,7 +133,7 @@ export function QuickFiltersBar<F extends FiltersShape>({
       
       <QuickChip
         active={filters.churnRiskScore === "high"}
-        icon={<ShieldAlert className="h-3.5 w-3.5 text-red-500" />}
+        icon={<ShieldAlert className="h-3.5 w-3.5 text-destructive" />}
         label="Risco de Churn"
         testId="quick-filter-churn-risk"
         onClick={() =>

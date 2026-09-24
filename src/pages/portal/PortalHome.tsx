@@ -135,19 +135,19 @@ export default function PortalHome() {
         <Skeleton className="h-44 w-full rounded-2xl" />
       ) : next ? (
         <Card className="overflow-hidden border-0 bg-gradient-brand p-5 text-primary-foreground shadow-lg">
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-primary-foreground/80">
+          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-primary-foreground">
             <Sparkles className="h-3.5 w-3.5" />
             Próximo horário
           </div>
           <h2 className="mt-2 font-display text-xl font-semibold leading-tight">
             {next.serviceName ?? "Atendimento"}
           </h2>
-          <p className="mt-0.5 text-sm text-primary-foreground/85">
+          <p className="mt-0.5 text-sm text-primary-foreground">
             com {next.professionalName ?? "profissional"}
           </p>
           <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
             <div className="rounded-xl bg-primary-foreground/10 p-3">
-              <div className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-primary-foreground/75">
+              <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-primary-foreground">
                 <Calendar className="h-3.5 w-3.5" /> Data
               </div>
               <p className="mt-1 capitalize">
@@ -155,7 +155,7 @@ export default function PortalHome() {
               </p>
             </div>
             <div className="rounded-xl bg-primary-foreground/10 p-3">
-              <div className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-primary-foreground/75">
+              <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-primary-foreground">
                 <Clock className="h-3.5 w-3.5" /> Hora
               </div>
               <p className="mt-1">
@@ -165,7 +165,7 @@ export default function PortalHome() {
             </div>
           </div>
           {next.unitName && (
-            <p className="mt-3 flex items-center gap-1.5 text-xs text-primary-foreground/80">
+            <p className="mt-3 flex items-center gap-1.5 text-xs text-primary-foreground">
               <MapPin className="h-3.5 w-3.5" /> {next.unitName}
             </p>
           )}
@@ -191,7 +191,7 @@ export default function PortalHome() {
               </Link>
             </Button>
           </div>
-          <p className="mt-3 text-xs text-primary-foreground/75">
+          <p className="mt-3 text-xs text-primary-foreground">
             Status: {appointmentStatusLabels[next.appointment.status]}
           </p>
         </Card>

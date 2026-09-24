@@ -140,7 +140,7 @@ export default function Dashboard() {
                   limit={limits?.maxAppointmentsMonth ?? null} 
                 />
                 {limits?.maxAppointmentsMonth ? (
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {usage.appointmentsLast30d >= limits.maxAppointmentsMonth
                       ? "Limite atingido! Seu negócio cresceu e agora precisa de mais fôlego. Faça upgrade para continuar agendando."
                       : usage.appointmentsLast30d >= (limits.maxAppointmentsMonth * 0.8) 
@@ -148,7 +148,7 @@ export default function Dashboard() {
                         : "Uso saudável dos limites do seu plano."}
                   </p>
                 ) : (
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Você tem agendamentos ilimitados. Aproveite para crescer seu negócio!
                   </p>
                 )}
@@ -261,11 +261,11 @@ export default function Dashboard() {
             <div className="grid gap-4 md:gap-6">
               <section className="surface-card overflow-hidden">
                 <div className="bg-gradient-brand p-5 text-primary-foreground">
-                  <p className="text-xs uppercase tracking-wide opacity-80">Foco do dia</p>
+                  <p className="text-xs font-medium uppercase tracking-wide">Foco do dia</p>
                   <h3 className="mt-1 font-display text-xl">
                     {snapshot.pendingConfirmations > 0 ? "Feche as confirmações pendentes" : "Mantenha a agenda saudável"}
                   </h3>
-                  <p className="mt-1 text-sm opacity-90">{focusMessage}</p>
+                  <p className="mt-1 text-sm">{focusMessage}</p>
                 </div>
                 <div className="space-y-2 p-5">
                   <Button
@@ -274,7 +274,7 @@ export default function Dashboard() {
                   >
                     <CheckCircle2 className="mr-2 h-4 w-4" /> Abrir central de confirmações
                   </Button>
-                  <p className="text-[11px] text-muted-foreground">
+                   <p className="text-xs text-muted-foreground">
                     As mensagens são geradas e abertas manualmente. Nenhum envio automático via WhatsApp.
                   </p>
                 </div>
@@ -309,7 +309,7 @@ export default function Dashboard() {
                       </div>
                       <div className="min-w-0 space-y-0.5">
                         <p className="truncate text-sm font-medium leading-tight">{shortcut.label}</p>
-                        <p className="text-[11px] text-muted-foreground">{shortcut.hint}</p>
+                         <p className="text-xs text-muted-foreground">{shortcut.hint}</p>
                       </div>
                     </button>
                   ))}

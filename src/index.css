@@ -120,7 +120,9 @@
     --input: 319 18% 20%;
     --ring: 321 45% 74%;
 
-    --gradient-brand: linear-gradient(135deg, hsl(321 38% 45%) 0%, hsl(319 35% 22%) 100%);
+    /* O texto sobre a marca usa --primary-foreground escuro neste tema.
+       Ambos os extremos precisam permanecer claros o bastante para AA. */
+    --gradient-brand: linear-gradient(135deg, hsl(321 38% 60%) 0%, hsl(319 35% 68%) 100%);
     --gradient-soft: linear-gradient(160deg, hsl(319 22% 14%) 0%, hsl(319 22% 8%) 100%);
     --gradient-accent: linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(156 30% 35%) 100%);
 
