@@ -44,6 +44,12 @@ Status por fase: ✅ concluída · 🔜 próxima · ⏳ planejada
 
 Roadmap concluído: todas as fases (0 a 7) entregues.
 
+## Gestão administrativa de assinaturas dos estabelecimentos ✅ concluída
+- [x] Painel por status e plano, separado dos planos vendidos aos clientes finais
+- [x] Gestão de plano, situação, teste, ciclo, desconto, limites e observações
+- [x] Operação protegida para super administrador com histórico completo
+- [x] Validação visual em computador e celular; acesso e validações críticas confirmados sem alterar assinaturas reais
+
 ## Fase 8 — Dados reais e notificações (23/09/2026) ✅
 - [x] Push de lembrete 24h (cron horário) e push de confirmação do cliente (avisa recepção e cliente)
 - [x] Cartão "Avisos no celular" também no perfil da equipe (/app/perfil)
