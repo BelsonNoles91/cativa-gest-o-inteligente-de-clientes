@@ -225,6 +225,13 @@
       "when": 1790271567623,
       "tag": "0031_comeco_cta_label_short",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1790283072606,
+      "tag": "0032_secure_admin_subscription_management",
+      "breakpoints": true
     }
   ]
 }
