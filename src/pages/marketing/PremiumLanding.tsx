@@ -65,7 +65,7 @@ export default function PremiumLanding() {
     <div className="min-h-screen bg-background font-sans selection:bg-accent/30 selection:text-primary-dark overflow-x-hidden">
       <Helmet>
         <title>Cativa — Sistema para Clínicas e Salões focado em Retenção</title>
-        <meta name="description" content="Organize agenda, clientes, confirmações e indicadores com a Cativa. O software premium para clínicas de estética e salões que buscam fidelidade e recorrência." />
+        <meta name="description" content="Agendamento online com link próprio, confirmação pelo WhatsApp em 1 toque, lista de espera, resumo com IA e clientes que voltam. Teste grátis por 14 dias." />
         <link rel="canonical" href="https://cativapp.lovable.app" />
         <meta property="og:url" content="https://cativapp.lovable.app" />
         <meta property="og:title" content="Cativa — Sistema para Clínicas e Salões focado em Retenção" />
