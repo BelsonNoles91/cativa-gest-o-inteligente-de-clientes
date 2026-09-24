@@ -1,4 +1,4 @@
-import { SignupLink } from "@/features/system/SignupLink";
+import { SignupLink, useSignupsOpen } from "@/features/system/SignupLink";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
@@ -15,6 +15,7 @@ const NAV_LINKS = [
 ];
 
 export function PremiumHeader() {
+  const signupsOpen = useSignupsOpen();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeHash, setActiveHash] = useState(() =>
@@ -76,11 +77,15 @@ export function PremiumHeader() {
         </nav>
 
         <div className="hidden lg:flex items-center gap-2 xl:gap-3 shrink-0">
-          <Button asChild variant="ghost" className="text-sm px-4">
-            <Link to="/auth/login">Entrar</Link>
-          </Button>
+          {signupsOpen && (
+            <Button asChild variant="ghost" className="text-sm px-4">
+              <Link to="/auth/login">Entrar</Link>
+            </Button>
+          )}
           <Button asChild variant="premium" className="rounded-xl h-10 px-5 text-sm">
-            <SignupLink>Começar agora grátis</SignupLink>
+            <SignupLink>
+              {signupsOpen ? "Começar agora grátis" : "Entrar na minha conta"}
+            </SignupLink>
           </Button>
         </div>
 
@@ -138,11 +143,15 @@ export function PremiumHeader() {
                 </nav>
                 <hr className="border-border/40" />
                 <div className="flex flex-col gap-3">
-                  <Button asChild variant="outline" size="lg" className="w-full rounded-xl">
-                    <Link to="/auth/login" onClick={() => setMobileMenuOpen(false)}>Entrar</Link>
-                  </Button>
+                  {signupsOpen && (
+                    <Button asChild variant="outline" size="lg" className="w-full rounded-xl">
+                      <Link to="/auth/login" onClick={() => setMobileMenuOpen(false)}>Entrar</Link>
+                    </Button>
+                  )}
                   <Button asChild variant="premium" size="lg" className="w-full rounded-xl">
-                    <SignupLink onClick={() => setMobileMenuOpen(false)}>Começar agora grátis</SignupLink>
+                    <SignupLink onClick={() => setMobileMenuOpen(false)}>
+                      {signupsOpen ? "Começar agora grátis" : "Entrar na minha conta"}
+                    </SignupLink>
                   </Button>
                 </div>
               </div>
