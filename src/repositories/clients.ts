@@ -135,9 +135,6 @@ export async function listClients(params: ListClientsParams): Promise<ListClient
     .order("full_name", { ascending: true })
     .range(offset, offset + limit - 1);
 
-  // Performance hint
-  q = q.throwOnError();
-
   if (params.search?.trim()) {
     const s = params.search.trim().replace(/[,()]/g, " ");
     q = q.or(`full_name.ilike.%${s}%,phone.ilike.%${s}%,email.ilike.%${s}%`);
