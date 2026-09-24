@@ -1,3 +1,4 @@
+import { useSignupsOpen } from "@/features/system/SignupLink";
 /**
  * PublicFooter — rodapé das páginas públicas. Inclui mapa do site,
  * informações institucionais e navegação para planos/login.
@@ -7,6 +8,7 @@ import { Logo } from "@/components/brand/Logo";
 import { appConfig } from "@/config/app";
 
 export function PublicFooter() {
+  const signupsOpen = useSignupsOpen();
   return (
     <footer className="border-t border-border/70 bg-card/40">
       <div className="container py-12">
@@ -40,7 +42,7 @@ export function PublicFooter() {
             title="Conta"
             items={[
               { to: "/auth/login", label: "Entrar" },
-              { to: "/onboarding", label: "Criar conta grátis" },
+              ...(signupsOpen ? [{ to: "/onboarding", label: "Criar conta grátis" }] : []),
             ]}
           />
         </div>
