@@ -241,6 +241,44 @@ export async function listSubscriptionEvents(subscriptionId: string): Promise<Su
   return (data ?? []).map(rowToEvent);
 }
 
+export interface ManageTenantSubscriptionInput {
+  tenantId: string;
+  planId: string;
+  status: SubscriptionStatus;
+  trialStartedAt: string | null;
+  trialEndsAt: string | null;
+  currentPeriodStart: string;
+  currentPeriodEnd: string | null;
+  discountCents: number;
+  discountReason: string | null;
+  overrideLimits: Record<string, number>;
+  notes: string | null;
+  reason: string;
+}
+
+/** Operação administrativa única, validada e auditada no banco. */
+export async function manageTenantSubscription(
+  input: ManageTenantSubscriptionInput,
+): Promise<TenantSubscription> {
+  const { data, error } = await supabase.rpc("admin_manage_tenant_subscription", {
+    _tenant_id: input.tenantId,
+    _plan_id: input.planId,
+    _status: input.status,
+    _trial_started_at: input.trialStartedAt,
+    _trial_ends_at: input.trialEndsAt,
+    _current_period_start: input.currentPeriodStart,
+    _current_period_end: input.currentPeriodEnd,
+    _discount_cents: input.discountCents,
+    _discount_reason: input.discountReason,
+    _override_limits: input.overrideLimits,
+    _notes: input.notes,
+    _reason: input.reason,
+  });
+  if (error) throw error;
+  if (!data) throw new Error("A assinatura não foi retornada após a alteração.");
+  return rowToSub(data as Record<string, unknown>);
+}
+
 export async function setSubscriptionStatus(input: {
   subscriptionId: string;
   tenantId: string;

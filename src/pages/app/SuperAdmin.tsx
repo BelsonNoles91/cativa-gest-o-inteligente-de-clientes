@@ -12,6 +12,7 @@ import {
   UserRoundCog,
   Clock3,
   Gift,
+  CreditCard,
 } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { TrialLogsTab } from "@/features/admin/TrialLogsTab";
@@ -22,6 +23,7 @@ import { FeatureFlagsConsole } from "@/features/admin/FeatureFlagsConsole";
 import { SecurityScansTab } from "@/features/admin/SecurityScansTab";
 import { PlansEditorTab } from "@/features/admin/PlansEditorTab";
 import { ClientMembershipsTab } from "@/features/admin/ClientMembershipsTab";
+import { TenantSubscriptionsTab } from "@/features/admin/TenantSubscriptionsTab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -152,8 +154,8 @@ export default function SuperAdmin() {
                     <TabsTrigger value="members" className="gap-1.5 rounded-none border-b-2 border-transparent px-0 pb-3 text-sm font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
                       <Users className="h-3.5 w-3.5" /> Perfis e acessos
                     </TabsTrigger>
-                    <TabsTrigger value="trials" className="gap-1.5 rounded-none border-b-2 border-transparent px-0 pb-3 text-sm font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
-                      <Clock3 className="h-3.5 w-3.5" /> Períodos de teste
+                    <TabsTrigger value="subscriptions" className="gap-1.5 rounded-none border-b-2 border-transparent px-0 pb-3 text-sm font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+                      <CreditCard className="h-3.5 w-3.5" /> Assinaturas
                     </TabsTrigger>
                     <TabsTrigger value="client-plans" className="gap-1.5 rounded-none border-b-2 border-transparent px-0 pb-3 text-sm font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
                       <Gift className="h-3.5 w-3.5" /> Planos de clientes
@@ -164,7 +166,13 @@ export default function SuperAdmin() {
                   </TabsList>
                 </div>
                 <TabsContent value="members" className="mt-0 focus-visible:ring-0"><MembersTab /></TabsContent>
-                <TabsContent value="trials" className="mt-0 focus-visible:ring-0"><TrialLogsTab tenants={tenants} /></TabsContent>
+                <TabsContent value="subscriptions" className="mt-0 space-y-8 focus-visible:ring-0">
+                  <TenantSubscriptionsTab tenants={tenants} onChanged={reload} />
+                  <div className="space-y-3 border-t border-border/60 pt-6">
+                    <div className="flex items-center gap-2"><Clock3 className="h-4 w-4 text-muted-foreground" /><h3 className="text-sm font-semibold">Tentativas de ativação de teste</h3></div>
+                    <TrialLogsTab tenants={tenants} />
+                  </div>
+                </TabsContent>
                 <TabsContent value="client-plans" className="mt-0 focus-visible:ring-0">
                   <ClientMembershipsTab tenants={tenants.map((tenant) => ({ id: tenant.id, name: tenant.name }))} />
                 </TabsContent>
