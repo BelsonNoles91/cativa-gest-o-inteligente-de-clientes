@@ -183,6 +183,13 @@
       "when": 1790268978042,
       "tag": "0025_realtime_appointments_and_free_portal",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1790269739226,
+      "tag": "0026_public_booking_require_name_whatsapp",
+      "breakpoints": true
     }
   ]
 }
