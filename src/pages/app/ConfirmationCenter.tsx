@@ -1,4 +1,5 @@
 /**
+import { useRealtimeRefresh } from "@/features/realtime/TenantRealtimeSync";
  * Página principal: Central de Confirmação.
  * Filas por etapa, ações rápidas, geração de fila a partir dos
  * agendamentos e dialog de ação por item.
@@ -101,6 +102,7 @@ const EMPTY_RULE_FORM: RuleFormState = {
 
 export default function ConfirmationCenter() {
   const center = useConfirmationCenter();
+  useRealtimeRefresh(center.refresh);
   const { currentTenant } = useTenant();
   const { toast } = useToast();
   const [active, setActive] = useState<QueueItemHydrated | null>(null);
