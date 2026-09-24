@@ -1,3 +1,4 @@
+import { SignupLink, useSignupsOpen } from "@/features/system/SignupLink";
 import { translateAuthError } from "@/lib/auth-errors";
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -18,6 +19,9 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const signupsOpen = useSignupsOpen();
+  const [showEmail, setShowEmail] = useState(false);
+  const emailVisible = signupsOpen || showEmail;
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +64,7 @@ export default function Login() {
         {/* Acesso social */}
         <div className="space-y-5">
           <SocialAuthButtons redirectPath="/app" />
+          {emailVisible ? (
           <div className="relative" aria-hidden="true">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-border/40" />
@@ -70,9 +75,18 @@ export default function Login() {
               </span>
             </div>
           </div>
+          ) : (
+            <p className="text-center text-sm text-muted-foreground">
+              Entre com sua conta Google ou Apple.{" "}
+              <button type="button" onClick={() => setShowEmail(true)} className="font-semibold text-accent-strong underline-offset-4 hover:underline">
+                Sou da equipe e entro com e-mail
+              </button>
+            </p>
+          )}
         </div>
 
         {/* Formulário */}
+        {emailVisible && (
         <form onSubmit={onSubmit} className="space-y-6" noValidate>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -160,9 +174,11 @@ export default function Login() {
             )}
           </Button>
         </form>
+        )}
 
         {/* Rodapé do Form */}
         <div className="space-y-6 pt-4">
+          {signupsOpen && (<>
           <div className="relative" aria-hidden="true">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-border/40" />
@@ -174,13 +190,13 @@ export default function Login() {
             </div>
           </div>
 
-          <Link
-            to="/onboarding"
+          <SignupLink
             className="flex h-16 w-full items-center justify-center gap-3 rounded-full border-2 border-primary-dark/10 bg-white text-lg font-bold text-primary-dark transition-all hover:border-accent hover:text-accent group"
           >
             Criar conta grátis
             <Sparkles className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-all -translate-y-1 group-hover:translate-y-0" />
-          </Link>
+          </SignupLink>
+          </>)}
 
           <p className="text-center text-[10px] leading-relaxed text-muted-foreground font-medium px-8">
             Ao continuar você concorda com os{" "}

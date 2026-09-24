@@ -1,3 +1,4 @@
+import { SignupLink } from "@/features/system/SignupLink";
 import { useEffect, useState } from "react";
 import { ArrowRight, BadgeCheck, CheckCircle2, RefreshCcw, ShieldCheck, Sparkles, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -136,10 +137,10 @@ export function PlansSection() {
 
                 <div className="mt-auto pt-8 border-t border-border/10 flex flex-col gap-4">
                   <Button asChild variant={isHighlight ? "premium" : "default"} className="w-full h-14 md:h-16 rounded-2xl text-base md:text-lg font-bold group/btn px-4">
-                    <Link to="/onboarding" className="flex items-center justify-center gap-2 text-center leading-tight">
+                    <SignupLink className="flex items-center justify-center gap-2 text-center leading-tight">
                       {meta.cta_label ?? (isFree ? "Começar agora" : "Escolher este plano")}
                       <ArrowRight className="h-5 w-5 shrink-0 transition-transform group-hover/btn:translate-x-1" />
-                    </Link>
+                    </SignupLink>
                   </Button>
                   <p className="text-center mt-2 text-[9px] font-bold uppercase tracking-widest opacity-80">
                     {meta.cta_sub ??

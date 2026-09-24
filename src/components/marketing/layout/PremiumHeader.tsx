@@ -1,3 +1,4 @@
+import { SignupLink } from "@/features/system/SignupLink";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
@@ -79,7 +80,7 @@ export function PremiumHeader() {
             <Link to="/auth/login">Entrar</Link>
           </Button>
           <Button asChild variant="premium" className="rounded-xl h-10 px-5 text-sm">
-            <Link to="/onboarding">Começar agora grátis</Link>
+            <SignupLink>Começar agora grátis</SignupLink>
           </Button>
         </div>
 
@@ -141,7 +142,7 @@ export function PremiumHeader() {
                     <Link to="/auth/login" onClick={() => setMobileMenuOpen(false)}>Entrar</Link>
                   </Button>
                   <Button asChild variant="premium" size="lg" className="w-full rounded-xl">
-                    <Link to="/onboarding" onClick={() => setMobileMenuOpen(false)}>Começar agora grátis</Link>
+                    <SignupLink onClick={() => setMobileMenuOpen(false)}>Começar agora grátis</SignupLink>
                   </Button>
                 </div>
               </div>

@@ -15,6 +15,7 @@ import {
   type ReactNode,
 } from "react";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
 import {
   claimPortalLinksForCurrentUser,
   getClientProfile,
@@ -42,6 +43,8 @@ interface PortalContextValue {
   profile: ClientProfile | null;
   /** Indica se o tenant ativo possui a feature `client_portal` no plano. */
   portalEnabled: boolean;
+  /** Nome de cada estabelecimento onde o cliente é atendido. */
+  tenantNames: Record<string, string>;
   setActiveTenant: (tenantId: string) => void;
   refresh: () => Promise<void>;
 }
@@ -56,6 +59,7 @@ export function PortalClientProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<ClientProfile | null>(null);
   const [branding, setBranding] = useState<PortalTenantBranding | null>(null);
   const [portalEnabled, setPortalEnabled] = useState(true);
+  const [tenantNames, setTenantNames] = useState<Record<string, string>>({});
   const [activeTenantId, setActiveTenantIdState] = useState<string | null>(
     () => localStorage.getItem(LS_PORTAL_TENANT),
   );
@@ -83,6 +87,13 @@ export function PortalClientProvider({ children }: { children: ReactNode }) {
       await claimPortalLinksForCurrentUser();
       const ls = await listMyClientLinks(user.id);
       setLinks(ls);
+      if (ls.length > 0) {
+        const { data: ts } = await supabase
+          .from("tenants")
+          .select("id, name")
+          .in("id", ls.map((l) => l.tenantId));
+        setTenantNames(Object.fromEntries((ts ?? []).map((t) => [t.id as string, t.name as string])));
+      }
 
       // escolha do tenant ativo
       const effective =
@@ -153,10 +164,11 @@ export function PortalClientProvider({ children }: { children: ReactNode }) {
       branding,
       profile,
       portalEnabled,
+      tenantNames,
       setActiveTenant,
       refresh: load,
     };
-  }, [loading, links, activeTenantId, branding, profile, portalEnabled, setActiveTenant, load]);
+  }, [loading, links, activeTenantId, branding, profile, portalEnabled, tenantNames, setActiveTenant, load]);
 
   return <PortalContext.Provider value={value}>{children}</PortalContext.Provider>;
 }

@@ -30,7 +30,7 @@ const NAV_ITEMS = [
 ];
 
 export function PortalLayout() {
-  const { loading, activeLink, branding, links, setActiveTenant, portalEnabled } = usePortalClient();
+  const { loading, activeLink, branding, links, setActiveTenant, portalEnabled, profile, tenantNames } = usePortalClient();
   const { signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -52,7 +52,7 @@ export function PortalLayout() {
           <h2 className="font-display text-xl font-semibold">Acesso ainda não vinculado</h2>
           <p className="text-sm text-muted-foreground">
             Não encontramos seu cadastro vinculado a nenhum estabelecimento.
-            Peça à recepção do seu salão/clínica para liberar seu acesso ao portal.
+            Para começar, abra o link de agendamento que o estabelecimento divulgou — seu perfil é liberado na hora.
           </p>
           <Button
             variant="outline"
@@ -100,56 +100,58 @@ export function PortalLayout() {
   return (
     <div className="min-h-screen bg-gradient-soft">
       <OfflineBanner />
-      {/* Header */}
+      {/* Header pessoal: o portal é do cliente, não do estabelecimento */}
       <header className="sticky top-0 z-30 border-b border-border/60 bg-card/80 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
           <div className="flex min-w-0 items-center gap-3">
-            {branding?.logoUrl && (
-              <img
-                src={branding.logoUrl}
-                alt={branding.tenantName ?? "Logo"}
-                className="h-10 w-10 shrink-0 rounded-xl object-contain bg-muted"
-                data-testid="portal-tenant-logo"
-              />
-            )}
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-brand font-display text-base font-semibold text-primary-foreground">
+              {(profile?.fullName ?? "?").trim().charAt(0).toUpperCase()}
+            </div>
             <div className="min-w-0">
               <p className="truncate font-display text-lg font-semibold leading-tight">
-                {branding?.tenantName ?? "Meu portal"}
+                {profile?.fullName?.split(" ")[0] ? `Olá, ${profile.fullName.split(" ")[0]}` : "Meu espaço"}
               </p>
-              {branding?.unitName && (
-                <p className="truncate text-xs text-muted-foreground">{branding.unitName}</p>
-              )}
+              <p className="truncate text-xs text-muted-foreground">Seu perfil pessoal Cativa</p>
             </div>
           </div>
-          <div className="flex min-w-0 shrink-0 items-center gap-2">
-            {links.length > 1 && (
-              <select
-                value={activeLink.tenantId}
-                onChange={(e) => setActiveTenant(e.target.value)}
-                className="max-w-[8rem] truncate rounded-md border border-input bg-background px-2 py-1 text-xs sm:max-w-none"
-                aria-label="Trocar de estabelecimento"
+          <Button
+            variant="ghost"
+            size="icon"
+            className="min-w-0 shrink-0"
+            onClick={async () => {
+              await signOut();
+              navigate("/auth/login", { replace: true });
+            }}
+            aria-label="Sair"
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
+        {/* Onde sou atendido */}
+        <div className="mx-auto flex max-w-3xl items-center gap-2 overflow-x-auto px-4 pb-3" aria-label="Onde sou atendido">
+          <span className="shrink-0 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Vendo:</span>
+          {links.map((l) => {
+            const active = l.tenantId === activeLink.tenantId;
+            return (
+              <button
+                key={l.tenantId}
+                type="button"
+                onClick={() => setActiveTenant(l.tenantId)}
+                aria-pressed={active}
+                className={cn(
+                  "flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                  active
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-background text-foreground hover:bg-secondary",
+                )}
               >
-                {links.map((l) => (
-                  <option key={l.tenantId} value={l.tenantId}>
-                    {l.tenantId === branding?.tenantId
-                      ? branding.tenantName
-                      : "Outro local"}
-                  </option>
-                ))}
-              </select>
-            )}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={async () => {
-                await signOut();
-                navigate("/auth/login", { replace: true });
-              }}
-              aria-label="Sair"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
+                {active && branding?.logoUrl && (
+                  <img src={branding.logoUrl} alt="" className="h-4 w-4 rounded-full bg-background object-contain" data-testid="portal-tenant-logo" />
+                )}
+                {tenantNames[l.tenantId] ?? (active ? branding?.tenantName : null) ?? "Estabelecimento"}
+              </button>
+            );
+          })}
         </div>
       </header>
 

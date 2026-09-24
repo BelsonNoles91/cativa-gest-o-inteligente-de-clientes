@@ -1,3 +1,4 @@
+import { SignupLink, useSignupsOpen } from "@/features/system/SignupLink";
 import { Link } from "react-router-dom";
 import { ArrowRight, Instagram, Linkedin, Mail, MapPin, Phone } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
@@ -33,6 +34,7 @@ const FOOTER_LINKS = [
 ];
 
 export function PremiumFooter() {
+  const signupsOpen = useSignupsOpen();
   return (
     <footer className="bg-primary-dark text-white pt-24 pb-12 border-t border-white/5 overflow-hidden relative">
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent/10 blur-[150px] rounded-full -z-10 translate-x-1/2 translate-y-1/2" />
@@ -69,7 +71,7 @@ export function PremiumFooter() {
                   <div key={section.title}>
                     <h4 className="font-bold uppercase tracking-widest text-xs text-accent mb-6">{section.title}</h4>
                     <ul className="flex flex-col gap-4">
-                      {section.links.map(link => (
+                      {section.links.filter(link => signupsOpen || link.href !== "/onboarding").map(link => (
                         <li key={link.label}>
                           <Link to={link.href} className="text-white/60 hover:text-white transition-colors">
                             {link.label}
@@ -92,7 +94,7 @@ export function PremiumFooter() {
            </div>
            <div className="flex flex-col sm:flex-row gap-4 relative z-10 w-full md:w-auto">
              <Button asChild size="lg" className="h-16 px-10 rounded-full bg-primary-dark text-white shadow-xl">
-                <Link to="/onboarding">Começar agora grátis</Link>
+                <SignupLink>Começar agora grátis</SignupLink>
              </Button>
            </div>
         </div>
