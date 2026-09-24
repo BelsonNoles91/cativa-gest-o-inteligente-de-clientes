@@ -28,13 +28,13 @@ import { renderForTemplate } from "@/services/confirmation/renderTemplate";
 import {
   callOutcomeLabels,
   channelLabels,
-  digitsOnly,
   queueStatusLabels,
   type CallOutcome,
   type ChannelPreference,
   type MessageChannel,
   type MessageTemplate,
 } from "@/domain/confirmation";
+import { buildManualWhatsAppLink } from "@/lib/whatsapp";
 import { getChannelPreference, listAttempts, listCallLogs, upsertChannelPreference } from "@/repositories/confirmation";
 import type { QueueItemHydrated } from "@/repositories/confirmation";
 import type { useConfirmationCenter } from "./useConfirmationCenter";
@@ -64,11 +64,6 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
   const [prefWindowEnd, setPrefWindowEnd] = useState("");
   const [doNotDisturb, setDoNotDisturb] = useState(false);
   const [prefNotes, setPrefNotes] = useState("");
-
-  const phoneDigits = useMemo(
-    () => (item?.clientWhatsapp ? digitsOnly(item.clientWhatsapp) : ""),
-    [item?.clientWhatsapp],
-  );
 
   const renderCtx = useMemo(() => {
     if (!item) return null;
@@ -136,12 +131,7 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
 
   if (!item) return null;
 
-  const waLink =
-    phoneDigits && text
-      ? `https://wa.me/${phoneDigits}?text=${encodeURIComponent(text)}`
-      : phoneDigits
-      ? `https://wa.me/${phoneDigits}`
-      : null;
+  const waLink = buildManualWhatsAppLink(item.clientWhatsapp, text || null);
 
   async function copyMessage() {
     if (!text) {
@@ -162,16 +152,7 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
       return;
     }
     window.open(waLink, "_blank", "noopener,noreferrer");
-    if (item) {
-      await center.logAttempt({
-        item,
-        channel: "whatsapp",
-        result: "sent",
-        messagePreview: text.slice(0, 280),
-        templateId: templateId || null,
-        notes: notes || null,
-      });
-    }
+    toast({ title: "WhatsApp aberto", description: "Após enviar manualmente, registre como enviado." });
   }
 
   async function justRegister(result: "sent" | "no_response") {

@@ -39,6 +39,7 @@ import {
   isValidMobileBR,
   maskMobileBR,
 } from "@/lib/client-validation";
+import { buildManualWhatsAppLink } from "@/lib/whatsapp";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { SocialAuthButtons } from "@/features/auth/SocialAuthButtons";
@@ -500,7 +501,7 @@ export default function TenantPublic() {
               {page.whatsapp && (
                 <Button asChild variant="outline" className="min-h-[44px] rounded-2xl">
                   <a
-                    href={`https://wa.me/${page.whatsapp.replace(/\D/g, "")}`}
+                    href={buildManualWhatsAppLink(page.whatsapp) ?? undefined}
                     target="_blank"
                     rel="noopener noreferrer"
                   >

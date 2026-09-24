@@ -12,6 +12,7 @@ import {
   queueStatusTone,
 } from "@/domain/confirmation";
 import type { QueueItemHydrated } from "@/repositories/confirmation";
+import { buildManualWhatsAppLink } from "@/lib/whatsapp";
 
 const toneMap = {
   default: "neutral",
@@ -60,7 +61,7 @@ export function QueueItemCard({
   const tone = toneMap[queueStatusTone(item.status)];
   const isSelected = selection?.selectedIds.has(item.id);
 
-  const phoneDigits = item.clientWhatsapp ? item.clientWhatsapp.replace(/\D/g, "") : null;
+  const whatsappLink = buildManualWhatsAppLink(item.clientWhatsapp);
 
   return (
     <Card
@@ -145,14 +146,14 @@ export function QueueItemCard({
             <MessageCircle className="mr-1.5 h-4 w-4" /> Ações
         </Button>
         
-        {phoneDigits && (
+        {whatsappLink && (
           <Button
             size="sm"
             variant="outline"
             className="flex-1 rounded-xl h-10 border-success/30 text-success hover:bg-success/5 md:flex-none"
             onClick={(e) => {
               e.stopPropagation();
-              window.open(`https://wa.me/${phoneDigits}`, "_blank", "noopener,noreferrer");
+              window.open(whatsappLink, "_blank", "noopener,noreferrer");
             }}
           >
             <ExternalLink className="mr-1.5 h-4 w-4" /> WhatsApp

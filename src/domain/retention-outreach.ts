@@ -11,6 +11,7 @@
  * e o link wa.me; o envio é sempre humano.
  */
 import type { ApptFact, ClientFact } from "./analytics";
+import { buildManualWhatsAppLink } from "@/lib/whatsapp";
 
 const DAY = 86_400_000;
 
@@ -219,9 +220,5 @@ export function reactivationMessage(
 
 /** Link wa.me com a mensagem já preenchida. Retorna null sem telefone válido. */
 export function whatsappLink(phone: string | null, message: string): string | null {
-  if (!phone) return null;
-  const digits = phone.replace(/\D/g, "");
-  if (digits.length < 10) return null;
-  const withCountry = digits.startsWith("55") ? digits : `55${digits}`;
-  return `https://wa.me/${withCountry}?text=${encodeURIComponent(message)}`;
+  return buildManualWhatsAppLink(phone, message);
 }
