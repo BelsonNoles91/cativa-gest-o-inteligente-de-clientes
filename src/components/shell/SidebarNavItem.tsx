@@ -75,7 +75,7 @@ export function SidebarNavItem({
         isActive={isActive}
         disabled={isLoading || locked}
         className={cn(
-          "group h-10 w-full transition-all duration-200 relative",
+          "group/item h-10 w-full transition-all duration-200 relative",
           isActive && "bg-primary/10 text-primary font-semibold",
           isLoading && "opacity-70 cursor-wait",
           "focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-none"
@@ -102,8 +102,8 @@ export function SidebarNavItem({
           ) : (
             <Icon 
               className={cn(
-                "h-4 w-4 shrink-0 transition-transform group-hover:scale-110",
-                isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                "h-4 w-4 shrink-0 transition-transform group-hover/item:scale-110",
+                isActive ? "text-primary" : "text-muted-foreground group-hover/item:text-foreground"
               )} 
             />
           )}
