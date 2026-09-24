@@ -110,7 +110,7 @@ export function PlansSection() {
 
                 <div className="flex items-baseline gap-1 mb-2">
                   {!isFree && <span className="text-xl font-bold opacity-60">R$</span>}
-                  <span className="text-6xl md:text-7xl font-display font-bold tracking-tighter">{isFree ? "Grátis" : price}</span>
+                  <span className="text-5xl md:text-6xl font-display font-bold tracking-tighter">{isFree ? "Grátis" : price}</span>
                   {!isFree && <span className="text-sm font-bold opacity-60">/mês</span>}
                 </div>
                 <p className={cn("text-[10px] font-bold uppercase tracking-widest mb-8", isHighlight ? "text-accent" : "text-accent-strong")}>
@@ -135,10 +135,10 @@ export function PlansSection() {
                 </div>
 
                 <div className="mt-auto pt-8 border-t border-border/10 flex flex-col gap-4">
-                  <Button asChild variant={isHighlight ? "premium" : "default"} className="w-full h-14 md:h-16 rounded-2xl text-lg font-bold group/btn">
-                    <Link to="/onboarding" className="flex items-center justify-center gap-2">
+                  <Button asChild variant={isHighlight ? "premium" : "default"} className="w-full h-14 md:h-16 rounded-2xl text-base md:text-lg font-bold group/btn px-4">
+                    <Link to="/onboarding" className="flex items-center justify-center gap-2 text-center leading-tight">
                       {meta.cta_label ?? (isFree ? "Começar agora" : "Escolher este plano")}
-                      <ArrowRight className="h-5 w-5 transition-transform group-hover/btn:translate-x-1" />
+                      <ArrowRight className="h-5 w-5 shrink-0 transition-transform group-hover/btn:translate-x-1" />
                     </Link>
                   </Button>
                   <p className="text-center mt-2 text-[9px] font-bold uppercase tracking-widest opacity-80">
