@@ -12,6 +12,7 @@ import { navItems } from "@/config/navigation";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import { useTenantBilling } from "@/features/billing/useTenantBilling";
 import { canAccess } from "@/domain/roles";
+import { LockedFeatureHint } from "@/features/billing/LockedFeatureHint";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/feedback/EmptyState";
@@ -97,6 +98,7 @@ export function BottomNav() {
               ))
             : primary.map((item) => (
                 <li key={item.to}>
+                  <LockedFeatureHint label={item.label} locked={item.locked} side="top">
                   <NavLink
                     to={item.to}
                     end={item.to === "/app"}
@@ -120,6 +122,7 @@ export function BottomNav() {
                     </span>
                     <span className="max-w-full truncate px-0.5">{item.label}</span>
                   </NavLink>
+                  </LockedFeatureHint>
                 </li>
               ))}
           {!billingLoading && secondary.length > 0 && (
@@ -197,8 +200,8 @@ export function BottomNav() {
                     ? location.pathname === "/app"
                     : location.pathname.startsWith(item.to);
                   return (
+                    <LockedFeatureHint key={item.to} label={item.label} locked={item.locked} side="top" onUpgrade={() => setMoreOpen(false)}>
                     <button
-                      key={item.to}
                       type="button"
                       onClick={() => {
                         setMoreOpen(false);
@@ -231,6 +234,7 @@ export function BottomNav() {
                         {item.label}
                       </span>
                     </button>
+                    </LockedFeatureHint>
                   );
                 })}
               </div>

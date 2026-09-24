@@ -2,6 +2,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Lock, Loader2 } from "lucide-react";
 import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { LockedFeatureHint } from "@/features/billing/LockedFeatureHint";
 import type { LucideIcon } from "lucide-react";
 import React, { useState, useEffect } from "react";
 
