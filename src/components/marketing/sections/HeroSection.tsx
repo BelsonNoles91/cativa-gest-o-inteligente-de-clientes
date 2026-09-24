@@ -112,8 +112,8 @@ export function HeroSection() {
                 ))}
              </div>
               <p className="text-[10px] font-medium text-muted-foreground tracking-tight">
-                <span className="text-primary-dark font-bold">Plano grátis vitalício</span>. Sem necessidade de cartão. <br />
-                Sua gestão profissional começa aqui, sem custos iniciais.
+                <span className="text-primary-dark font-bold">30 dias grátis</span>. Sem necessidade de cartão. <br />
+                Teste a Cativa com tranquilidade antes de escolher seu plano.
               </p>
           </div>
 

@@ -33,7 +33,7 @@ import { handleError } from "@/lib/error-handler";
 const FAQ = [
   {
     q: "O Cativa possui plano gratuito?",
-    a: "Sim! Oferecemos um plano gratuito vitalício para profissionais que estão começando, com limite de agendamentos mensais. Você pode migrar para um plano pago a qualquer momento.",
+    a: "A Cativa oferece 30 dias grátis para você começar sem cartão. Ao fim do período, escolha o plano que melhor atende ao seu negócio; seus dados permanecem preservados.",
   },
   {
     q: "Preciso de cartão de crédito para começar?",
@@ -444,7 +444,7 @@ function PlanCard({
         )}
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
-        {isFree ? "Grátis para sempre" : `Trial de ${trialDays} dias · sem cartão`}
+        {isFree ? `${trialDays || 30} dias grátis · sem cartão` : `Trial de ${trialDays} dias · sem cartão`}
       </p>
 
       <ul className="mt-6 flex-1 space-y-2.5 text-sm">
