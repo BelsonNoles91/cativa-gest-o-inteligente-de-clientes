@@ -49,7 +49,7 @@ export function TenantSwitcher({ compact = false }: { compact?: boolean }) {
           variant="outline"
           data-testid="tenant-switcher-trigger"
           className={cn(
-            "h-11 justify-between gap-2 rounded-xl border-border/70 bg-card/60 px-3 text-left shadow-xs hover:bg-card",
+            "h-11 justify-between gap-2 rounded-xl border-border/70 bg-card/60 px-3 text-left shadow-xs hover:bg-card hover:text-foreground data-[state=open]:bg-card data-[state=open]:text-foreground",
             compact ? "w-full" : "min-w-[220px]",
             isImpersonating && "border-warning/60 bg-warning/10",
           )}
@@ -81,7 +81,7 @@ export function TenantSwitcher({ compact = false }: { compact?: boolean }) {
           <DropdownMenuItem
             key={t.id}
             onSelect={() => handleSelect(t.id)}
-            className="gap-2"
+            className="gap-2 focus:bg-secondary focus:text-foreground"
             data-testid="tenant-switcher-tenant-option"
             data-tenant-id={t.id}
           >
@@ -112,7 +112,7 @@ export function TenantSwitcher({ compact = false }: { compact?: boolean }) {
               <DropdownMenuItem
                 key={u.id}
                 onSelect={() => setCurrentUnitId(u.id)}
-                className="gap-2"
+                className="gap-2 focus:bg-secondary focus:text-foreground"
                 data-testid="tenant-switcher-unit-option"
                 data-unit-id={u.id}
               >
