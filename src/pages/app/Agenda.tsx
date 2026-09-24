@@ -196,6 +196,7 @@ export default function AgendaPage() {
     setRefreshToken((current) => current + 1);
   }, []);
   const offline = useOfflineAgenda(currentTenant?.id ?? null, handleSynced);
+  useRealtimeRefresh(handleSynced);
 
   useEffect(() => {
     const date = searchParams.get("date");

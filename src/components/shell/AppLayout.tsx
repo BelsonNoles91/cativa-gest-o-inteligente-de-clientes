@@ -14,11 +14,13 @@ import { InstallAppBanner } from "@/components/shell/InstallAppBanner";
 import { SafeAreaDebugOverlay } from "@/components/debug/SafeAreaDebugOverlay";
 import { TenantBillingProvider } from "@/features/billing/TenantBillingProvider";
 import { SubscriptionBlocker } from "@/features/billing/SubscriptionBlocker";
+import { TenantRealtimeSync } from "@/features/realtime/TenantRealtimeSync";
 
 export function AppLayout() {
   return (
     <TenantBillingProvider>
       <SidebarProvider>
+        <TenantRealtimeSync />
         <OfflineBanner />
         <div className="flex min-h-screen w-full bg-background">
           <div className="hidden md:block">

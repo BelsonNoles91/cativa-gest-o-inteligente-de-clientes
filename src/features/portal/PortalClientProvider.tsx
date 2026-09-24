@@ -103,12 +103,14 @@ export function PortalClientProvider({ children }: { children: ReactNode }) {
         // Verifica se o plano do tenant ativo libera o portal do cliente.
         try {
           const sub = await getSubscriptionByTenant(effective.tenantId);
+          // Portal do cliente faz parte de todos os planos, inclusive o gratuito.
+          // Só bloqueia se um plano desligar explicitamente a feature.
           if (!sub) {
-            setPortalEnabled(false);
+            setPortalEnabled(true);
           } else {
             const features = await listPlanFeatures([sub.planId]);
             const portalFeature = features.find((f) => f.featureKey === "client_portal");
-            setPortalEnabled(isBooleanFeatureEnabled(portalFeature?.value));
+            setPortalEnabled(portalFeature ? isBooleanFeatureEnabled(portalFeature.value) : true);
           }
         } catch (billingErr) {
           handleError(billingErr, {
