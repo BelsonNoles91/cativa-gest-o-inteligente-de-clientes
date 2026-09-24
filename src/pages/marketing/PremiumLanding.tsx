@@ -1,4 +1,4 @@
-import { SignupLink } from "@/features/system/SignupLink";
+import { SignupLink, useSignupsOpen } from "@/features/system/SignupLink";
 import { PremiumHeader as Navbar } from "@/components/marketing/layout/PremiumHeader";
 import { PremiumFooter as Footer } from "@/components/marketing/layout/PremiumFooter";
 import { HeroSection } from "@/components/marketing/sections/HeroSection";
@@ -18,6 +18,7 @@ import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 
 export default function PremiumLanding() {
+  const signupsOpen = useSignupsOpen();
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
@@ -66,7 +67,7 @@ export default function PremiumLanding() {
     <div className="min-h-screen bg-background font-sans selection:bg-accent/30 selection:text-primary-dark overflow-x-hidden">
       <Helmet>
         <title>Cativa — Sistema para Clínicas e Salões focado em Retenção</title>
-        <meta name="description" content="Agendamento online com link próprio, confirmação pelo WhatsApp em 1 toque, lista de espera, resumo com IA e clientes que voltam. Teste grátis por 14 dias." />
+        <meta name="description" content="Agendamento online com link próprio, confirmação pelo WhatsApp em 1 toque, lista de espera, resumo com IA e clientes que voltam. Teste grátis por 30 dias." />
         <link rel="canonical" href="https://cativapp.lovable.app" />
         <meta property="og:url" content="https://cativapp.lovable.app" />
         <meta property="og:title" content="Cativa — Sistema para Clínicas e Salões focado em Retenção" />
@@ -432,30 +433,32 @@ export default function PremiumLanding() {
               </p>
               
                <div className="flex flex-col sm:flex-row justify-center items-center gap-6 mb-24">
-                  <div className="flex flex-col gap-2">
-                    <Button asChild size="lg" variant="premium" className="group relative overflow-hidden h-20 px-12">
-                       <SignupLink>
-                         <span className="relative z-10 flex items-center gap-3 text-xl">
-                           Começar Agora Grátis
-                           <ArrowRight className="h-6 w-6" />
-                         </span>
-                         <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover:translate-y-0" />
-                       </SignupLink>
-                    </Button>
-                    <span className="text-xs text-white/70 font-bold uppercase tracking-widest">Acesso imediato à sua nova gestão.</span>
-                  </div>
-                  
-                  <div className="flex flex-col gap-2">
-                    <Button asChild variant="outlineWhite" size="lg" className="h-20 px-12 rounded-full border-white/20 hover:bg-white/10">
-                       <Link to="/auth/login" className="text-xl">Já tenho uma conta</Link>
-                    </Button>
-                    <span className="text-xs text-white/70 font-bold uppercase tracking-widest">Faça login para continuar sua operação.</span>
-                  </div>
-               </div>
+                   <div className="flex flex-col gap-2">
+                     <Button asChild size="lg" variant="premium" className="group relative overflow-hidden h-20 px-12">
+                        <SignupLink>
+                          <span className="relative z-10 flex items-center gap-3 text-xl">
+                            {signupsOpen ? "Começar Agora Grátis" : "Entrar na minha conta"}
+                            <ArrowRight className="h-6 w-6" />
+                          </span>
+                          <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover:translate-y-0" />
+                        </SignupLink>
+                     </Button>
+                     <span className="text-xs text-white/70 font-bold uppercase tracking-widest">Acesso imediato à sua nova gestão.</span>
+                   </div>
+
+                   {signupsOpen && (
+                   <div className="flex flex-col gap-2">
+                     <Button asChild variant="outlineWhite" size="lg" className="h-20 px-12 rounded-full border-white/20 hover:bg-white/10">
+                        <Link to="/auth/login" className="text-xl">Já tenho uma conta</Link>
+                     </Button>
+                     <span className="text-xs text-white/70 font-bold uppercase tracking-widest">Faça login para continuar sua operação.</span>
+                   </div>
+                   )}
+                </div>
                
                <div className="grid grid-cols-1 md:grid-cols-3 gap-12 py-16 border-y border-white/10">
                   {[
-                    { text: "14 dias grátis", sub: "Sem compromisso" },
+                    { text: "30 dias grátis", sub: "Sem compromisso" },
                     { text: "Sem cartão", sub: "Acesso imediato" },
                     { text: "Atendimento Exclusivo", sub: "Acompanhamento guiado" }
                   ].map((item, i) => (
@@ -484,11 +487,13 @@ export default function PremiumLanding() {
             className="fixed bottom-0 left-0 right-0 z-[100] p-4 lg:hidden bg-white/90 backdrop-blur-xl border-t border-border/40 pb-safe shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.1)]"
           >
             <div className="flex gap-3">
-              <Button asChild variant="outline" className="flex-1 rounded-full border-primary-dark/20 h-14 font-bold text-xs uppercase tracking-widest">
-                <Link to="/auth/login">Entrar</Link>
-              </Button>
-              <Button asChild className="flex-1 rounded-full bg-primary-dark h-14 font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20">
-                <SignupLink>Começar Grátis</SignupLink>
+              {signupsOpen && (
+                <Button asChild variant="outline" className="flex-1 rounded-full border-primary-dark/20 h-14 font-bold text-xs uppercase tracking-widest">
+                  <Link to="/auth/login">Entrar</Link>
+                </Button>
+              )}
+              <Button asChild className={cn("flex-1 rounded-full bg-primary-dark h-14 font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20", !signupsOpen && "max-w-[220px] mx-auto")}>
+                <SignupLink>{signupsOpen ? "Começar Grátis" : "Entrar na minha conta"}</SignupLink>
               </Button>
             </div>
           </motion.div>
