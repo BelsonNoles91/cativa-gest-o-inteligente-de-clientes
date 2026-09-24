@@ -67,9 +67,10 @@ export function SidebarNavItem({
 
   return (
     <SidebarMenuItem>
+      <LockedFeatureHint label={label} locked={locked} side="right">
       <SidebarMenuButton
         asChild
-        tooltip={tooltip || (locked ? `${label} · plano necessário` : label)}
+        tooltip={locked ? undefined : tooltip || label}
         isActive={isActive}
         disabled={isLoading || locked}
         className={cn(
@@ -125,6 +126,7 @@ export function SidebarNavItem({
           )}
         </Link>
       </SidebarMenuButton>
+      </LockedFeatureHint>
     </SidebarMenuItem>
   );
 }
