@@ -2,6 +2,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Lock, Loader2 } from "lucide-react";
 import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { LockedFeatureHint } from "@/features/billing/LockedFeatureHint";
 import type { LucideIcon } from "lucide-react";
 import React, { useState, useEffect } from "react";
 
@@ -67,9 +68,10 @@ export function SidebarNavItem({
 
   return (
     <SidebarMenuItem>
+      <LockedFeatureHint label={label} locked={locked} side="right">
       <SidebarMenuButton
         asChild
-        tooltip={tooltip || (locked ? `${label} · plano necessário` : label)}
+        tooltip={locked ? undefined : tooltip || label}
         isActive={isActive}
         disabled={isLoading || locked}
         className={cn(
@@ -125,6 +127,7 @@ export function SidebarNavItem({
           )}
         </Link>
       </SidebarMenuButton>
+      </LockedFeatureHint>
     </SidebarMenuItem>
   );
 }
