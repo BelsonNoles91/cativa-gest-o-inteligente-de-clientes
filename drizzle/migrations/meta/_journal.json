@@ -169,6 +169,13 @@
       "when": 1790266151854,
       "tag": "0023_restore_authenticated_access_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1790267049022,
+      "tag": "0024_plans_public_read_fix",
+      "breakpoints": true
     }
   ]
 }
