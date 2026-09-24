@@ -67,7 +67,7 @@ export function PremiumFooter() {
              <div className="grid grid-cols-2 md:grid-cols-3 gap-12">
                 {FOOTER_LINKS.map(section => (
                   <div key={section.title}>
-                    <h4 className="font-bold uppercase tracking-widest text-xs text-accent-strong mb-6">{section.title}</h4>
+                    <h4 className="font-bold uppercase tracking-widest text-xs text-accent mb-6">{section.title}</h4>
                     <ul className="flex flex-col gap-4">
                       {section.links.map(link => (
                         <li key={link.label}>
