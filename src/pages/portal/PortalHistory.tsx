@@ -203,7 +203,7 @@ export default function PortalHistory() {
                         "h-8 w-8 transition",
                         n <= rating
                           ? "fill-warning text-warning"
-                          : "text-muted-foreground/40",
+                          : "text-muted-foreground",
                       )}
                     />
                   </button>
