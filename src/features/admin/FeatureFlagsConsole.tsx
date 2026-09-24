@@ -69,7 +69,7 @@ type ImpactInfo = {
 
 const VALUE_TYPES = ["boolean", "number", "string", "json"] as const;
 
-export function FeatureFlagsConsole() {
+export function FeatureFlagsConsole({ mode = "platform" }: { mode?: "platform" | "accounts" }) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [flags, setFlags] = useState<FeatureFlag[]>([]);
@@ -100,6 +100,8 @@ export function FeatureFlagsConsole() {
 
   const filteredFlags = useMemo(() => {
     return flags.filter((flag) => {
+      if (mode === "platform" && !flag.isGlobal) return false;
+      if (mode === "accounts" && flag.isGlobal) return false;
       if (scopeFilter === "global" && !flag.isGlobal) return false;
       if (scopeFilter === "tenant" && flag.isGlobal) return false;
       if (search && !flag.flagKey.toLowerCase().includes(search.toLowerCase()) && !flag.label.toLowerCase().includes(search.toLowerCase())) {
@@ -107,7 +109,7 @@ export function FeatureFlagsConsole() {
       }
       return true;
     });
-  }, [flags, scopeFilter, search]);
+  }, [flags, mode, scopeFilter, search]);
 
   if (loading) {
     return (
@@ -121,9 +123,13 @@ export function FeatureFlagsConsole() {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
         <div>
-          <h2 className="font-display text-lg font-semibold">Console de Recursos & Limites</h2>
+          <h2 className="font-display text-lg font-semibold">
+            {mode === "platform" ? "Recursos e limites globais" : "Ajustes por estabelecimento"}
+          </h2>
           <p className="text-xs text-muted-foreground">
-            Habilite recursos por ambiente, ajuste limites e veja o impacto antes de aplicar.
+            {mode === "platform"
+              ? "Configure recursos da plataforma, limites dos planos e veja o impacto antes de aplicar."
+              : "Personalize recursos somente para a conta selecionada, sem alterar os demais estabelecimentos."}
           </p>
         </div>
         <Button size="sm" variant="outline" onClick={() => void reload()}>
@@ -132,10 +138,12 @@ export function FeatureFlagsConsole() {
       </div>
 
       <Tabs defaultValue="flags" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="flags"><Flag className="mr-1.5 h-3.5 w-3.5" />Recursos</TabsTrigger>
-          <TabsTrigger value="limits"><Shield className="mr-1.5 h-3.5 w-3.5" />Limites</TabsTrigger>
-        </TabsList>
+        {mode === "platform" && (
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="flags"><Flag className="mr-1.5 h-3.5 w-3.5" />Recursos globais</TabsTrigger>
+            <TabsTrigger value="limits"><Shield className="mr-1.5 h-3.5 w-3.5" />Limites dos planos</TabsTrigger>
+          </TabsList>
+        )}
 
         <TabsContent value="flags" className="space-y-4">
           <FlagsConsolePanel
@@ -145,14 +153,18 @@ export function FeatureFlagsConsole() {
             onSearch={setSearch}
             scope={scopeFilter}
             onScope={setScopeFilter}
+            showScopeFilter={false}
+            defaultScope={mode === "accounts" ? "tenant" : "global"}
             onChanged={reload}
             toast={toast}
           />
         </TabsContent>
 
-        <TabsContent value="limits" className="space-y-4">
-          <LimitsConsolePanel plans={plans} tenants={tenants} onChanged={reload} toast={toast} />
-        </TabsContent>
+        {mode === "platform" && (
+          <TabsContent value="limits" className="space-y-4">
+            <LimitsConsolePanel plans={plans} tenants={tenants} onChanged={reload} toast={toast} />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
@@ -168,6 +180,8 @@ function FlagsConsolePanel({
   onSearch,
   scope,
   onScope,
+  showScopeFilter,
+  defaultScope,
   onChanged,
   toast,
 }: {
@@ -177,6 +191,8 @@ function FlagsConsolePanel({
   onSearch: (v: string) => void;
   scope: "all" | "global" | "tenant";
   onScope: (v: "all" | "global" | "tenant") => void;
+  showScopeFilter: boolean;
+  defaultScope: "global" | "tenant";
   onChanged: () => Promise<void>;
   toast: ReturnType<typeof useToast>["toast"];
 }) {
@@ -233,14 +249,16 @@ function FlagsConsolePanel({
           placeholder="Buscar por chave ou rótulo..."
           className="min-w-[200px] flex-1"
         />
-        <Select value={scope} onValueChange={(v) => onScope(v as typeof scope)}>
-          <SelectTrigger className="w-full min-w-0 sm:w-[160px]"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos escopos</SelectItem>
-            <SelectItem value="global">Globais</SelectItem>
-            <SelectItem value="tenant">Por tenant</SelectItem>
-          </SelectContent>
-        </Select>
+        {showScopeFilter && (
+          <Select value={scope} onValueChange={(v) => onScope(v as typeof scope)}>
+            <SelectTrigger className="w-full min-w-0 sm:w-[160px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos escopos</SelectItem>
+              <SelectItem value="global">Globais</SelectItem>
+              <SelectItem value="tenant">Por tenant</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
         <Button size="sm" onClick={() => { setEditing(null); setOpen(true); }}>
           <Plus className="mr-1.5 h-4 w-4" />Novo
         </Button>
@@ -297,6 +315,7 @@ function FlagsConsolePanel({
         onClose={() => setOpen(false)}
         flag={editing}
         tenants={tenants}
+        defaultScope={defaultScope}
         onSaved={async () => {
           setOpen(false);
           await onChanged();
@@ -363,6 +382,7 @@ function FlagEditorDialog({
   onClose,
   flag,
   tenants,
+  defaultScope,
   onSaved,
   toast,
 }: {
@@ -370,6 +390,7 @@ function FlagEditorDialog({
   onClose: () => void;
   flag: FeatureFlag | null;
   tenants: TenantWithSub[];
+  defaultScope: "global" | "tenant";
   onSaved: () => Promise<void>;
   toast: ReturnType<typeof useToast>["toast"];
 }) {
@@ -398,11 +419,11 @@ function FlagEditorDialog({
         setDescription("");
         setValueType("boolean");
         setValueRaw("false");
-        setScope("global");
+        setScope(defaultScope);
         setTenantId("");
       }
     }
-  }, [open, flag]);
+  }, [open, flag, defaultScope]);
 
   async function handleSave() {
     if (!flagKey.trim() || !label.trim()) {
