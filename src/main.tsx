@@ -38,12 +38,29 @@ if (missingBackendVars.length > 0) {
 } else {
   // O carregamento dinâmico impede que o cliente do backend seja criado antes
   // da guarda acima. Assim, uma configuração ausente nunca resulta em tela branca.
-  void import("./App.tsx").then(({ default: App }) => {
-    createRoot(rootEl).render(<App />);
-    // Registra (ou desregistra) o SW de acordo com o ambiente.
-    // Ver src/pwa/registerSW.ts para detalhes dos guards.
-    void registerServiceWorker();
-  });
+  const RELOAD_KEY = "cativa:app-import-reload";
+  import("./App.tsx")
+    .then(({ default: App }) => {
+      sessionStorage.removeItem(RELOAD_KEY);
+      createRoot(rootEl).render(<App />);
+      // Registra (ou desregistra) o SW de acordo com o ambiente.
+      // Ver src/pwa/registerSW.ts para detalhes dos guards.
+      void registerServiceWorker();
+    })
+    .catch((err) => {
+      // Falha transitória de rede/atualização: recarrega uma única vez.
+      if (!sessionStorage.getItem(RELOAD_KEY)) {
+        sessionStorage.setItem(RELOAD_KEY, "1");
+        window.location.reload();
+        return;
+      }
+      sessionStorage.removeItem(RELOAD_KEY);
+      console.error("[boot] Falha ao carregar a aplicação", err);
+      rootEl.innerHTML =
+        '<div style="font-family:system-ui;padding:2rem;text-align:center">' +
+        "<p>Não foi possível carregar o Cativa.</p>" +
+        '<button onclick="location.reload()" style="margin-top:1rem;padding:.5rem 1rem">Tentar novamente</button></div>';
+    });
 }
 
 
