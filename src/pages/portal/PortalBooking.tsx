@@ -1,3 +1,5 @@
+import { supabase } from "@/integrations/supabase/client";
+import { CalendarX } from "lucide-react";
 /**
  * PortalBooking — wizard mobile-first de auto-agendamento (e reagendamento).
  *
