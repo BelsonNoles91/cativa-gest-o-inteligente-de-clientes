@@ -162,7 +162,7 @@ const App = () => (
     <HelmetProvider>
       <ErrorBoundary name="Root">
         <ThemeProvider defaultTheme={appConfig.defaultTheme}>
-        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <BrowserRouter>
           <PreloadAppModules />
           <AuthProvider>
             <TenantProvider>
