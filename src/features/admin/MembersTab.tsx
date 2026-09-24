@@ -37,12 +37,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog as Sheet,
+  DialogContent as SheetContent,
+  DialogDescription as SheetDescription,
+  DialogHeader as SheetHeader,
+  DialogTitle as SheetTitle,
+} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -522,12 +522,9 @@ export function MembersTab() {
         </ul>
       )}
 
-      {/* Editor (Sheet) */}
+      {/* Editor (janela central) */}
       <Sheet open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
-        <SheetContent
-          side="bottom"
-          className="max-h-[92vh] overflow-y-auto rounded-t-2xl sm:max-w-lg sm:rounded-l-2xl sm:rounded-tr-none"
-        >
+        <SheetContent className="max-h-[90vh] w-[calc(100vw-2rem)] max-w-lg overflow-y-auto rounded-2xl p-5 sm:p-6">
           {editing && (
             <>
               <SheetHeader className="text-left">
