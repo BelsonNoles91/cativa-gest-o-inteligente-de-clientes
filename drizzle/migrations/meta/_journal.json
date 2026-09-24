@@ -162,6 +162,13 @@
       "when": 1790256933922,
       "tag": "0022_fix_get_audit_logs_advanced_cursor",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1790266151854,
+      "tag": "0023_restore_authenticated_access_grants",
+      "breakpoints": true
     }
   ]
 }
