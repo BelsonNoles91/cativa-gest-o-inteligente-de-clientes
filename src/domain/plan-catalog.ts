@@ -26,6 +26,6 @@ export function isFeatureOn(features: Record<string, unknown> | null | undefined
 }
 
 export function formatLimit(value: number | null | undefined, singular: string, plural: string): string {
-  if (value === null || value === undefined) return `${plural} ilimitados`;
+  if (value === null || value === undefined) return `${plural.charAt(0).toUpperCase()}${plural.slice(1)} ilimitados`;
   return `Até ${value} ${value === 1 ? singular : plural}`;
 }
