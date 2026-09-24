@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import {
-  Building2,
-  Flag,
   Loader2,
   Package,
   ScrollText,
@@ -10,7 +8,9 @@ import {
   Users,
   AlertCircle,
   Activity,
-  FileStack,
+  Building2,
+  UserRoundCog,
+  Clock3,
 } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { TrialLogsTab } from "@/features/admin/TrialLogsTab";
@@ -53,7 +53,7 @@ export default function SuperAdmin() {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <PageHeader
         title="Painel Administrativo"
-        description="Gestão multi-tenant, auditoria global e incidentes."
+        description="Administração da plataforma, contas e acessos em áreas separadas."
         icon={<ShieldCheck className="h-6 w-6 text-primary" />}
         actions={
           <div className="flex gap-2">
@@ -70,53 +70,95 @@ export default function SuperAdmin() {
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
       ) : (
-        <Tabs defaultValue="members" className="space-y-6">
-          <div className="border-b border-border/60">
-            <TabsList className="h-auto p-0 bg-transparent gap-6 overflow-x-auto scrollbar-none flex-nowrap flex justify-start">
-              <TabsTrigger value="members" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3 font-semibold text-sm whitespace-nowrap">
-                <Users className="mr-1.5 h-3.5 w-3.5" /> Membros
-              </TabsTrigger>
-              <TabsTrigger value="audit" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3 font-semibold text-sm whitespace-nowrap">
-                <ScrollText className="mr-1.5 h-3.5 w-3.5" /> Auditoria
-              </TabsTrigger>
-              <TabsTrigger value="incidents" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3 font-semibold text-sm whitespace-nowrap">
-                <AlertCircle className="mr-1.5 h-3.5 w-3.5" /> Incidentes
-              </TabsTrigger>
-              <TabsTrigger value="plans" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3 font-semibold text-sm whitespace-nowrap">
-                <Package className="mr-1.5 h-3.5 w-3.5" /> Planos
-              </TabsTrigger>
-              <TabsTrigger value="security" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3 font-semibold text-sm whitespace-nowrap">
-                <ShieldCheck className="mr-1.5 h-3.5 w-3.5" /> Segurança
-              </TabsTrigger>
-              <TabsTrigger value="console" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3 font-semibold text-sm whitespace-nowrap">
-                <SlidersHorizontal className="mr-1.5 h-3.5 w-3.5" /> Console
-              </TabsTrigger>
-            </TabsList>
-          </div>
+        <Tabs defaultValue="platform" className="space-y-6">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 bg-muted/60 p-1">
+            <TabsTrigger value="platform" className="min-h-12 gap-2 px-3 py-2">
+              <ShieldCheck className="h-4 w-4 shrink-0" />
+              <span className="min-w-0 text-left">
+                <span className="block text-sm font-semibold">Sistema Cativa</span>
+                <span className="hidden text-xs font-normal text-muted-foreground sm:block">Configurações globais</span>
+              </span>
+            </TabsTrigger>
+            <TabsTrigger value="accounts" className="min-h-12 gap-2 px-3 py-2">
+              <UserRoundCog className="h-4 w-4 shrink-0" />
+              <span className="min-w-0 text-left">
+                <span className="block text-sm font-semibold">Contas e acessos</span>
+                <span className="hidden text-xs font-normal text-muted-foreground sm:block">Perfis por estabelecimento</span>
+              </span>
+            </TabsTrigger>
+          </TabsList>
 
-          <TabsContent value="members" className="mt-0 focus-visible:ring-0">
-            <MembersTab />
+          <TabsContent value="platform" className="mt-0 focus-visible:ring-0">
+            <section aria-labelledby="platform-admin-title" className="space-y-5">
+              <div className="flex items-start gap-3 border-b border-border/60 pb-4">
+                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-primary/10 text-primary">
+                  <ShieldCheck className="h-4 w-4" />
+                </div>
+                <div>
+                  <h2 id="platform-admin-title" className="font-display text-lg font-semibold">Administração global</h2>
+                  <p className="text-sm text-muted-foreground">Alterações aplicadas à plataforma, aos planos e à operação geral.</p>
+                </div>
+              </div>
+
+              <Tabs defaultValue="plans" className="space-y-6">
+                <div className="overflow-x-auto border-b border-border/60">
+                  <TabsList className="flex h-auto w-max min-w-full flex-nowrap justify-start gap-5 bg-transparent p-0">
+                    <TabsTrigger value="plans" className="gap-1.5 whitespace-nowrap rounded-none border-b-2 border-transparent px-0 pb-3 text-sm font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+                      <Package className="h-3.5 w-3.5" /> Planos
+                    </TabsTrigger>
+                    <TabsTrigger value="console" className="gap-1.5 whitespace-nowrap rounded-none border-b-2 border-transparent px-0 pb-3 text-sm font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+                      <SlidersHorizontal className="h-3.5 w-3.5" /> Recursos
+                    </TabsTrigger>
+                    <TabsTrigger value="incidents" className="gap-1.5 whitespace-nowrap rounded-none border-b-2 border-transparent px-0 pb-3 text-sm font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+                      <AlertCircle className="h-3.5 w-3.5" /> Incidentes
+                    </TabsTrigger>
+                    <TabsTrigger value="security" className="gap-1.5 whitespace-nowrap rounded-none border-b-2 border-transparent px-0 pb-3 text-sm font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+                      <ShieldCheck className="h-3.5 w-3.5" /> Segurança
+                    </TabsTrigger>
+                    <TabsTrigger value="audit" className="gap-1.5 whitespace-nowrap rounded-none border-b-2 border-transparent px-0 pb-3 text-sm font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+                      <ScrollText className="h-3.5 w-3.5" /> Auditoria
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+
+                <TabsContent value="plans" className="mt-0 focus-visible:ring-0"><PlansEditorTab /></TabsContent>
+                <TabsContent value="console" className="mt-0 focus-visible:ring-0"><FeatureFlagsConsole /></TabsContent>
+                <TabsContent value="incidents" className="mt-0 focus-visible:ring-0"><AdminIncidentsTab /></TabsContent>
+                <TabsContent value="security" className="mt-0 focus-visible:ring-0"><SecurityScansTab /></TabsContent>
+                <TabsContent value="audit" className="mt-0 focus-visible:ring-0">
+                  <AuditLogsTab tenants={tenants.map((t) => ({ id: t.id, name: t.name }))} />
+                </TabsContent>
+              </Tabs>
+            </section>
           </TabsContent>
 
-          <TabsContent value="audit" className="mt-0 focus-visible:ring-0">
-            <AuditLogsTab tenants={tenants.map((t) => ({ id: t.id, name: t.name }))} />
-          </TabsContent>
+          <TabsContent value="accounts" className="mt-0 focus-visible:ring-0">
+            <section aria-labelledby="account-admin-title" className="space-y-5">
+              <div className="flex items-start gap-3 border-b border-border/60 pb-4">
+                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-accent/15 text-accent-strong">
+                  <Building2 className="h-4 w-4" />
+                </div>
+                <div>
+                  <h2 id="account-admin-title" className="font-display text-lg font-semibold">Estabelecimentos e perfis</h2>
+                  <p className="text-sm text-muted-foreground">Ações restritas a uma conta, seus usuários e seu período de teste.</p>
+                </div>
+              </div>
 
-          <TabsContent value="incidents" className="mt-0 focus-visible:ring-0">
-            <AdminIncidentsTab />
-          </TabsContent>
-
-          <TabsContent value="plans" className="mt-0 space-y-8 focus-visible:ring-0">
-            <PlansEditorTab />
-            <TrialLogsTab tenants={tenants} />
-          </TabsContent>
-
-          <TabsContent value="security" className="mt-0 focus-visible:ring-0">
-            <SecurityScansTab />
-          </TabsContent>
-
-          <TabsContent value="console" className="mt-0 focus-visible:ring-0">
-            <FeatureFlagsConsole />
+              <Tabs defaultValue="members" className="space-y-6">
+                <div className="border-b border-border/60">
+                  <TabsList className="flex h-auto justify-start gap-5 bg-transparent p-0">
+                    <TabsTrigger value="members" className="gap-1.5 rounded-none border-b-2 border-transparent px-0 pb-3 text-sm font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+                      <Users className="h-3.5 w-3.5" /> Perfis e acessos
+                    </TabsTrigger>
+                    <TabsTrigger value="trials" className="gap-1.5 rounded-none border-b-2 border-transparent px-0 pb-3 text-sm font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+                      <Clock3 className="h-3.5 w-3.5" /> Períodos de teste
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+                <TabsContent value="members" className="mt-0 focus-visible:ring-0"><MembersTab /></TabsContent>
+                <TabsContent value="trials" className="mt-0 focus-visible:ring-0"><TrialLogsTab tenants={tenants} /></TabsContent>
+              </Tabs>
+            </section>
           </TabsContent>
         </Tabs>
       )}
