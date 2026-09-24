@@ -1,3 +1,4 @@
+import { SignupsGate } from "@/features/system/SystemGates";
 import { Suspense, lazy, useEffect, type ComponentType, type LazyExoticComponent, forwardRef } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
@@ -198,7 +199,9 @@ const App = () => (
                       path="/onboarding"
                       element={
                         <OnboardingGuard>
-                          <Onboarding />
+                          <SignupsGate>
+                            <Onboarding />
+                          </SignupsGate>
                         </OnboardingGuard>
                       }
                     />

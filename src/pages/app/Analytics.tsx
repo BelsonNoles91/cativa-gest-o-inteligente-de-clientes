@@ -1,3 +1,4 @@
+import { useSystemFlags } from "@/features/system/useSystemFlags";
 import { useState, type ReactNode } from "react";
 import {
   Activity,
@@ -53,6 +54,7 @@ const SOURCE_LABELS: Record<string, string> = {
 };
 
 export default function AnalyticsPage() {
+  const { flags: systemFlags } = useSystemFlags();
   const [contextView, setContextView] = useState<"executive" | "operational" | "retention">("executive");
   const analytics = useAnalytics();
   const { can } = usePermissions();
@@ -237,7 +239,7 @@ export default function AnalyticsPage() {
           </div>
 
           <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,0.9fr)]">
-            <CativaIndexCard breakdown={cativa} scope={scopeLabel} />
+            {systemFlags.show_cativa_index && <CativaIndexCard breakdown={cativa} scope={scopeLabel} />}
             <NextBestActions actions={nba} />
           </div>
 
