@@ -54,6 +54,7 @@ const SOURCE_LABELS: Record<string, string> = {
 };
 
 export default function AnalyticsPage() {
+  const { flags: systemFlags } = useSystemFlags();
   const [contextView, setContextView] = useState<"executive" | "operational" | "retention">("executive");
   const analytics = useAnalytics();
   const { can } = usePermissions();

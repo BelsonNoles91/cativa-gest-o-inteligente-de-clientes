@@ -9,6 +9,7 @@
  *
  * Mobile-first.
  */
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Flag, Globe, Loader2, Pencil, Plus, RefreshCw, Shield, Trash2, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -181,6 +182,7 @@ function FlagsConsolePanel({
 }) {
   const [editing, setEditing] = useState<FeatureFlag | null>(null);
   const [open, setOpen] = useState(false);
+  const queryClient = useQueryClient();
   const [confirm, setConfirm] = useState<{ flag: FeatureFlag; nextEnabled: boolean; impact: ImpactInfo | null } | null>(null);
   const [deleting, setDeleting] = useState<FeatureFlag | null>(null);
 
@@ -205,6 +207,7 @@ function FlagsConsolePanel({
       return;
     }
     toast({ title: confirm.nextEnabled ? "Recurso ativado" : "Recurso desativado" });
+    void queryClient.invalidateQueries({ queryKey: ["system-flags"] });
     setConfirm(null);
     await onChanged();
   }
