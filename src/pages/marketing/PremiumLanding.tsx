@@ -27,27 +27,27 @@ export default function PremiumLanding() {
   const segments = [
     { 
       name: "Estética", 
-      quote: "A Cativa não é apenas um sistema, é um braço direito para clínicas que querem previsibilidade.", 
-      author: "Resultados comprovados em retenção",
-      benefit: "Fidelidade Ativa",
-      percentage: "82%",
-      beforeAfter: { before: "40% de faltas", after: "8% de faltas", chart: [20, 35, 15, 8] }
+      quote: "Ficha de anamnese, pacotes de sessões e resumo com IA de cada atendimento, tudo no histórico do cliente.", 
+      author: "Feito para tratamentos em várias sessões",
+      benefit: "Resumo com IA",
+      percentage: "IA",
+      beforeAfter: { before: "Fichas em papel", after: "Histórico completo", chart: [20, 35, 15, 8] }
     },
     { 
       name: "Salões", 
-      quote: "Recuperamos faturamento perdido apenas com as confirmações organizadas.", 
-      author: "Foco total na experiência do cliente",
-      benefit: "Ocupação Real",
-      percentage: "94%",
-      beforeAfter: { before: "Horas perdidas em confirmação", after: "Processo em segundos", chart: [40, 45, 10, 5] }
+      quote: "Horário cancelado vai direto para quem está na lista de espera. A agenda da equipe fica cheia.", 
+      author: "Feito para equipes com vários profissionais",
+      benefit: "Agenda cheia",
+      percentage: "24h",
+      beforeAfter: { before: "Buracos na agenda", after: "Lista de espera", chart: [40, 45, 10, 5] }
     },
     { 
       name: "Barbearias", 
-      quote: "O portal do cliente deu uma autonomia que profissionaliza a marca.", 
-      author: "Gestão mobile-first de verdade",
-      benefit: "Retorno Recorrente",
-      percentage: "76%",
-      beforeAfter: { before: "15 min/agendamento", after: "0 min (automático)", chart: [60, 50, 5, 2] }
+      quote: "Link e QR code próprios: o cliente marca sozinho pelo celular, a qualquer hora.", 
+      author: "Feito para quem atende sem parar",
+      benefit: "Agendamento online",
+      percentage: "1 link",
+      beforeAfter: { before: "Parar o corte p/ responder", after: "Cliente marca sozinho", chart: [60, 50, 5, 2] }
     }
   ];
 
@@ -95,12 +95,12 @@ export default function PremiumLanding() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
                {[
-                 { title: "Mobile-first", desc: "Gestão na palma da mão para a rotina real da operação.", icon: Smartphone },
-                 { title: "Personalização", desc: "Adaptado ao seu fluxo e tipo de negócio específico.", icon: Settings },
-                 { title: "Central de Confirmação", desc: "Confirmações sem depender de APIs complexas de WhatsApp.", icon: MessageSquare },
-                 { title: "Foco em Retenção", desc: "Indicadores desenhados para fazer o cliente voltar.", icon: PieChart },
-                 { title: "Arquitetura Moderna", desc: "Preparada para a evolução constante do seu negócio.", icon: ShieldCheck },
-                 { title: "Experiência Premium", desc: "Valor percebido para sua equipe e para seu cliente.", icon: Sparkles }
+                 { title: "Agendamento online", desc: "Link e QR code do seu negócio para o cliente marcar sozinho, 24h.", icon: Calendar },
+                 { title: "Confirmação sem custo", desc: "Mensagem pronta no WhatsApp em 1 toque. Sem robô e sem bloqueio de número.", icon: MessageSquare },
+                 { title: "Clientes que voltam", desc: "Alerta de quem está sumindo e cupom de retorno pronto para enviar.", icon: PieChart },
+                 { title: "App no celular", desc: "Instale na tela inicial e receba aviso de cada agendamento e cancelamento.", icon: Smartphone },
+                 { title: "Equipe organizada", desc: "Portal do profissional, metas, ranking e comissões do mês.", icon: Users },
+                 { title: "Dados protegidos", desc: "Cada pessoa vê só o que a função permite. Exporte seus dados quando quiser.", icon: ShieldCheck }
                ].map((item, i) => (
                  <motion.div 
                    key={i}
@@ -216,9 +216,9 @@ export default function PremiumLanding() {
                     exit={{ opacity: 0, scale: 0.8, rotate: 5 }}
                     className="absolute -bottom-10 right-0 md:-bottom-10 md:-left-10 bg-accent text-white p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl z-20 max-w-[240px] md:max-w-xs"
                  >
-                    <Quote className="h-6 w-6 md:h-8 md:w-8 mb-4 opacity-40" />
-                    <p className="text-sm md:text-lg font-medium leading-tight mb-2 italic">"{segments[activeSegment].quote}"</p>
-                    <p className="text-[9px] font-bold uppercase tracking-widest opacity-90">— {segments[activeSegment].author}</p>
+                    <Sparkles className="h-6 w-6 md:h-8 md:w-8 mb-4 opacity-60" />
+                    <p className="text-sm md:text-lg font-medium leading-tight mb-2">{segments[activeSegment].quote}</p>
+                    <p className="text-[9px] font-bold uppercase tracking-widest opacity-90">{segments[activeSegment].author}</p>
                  </motion.div>
                </AnimatePresence>
             </div>
@@ -379,13 +379,15 @@ export default function PremiumLanding() {
                  </div>
                   <div className="lg:w-2/3 space-y-4 px-4 md:px-0">
                     {[
-                      { q: "A Cativa serve para o meu tipo de negócio?", a: "Sim. A plataforma foi pensada para clínicas de estética, salões de beleza, barbearias, esmalterias, profissionais de cílios e sobrancelhas, massagem e negócios de bem-estar que buscam um nível superior de gestão." },
-                      { q: "Como começo a usar o Cativa?", a: "É simples: basta clicar em 'Começar agora grátis'. Em menos de 1 minuto você terá acesso ao seu painel para configurar sua agenda e profissionais." },
-                      { q: "Posso testar os recursos premium?", a: "Sim. Todos os novos cadastros recebem 14 dias de acesso total aos recursos premium (Planos Empreendedor e Studio) para sentir a diferença na rotina antes de decidir." },
-                      { q: "O sistema usa API oficial de WhatsApp?", a: "Não. A Cativa utiliza uma central de confirmação inteligente baseada em links diretos (wa.me), o que garante estabilidade total, evita bloqueios de números e elimina taxas abusivas por mensagem, mantendo o processo 100% sob seu controle." },
-                      { q: "Consigo falar com um especialista agora?", a: "Sim! Você pode clicar no botão de WhatsApp em nosso rodapé para tirar dúvidas específicas sobre o seu negócio com nosso time especializado." },
-                      { q: "Funciona para quem tem mais de uma unidade?", a: "Sim. A estrutura da Cativa foi desenhada para crescer com você, permitindo a gestão de múltiplas unidades com visão consolidada ou individualizada por local." },
-                      { q: "Consigo acessar pelo celular?", a: "A Cativa é mobile-first. Isso significa que você e sua equipe têm uma experiência completa e fluida diretamente pelo navegador do celular, sem precisar baixar aplicativos pesados." }
+                      { q: "A Cativa serve para o meu tipo de negócio?", a: "Sim. A plataforma foi pensada para clínicas de estética, salões de beleza, barbearias, esmalterias, profissionais de cílios e sobrancelhas, massagem e negócios de bem-estar." },
+                      { q: "Meus clientes conseguem agendar sozinhos?", a: "Sim. Você ganha uma página própria com link e QR code. O cliente vê os horários livres, escolhe serviço e profissional e marca a qualquer hora. Você define o que ele pode fazer sozinho: agendar, remarcar ou cancelar." },
+                      { q: "Como começo a usar?", a: "Clique em 'Começar agora grátis' e crie sua conta em poucos minutos. Se você já usa outro sistema ou planilha, dá para importar sua lista de clientes." },
+                      { q: "Posso testar os recursos premium?", a: "Sim. Todos os novos cadastros recebem 14 dias de acesso aos recursos premium para sentir a diferença na rotina antes de decidir, sem cartão." },
+                      { q: "As confirmações são enviadas pelo WhatsApp?", a: "Sim, pelo seu próprio WhatsApp. A Cativa prepara a mensagem de cada cliente e abre a conversa em 1 toque. Nada é enviado por robô: não há risco de bloqueio do número nem custo por mensagem." },
+                      { q: "Como a Cativa ajuda o cliente a voltar?", a: "O sistema calcula a data ideal de retorno pelo histórico, avisa quem está sumindo e prepara mensagens com cupom de retorno. Horários cancelados são oferecidos para a lista de espera." },
+                      { q: "Minha equipe tem acesso separado?", a: "Sim. Dono, gerente, recepção e profissional têm acessos diferentes. O profissional tem seu portal com agenda, metas e comissões, e você decide se ele vê a agenda de todos ou só a dele." },
+                      { q: "Funciona para quem tem mais de uma unidade?", a: "Sim. Você gerencia várias unidades com visão consolidada ou separada por local." },
+                      { q: "Precisa baixar aplicativo?", a: "Não precisa ir à loja de apps. A Cativa funciona no navegador e pode ser instalada na tela inicial do celular, com avisos de novos agendamentos e cancelamentos." }
                     ].map((item, i) => (
                       <div key={i} className="p-8 md:p-10 rounded-[2.5rem] bg-[#FAF7F9] border border-border/20 transition-all hover:border-accent/40 group">
                          <h4 className="text-xl font-bold text-primary-dark mb-4 flex items-center justify-between gap-4">
