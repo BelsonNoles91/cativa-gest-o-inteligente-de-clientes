@@ -1,9 +1,9 @@
 /**
-import { useRealtimeRefresh } from "@/features/realtime/TenantRealtimeSync";
  * Página principal: Central de Confirmação.
  * Filas por etapa, ações rápidas, geração de fila a partir dos
  * agendamentos e dialog de ação por item.
  */
+import { useRealtimeRefresh } from "@/features/realtime/TenantRealtimeSync";
 import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Plus, RefreshCcw, Sparkles, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
