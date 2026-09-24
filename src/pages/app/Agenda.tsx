@@ -785,7 +785,7 @@ export default function AgendaPage() {
 
       <Card>
         <CardContent className="pt-6">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end">
+          <div className="flex flex-col gap-5">
             <div className="flex flex-wrap items-end gap-4">
               <Field label="Período">
                 <Tabs value={view} onValueChange={(value) => setView(value as ViewMode)}>
@@ -810,14 +810,14 @@ export default function AgendaPage() {
               </Field>
             </div>
 
-            <div className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end lg:flex-1">
-              <div className="w-full min-w-0 sm:flex-1 sm:min-w-[140px]">
+            <div className={`grid w-full grid-cols-1 gap-3 sm:grid-cols-2 ${groupMode === "resource" ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
+              <div className="min-w-0">
                 <Field label="Data base">
                   <Input type="date" aria-label="Data base da agenda" value={selectedDate} onChange={(event) => setSelectedDate(event.target.value)} />
 
                 </Field>
               </div>
-              <div className="w-full min-w-0 sm:flex-1 sm:min-w-[140px]">
+              <div className="min-w-0">
                 <Field label="Unidade">
                   <Select value={unitFilter} onValueChange={setUnitFilter}>
                     <SelectTrigger aria-label="Filtrar por unidade"><SelectValue /></SelectTrigger>
@@ -831,7 +831,7 @@ export default function AgendaPage() {
                   </Select>
                 </Field>
               </div>
-              <div className="w-full min-w-0 sm:flex-1 sm:min-w-[140px]">
+              <div className="min-w-0">
                 <Field label="Profissional">
                   <Select value={professionalFilter} onValueChange={setProfessionalFilter}>
                     <SelectTrigger aria-label="Filtrar por profissional"><SelectValue /></SelectTrigger>
@@ -846,7 +846,7 @@ export default function AgendaPage() {
                 </Field>
               </div>
               {groupMode === "resource" ? (
-                <div className="w-full min-w-0 sm:flex-1 sm:min-w-[140px]">
+                <div className="min-w-0">
                   <Field label="Recurso / sala">
                     <Select value={resourceFilter} onValueChange={setResourceFilter}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
