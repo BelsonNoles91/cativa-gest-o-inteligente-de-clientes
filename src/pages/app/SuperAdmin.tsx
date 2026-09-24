@@ -153,10 +153,14 @@ export default function SuperAdmin() {
                     <TabsTrigger value="trials" className="gap-1.5 rounded-none border-b-2 border-transparent px-0 pb-3 text-sm font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
                       <Clock3 className="h-3.5 w-3.5" /> Períodos de teste
                     </TabsTrigger>
+                    <TabsTrigger value="account-settings" className="gap-1.5 rounded-none border-b-2 border-transparent px-0 pb-3 text-sm font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+                      <SlidersHorizontal className="h-3.5 w-3.5" /> Ajustes por conta
+                    </TabsTrigger>
                   </TabsList>
                 </div>
                 <TabsContent value="members" className="mt-0 focus-visible:ring-0"><MembersTab /></TabsContent>
                 <TabsContent value="trials" className="mt-0 focus-visible:ring-0"><TrialLogsTab tenants={tenants} /></TabsContent>
+                <TabsContent value="account-settings" className="mt-0 focus-visible:ring-0"><FeatureFlagsConsole mode="accounts" /></TabsContent>
               </Tabs>
             </section>
           </TabsContent>
