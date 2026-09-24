@@ -23,9 +23,9 @@ interface Props {
 const toneStyles: Record<NonNullable<Props["tone"]>, string> = {
   brand: "bg-primary-soft text-primary",
   success: "bg-success/15 text-success",
-  warning: "bg-warning/20 text-warning-foreground",
+  warning: "bg-warning/20 text-warning-foreground dark:text-warning",
   danger: "bg-destructive/15 text-destructive",
-  info: "bg-accent-soft text-accent-foreground",
+  info: "bg-accent-soft text-accent-foreground dark:text-accent-strong",
   neutral: "bg-muted text-muted-foreground",
 };
 

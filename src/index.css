@@ -91,9 +91,9 @@
     --popover: 319 22% 11%;
     --popover-foreground: 320 18% 94%;
 
-    --primary: 321 38% 65%;
+    --primary: 321 45% 74%;
     --primary-foreground: 319 35% 12%;
-    --primary-dark: 319 35% 22%;
+    --primary-dark: 321 45% 84%;
     --primary-soft: 321 25% 22%;
 
     --secondary: 320 18% 18%;
@@ -105,7 +105,7 @@
     --accent-strong: 156 40% 72%;
 
     --muted: 319 18% 16%;
-    --muted-foreground: 320 12% 65%;
+    --muted-foreground: 320 14% 74%;
 
     --success: 146 45% 50%;
     --success-strong: 146 45% 72%;
@@ -118,7 +118,7 @@
 
     --border: 319 18% 20%;
     --input: 319 18% 20%;
-    --ring: 321 38% 65%;
+    --ring: 321 45% 74%;
 
     --gradient-brand: linear-gradient(135deg, hsl(321 38% 45%) 0%, hsl(319 35% 22%) 100%);
     --gradient-soft: linear-gradient(160deg, hsl(319 22% 14%) 0%, hsl(319 22% 8%) 100%);
@@ -322,3 +322,6 @@ div[style*="Edit with Lovable"],
   position: absolute !important;
   z-index: -9999 !important;
 }
+/* Contraste de textos de status (WCAG AA) */
+html:not(.dark) .text-warning { color: hsl(30 85% 30%); }
+.dark .text-emerald-700 { color: hsl(152 60% 60%); }

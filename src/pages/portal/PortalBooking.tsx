@@ -278,7 +278,7 @@ export default function PortalBooking() {
                       </p>
                     </div>
                     {s.isFeatured && (
-                      <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-semibold text-accent">
+                      <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-semibold text-accent-strong">
                         Destaque
                       </span>
                     )}

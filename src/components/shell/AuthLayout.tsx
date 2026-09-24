@@ -33,7 +33,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
             <h2 className="font-display text-6xl leading-[0.9] tracking-tighter">
               A inteligência <br />
               que faz seu negócio <br />
-              <span className="italic serif font-normal text-accent relative inline-block">
+              <span className="italic serif font-normal text-accent-strong relative inline-block">
                 prosperar.
                 <svg className="absolute -bottom-1 left-0 w-full h-2 text-accent/30 -z-10" viewBox="0 0 300 12" fill="none">
                   <path d="M1 10.5C50 4 150 1 299 10.5" stroke="currentColor" strokeWidth="6" strokeLinecap="round"/>

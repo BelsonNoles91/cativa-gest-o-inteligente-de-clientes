@@ -63,7 +63,7 @@ export function Footer() {
         </div>
 
         <div className="pt-16 border-t border-border/40 flex flex-col md:flex-row justify-between items-center gap-8">
-          <p className="text-[10px] text-muted-foreground/60 font-bold uppercase tracking-widest text-center md:text-left">
+          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest text-center md:text-left">
             © {currentYear} Cativa. Inteligência para Negócios de Beleza.
           </p>
           <div className="flex gap-12">

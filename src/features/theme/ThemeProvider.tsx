@@ -2,7 +2,7 @@
  * Theme provider — claro / escuro / sistema.
  * Persiste em localStorage. Aplica classe `dark` no <html>.
  */
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
 
 type Theme = "light" | "dark" | "system";
 
@@ -28,11 +28,7 @@ export function ThemeProvider({ children, defaultTheme = "light" }: { children: 
 
   const resolvedTheme = theme === "system" ? getSystemTheme() : theme;
 
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.remove("light", "dark");
-    root.classList.add(resolvedTheme);
-  }, [resolvedTheme]);
+  // A classe no <html> é aplicada por ForceLightOnPublicRoutes (respeita páginas só-claras).
 
   const setTheme = (next: Theme) => {
     localStorage.setItem(STORAGE_KEY, next);

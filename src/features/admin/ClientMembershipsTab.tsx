@@ -522,7 +522,7 @@ function Field({ label, value }: { label: string; value: string }) {
 
 function SummaryTile({ label, value, tone = "neutral" }: { label: string; value: number; tone?: StatusTone }) {
   const toneClass: Record<StatusTone, string> = {
-    success: "text-emerald-600 dark:text-emerald-400",
+    success: "text-emerald-700 dark:text-emerald-400",
     warning: "text-amber-600 dark:text-amber-400",
     danger: "text-destructive",
     brand: "text-primary",

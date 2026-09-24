@@ -64,7 +64,7 @@ export function ModulesSection() {
         transition={{ duration: 0.8 }}
         className="max-w-4xl mx-auto text-center mb-16 md:mb-24 px-4 md:px-0"
       >
-        <div className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-6 md:mb-8">
+        <div className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-[10px] font-bold uppercase tracking-[0.2em] text-accent-strong mb-6 md:mb-8">
           Módulos do Sistema
         </div>
         <h2 className="text-4xl md:text-7xl font-display font-bold text-primary-dark leading-[0.95] tracking-tight mb-6 md:mb-8">
@@ -102,7 +102,7 @@ export function ModulesSection() {
               
               <div className="lg:col-span-5">
                 <div className="flex items-center gap-3 mb-4 md:mb-6">
-                   <span className="text-[10px] font-bold text-accent tracking-[0.3em] uppercase opacity-60">Módulo {module.id}</span>
+                   <span className="text-[10px] font-bold text-accent-strong tracking-[0.3em] uppercase opacity-60">Módulo {module.id}</span>
                    <div className="h-px w-8 bg-accent/20" />
                 </div>
                 <h3 className="text-3xl md:text-5xl font-display font-bold text-primary-dark mb-4 md:mb-6 group-hover:text-accent transition-colors tracking-tighter">

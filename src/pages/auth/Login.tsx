@@ -45,7 +45,7 @@ export default function Login() {
       <div className="space-y-10">
         {/* Cabeçalho */}
         <header className="space-y-4">
-          <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent border border-accent/20">
+          <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent-strong border border-accent/20">
             <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
             Área do Cliente
           </div>
@@ -65,7 +65,7 @@ export default function Login() {
               <span className="w-full border-t border-border/40" />
             </div>
             <div className="relative flex justify-center">
-              <span className="bg-white px-4 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
+              <span className="bg-white px-4 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                 ou use e-mail e senha
               </span>
             </div>
@@ -78,7 +78,7 @@ export default function Login() {
             <div className="space-y-2">
               <Label
                 htmlFor="email"
-                className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1"
+                className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/80 ml-1"
               >
                 E-mail Profissional
               </Label>
@@ -106,13 +106,13 @@ export default function Login() {
               <div className="flex justify-between items-end px-1">
                 <Label
                   htmlFor="password"
-                  className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60"
+                  className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/80"
                 >
                   Senha de Acesso
                 </Label>
                 <Link
                   to="/auth/recuperar"
-                  className="text-[10px] font-bold uppercase tracking-widest text-accent hover:text-primary-dark transition-colors"
+                  className="text-[10px] font-bold uppercase tracking-widest text-accent-strong hover:text-primary-dark transition-colors"
                 >
                   Esqueci a senha
                 </Link>
@@ -168,7 +168,7 @@ export default function Login() {
               <span className="w-full border-t border-border/40" />
             </div>
             <div className="relative flex justify-center">
-              <span className="bg-white px-4 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
+              <span className="bg-white px-4 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                 Ainda não tem conta?
               </span>
             </div>
@@ -182,7 +182,7 @@ export default function Login() {
             <Sparkles className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-all -translate-y-1 group-hover:translate-y-0" />
           </Link>
 
-          <p className="text-center text-[10px] leading-relaxed text-muted-foreground/60 font-medium px-8">
+          <p className="text-center text-[10px] leading-relaxed text-muted-foreground font-medium px-8">
             Ao continuar você concorda com os{" "}
             <Link to="/termos" className="text-primary-dark hover:underline">
               Termos de Uso

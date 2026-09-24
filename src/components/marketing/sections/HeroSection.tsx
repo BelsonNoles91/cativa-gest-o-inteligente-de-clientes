@@ -210,7 +210,7 @@ export function HeroSection() {
                                  <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-accent animate-pulse" />
                                  <span className="text-[9px] md:text-xs font-bold text-primary-dark uppercase tracking-widest">Próximos Atendimentos</span>
                               </div>
-                              <Button variant="ghost" size="sm" className="h-6 md:h-8 px-2 md:px-3 text-[8px] md:text-[10px] font-bold uppercase tracking-widest text-accent">Agenda Completa</Button>
+                              <Button variant="ghost" size="sm" className="h-6 md:h-8 px-2 md:px-3 text-[8px] md:text-[10px] font-bold uppercase tracking-widest text-accent-strong">Agenda Completa</Button>
                            </div>
                            <div className="space-y-3 md:space-y-4">
                               {[
@@ -220,7 +220,7 @@ export function HeroSection() {
                               ].map((item, i) => (
                                 <div key={i} className="flex items-center gap-3 md:gap-4 p-2 md:p-3 rounded-xl hover:bg-secondary/10 transition-colors">
                                    <div className="text-[10px] md:text-xs font-bold text-muted-foreground w-10 md:w-12">{item.time}</div>
-                                   <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-accent/5 border border-accent/10 flex items-center justify-center text-[10px] font-bold text-accent">
+                                   <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-accent/5 border border-accent/10 flex items-center justify-center text-[10px] font-bold text-accent-strong">
                                       {item.avatar}
                                    </div>
                                    <div className="flex-1">
@@ -229,7 +229,7 @@ export function HeroSection() {
                                    </div>
                                    <div className={cn(
                                      "text-[7px] md:text-[8px] font-black uppercase tracking-widest px-1.5 md:px-2 py-0.5 md:py-1 rounded-full border",
-                                     item.status === 'Confirmado' ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" : "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                                     item.status === 'Confirmado' ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/20" : "bg-amber-500/10 text-amber-600 border-amber-500/20"
                                    )}>
                                      {item.status}
                                    </div>
@@ -272,13 +272,13 @@ export function HeroSection() {
              >
                 <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
                   <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                    <TrendingUp className="h-3 w-3 md:h-4 md:w-4 text-emerald-600" />
+                    <TrendingUp className="h-3 w-3 md:h-4 md:w-4 text-emerald-700" />
                   </div>
                   <p className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Desempenho</p>
                 </div>
                 <div className="flex items-baseline gap-1 md:gap-2 mb-3 md:mb-4">
                    <span className="text-3xl md:text-5xl font-display font-bold text-primary-dark tracking-tighter">94%</span>
-                   <span className="text-[8px] md:text-[10px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 md:px-2 py-0.5 rounded-full">+6%</span>
+                   <span className="text-[8px] md:text-[10px] font-bold text-emerald-700 bg-emerald-500/10 px-1.5 md:px-2 py-0.5 rounded-full">+6%</span>
                 </div>
                 <div className="w-full h-1 bg-secondary/20 rounded-full overflow-hidden mb-4 md:mb-6">
                    <motion.div 

@@ -161,7 +161,7 @@ export default function PremiumLanding() {
                              <div className="h-2 w-16 md:w-20 bg-primary-dark/10 rounded-full" />
                           </div>
                           <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
-                             <TrendingUp className="text-emerald-600 h-5 w-5 md:h-6 md:w-6" />
+                             <TrendingUp className="text-emerald-700 h-5 w-5 md:h-6 md:w-6" />
                           </div>
                        </div>
 
@@ -179,7 +179,7 @@ export default function PremiumLanding() {
                                 >
                                   {segments[activeSegment].percentage}
                                 </motion.span>
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">{segments[activeSegment].benefit}</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-700">{segments[activeSegment].benefit}</span>
                              </div>
                           </div>
                        </div>
@@ -439,14 +439,14 @@ export default function PremiumLanding() {
                          <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover:translate-y-0" />
                        </Link>
                     </Button>
-                    <span className="text-xs text-white/40 font-bold uppercase tracking-widest">Acesso imediato à sua nova gestão.</span>
+                    <span className="text-xs text-white/70 font-bold uppercase tracking-widest">Acesso imediato à sua nova gestão.</span>
                   </div>
                   
                   <div className="flex flex-col gap-2">
                     <Button asChild variant="outlineWhite" size="lg" className="h-20 px-12 rounded-full border-white/20 hover:bg-white/10">
                        <Link to="/auth/login" className="text-xl">Já tenho uma conta</Link>
                     </Button>
-                    <span className="text-xs text-white/40 font-bold uppercase tracking-widest">Faça login para continuar sua operação.</span>
+                    <span className="text-xs text-white/70 font-bold uppercase tracking-widest">Faça login para continuar sua operação.</span>
                   </div>
                </div>
                

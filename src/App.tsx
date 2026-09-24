@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { ThemeProvider } from "@/features/theme/ThemeProvider";
+import { ForceLightOnPublicRoutes } from "@/features/theme/ForceLightOnPublicRoutes";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { OAuthRedirectHandler } from "@/features/auth/OAuthRedirectHandler";
 import { TenantProvider } from "@/features/tenant/TenantProvider";
@@ -122,6 +123,7 @@ const App = () => (
                 <Sonner />
                 <BackendHealthBanner />
                 <OAuthRedirectHandler />
+                <ForceLightOnPublicRoutes />
                 <Suspense fallback={<RouteFallback />}>
                   <Routes>
                     {/* Público */}
