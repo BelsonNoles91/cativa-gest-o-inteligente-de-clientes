@@ -108,9 +108,9 @@ export function PlansSection() {
                   {plan.name}
                 </p>
 
-                <div className="flex items-baseline gap-1 mb-2">
+                <div className="flex flex-wrap items-baseline gap-x-1 mb-2">
                   {!isFree && <span className="text-xl font-bold opacity-60">R$</span>}
-                  <span className="text-5xl md:text-6xl font-display font-bold tracking-tighter">{isFree ? "Grátis" : price}</span>
+                  <span className="text-4xl md:text-5xl font-display font-bold tracking-tighter">{isFree ? "Grátis" : price}</span>
                   {!isFree && <span className="text-sm font-bold opacity-60">/mês</span>}
                 </div>
                 <p className={cn("text-[10px] font-bold uppercase tracking-widest mb-8", isHighlight ? "text-accent" : "text-accent-strong")}>
