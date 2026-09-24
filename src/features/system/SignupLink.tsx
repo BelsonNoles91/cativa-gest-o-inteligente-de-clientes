@@ -1,11 +1,15 @@
-import { forwardRef, type ReactNode } from "react";
+import { forwardRef, useContext, type ReactNode } from "react";
+import { QueryClientContext } from "@tanstack/react-query";
 import { Link, type LinkProps } from "react-router-dom";
 import { useSystemFlags } from "./useSystemFlags";
 
 /** Retorna se novos cadastros de estabelecimentos estão abertos. */
 export function useSignupsOpen() {
-  const { flags } = useSystemFlags();
-  return flags.enable_signups;
+  // Fora de um QueryClientProvider (ex.: testes isolados) assume aberto.
+  const client = useContext(QueryClientContext);
+  if (!client) return true;
+  // eslint-disable-next-line react-hooks/rules-of-hooks -- condição estável durante a vida do componente
+  return useSystemFlags().flags.enable_signups;
 }
 
 /**
