@@ -299,8 +299,8 @@ export default function PremiumLanding() {
           <PlansSection />
 
           <p className="text-center mt-16 md:mt-20 text-xs md:text-sm text-primary-dark/70 font-bold italic px-4">
-            * Valores para pagamento mensal. Descontos progressivos para planos anuais. <br />
-            Atendimento especializado disponível para todos os planos pagos.
+            * Valores para pagamento mensal. No pagamento anual, você ganha 2 meses grátis. <br />
+            Comece grátis, sem cartão de crédito — e troque de plano quando quiser.
           </p>
         </PremiumSection>
 
