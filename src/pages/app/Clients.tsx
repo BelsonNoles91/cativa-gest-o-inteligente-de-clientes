@@ -1,3 +1,4 @@
+import { FULL_NAME_ERROR, WHATSAPP_ERROR, isValidFullName, isValidMobileBR, maskMobileBR, onlyDigits } from "@/lib/client-validation";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
@@ -479,8 +480,16 @@ export default function ClientsPage() {
 
   async function handleSaveForm() {
     if (!currentTenant || !user) return;
-    if (!form.fullName.trim()) {
-      toast({ title: "Nome obrigatório", description: "Informe o nome do cliente.", variant: "destructive" });
+    if (!isValidFullName(form.fullName)) {
+      toast({ title: "Nome incompleto", description: FULL_NAME_ERROR, variant: "destructive" });
+      return;
+    }
+    if (!isValidMobileBR(form.whatsappPhone)) {
+      toast({ title: "WhatsApp obrigatório", description: WHATSAPP_ERROR, variant: "destructive" });
+      return;
+    }
+    if (form.phone.trim() && onlyDigits(form.phone).length < 10) {
+      toast({ title: "Telefone inválido", description: "Inclua o DDD no telefone.", variant: "destructive" });
       return;
     }
     const creatingNew = !editing || !selectedClient;
@@ -1747,15 +1756,23 @@ function ClientForm({
             onChange={(e) => setForm((prev) => ({ ...prev, origin: e.target.value }))}
           />
         </Field>
-        <Field label="Telefone">
+        <Field label="WhatsApp (com DDD)" required>
           <Input
-            data-testid="client-form-phone"
-            value={form.phone}
-            onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))}
+            data-testid="client-form-whatsapp"
+            inputMode="tel"
+            placeholder="(11) 99999-9999"
+            value={form.whatsappPhone}
+            onChange={(e) => setForm((prev) => ({ ...prev, whatsappPhone: maskMobileBR(e.target.value) }))}
           />
         </Field>
-        <Field label="WhatsApp">
-          <Input value={form.whatsappPhone} onChange={(e) => setForm((prev) => ({ ...prev, whatsappPhone: e.target.value }))} />
+        <Field label="Telefone (opcional)">
+          <Input
+            data-testid="client-form-phone"
+            inputMode="tel"
+            placeholder="(11) 99999-9999"
+            value={form.phone}
+            onChange={(e) => setForm((prev) => ({ ...prev, phone: maskMobileBR(e.target.value) }))}
+          />
         </Field>
         <Field label="E-mail">
           <Input
@@ -1967,8 +1984,8 @@ function CustomFieldEditor({
 function clientToForm(client: Client): ClientFormState {
   return {
     fullName: client.fullName,
-    phone: client.phone ?? "",
-    whatsappPhone: client.whatsappPhone ?? "",
+    phone: maskMobileBR(client.phone),
+    whatsappPhone: maskMobileBR(client.whatsappPhone || client.phone),
     email: client.email ?? "",
     birthDate: client.birthDate ?? "",
     origin: client.origin ?? "",
