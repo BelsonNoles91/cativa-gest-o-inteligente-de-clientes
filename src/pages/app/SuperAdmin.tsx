@@ -11,6 +11,7 @@ import {
   Building2,
   UserRoundCog,
   Clock3,
+  Gift,
 } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { TrialLogsTab } from "@/features/admin/TrialLogsTab";
@@ -20,6 +21,7 @@ import { IncidentsTab as AdminIncidentsTab } from "@/features/admin/IncidentsTab
 import { FeatureFlagsConsole } from "@/features/admin/FeatureFlagsConsole";
 import { SecurityScansTab } from "@/features/admin/SecurityScansTab";
 import { PlansEditorTab } from "@/features/admin/PlansEditorTab";
+import { ClientMembershipsTab } from "@/features/admin/ClientMembershipsTab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -153,6 +155,9 @@ export default function SuperAdmin() {
                     <TabsTrigger value="trials" className="gap-1.5 rounded-none border-b-2 border-transparent px-0 pb-3 text-sm font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
                       <Clock3 className="h-3.5 w-3.5" /> Períodos de teste
                     </TabsTrigger>
+                    <TabsTrigger value="client-plans" className="gap-1.5 rounded-none border-b-2 border-transparent px-0 pb-3 text-sm font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+                      <Gift className="h-3.5 w-3.5" /> Planos de clientes
+                    </TabsTrigger>
                     <TabsTrigger value="account-settings" className="gap-1.5 rounded-none border-b-2 border-transparent px-0 pb-3 text-sm font-semibold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
                       <SlidersHorizontal className="h-3.5 w-3.5" /> Ajustes por conta
                     </TabsTrigger>
@@ -160,6 +165,9 @@ export default function SuperAdmin() {
                 </div>
                 <TabsContent value="members" className="mt-0 focus-visible:ring-0"><MembersTab /></TabsContent>
                 <TabsContent value="trials" className="mt-0 focus-visible:ring-0"><TrialLogsTab tenants={tenants} /></TabsContent>
+                <TabsContent value="client-plans" className="mt-0 focus-visible:ring-0">
+                  <ClientMembershipsTab tenants={tenants.map((tenant) => ({ id: tenant.id, name: tenant.name }))} />
+                </TabsContent>
                 <TabsContent value="account-settings" className="mt-0 focus-visible:ring-0"><FeatureFlagsConsole mode="accounts" /></TabsContent>
               </Tabs>
             </section>
