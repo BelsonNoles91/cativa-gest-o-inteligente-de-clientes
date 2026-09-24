@@ -93,7 +93,7 @@ export function MetricsSection() {
                         return <Icon className="h-4 w-4 text-accent" />;
                       })()}
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-accent">Resultado Real</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-accent-strong">Resultado Real</span>
                   </div>
                   <p className="text-xl md:text-2xl font-display font-bold mb-4 italic serif">
                     "{metrics[activeMetric].detail}"

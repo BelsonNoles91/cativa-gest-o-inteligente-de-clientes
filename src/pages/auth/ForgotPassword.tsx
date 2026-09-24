@@ -31,12 +31,12 @@ export default function ForgotPassword() {
   return (
     <AuthLayout>
       <div className="space-y-10">
-        <Link to="/auth/login" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-accent transition-colors group">
+        <Link to="/auth/login" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-accent-strong transition-colors group">
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" /> Voltar ao Login
         </Link>
 
         <header className="space-y-4 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent border border-accent/20">
+          <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent-strong border border-accent/20">
             Recuperação
           </div>
           <h1 className="font-display text-4xl font-bold tracking-tight text-primary-dark">
@@ -54,14 +54,14 @@ export default function ForgotPassword() {
               Enviamos as instruções para <strong>{email}</strong>. <br />
               Confira sua caixa de entrada e spam.
             </p>
-            <Button variant="ghost" onClick={() => setSent(false)} className="text-[10px] font-bold uppercase tracking-widest text-accent hover:bg-transparent">
+            <Button variant="ghost" onClick={() => setSent(false)} className="text-[10px] font-bold uppercase tracking-widest text-accent-strong hover:bg-transparent">
               Tentar outro e-mail
             </Button>
           </div>
         ) : (
           <form className="space-y-6" onSubmit={onSubmit}>
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">E-mail Cadastrado</Label>
+              <Label htmlFor="email" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/80 ml-1">E-mail Cadastrado</Label>
               <div className="relative group">
                 <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground group-focus-within:text-accent" />
                 <Input

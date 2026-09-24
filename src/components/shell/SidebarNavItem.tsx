@@ -116,7 +116,7 @@ export function SidebarNavItem({
           {locked && !collapsed && (
             <Lock
               aria-hidden="true"
-              className="ml-auto h-3 w-3 text-muted-foreground/60"
+              className="ml-auto h-3 w-3 text-muted-foreground"
             />
           )}
           

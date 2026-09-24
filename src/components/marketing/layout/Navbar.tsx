@@ -56,7 +56,7 @@ export function Navbar() {
               <Link 
                 key={link.name}
                 to={link.href} 
-                className="text-[10px] font-bold uppercase tracking-widest text-primary-dark hover:text-accent transition-colors"
+                className="text-[10px] font-bold uppercase tracking-widest text-primary-dark hover:text-accent-strong transition-colors"
               >
                 {link.name}
               </Link>
@@ -64,7 +64,7 @@ export function Navbar() {
               <a 
                 key={link.name}
                 href={link.href} 
-                className="text-[10px] font-bold uppercase tracking-widest text-primary-dark hover:text-accent transition-colors"
+                className="text-[10px] font-bold uppercase tracking-widest text-primary-dark hover:text-accent-strong transition-colors"
               >
                 {link.name}
               </a>
@@ -73,7 +73,7 @@ export function Navbar() {
         </div>
 
         <div className="hidden lg:flex items-center gap-4">
-          <Link to="/auth/login" className="text-[10px] font-bold uppercase tracking-widest text-primary-dark hover:text-accent transition-colors px-6">
+          <Link to="/auth/login" className="text-[10px] font-bold uppercase tracking-widest text-primary-dark hover:text-accent-strong transition-colors px-6">
             Entrar
           </Link>
           <Button asChild variant="premium" size="sm" className="px-8 shadow-lg shadow-accent/20">

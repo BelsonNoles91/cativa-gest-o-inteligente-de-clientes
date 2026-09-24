@@ -39,7 +39,7 @@ export function ProcessSection() {
         transition={{ duration: 0.8 }}
         className="max-w-4xl mx-auto text-center mb-24"
       >
-        <div className="inline-block px-4 py-1.5 rounded-full bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-8 border border-white/10">
+        <div className="inline-block px-4 py-1.5 rounded-full bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent-strong mb-8 border border-white/10">
           Como Funciona
         </div>
         <h2 className="text-5xl md:text-7xl font-display font-bold text-white leading-[0.95] tracking-tight mb-8">

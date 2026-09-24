@@ -285,7 +285,7 @@ export default function AcceptInvite() {
 
           <form onSubmit={onSignupAndAccept} className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">Seu Nome</Label>
+              <Label className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/80 ml-1">Seu Nome</Label>
               <div className="relative group">
                 <User className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -298,7 +298,7 @@ export default function AcceptInvite() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">Senha de Acesso</Label>
+              <Label className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/80 ml-1">Senha de Acesso</Label>
               <div className="relative group">
                 <Lock className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <Input

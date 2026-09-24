@@ -19,7 +19,7 @@ const features = [
     title: "Central de Confirmação",
     description: "Trabalhe com listas organizadas e rotinas claras de contato, mantendo o processo seguro e previsível.",
     icon: Zap,
-    color: "bg-emerald-100 text-emerald-600",
+    color: "bg-emerald-100 text-emerald-700",
   },
   {
     title: "Pacotes e Protocolos",
@@ -97,7 +97,7 @@ export function FeaturesSection() {
          <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(168,76,134,0.15),transparent_50%)]" />
          <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 relative z-10">
             <div className="p-10 md:p-24 flex flex-col justify-center">
-               <div className="inline-block px-4 py-1.5 rounded-full bg-accent/20 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-10 border border-accent/20 w-fit">
+               <div className="inline-block px-4 py-1.5 rounded-full bg-accent/20 text-[10px] font-bold uppercase tracking-[0.2em] text-accent-strong mb-10 border border-accent/20 w-fit">
                  Visão Estratégica
                </div>
                <h3 className="text-white text-3xl md:text-7xl font-display font-bold leading-[0.9] tracking-tighter mb-8 md:mb-10">

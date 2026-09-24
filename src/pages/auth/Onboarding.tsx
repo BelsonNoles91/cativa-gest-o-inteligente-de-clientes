@@ -354,7 +354,7 @@ export default function Onboarding() {
       {step === 0 && user && (
         <div className="space-y-10 animate-fade-in">
           <header className="space-y-4 text-center">
-            <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent border border-accent/20">
+            <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent-strong border border-accent/20">
               <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
               Finalizar Cadastro
             </div>
@@ -373,7 +373,7 @@ export default function Onboarding() {
             </span>
           </Button>
 
-          <p className="text-center text-xs font-medium text-muted-foreground/60">
+          <p className="text-center text-xs font-medium text-muted-foreground">
             Não é você?{" "}
             <Link to="/auth/login" className="text-primary-dark hover:underline">
               Entrar com outra conta
@@ -385,7 +385,7 @@ export default function Onboarding() {
       {step === 0 && !user && (
         <div className="space-y-10 animate-fade-in">
           <header className="space-y-4 text-center">
-            <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent border border-accent/20">
+            <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent-strong border border-accent/20">
               <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
               Conta Grátis Ativa
             </div>
@@ -402,21 +402,21 @@ export default function Onboarding() {
           <form onSubmit={handleSignup} className="space-y-6">
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">Seu Nome</Label>
+                <Label htmlFor="name" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/80 ml-1">Seu Nome</Label>
                 <div className="relative group">
                   <User className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground group-focus-within:text-accent" />
                   <Input id="name" required value={fullName} onChange={(e) => setFullName(e.target.value)} className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] pl-12 text-base shadow-none transition-all focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/5" placeholder="Como podemos te chamar" />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="se" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">E-mail Profissional</Label>
+                <Label htmlFor="se" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/80 ml-1">E-mail Profissional</Label>
                 <div className="relative group">
                   <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground group-focus-within:text-accent" />
                   <Input id="se" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] pl-12 text-base shadow-none transition-all focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/5" placeholder="voce@negocio.com" />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="sp" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">Senha de Acesso</Label>
+                <Label htmlFor="sp" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/80 ml-1">Senha de Acesso</Label>
                 <div className="relative group">
                   <Lock className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground group-focus-within:text-accent" />
                   <Input id="sp" type="password" required minLength={8} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] pl-12 text-base shadow-none transition-all focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/5" placeholder="Mínimo 8 caracteres" />
@@ -441,7 +441,7 @@ export default function Onboarding() {
             )}
           </form>
 
-          <p className="text-center text-xs font-medium text-muted-foreground/60">
+          <p className="text-center text-xs font-medium text-muted-foreground">
             Já possui uma conta?{" "}
             <Link to="/auth/login" className="text-primary-dark hover:underline">
               Entrar agora
@@ -454,7 +454,7 @@ export default function Onboarding() {
       {step === 1 && (
         <div className="space-y-8 animate-fade-in">
           <header className="space-y-4">
-            <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent border border-accent/20">
+            <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent-strong border border-accent/20">
               Passo 01
             </div>
             <h1 className="font-display text-4xl font-bold tracking-tight text-primary-dark">
@@ -467,12 +467,12 @@ export default function Onboarding() {
 
           <div className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="bn" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">Nome do Estabelecimento</Label>
+              <Label htmlFor="bn" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/80 ml-1">Nome do Estabelecimento</Label>
               <Input id="bn" required value={bizName} onChange={(e) => setBizName(e.target.value)} className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] text-base shadow-none transition-all focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/5" placeholder="Ex.: Studio Aurora" />
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">Segmento Principal</Label>
+              <Label className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/80 ml-1">Segmento Principal</Label>
               <Select value={segment} onValueChange={(v) => setSegment(v as TenantSegment)}>
                 <SelectTrigger className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] shadow-none focus:ring-4 focus:ring-accent/5"><SelectValue placeholder="O que você faz?" /></SelectTrigger>
                 <SelectContent className="rounded-2xl border-border/40 shadow-xl">
@@ -485,14 +485,14 @@ export default function Onboarding() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">Fuso Horário</Label>
+                <Label className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/80 ml-1">Fuso Horário</Label>
                 <Select value={timezone} onValueChange={setTimezone}>
                   <SelectTrigger className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] shadow-none focus:ring-4 focus:ring-accent/5"><SelectValue /></SelectTrigger>
                   <SelectContent className="rounded-2xl border-border/40 shadow-xl">{TIMEZONES.map((tz) => <SelectItem key={tz} value={tz} className="rounded-xl py-3 focus:bg-accent/5">{tz.split("/").pop()?.replace("_", " ")}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">Moeda</Label>
+                <Label className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/80 ml-1">Moeda</Label>
                 <Select value={currency} onValueChange={setCurrency}>
                   <SelectTrigger className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] shadow-none focus:ring-4 focus:ring-accent/5"><SelectValue /></SelectTrigger>
                   <SelectContent className="rounded-2xl border-border/40 shadow-xl">{CURRENCIES.map((c) => <SelectItem key={c} value={c} className="rounded-xl py-3 focus:bg-accent/5">{c}</SelectItem>)}</SelectContent>
@@ -514,7 +514,7 @@ export default function Onboarding() {
       {step === 2 && (
         <div className="space-y-8 animate-fade-in">
           <header className="space-y-4 text-center">
-            <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent border border-accent/20">
+            <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent-strong border border-accent/20">
               Passo 02
             </div>
             <h1 className="font-display text-3xl font-bold tracking-tight text-primary-dark">
@@ -601,7 +601,7 @@ export default function Onboarding() {
       {step === 3 && (
         <div className="space-y-8 animate-fade-in">
           <header className="space-y-4 text-center">
-            <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent border border-accent/20">
+            <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent-strong border border-accent/20">
               Passo 03
             </div>
             <h1 className="font-display text-4xl font-bold tracking-tight text-primary-dark">
@@ -620,7 +620,7 @@ export default function Onboarding() {
                 { v: brandAccent, set: setBrandAccent, l: "Acento" },
               ].map((c) => (
                 <div key={c.l} className="space-y-2">
-                  <Label className="text-[10px] font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">{c.l}</Label>
+                  <Label className="text-[10px] font-bold uppercase tracking-[0.1em] text-primary-dark/80 ml-1">{c.l}</Label>
                   <div className="flex items-center gap-2 rounded-2xl border border-border/40 bg-[#FAF7F9] px-2 h-14">
                     <input type="color" value={c.v} onChange={(e) => c.set(e.target.value)} className="h-8 w-8 cursor-pointer rounded-lg border-none bg-transparent" />
                     <Input value={c.v} onChange={(e) => c.set(e.target.value)} className="h-9 border-0 px-1 text-xs shadow-none bg-transparent font-mono" />
@@ -630,7 +630,7 @@ export default function Onboarding() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="un" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/60 ml-1">WhatsApp Business</Label>
+              <Label htmlFor="un" className="text-xs font-bold uppercase tracking-[0.1em] text-primary-dark/80 ml-1">WhatsApp Business</Label>
               <div className="relative group">
                 <Phone className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <Input id="wp" value={whatsappPhone} onChange={(e) => setWhatsappPhone(e.target.value)} className="h-14 rounded-2xl border-border/40 bg-[#FAF7F9] pl-12 text-base shadow-none transition-all" placeholder="(11) 99999-9999" />
@@ -670,7 +670,7 @@ export default function Onboarding() {
                 { label: "Serviços", val: `${serviceDrafts.length} item(ns)` },
               ].map((item, i) => (
                 <div key={i} className="flex items-center justify-between pb-4 border-b border-border/10 last:border-0 last:pb-0">
-                  <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">{item.label}</span>
+                  <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{item.label}</span>
                   <span className="font-bold text-primary-dark text-lg">{item.val}</span>
                 </div>
               ))}
