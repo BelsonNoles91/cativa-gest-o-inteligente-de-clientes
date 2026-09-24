@@ -117,6 +117,7 @@ export function PortalLayout() {
           <Button
             variant="ghost"
             size="icon"
+            className="min-w-0 shrink-0"
             onClick={async () => {
               await signOut();
               navigate("/auth/login", { replace: true });
