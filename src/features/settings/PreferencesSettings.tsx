@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 
 export function PreferencesSettings() {
   const { currentTenant } = useTenant();
@@ -18,19 +19,21 @@ export function PreferencesSettings() {
   const [saving, setSaving] = useState(false);
   const [buffer, setBuffer] = useState(0);
   const [policy, setPolicy] = useState("");
+  const [proSeesAll, setProSeesAll] = useState(true);
 
   useEffect(() => {
     if (!tenantId) return;
     setLoading(true);
     supabase
       .from("tenant_settings")
-      .select("appointment_buffer_minutes, cancellation_policy")
+      .select("appointment_buffer_minutes, cancellation_policy, professional_sees_all")
       .eq("tenant_id", tenantId)
       .maybeSingle()
       .then(({ data }) => {
         if (data) {
           setBuffer(data.appointment_buffer_minutes ?? 0);
           setPolicy(data.cancellation_policy ?? "");
+          setProSeesAll(data.professional_sees_all ?? true);
         }
         setLoading(false);
       });
@@ -43,6 +46,7 @@ export function PreferencesSettings() {
       tenant_id: currentTenant.id,
       appointment_buffer_minutes: buffer,
       cancellation_policy: policy || null,
+      professional_sees_all: proSeesAll,
     });
     setSaving(false);
     if (error) { toast.error("Erro ao salvar", { description: error.message }); return; }
@@ -61,6 +65,13 @@ export function PreferencesSettings() {
       <div className="space-y-2">
         <Label>Política de cancelamento</Label>
         <Textarea value={policy} onChange={(e) => setPolicy(e.target.value)} rows={5} className="rounded-xl" placeholder="Ex.: Cancelamentos com até 24h não geram custos…" />
+      </div>
+      <div className="flex items-start justify-between gap-4 rounded-xl border border-border p-4">
+        <div className="space-y-1">
+          <Label htmlFor="pro-sees-all">Profissionais veem a agenda e os clientes de toda a equipe</Label>
+          <p className="text-sm text-muted-foreground">Desligado: cada profissional vê apenas os próprios atendimentos e os clientes que já atendeu.</p>
+        </div>
+        <Switch id="pro-sees-all" checked={proSeesAll} onCheckedChange={setProSeesAll} />
       </div>
       <div className="flex justify-end">
         <Button onClick={onSave} disabled={saving} className="h-11 rounded-xl bg-gradient-brand">
