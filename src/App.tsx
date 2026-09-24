@@ -163,8 +163,8 @@ const App = () => (
       <ErrorBoundary name="Root">
         <ThemeProvider defaultTheme={appConfig.defaultTheme}>
         <BrowserRouter>
-          <PreloadAppModules />
           <AuthProvider>
+            <PreloadAppModules />
             <TenantProvider>
               <TooltipProvider>
                 <Toaster />
