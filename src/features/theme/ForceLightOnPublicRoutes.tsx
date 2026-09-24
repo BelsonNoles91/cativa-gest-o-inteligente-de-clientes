@@ -6,7 +6,11 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useTheme } from "./ThemeProvider";
 
-const LIGHT_ONLY = [/^\/$/, /^\/(planos|pricing|status|onboarding)(\/|$)/, /^\/auth(\/|$)/];
+const LIGHT_ONLY = [
+  /^\/$/,
+  /^\/(planos|pricing|status|onboarding|privacidade|termos)(\/|$)/,
+  /^\/auth(\/|$)/,
+];
 
 export function ForceLightOnPublicRoutes() {
   const { pathname } = useLocation();
