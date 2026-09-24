@@ -108,7 +108,7 @@ export async function getPortalBranding(
   preferredUnitId: string | null,
 ): Promise<PortalTenantBranding | null> {
   const [{ data: tenant }, { data: settings }, { data: unit }] = await Promise.all([
-    supabase.from("tenants").select("id, name, slug, segment").eq("id", tenantId).maybeSingle(),
+    supabase.from("tenants").select("id, name, slug, segment, timezone").eq("id", tenantId).maybeSingle(),
     supabase.from("tenant_settings").select("logo_url").eq("tenant_id", tenantId).maybeSingle(),
     preferredUnitId
       ? supabase
@@ -131,6 +131,7 @@ export async function getPortalBranding(
     tenantName: tenant.name as string,
     tenantSlug: tenant.slug as string,
     segment: tenant.segment as string,
+    timezone: (tenant.timezone as string) || "America/Sao_Paulo",
     logoUrl: (settings?.logo_url as string) ?? null,
     unitName: (u?.name as string) ?? null,
     unitPhone: (u?.phone as string) ?? null,

@@ -35,8 +35,9 @@ import {
   type PortalConsentPending,
 } from "@/domain/portal";
 import { appointmentStatusLabels } from "@/domain/scheduling";
+import { DEFAULT_TIMEZONE, formatInTimeZone } from "@/lib/date-time";
 
-function formatDateTime(iso: string): { date: string; time: string; relative: string } {
+function formatDateTime(iso: string, timeZone: string): { date: string; time: string; relative: string } {
   const d = new Date(iso);
   const diffH = (d.getTime() - Date.now()) / 36e5;
   let relative = "";
@@ -45,12 +46,12 @@ function formatDateTime(iso: string): { date: string; time: string; relative: st
   else if (diffH < 24) relative = `em ${Math.round(diffH)}h`;
   else relative = `em ${Math.round(diffH / 24)} dias`;
   return {
-    date: d.toLocaleDateString("pt-BR", {
+    date: formatInTimeZone(d, timeZone, {
       weekday: "long",
       day: "2-digit",
       month: "long",
     }),
-    time: d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+    time: formatInTimeZone(d, timeZone, { hour: "2-digit", minute: "2-digit", hour12: false }),
     relative,
   };
 }
@@ -151,7 +152,7 @@ export default function PortalHome() {
                 <Calendar className="h-3.5 w-3.5" /> Data
               </div>
               <p className="mt-1 capitalize">
-                {formatDateTime(next.appointment.startsAt).date}
+                {formatDateTime(next.appointment.startsAt, branding?.timezone ?? DEFAULT_TIMEZONE).date}
               </p>
             </div>
             <div className="rounded-xl bg-primary-foreground/10 p-3">
@@ -159,8 +160,8 @@ export default function PortalHome() {
                 <Clock className="h-3.5 w-3.5" /> Hora
               </div>
               <p className="mt-1">
-                {formatDateTime(next.appointment.startsAt).time} •{" "}
-                {formatDateTime(next.appointment.startsAt).relative}
+                {formatDateTime(next.appointment.startsAt, branding?.timezone ?? DEFAULT_TIMEZONE).time} •{" "}
+                {formatDateTime(next.appointment.startsAt, branding?.timezone ?? DEFAULT_TIMEZONE).relative}
               </p>
             </div>
           </div>

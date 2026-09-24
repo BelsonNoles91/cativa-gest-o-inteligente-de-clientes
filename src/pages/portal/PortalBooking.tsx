@@ -47,6 +47,7 @@ import {
   rescheduleFromPortal,
 } from "@/services/portal/booking";
 import { cn } from "@/lib/utils";
+import { calendarDateKey, DEFAULT_TIMEZONE, formatInTimeZone } from "@/lib/date-time";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -57,7 +58,7 @@ function parseDateParam(value: string | null): Date | undefined {
 }
 
 export default function PortalBooking() {
-  const { activeLink, profile } = usePortalClient();
+  const { activeLink, profile, branding } = usePortalClient();
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -155,7 +156,7 @@ export default function PortalBooking() {
           professionalId: proId,
           unitId,
           serviceId: service.id,
-          day: day.toISOString().slice(0, 10),
+          day: calendarDateKey(day),
         });
         setSlots(data);
       } catch (e) {
@@ -193,6 +194,7 @@ export default function PortalBooking() {
           durationMinutes: service.durationMinutes,
           policy,
           currentStartsAt: oldStartsAt ?? new Date().toISOString(),
+          tenantTimezone: branding?.timezone ?? DEFAULT_TIMEZONE,
         });
         toast({ title: "Reagendado!", description: "Seu novo horário foi solicitado." });
       } else {
@@ -209,6 +211,7 @@ export default function PortalBooking() {
           cancellationPolicyId: service.cancellationPolicyId,
           minAdvanceHours: service.minAdvanceHours,
           createdBy: user?.id ?? null,
+          tenantTimezone: branding?.timezone ?? DEFAULT_TIMEZONE,
         });
         toast({
           title: "Agendamento solicitado!",
@@ -412,9 +415,10 @@ export default function PortalBooking() {
               ) : (
                 <div className="grid grid-cols-3 gap-2">
                   {slots.map((s) => {
-                    const t = new Date(s.startsAt).toLocaleTimeString("pt-BR", {
+                    const t = formatInTimeZone(s.startsAt, branding?.timezone ?? DEFAULT_TIMEZONE, {
                       hour: "2-digit",
                       minute: "2-digit",
+                      hour12: false,
                     });
                     const active = chosenSlot === s.startsAt;
                     return (
@@ -479,7 +483,7 @@ export default function PortalBooking() {
               <div>
                 <p className="text-xs uppercase text-muted-foreground">Data e hora</p>
                 <p className="font-medium">
-                  {new Date(chosenSlot).toLocaleString("pt-BR", {
+                  {formatInTimeZone(chosenSlot, branding?.timezone ?? DEFAULT_TIMEZONE, {
                     weekday: "long",
                     day: "2-digit",
                     month: "long",

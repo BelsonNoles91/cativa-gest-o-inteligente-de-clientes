@@ -21,6 +21,7 @@ import {
 import { isPastAppointment, type PortalAppointmentView } from "@/domain/portal";
 import { appointmentStatusLabels, statusTone } from "@/domain/scheduling";
 import { cn } from "@/lib/utils";
+import { DEFAULT_TIMEZONE, formatInTimeZone } from "@/lib/date-time";
 
 const toneMap = {
   default: "neutral",
@@ -32,7 +33,7 @@ const toneMap = {
 } as const;
 
 export default function PortalHistory() {
-  const { activeLink } = usePortalClient();
+  const { activeLink, branding } = usePortalClient();
   const { toast } = useToast();
   const [items, setItems] = useState<PortalAppointmentView[]>([]);
   const [reviewedIds, setReviewedIds] = useState<Set<string>>(new Set());
@@ -118,7 +119,6 @@ export default function PortalHistory() {
         <ul className="space-y-3">
           {items.map((view) => {
             const a = view.appointment;
-            const start = new Date(a.startsAt);
             const canReview =
               a.status === "completed" && !reviewedIds.has(a.id);
             return (
@@ -139,7 +139,7 @@ export default function PortalHistory() {
                 <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
                   <span className="inline-flex items-center gap-1.5">
                     <Calendar className="h-3.5 w-3.5" />
-                    {start.toLocaleDateString("pt-BR", {
+                    {formatInTimeZone(a.startsAt, branding?.timezone ?? DEFAULT_TIMEZONE, {
                       day: "2-digit",
                       month: "short",
                       year: "numeric",
@@ -147,9 +147,10 @@ export default function PortalHistory() {
                   </span>
                   <span className="inline-flex items-center gap-1.5">
                     <Clock className="h-3.5 w-3.5" />
-                    {start.toLocaleTimeString("pt-BR", {
+                    {formatInTimeZone(a.startsAt, branding?.timezone ?? DEFAULT_TIMEZONE, {
                       hour: "2-digit",
                       minute: "2-digit",
+                      hour12: false,
                     })}
                   </span>
                   {view.unitName && (

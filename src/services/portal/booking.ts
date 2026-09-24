@@ -14,6 +14,7 @@ import {
 } from "@/repositories/scheduling";
 import { supabase } from "@/integrations/supabase/client";
 import type { CancellationPolicySnapshot } from "@/domain/portal";
+import { dateKeyInTimeZone, DEFAULT_TIMEZONE } from "@/lib/date-time";
 
 export interface CreateBookingInput {
   tenantId: string;
@@ -30,6 +31,7 @@ export interface CreateBookingInput {
   totalPriceCents?: number;
   minAdvanceHours?: number;
   createdBy?: string | null;
+  tenantTimezone?: string;
 }
 
 export async function createBookingFromPortal(input: CreateBookingInput): Promise<string> {
@@ -43,7 +45,7 @@ export async function createBookingFromPortal(input: CreateBookingInput): Promis
   }
 
   // re-valida o slot via RPC
-  const day = startsAt.toISOString().slice(0, 10);
+  const day = dateKeyInTimeZone(startsAt, input.tenantTimezone ?? DEFAULT_TIMEZONE);
   const slots = await getAvailableSlots({
     tenantId: input.tenantId,
     professionalId: input.professionalId,
@@ -93,6 +95,7 @@ export interface RescheduleInput {
   durationMinutes: number;
   policy?: CancellationPolicySnapshot | null;
   currentStartsAt: string;
+  tenantTimezone?: string;
 }
 
 type RpcFn = (fn: string, args: Record<string, unknown>) => Promise<{ error: unknown }>;
@@ -100,7 +103,7 @@ type RpcFn = (fn: string, args: Record<string, unknown>) => Promise<{ error: unk
 export async function rescheduleFromPortal(input: RescheduleInput): Promise<void> {
   // valida o novo slot
   const startsAt = new Date(input.startsAt);
-  const day = startsAt.toISOString().slice(0, 10);
+  const day = dateKeyInTimeZone(startsAt, input.tenantTimezone ?? DEFAULT_TIMEZONE);
   const slots = await getAvailableSlots({
     tenantId: input.tenantId,
     professionalId: input.professionalId,

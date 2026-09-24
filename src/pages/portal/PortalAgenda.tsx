@@ -44,6 +44,7 @@ import {
   type PortalAppointmentView,
 } from "@/domain/portal";
 import { appointmentStatusLabels, statusTone } from "@/domain/scheduling";
+import { DEFAULT_TIMEZONE, formatInTimeZone } from "@/lib/date-time";
 
 const toneMap = {
   default: "neutral",
@@ -55,7 +56,7 @@ const toneMap = {
 } as const;
 
 export default function PortalAgenda() {
-  const { activeLink } = usePortalClient();
+  const { activeLink, branding } = usePortalClient();
   const { toast } = useToast();
   const [items, setItems] = useState<PortalAppointmentView[]>([]);
   const [loading, setLoading] = useState(true);
@@ -162,7 +163,6 @@ export default function PortalAgenda() {
         <ul className="space-y-3">
           {items.map((view) => {
             const a = view.appointment;
-            const start = new Date(a.startsAt);
             const cancelCheck = canClientCancel(a.startsAt, rules);
             const rescheduleCheck = canClientReschedule(
               a.startsAt,
@@ -188,7 +188,7 @@ export default function PortalAgenda() {
                 <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
                   <span className="inline-flex items-center gap-1.5">
                     <Calendar className="h-3.5 w-3.5" />
-                    {start.toLocaleDateString("pt-BR", {
+                    {formatInTimeZone(a.startsAt, branding?.timezone ?? DEFAULT_TIMEZONE, {
                       day: "2-digit",
                       month: "short",
                       weekday: "short",
@@ -196,9 +196,10 @@ export default function PortalAgenda() {
                   </span>
                   <span className="inline-flex items-center gap-1.5">
                     <Clock className="h-3.5 w-3.5" />
-                    {start.toLocaleTimeString("pt-BR", {
+                    {formatInTimeZone(a.startsAt, branding?.timezone ?? DEFAULT_TIMEZONE, {
                       hour: "2-digit",
                       minute: "2-digit",
+                      hour12: false,
                     })}
                   </span>
                   {view.unitName && (
