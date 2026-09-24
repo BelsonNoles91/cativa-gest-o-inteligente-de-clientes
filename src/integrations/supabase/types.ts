@@ -5454,6 +5454,7 @@ export type Database = {
           price_cents: number
         }[]
       }
+      get_public_system_flags: { Args: never; Returns: Json }
       get_public_tenant_page: {
         Args: { _slug: string }
         Returns: {
@@ -5639,6 +5640,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      system_flag_enabled: {
+        Args: { _default: boolean; _key: string }
+        Returns: boolean
       }
       tenant_has_feature: {
         Args: { _feature_key: string; _tenant_id: string }
