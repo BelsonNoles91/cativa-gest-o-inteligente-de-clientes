@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRealtimeRefresh } from "@/features/realtime/TenantRealtimeSync";
 import {
   AlertTriangle,
   CalendarClock,
@@ -127,6 +128,7 @@ export default function MySchedule() {
   useEffect(() => {
     void load();
   }, [load]);
+  useRealtimeRefresh(useCallback(() => void load(), [load]));
 
   const dayHours = useMemo(
     () => businessHours.find((h) => h.weekday === Number(weekday)) ?? null,

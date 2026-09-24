@@ -3,6 +3,7 @@
  * Filas por etapa, ações rápidas, geração de fila a partir dos
  * agendamentos e dialog de ação por item.
  */
+import { useRealtimeRefresh } from "@/features/realtime/TenantRealtimeSync";
 import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Plus, RefreshCcw, Sparkles, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
@@ -101,6 +102,7 @@ const EMPTY_RULE_FORM: RuleFormState = {
 
 export default function ConfirmationCenter() {
   const center = useConfirmationCenter();
+  useRealtimeRefresh(center.refresh);
   const { currentTenant } = useTenant();
   const { toast } = useToast();
   const [active, setActive] = useState<QueueItemHydrated | null>(null);

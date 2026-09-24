@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useRealtimeRefresh } from "@/features/realtime/TenantRealtimeSync";
 import { useSearchParams } from "react-router-dom";
 import {
   CalendarDays,
@@ -196,6 +197,7 @@ export default function AgendaPage() {
     setRefreshToken((current) => current + 1);
   }, []);
   const offline = useOfflineAgenda(currentTenant?.id ?? null, handleSynced);
+  useRealtimeRefresh(handleSynced);
 
   useEffect(() => {
     const date = searchParams.get("date");
