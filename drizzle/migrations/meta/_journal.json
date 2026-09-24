@@ -211,6 +211,20 @@
       "when": 1790270850192,
       "tag": "0029_admin_plan_editor_and_system_flags",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1790271266648,
+      "tag": "0030_plans_v2_comeco_solo_equipe_rede",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1790271567623,
+      "tag": "0031_comeco_cta_label_short",
+      "breakpoints": true
     }
   ]
 }

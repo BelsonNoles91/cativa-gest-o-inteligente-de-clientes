@@ -233,8 +233,8 @@ describe("Páginas — invariantes visuais (mobile + 1366×768)", () => {
       expect(src).toMatch(/grid-cols-1[\s\S]*sm:grid-cols-3/);
     });
 
-    it("toolbar de filtros empilha em mobile (flex-col sm:flex-row)", () => {
-      expect(src).toMatch(/flex-col[\s\S]*sm:flex-row/);
+    it("toolbar de filtros empilha em mobile (grid-cols-1 sm:grid-cols-2)", () => {
+      expect(src).toMatch(/grid-cols-1[\s\S]*sm:grid-cols-2/);
     });
   });
 
