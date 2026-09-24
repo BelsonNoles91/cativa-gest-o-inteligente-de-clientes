@@ -20,7 +20,7 @@ export function ProblemSection() {
           transition={{ duration: 0.8 }}
           className="px-4 md:px-0 order-2 lg:order-1"
         >
-          <div className="inline-block px-4 py-1.5 rounded-full bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent-strong mb-8 border border-white/10">
+          <div className="inline-block px-4 py-1.5 rounded-full bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-8 border border-white/10">
             O Cenário Atual
           </div>
           <h2 className="text-4xl md:text-7xl font-display font-bold text-white leading-[0.95] tracking-tight mb-8 md:mb-12">

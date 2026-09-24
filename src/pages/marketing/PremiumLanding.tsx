@@ -307,7 +307,7 @@ export default function PremiumLanding() {
         {/* Seção de Perfis */}
         <PremiumSection variant="dark" padding="lg">
           <div className="max-w-4xl mx-auto text-center mb-16 md:mb-24 px-4">
-            <div className="inline-block px-4 py-1.5 rounded-full bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent-strong mb-8 border border-white/10">
+            <div className="inline-block px-4 py-1.5 rounded-full bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-8 border border-white/10">
               Ecossistema Cativa
             </div>
             <h3 className="font-display text-[2.5rem] md:text-8xl text-white tracking-tighter leading-[0.95]">
@@ -439,14 +439,14 @@ export default function PremiumLanding() {
                          <div className="absolute inset-0 bg-white translate-y-full transition-transform duration-500 group-hover:translate-y-0" />
                        </Link>
                     </Button>
-                    <span className="text-xs text-white/40 font-bold uppercase tracking-widest">Acesso imediato à sua nova gestão.</span>
+                    <span className="text-xs text-white/70 font-bold uppercase tracking-widest">Acesso imediato à sua nova gestão.</span>
                   </div>
                   
                   <div className="flex flex-col gap-2">
                     <Button asChild variant="outlineWhite" size="lg" className="h-20 px-12 rounded-full border-white/20 hover:bg-white/10">
                        <Link to="/auth/login" className="text-xl">Já tenho uma conta</Link>
                     </Button>
-                    <span className="text-xs text-white/40 font-bold uppercase tracking-widest">Faça login para continuar sua operação.</span>
+                    <span className="text-xs text-white/70 font-bold uppercase tracking-widest">Faça login para continuar sua operação.</span>
                   </div>
                </div>
                
