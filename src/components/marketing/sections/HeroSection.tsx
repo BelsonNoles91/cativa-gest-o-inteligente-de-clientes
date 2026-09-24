@@ -274,21 +274,20 @@ export function HeroSection() {
                   <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
                     <TrendingUp className="h-3 w-3 md:h-4 md:w-4 text-emerald-700" />
                   </div>
-                  <p className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Desempenho</p>
+                  <p className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Confirmações do dia</p>
                 </div>
                 <div className="flex items-baseline gap-1 md:gap-2 mb-3 md:mb-4">
-                   <span className="text-3xl md:text-5xl font-display font-bold text-primary-dark tracking-tighter">94%</span>
-                   <span className="text-[8px] md:text-[10px] font-bold text-emerald-700 bg-emerald-500/10 px-1.5 md:px-2 py-0.5 rounded-full">+6%</span>
+                   <span className="text-3xl md:text-5xl font-display font-bold text-primary-dark tracking-tighter">18/20</span>
                 </div>
                 <div className="w-full h-1 bg-secondary/20 rounded-full overflow-hidden mb-4 md:mb-6">
                    <motion.div 
                      initial={{ width: 0 }}
-                     whileInView={{ width: "94%" }}
+                     whileInView={{ width: "90%" }}
                      transition={{ duration: 1.5, delay: 1.5 }}
                      className="h-full bg-accent" 
                    />
                 </div>
-                <p className="text-[9px] md:text-[11px] text-muted-foreground leading-relaxed font-light">"A Cativa reduziu nossas faltas em 40% no primeiro mês."</p>
+                <p className="text-[9px] md:text-[11px] text-muted-foreground leading-relaxed font-light">Exemplo ilustrativo: confirme em 1 toque pelo WhatsApp, sem custo por mensagem.</p>
              </motion.div>
           </div>
 
