@@ -1354,6 +1354,7 @@ export type Database = {
       }
       client_users: {
         Row: {
+          booking_origin: string | null
           client_id: string
           created_at: string
           id: string
@@ -1365,6 +1366,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          booking_origin?: string | null
           client_id: string
           created_at?: string
           id?: string
@@ -1376,6 +1378,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          booking_origin?: string | null
           client_id?: string
           created_at?: string
           id?: string
@@ -5565,6 +5568,10 @@ export type Database = {
           status: Database["public"]["Enums"]["team_invitation_status"]
           tenant_id: string
         }[]
+      }
+      portal_can_book: {
+        Args: { _tenant_id: string; _user_id: string }
+        Returns: boolean
       }
       portal_cancel_appointment: {
         Args: { _appointment_id: string; _reason?: string }

@@ -190,6 +190,13 @@
       "when": 1790269739226,
       "tag": "0026_public_booking_require_name_whatsapp",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1790270006617,
+      "tag": "0027_portal_booking_requires_history_or_public_link",
+      "breakpoints": true
     }
   ]
 }

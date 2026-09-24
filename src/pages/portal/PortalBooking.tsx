@@ -1,3 +1,5 @@
+import { supabase } from "@/integrations/supabase/client";
+import { CalendarX } from "lucide-react";
 /**
  * PortalBooking — wizard mobile-first de auto-agendamento (e reagendamento).
  *
@@ -62,6 +64,19 @@ export default function PortalBooking() {
   const [params] = useSearchParams();
   const rescheduleId = params.get("reschedule");
   const dateParam = params.get("date");
+  const [canBook, setCanBook] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!activeLink || !user) return;
+    let alive = true;
+    supabase
+      .rpc("portal_can_book", { _user_id: user.id, _tenant_id: activeLink.tenantId })
+      .then(({ data, error }) => {
+        if (alive) setCanBook(error ? true : Boolean(data));
+      });
+    return () => {
+      alive = false;
+    };
+  }, [activeLink, user]);
 
   const [step, setStep] = useState<Step>(1);
   const [units, setUnits] = useState<PortalUnitOption[]>([]);
@@ -213,6 +228,18 @@ export default function PortalBooking() {
     return (
       <div className="grid place-items-center py-20">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!rescheduleId && canBook === false) {
+    return (
+      <div className="py-8">
+        <EmptyState
+          icon={<CalendarX className="h-6 w-6" />}
+          title="Agendamento pelo link do estabelecimento"
+          description="Para marcar seu primeiro horário aqui, use o link de agendamento divulgado pelo próprio estabelecimento. Depois disso, você poderá agendar direto por este portal."
+        />
       </div>
     );
   }
