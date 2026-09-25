@@ -25,19 +25,20 @@ const QA_USERS = [
   },
 ];
 
-const variableNames = {
-  owner: { email: "E2E_USER", password: "E2E_PASS" },
-  manager: { email: "E2E_MANAGER_USER", password: "E2E_MANAGER_PASS" },
-  frontdesk: { email: "E2E_FRONTDESK_USER", password: "E2E_FRONTDESK_PASS" },
-  professional: { email: "E2E_PROFESSIONAL_USER", password: "E2E_PROFESSIONAL_PASS" },
+const requiredEnvByRole = {
+  owner: ["E2E_USER", "E2E_PASS"],
+  manager: ["E2E_MANAGER_USER", "E2E_MANAGER_PASS"],
+  frontdesk: ["E2E_FRONTDESK_USER", "E2E_FRONTDESK_PASS"],
+  professional: ["E2E_PROFESSIONAL_USER", "E2E_PROFESSIONAL_PASS"],
 };
 
 const missing = [];
 if (!SUPABASE_URL) missing.push("VITE_SUPABASE_URL (ou SUPABASE_URL)");
 if (!SERVICE_ROLE_KEY) missing.push("SUPABASE_SERVICE_ROLE_KEY");
 for (const user of QA_USERS) {
-  if (!user.email) missing.push(variableNames[user.role].email);
-  if (!user.password) missing.push(variableNames[user.role].password);
+  const [emailEnv, passEnv] = requiredEnvByRole[user.role];
+  if (!user.email) missing.push(emailEnv);
+  if (!user.password) missing.push(passEnv);
 }
 
 if (missing.length > 0) {
