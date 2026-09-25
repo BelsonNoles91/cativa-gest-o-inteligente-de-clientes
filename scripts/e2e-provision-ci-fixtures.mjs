@@ -99,9 +99,12 @@ async function provisionTenant(tenantId) {
     throw new Error(`provisionar usuários QA: ${data?.error ?? "resposta inválida"}`);
   }
 
-  const byRole = new Map(
-    (data.results ?? []).map((entry) => [entry.role, entry]),
-  );
+  const accounts = Array.isArray(data.accounts)
+    ? data.accounts
+    : Array.isArray(data.results)
+      ? data.results
+      : [];
+  const byRole = new Map(accounts.map((entry) => [entry.role, entry]));
   for (const role of ["owner", "manager", "frontdesk", "professional"]) {
     const entry = byRole.get(role);
     if (!entry?.email || !entry?.user_id || !entry?.password_set) {
