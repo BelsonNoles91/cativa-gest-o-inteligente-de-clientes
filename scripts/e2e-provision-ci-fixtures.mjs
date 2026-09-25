@@ -94,7 +94,25 @@ async function provisionTenant(tenantId) {
       email_domain: EMAIL_DOMAIN,
     },
   });
-  if (error) throw new Error(`provisionar usuários QA: ${error.message}`);
+  if (error) {
+    let detail = error.message;
+    const response = error.context;
+    if (response instanceof Response) {
+      const status = response.status;
+      try {
+        const payload = await response.clone().json();
+        const remoteMessage =
+          payload && typeof payload === "object" && "error" in payload
+            ? String(payload.error)
+            : JSON.stringify(payload);
+        detail = `HTTP ${status}: ${remoteMessage}`;
+      } catch {
+        const text = await response.clone().text().catch(() => "");
+        detail = `HTTP ${status}${text ? `: ${text}` : ""}`;
+      }
+    }
+    throw new Error(`provisionar usuários QA: ${detail}`);
+  }
   if (!data || data.error) {
     throw new Error(`provisionar usuários QA: ${data?.error ?? "resposta inválida"}`);
   }
