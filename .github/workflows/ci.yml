@@ -144,18 +144,19 @@ jobs:
       - name: Identifica alvo Supabase dos testes
         run: node scripts/e2e-target-check.mjs
 
+      - name: Provisiona perfis e segundo tenant de QA
+        if: env.E2E_USER != '' && env.E2E_PASS != ''
+        run: npm run test:qa:provision
+
       - name: QA autenticado com dados reais de teste
         run: npm run test:qa:authenticated
 
       - name: RBAC real por owner, manager, frontdesk e professional
-        if: >-
-          env.E2E_MANAGER_USER != '' && env.E2E_MANAGER_PASS != '' &&
-          env.E2E_FRONTDESK_USER != '' && env.E2E_FRONTDESK_PASS != '' &&
-          env.E2E_PROFESSIONAL_USER != '' && env.E2E_PROFESSIONAL_PASS != ''
+        if: env.E2E_USER != '' && env.E2E_PASS != ''
         run: npm run test:rbac:e2e
 
       - name: Isolamento multi-tenant remoto com duas contas reais
-        if: env.E2E_TENANT_B_USER != '' && env.E2E_TENANT_B_PASS != ''
+        if: env.E2E_USER != '' && env.E2E_PASS != ''
         run: npm run test:tenant:isolation:remote
 
   backend-integrity:
