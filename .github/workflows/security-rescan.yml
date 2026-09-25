@@ -83,7 +83,7 @@ jobs:
           psql "$SUPABASE_DB_URL" -X -q -c "select 1" > /dev/null
           echo "Conexão com o banco validada."
 
-      - name: Testes de regressão de RLS
+      - name: Testes de regressão de RLS e isolamento multi-tenant
         id: rls
         if: steps.db-secret.outputs.available == 'true'
         continue-on-error: true
@@ -91,10 +91,13 @@ jobs:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           set -o pipefail
+          : > rls-output.txt
           psql "$SUPABASE_DB_URL" -X -v ON_ERROR_STOP=1 \
-            -f supabase/tests/rls-regression.sql 2>&1 | tee rls-output.txt
+            -f supabase/tests/rls-regression.sql 2>&1 | tee -a rls-output.txt
+          psql "$SUPABASE_DB_URL" -X -v ON_ERROR_STOP=1 \
+            -f supabase/tests/tenant-idor-regression.sql 2>&1 | tee -a rls-output.txt
           {
-            echo "## Testes de regressão de RLS"
+            echo "## Testes de regressão de RLS e isolamento multi-tenant"
             echo ""
             echo '```'
             grep -E 'NOTICE|WARNING|ERROR' rls-output.txt || cat rls-output.txt
@@ -107,9 +110,9 @@ jobs:
         if: steps.db-secret.outputs.available == 'true' && steps.rls.outcome == 'failure'
         run: |
           {
-            echo "## Testes de regressão de RLS"
+            echo "## Testes de regressão de RLS e isolamento multi-tenant"
             echo ""
-            echo "❌ Os testes de RLS falharam. Saída:"
+            echo "❌ Os testes de RLS/IDOR falharam. Saída:"
             echo ""
             echo '```'
             tail -n 40 rls-output.txt 2>/dev/null || echo "sem saída"
@@ -165,11 +168,11 @@ jobs:
             rls-summary.md
             rls-output.txt
 
-      - name: Falha se houver achados críticos ou regressão de RLS
+      - name: Falha se houver achados críticos ou regressão de RLS/IDOR
         if: steps.rescan.outcome == 'failure' || steps.rls.outcome == 'failure'
         run: |
           if [ "${{ steps.rls.outcome }}" = "failure" ]; then
-            echo "::error::Testes de regressão de RLS falharam."
+            echo "::error::Testes de regressão de RLS/IDOR falharam."
           fi
           if [ "${{ steps.rescan.outcome }}" = "failure" ]; then
             echo "::error::Re-scan de segurança encontrou achados críticos."

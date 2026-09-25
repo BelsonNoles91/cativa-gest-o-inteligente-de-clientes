@@ -3,7 +3,9 @@
 --
 -- Cobre:
 --   1. system_incidents   -> leitura apenas para usuários autenticados
---   2. team_invitations   -> token/token_hash inacessíveis fora do service_role
+--   2. team_invitations   -> anon sem acesso direto; token/token_hash
+--      inacessíveis fora do service_role; convidado lê o próprio convite via
+--      e-mail assinado no JWT sem depender de SELECT em auth.users
 --   3. tenant_memberships -> owner/manager veem a equipe, professional só a
 --      própria linha, super_admin vê tudo, outro tenant não vê nada
 --
@@ -25,6 +27,7 @@ DECLARE
   u_own  uuid := '00000000-0000-4000-8000-0000000000a1';
   u_mng  uuid := '00000000-0000-4000-8000-0000000000a2';
   u_pro  uuid := '00000000-0000-4000-8000-0000000000a3';
+  u_inv  uuid := '00000000-0000-4000-8000-0000000000a4';
   u_ownb uuid := '00000000-0000-4000-8000-0000000000b1';
   u_sup  uuid := '00000000-0000-4000-8000-0000000000f1';
   inc    uuid := '00000000-0000-4000-8000-00000000c001';
@@ -93,6 +96,7 @@ BEGIN
   -- 1. system_incidents
   -- =========================================================================
   EXECUTE 'SET LOCAL ROLE anon';
+  PERFORM set_config('request.jwt.claim.sub', '', true);
   PERFORM set_config('request.jwt.claims', NULL, true);
   EXECUTE 'SELECT count(*) FROM public.system_incidents' INTO v;
   RESET ROLE;
@@ -101,6 +105,7 @@ BEGIN
   ELSE RAISE NOTICE 'ok  system_incidents: anônimo não lê incidentes'; END IF;
 
   EXECUTE 'SET LOCAL ROLE authenticated';
+  PERFORM set_config('request.jwt.claim.sub', u_pro::text, true);
   PERFORM set_config('request.jwt.claims',
     json_build_object('sub', u_pro, 'role', 'authenticated')::text, true);
   EXECUTE format('SELECT count(*) FROM public.system_incidents WHERE id = %L', inc) INTO v;
@@ -111,6 +116,7 @@ BEGIN
   EXCEPTION WHEN insufficient_privilege THEN flag := true;
   END;
   RESET ROLE;
+  PERFORM set_config('request.jwt.claim.sub', '', true);
   PERFORM set_config('request.jwt.claims', NULL, true);
 
   IF v <> 1 THEN failures := failures + 1;
@@ -121,8 +127,16 @@ BEGIN
   ELSE RAISE NOTICE 'ok  system_incidents: usuário comum não altera incidentes'; END IF;
 
   -- =========================================================================
-  -- 2. team_invitations — token / token_hash
+  -- 2. team_invitations — privilégios, token / token_hash e isolamento
   -- =========================================================================
+  IF has_table_privilege('anon', 'public.team_invitations', 'SELECT')
+     OR has_table_privilege('anon', 'public.team_invitations', 'INSERT')
+     OR has_table_privilege('anon', 'public.team_invitations', 'UPDATE')
+     OR has_table_privilege('anon', 'public.team_invitations', 'DELETE') THEN
+    failures := failures + 1;
+    RAISE WARNING 'FALHOU: anon mantém privilégio direto em team_invitations';
+  ELSE RAISE NOTICE 'ok  team_invitations: anon sem privilégios diretos de leitura/escrita'; END IF;
+
   IF has_column_privilege('authenticated', 'public.team_invitations', 'token', 'SELECT')
      OR has_column_privilege('authenticated', 'public.team_invitations', 'token_hash', 'SELECT')
      OR has_column_privilege('anon', 'public.team_invitations', 'token', 'SELECT')
@@ -142,7 +156,21 @@ BEGIN
     RAISE WARNING 'FALHOU: authenticated perdeu acesso às colunas não sensíveis';
   ELSE RAISE NOTICE 'ok  team_invitations: colunas não sensíveis continuam legíveis'; END IF;
 
+  EXECUTE 'SET LOCAL ROLE anon';
+  PERFORM set_config('request.jwt.claim.sub', '', true);
+  PERFORM set_config('request.jwt.claims', NULL, true);
+  BEGIN
+    EXECUTE format('SELECT count(*) FROM public.team_invitations WHERE id = %L', inv) INTO v;
+    flag := false;
+  EXCEPTION WHEN insufficient_privilege THEN flag := true;
+  END;
+  RESET ROLE;
+  IF NOT flag THEN failures := failures + 1;
+    RAISE WARNING 'FALHOU: anon conseguiu consultar team_invitations em runtime';
+  ELSE RAISE NOTICE 'ok  team_invitations: consulta anônima é negada em runtime'; END IF;
+
   EXECUTE 'SET LOCAL ROLE authenticated';
+  PERFORM set_config('request.jwt.claim.sub', u_own::text, true);
   PERFORM set_config('request.jwt.claims',
     json_build_object('sub', u_own, 'role', 'authenticated')::text, true);
   BEGIN
@@ -152,6 +180,7 @@ BEGIN
   END;
   EXECUTE format('SELECT count(*) FROM public.team_invitations WHERE id = %L', inv) INTO v;
   RESET ROLE;
+  PERFORM set_config('request.jwt.claim.sub', '', true);
   PERFORM set_config('request.jwt.claims', NULL, true);
 
   IF NOT flag THEN failures := failures + 1;
@@ -161,11 +190,32 @@ BEGIN
     RAISE WARNING 'FALHOU: owner do tenant não enxerga o convite';
   ELSE RAISE NOTICE 'ok  team_invitations: owner do tenant lê o convite'; END IF;
 
+  -- Convidado autenticado ainda não pertence ao tenant e deliberadamente não
+  -- possui linha em auth.users nesta fixture. O acesso deve depender apenas do
+  -- claim de e-mail da sessão e não de SELECT direto no schema auth.
   EXECUTE 'SET LOCAL ROLE authenticated';
+  PERFORM set_config('request.jwt.claim.sub', u_inv::text, true);
+  PERFORM set_config('request.jwt.claims',
+    json_build_object(
+      'sub', u_inv,
+      'role', 'authenticated',
+      'email', 'convidado+rlstest@example.test'
+    )::text, true);
+  EXECUTE format('SELECT count(*) FROM public.team_invitations WHERE id = %L', inv) INTO v;
+  RESET ROLE;
+  PERFORM set_config('request.jwt.claim.sub', '', true);
+  PERFORM set_config('request.jwt.claims', NULL, true);
+  IF v <> 1 THEN failures := failures + 1;
+    RAISE WARNING 'FALHOU: convidado autenticado não conseguiu ler o próprio convite via JWT';
+  ELSE RAISE NOTICE 'ok  team_invitations: convidado lê o próprio convite via JWT sem auth.users'; END IF;
+
+  EXECUTE 'SET LOCAL ROLE authenticated';
+  PERFORM set_config('request.jwt.claim.sub', u_ownb::text, true);
   PERFORM set_config('request.jwt.claims',
     json_build_object('sub', u_ownb, 'role', 'authenticated')::text, true);
   EXECUTE format('SELECT count(*) FROM public.team_invitations WHERE id = %L', inv) INTO v;
   RESET ROLE;
+  PERFORM set_config('request.jwt.claim.sub', '', true);
   PERFORM set_config('request.jwt.claims', NULL, true);
   IF v <> 0 THEN failures := failures + 1;
     RAISE WARNING 'FALHOU: owner de outro tenant enxergou o convite';
@@ -176,46 +226,52 @@ BEGIN
   -- =========================================================================
   -- owner
   EXECUTE 'SET LOCAL ROLE authenticated';
+  PERFORM set_config('request.jwt.claim.sub', u_own::text, true);
   PERFORM set_config('request.jwt.claims', json_build_object('sub', u_own, 'role','authenticated')::text, true);
   EXECUTE format('SELECT count(*) FROM public.tenant_memberships WHERE tenant_id = %L', t_a) INTO v;
-  RESET ROLE; PERFORM set_config('request.jwt.claims', NULL, true);
+  RESET ROLE; PERFORM set_config('request.jwt.claim.sub', '', true); PERFORM set_config('request.jwt.claims', NULL, true);
   IF v <> 3 THEN failures := failures + 1; RAISE WARNING 'FALHOU: owner viu % de 3 memberships', v;
   ELSE RAISE NOTICE 'ok  memberships: owner vê toda a equipe'; END IF;
 
   -- manager
   EXECUTE 'SET LOCAL ROLE authenticated';
+  PERFORM set_config('request.jwt.claim.sub', u_mng::text, true);
   PERFORM set_config('request.jwt.claims', json_build_object('sub', u_mng, 'role','authenticated')::text, true);
   EXECUTE format('SELECT count(*) FROM public.tenant_memberships WHERE tenant_id = %L', t_a) INTO v;
-  RESET ROLE; PERFORM set_config('request.jwt.claims', NULL, true);
+  RESET ROLE; PERFORM set_config('request.jwt.claim.sub', '', true); PERFORM set_config('request.jwt.claims', NULL, true);
   IF v <> 3 THEN failures := failures + 1; RAISE WARNING 'FALHOU: manager viu % de 3 memberships', v;
   ELSE RAISE NOTICE 'ok  memberships: manager vê toda a equipe'; END IF;
 
   -- professional
   EXECUTE 'SET LOCAL ROLE authenticated';
+  PERFORM set_config('request.jwt.claim.sub', u_pro::text, true);
   PERFORM set_config('request.jwt.claims', json_build_object('sub', u_pro, 'role','authenticated')::text, true);
   EXECUTE format('SELECT count(*) FROM public.tenant_memberships WHERE tenant_id = %L', t_a) INTO v;
-  RESET ROLE; PERFORM set_config('request.jwt.claims', NULL, true);
+  RESET ROLE; PERFORM set_config('request.jwt.claim.sub', '', true); PERFORM set_config('request.jwt.claims', NULL, true);
   IF v <> 1 THEN failures := failures + 1; RAISE WARNING 'FALHOU: professional viu % memberships (esperado 1)', v;
   ELSE RAISE NOTICE 'ok  memberships: professional vê apenas a própria linha'; END IF;
 
   -- outro tenant
   EXECUTE 'SET LOCAL ROLE authenticated';
+  PERFORM set_config('request.jwt.claim.sub', u_ownb::text, true);
   PERFORM set_config('request.jwt.claims', json_build_object('sub', u_ownb, 'role','authenticated')::text, true);
   EXECUTE format('SELECT count(*) FROM public.tenant_memberships WHERE tenant_id = %L', t_a) INTO v;
-  RESET ROLE; PERFORM set_config('request.jwt.claims', NULL, true);
+  RESET ROLE; PERFORM set_config('request.jwt.claim.sub', '', true); PERFORM set_config('request.jwt.claims', NULL, true);
   IF v <> 0 THEN failures := failures + 1; RAISE WARNING 'FALHOU: owner de outro tenant viu % memberships', v;
   ELSE RAISE NOTICE 'ok  memberships: equipe não vaza entre tenants'; END IF;
 
   -- super admin
   EXECUTE 'SET LOCAL ROLE authenticated';
+  PERFORM set_config('request.jwt.claim.sub', u_sup::text, true);
   PERFORM set_config('request.jwt.claims', json_build_object('sub', u_sup, 'role','authenticated')::text, true);
   EXECUTE format('SELECT count(*) FROM public.tenant_memberships WHERE tenant_id = %L', t_a) INTO v;
-  RESET ROLE; PERFORM set_config('request.jwt.claims', NULL, true);
+  RESET ROLE; PERFORM set_config('request.jwt.claim.sub', '', true); PERFORM set_config('request.jwt.claims', NULL, true);
   IF v <> 3 THEN failures := failures + 1; RAISE WARNING 'FALHOU: super_admin viu % de 3 memberships', v;
   ELSE RAISE NOTICE 'ok  memberships: super_admin vê a equipe de qualquer tenant'; END IF;
 
   -- anônimo
   EXECUTE 'SET LOCAL ROLE anon';
+  PERFORM set_config('request.jwt.claim.sub', '', true);
   PERFORM set_config('request.jwt.claims', NULL, true);
   EXECUTE format('SELECT count(*) FROM public.tenant_memberships WHERE tenant_id = %L', t_a) INTO v;
   RESET ROLE;
@@ -224,6 +280,7 @@ BEGIN
 
   -- professional não se promove
   EXECUTE 'SET LOCAL ROLE authenticated';
+  PERFORM set_config('request.jwt.claim.sub', u_pro::text, true);
   PERFORM set_config('request.jwt.claims', json_build_object('sub', u_pro, 'role','authenticated')::text, true);
   BEGIN
     EXECUTE format('UPDATE public.tenant_memberships SET role = ''owner'' WHERE tenant_id = %L AND user_id = %L', t_a, u_pro);
@@ -231,17 +288,18 @@ BEGIN
     flag := (n_rows = 0);
   EXCEPTION WHEN insufficient_privilege THEN flag := true;
   END;
-  RESET ROLE; PERFORM set_config('request.jwt.claims', NULL, true);
+  RESET ROLE; PERFORM set_config('request.jwt.claim.sub', '', true); PERFORM set_config('request.jwt.claims', NULL, true);
   IF NOT flag THEN failures := failures + 1; RAISE WARNING 'FALHOU: professional se promoveu a owner';
   ELSE RAISE NOTICE 'ok  memberships: professional não se promove'; END IF;
 
   -- manager atualiza membro do próprio tenant
   EXECUTE 'SET LOCAL ROLE authenticated';
+  PERFORM set_config('request.jwt.claim.sub', u_mng::text, true);
   PERFORM set_config('request.jwt.claims', json_build_object('sub', u_mng, 'role','authenticated')::text, true);
   EXECUTE format('UPDATE public.tenant_memberships SET status = ''suspended'' WHERE tenant_id = %L AND user_id = %L', t_a, u_pro);
   GET DIAGNOSTICS n_rows = ROW_COUNT;
   flag := (n_rows > 0);
-  RESET ROLE; PERFORM set_config('request.jwt.claims', NULL, true);
+  RESET ROLE; PERFORM set_config('request.jwt.claim.sub', '', true); PERFORM set_config('request.jwt.claims', NULL, true);
   IF NOT flag THEN failures := failures + 1; RAISE WARNING 'FALHOU: manager não conseguiu atualizar membro do próprio tenant';
   ELSE RAISE NOTICE 'ok  memberships: manager atualiza membros do próprio tenant'; END IF;
 
@@ -251,12 +309,13 @@ BEGIN
   -- por isso a asserção compara o valor antes/depois, não o ROW_COUNT.
   -- =========================================================================
   EXECUTE 'SET LOCAL ROLE authenticated';
+  PERFORM set_config('request.jwt.claim.sub', u_own::text, true);
   PERFORM set_config('request.jwt.claims', json_build_object('sub', u_own, 'role','authenticated')::text, true);
   BEGIN
     EXECUTE format('UPDATE public.profiles SET is_super_admin = true WHERE id = %L', u_own);
   EXCEPTION WHEN OTHERS THEN NULL;
   END;
-  RESET ROLE; PERFORM set_config('request.jwt.claims', NULL, true);
+  RESET ROLE; PERFORM set_config('request.jwt.claim.sub', '', true); PERFORM set_config('request.jwt.claims', NULL, true);
   SELECT COALESCE(is_super_admin, false) INTO flag FROM public.profiles WHERE id = u_own;
   IF flag THEN failures := failures + 1; RAISE WARNING 'FALHOU: owner se promoveu a super admin';
   ELSE RAISE NOTICE 'ok  profiles: owner não se promove a super admin'; END IF;
@@ -288,6 +347,7 @@ BEGIN
 
 EXCEPTION WHEN OTHERS THEN
   RESET ROLE;
+  PERFORM set_config('request.jwt.claim.sub', '', true);
   PERFORM set_config('request.jwt.claims', NULL, true);
   BEGIN
     ALTER TABLE public.profiles ENABLE TRIGGER profiles_block_super_admin_changes_trg;
