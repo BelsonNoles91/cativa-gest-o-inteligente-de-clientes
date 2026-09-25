@@ -292,7 +292,7 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
                   <Button onClick={copyMessage} variant="outline">
                     <Copy className="mr-1.5 h-4 w-4" /> Copiar
                   </Button>
-                  <Button onClick={openWhatsApp} disabled={!phoneDigits}>
+                  <Button onClick={openWhatsApp} disabled={!waLink}>
                     <ExternalLink className="mr-1.5 h-4 w-4" /> Abrir WhatsApp
                   </Button>
                   <Button onClick={() => justRegister("sent")} variant="secondary">
