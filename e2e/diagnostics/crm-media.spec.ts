@@ -98,6 +98,104 @@ test.describe("CRM media", () => {
   test.describe.configure({ timeout: 120_000 });
   test.skip(!HAS_E2E_AUTH, AUTH_SKIP_REASON);
 
+  test("cria, lê e atualiza cliente real pela UI", async ({ page }) => {
+    const supabase = await createSignedInSupabase();
+    const marker = `cativa-crm-crud-${Date.now()}`;
+    const fullName = `E2E Cliente CRUD ${marker}`;
+    const updatedFullName = `E2E Cliente CRUD Atualizado ${marker}`;
+    const updatedOrigin = "E2E CRM CRUD atualizado";
+    const updatedEmail = `${marker}.updated@cativa.test`;
+
+    await cleanupClientByName(supabase, fullName);
+    await cleanupClientByName(supabase, updatedFullName);
+
+    try {
+      await page.goto("/app/clientes", { waitUntil: "commit", timeout: 15_000 });
+      await page.waitForLoadState("domcontentloaded", { timeout: 30_000 }).catch(() => {});
+      await page.locator("[data-app-main]").waitFor({ state: "visible", timeout: 30_000 });
+
+      await page.getByTestId("clients-create-cta").click();
+      const dialog = page.getByRole("dialog", { name: /novo cliente/i });
+      await expect(dialog).toBeVisible({ timeout: 15_000 });
+      await dialog.getByTestId("client-form-full-name").fill(fullName);
+      await dialog.getByTestId("client-form-email").fill(`${marker}@cativa.test`);
+      await dialog.getByTestId("client-form-whatsapp").fill("85988887777");
+      await dialog.getByTestId("client-form-phone").fill("85999999999");
+      await dialog.getByTestId("client-form-origin").fill("E2E CRM CRUD");
+      await dialog.getByTestId("client-form-submit").click();
+
+      await expect(page.getByText("Cliente cadastrado", { exact: true })).toBeVisible({
+        timeout: 20_000,
+      });
+      await expect(page.getByRole("heading", { name: fullName })).toBeVisible({
+        timeout: 20_000,
+      });
+
+      await expect
+        .poll(
+          async () => {
+            const { data, error } = await supabase
+              .from("clients")
+              .select("full_name, origin, email, whatsapp_phone, phone")
+              .eq("full_name", fullName)
+              .maybeSingle();
+            if (error) throw error;
+            return data;
+          },
+          { timeout: 20_000 },
+        )
+        .toMatchObject({
+          full_name: fullName,
+          origin: "E2E CRM CRUD",
+          email: `${marker}@cativa.test`,
+        });
+
+      const editForm = page.getByRole("heading", { name: "Editar ficha" }).locator("..");
+      await expect(editForm).toBeVisible({ timeout: 15_000 });
+      await page.getByTestId("client-form-full-name").fill(updatedFullName);
+      await page.getByTestId("client-form-origin").fill(updatedOrigin);
+      await page.getByTestId("client-form-email").fill(updatedEmail);
+      await page.getByTestId("client-form-submit").click();
+
+      await expect(page.getByText("Cliente atualizado", { exact: true })).toBeVisible({
+        timeout: 20_000,
+      });
+      await expect(page.getByRole("heading", { name: updatedFullName })).toBeVisible({
+        timeout: 20_000,
+      });
+
+      await expect
+        .poll(
+          async () => {
+            const { data, error } = await supabase
+              .from("clients")
+              .select("full_name, origin, email")
+              .eq("full_name", updatedFullName)
+              .maybeSingle();
+            if (error) throw error;
+            return data;
+          },
+          { timeout: 20_000 },
+        )
+        .toEqual({
+          full_name: updatedFullName,
+          origin: updatedOrigin,
+          email: updatedEmail,
+        });
+
+      const { count, error: staleError } = await supabase
+        .from("clients")
+        .select("id", { count: "exact", head: true })
+        .eq("full_name", fullName);
+      if (staleError) throw staleError;
+      expect(count ?? 0).toBe(0);
+    } finally {
+      await cleanupClientByName(supabase, fullName);
+      await cleanupClientByName(supabase, updatedFullName);
+      await supabase.auth.signOut();
+    }
+  });
+
   test("faz upload e remove arquivo e foto pela UI do CRM", async ({ page }) => {
     const supabase = await createSignedInSupabase();
     const marker = `cativa-crm-media-${Date.now()}`;
