@@ -38,31 +38,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let active = true;
     let resolved = false;
+    let authEventRevision = 0;
+
+    const finishLoading = () => {
+      if (resolved || !active) return;
+      resolved = true;
+      setLoading(false);
+    };
 
     // 1) listener primeiro — qualquer evento de auth também marca loading=false
     //    para evitar que a app fique presa em FullScreenLoader caso o evento
     //    chegue antes do getSession() (ex.: refresh de token, magic link).
     const { data: sub } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      authEventRevision += 1;
+      if (!active) return;
       setSession(nextSession);
       setUser(nextSession?.user ?? null);
-      if (!resolved) {
-        resolved = true;
-        setLoading(false);
-      }
+      finishLoading();
     });
 
     // 2) sessão atual depois
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-      if (!resolved) {
-        resolved = true;
-        setLoading(false);
-      }
-    });
+    // Guardamos a revisão observada no início para não deixar uma resposta
+    // atrasada de getSession sobrescrever um evento de auth mais recente.
+    const requestedAtRevision = authEventRevision;
+    void supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (!active) return;
+        if (authEventRevision === requestedAtRevision) {
+          setSession(data.session);
+          setUser(data.session?.user ?? null);
+        }
+        finishLoading();
+      })
+      .catch((error) => {
+        if (!active) return;
+        handleError(error, {
+          category: "AUTH",
+          context: { action: "getSession" },
+          silent: true,
+        });
+        if (authEventRevision === requestedAtRevision) {
+          setSession(null);
+          setUser(null);
+        }
+        finishLoading();
+      });
 
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   const signIn: AuthContextValue["signIn"] = async (email, password) => {
