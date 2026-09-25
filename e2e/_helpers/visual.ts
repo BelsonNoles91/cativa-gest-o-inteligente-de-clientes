@@ -32,6 +32,20 @@ const SNAPSHOT_CSS = `
   }
 `;
 
+const INSTALL_APP_DISMISS_KEY = "cativa:install-dismissed";
+
+/**
+ * Fixa estados persistentes do shell antes da primeira navegação autenticada.
+ * O convite de instalação PWA é transitório e depende do navegador/dispositivo;
+ * o init script roda antes do código da aplicação em cada navegação para evitar
+ * que esse banner desloque todo o layout usado nos snapshots.
+ */
+export async function prepareAuthenticatedVisualState(page: Page): Promise<void> {
+  await page.addInitScript((dismissKey) => {
+    window.localStorage.setItem(dismissKey, "1");
+  }, INSTALL_APP_DISMISS_KEY);
+}
+
 export async function prepareForSnapshot(page: Page): Promise<void> {
   try {
     await page.addStyleTag({ content: SNAPSHOT_CSS });

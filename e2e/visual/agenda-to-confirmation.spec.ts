@@ -21,6 +21,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import { AUTH_SKIP_REASON, HAS_E2E_AUTH } from "../_helpers/auth";
 import {
+  prepareAuthenticatedVisualState,
   prepareForSnapshot,
   assertNoHorizontalOverflow,
   assertBottomNavVisible,
@@ -180,6 +181,10 @@ async function waitForListOrEmpty(
 test.describe("cenário: Agenda → Confirmações → modal de ação", () => {
   test.describe.configure({ timeout: SCENARIO_TIMEOUT });
   test.skip(!HAS_E2E_AUTH, AUTH_SKIP_REASON);
+
+  test.beforeEach(async ({ page }) => {
+    await prepareAuthenticatedVisualState(page);
+  });
 
   test.afterEach(async ({ context }) => {
     await ensureOnline(context);

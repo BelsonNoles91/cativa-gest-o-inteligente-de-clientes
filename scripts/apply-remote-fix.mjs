@@ -1,299 +1,165 @@
 #!/usr/bin/env node
 import { createClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? process.env.SUPABASE_URL;
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+function env(key) {
+  const value = process.env[key];
+  return typeof value === "string" && value.trim() ? value.trim() : "";
+}
 
-if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
-  throw new Error(
-    "VITE_SUPABASE_URL (ou SUPABASE_URL) e SUPABASE_SERVICE_ROLE_KEY são obrigatórios.",
-  );
+const SUPABASE_URL = env("VITE_SUPABASE_URL") || env("SUPABASE_URL");
+const SERVICE_ROLE_KEY = env("SUPABASE_SERVICE_ROLE_KEY");
+const TENANT_SLUG = env("E2E_TENANT_SLUG");
+
+const QA_USERS = [
+  { role: "owner", email: env("E2E_USER"), password: env("E2E_PASS") },
+  { role: "manager", email: env("E2E_MANAGER_USER"), password: env("E2E_MANAGER_PASS") },
+  {
+    role: "frontdesk",
+    email: env("E2E_FRONTDESK_USER"),
+    password: env("E2E_FRONTDESK_PASS"),
+  },
+  {
+    role: "professional",
+    email: env("E2E_PROFESSIONAL_USER"),
+    password: env("E2E_PROFESSIONAL_PASS"),
+  },
+];
+
+const variableNames = {
+  owner: { email: "E2E_USER", password: "E2E_PASS" },
+  manager: { email: "E2E_MANAGER_USER", password: "E2E_MANAGER_PASS" },
+  frontdesk: { email: "E2E_FRONTDESK_USER", password: "E2E_FRONTDESK_PASS" },
+  professional: { email: "E2E_PROFESSIONAL_USER", password: "E2E_PROFESSIONAL_PASS" },
+};
+
+const missing = [];
+if (!SUPABASE_URL) missing.push("VITE_SUPABASE_URL (ou SUPABASE_URL)");
+if (!SERVICE_ROLE_KEY) missing.push("SUPABASE_SERVICE_ROLE_KEY");
+for (const user of QA_USERS) {
+  if (!user.email) missing.push(variableNames[user.role].email);
+  if (!user.password) missing.push(variableNames[user.role].password);
+}
+
+if (missing.length > 0) {
+  throw new Error(`Variáveis obrigatórias ausentes: ${[...new Set(missing)].join(", ")}`);
 }
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
-async function findOwnerTenant() {
-  const { data: users, error: listError } = await supabase.auth.admin.listUsers({
-    perPage: 1000,
-  });
-  if (listError) throw listError;
-
-  const owner = users.users.find(u => u.email === "owner.studio-teste-qa@cativa.test");
-  if (!owner) {
-    console.log("❌ Usuário owner.studio-teste-qa@cativa.test não encontrado");
-    return null;
+async function listAllUsers() {
+  const users = [];
+  for (let page = 1; ; page += 1) {
+    const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 200 });
+    if (error) throw error;
+    users.push(...data.users);
+    if (data.users.length < 200) return users;
   }
-  console.log("✅ Owner encontrado:", owner.id);
-
-  const { data: members, error: memberError } = await supabase
-    .from("team_members")
-    .select("tenant_id, role")
-    .eq("user_id", owner.id)
-    .limit(1);
-
-  if (memberError) throw memberError;
-  if (!members || members.length === 0) {
-    console.log("❌ Owner não está associado a nenhuma tenant em team_members");
-    return null;
-  }
-
-  const tenantId = members[0].tenant_id;
-  console.log("✅ Tenant do owner:", tenantId);
-  return { ownerId: owner.id, tenantId };
 }
 
-async function createTestUser(email, password) {
-  const { data: existing, error: listError } = await supabase.auth.admin.listUsers({
-    perPage: 1000,
-  });
-  if (listError) throw listError;
-
-  const found = existing.users.find(u => u.email === email);
-  if (found) {
-    console.log(`✅ Usuário ${email} já existe:`, found.id);
-    return found.id;
+async function ensureAuthUser(email, password, cachedUsers) {
+  const normalized = email.toLowerCase();
+  const existing = cachedUsers.find((user) => (user.email ?? "").toLowerCase() === normalized);
+  if (existing) {
+    const { error } = await supabase.auth.admin.updateUserById(existing.id, {
+      password,
+      email_confirm: true,
+    });
+    if (error) throw error;
+    return existing.id;
   }
 
   const { data, error } = await supabase.auth.admin.createUser({
     email,
     password,
     email_confirm: true,
-    user_metadata: { name: email.split(".")[0] },
+    user_metadata: { full_name: email.split("@")[0] },
   });
-
-  if (error) throw error;
-  console.log(`✅ Usuário criado: ${email} → ${data.user.id}`);
+  if (error || !data.user) throw error ?? new Error(`Falha ao criar usuário QA ${email}`);
+  cachedUsers.push(data.user);
   return data.user.id;
 }
 
-async function ensureTeamMember(userId, tenantId, role) {
-  const { data: existing } = await supabase
-    .from("team_members")
+async function findOwnerTenant(ownerId) {
+  let query = supabase
+    .from("tenant_memberships")
+    .select("tenant_id, role, status, tenants:tenants!inner(slug)")
+    .eq("user_id", ownerId)
+    .eq("role", "owner")
+    .eq("status", "active");
+  if (TENANT_SLUG) query = query.eq("tenants.slug", TENANT_SLUG);
+
+  const { data, error } = await query.limit(2);
+  if (error) throw error;
+  if (!data?.length) {
+    throw new Error(
+      TENANT_SLUG
+        ? `Owner QA não possui membership owner ativo no tenant ${TENANT_SLUG}.`
+        : "Owner QA não possui membership owner ativo.",
+    );
+  }
+  if (!TENANT_SLUG && data.length > 1) {
+    throw new Error("Owner QA pertence a mais de um tenant; configure E2E_TENANT_SLUG.");
+  }
+  return data[0].tenant_id;
+}
+
+async function ensureProfile(userId, email) {
+  const { error } = await supabase
+    .from("profiles")
+    .upsert({ id: userId, full_name: email.split("@")[0] }, { onConflict: "id" });
+  if (error) throw error;
+}
+
+async function ensureMembership(userId, tenantId, role) {
+  const { data: existing, error: readError } = await supabase
+    .from("tenant_memberships")
     .select("id")
     .eq("user_id", userId)
     .eq("tenant_id", tenantId)
-    .limit(1);
+    .maybeSingle();
+  if (readError) throw readError;
 
-  if (existing && existing.length > 0) {
-    const { error: updError } = await supabase
-      .from("team_members")
-      .update({ role })
-      .eq("user_id", userId)
-      .eq("tenant_id", tenantId);
-    if (updError) throw updError;
-    console.log(`✅ Role atualizada para ${role}`);
-  } else {
-    const { error: insError } = await supabase
-      .from("team_members")
-      .insert({ user_id: userId, tenant_id: tenantId, role });
-    if (insError) throw insError;
-    console.log(`✅ Team member criado: ${role}`);
+  const values = {
+    role,
+    status: "active",
+    accepted_at: new Date().toISOString(),
+  };
+  if (existing) {
+    const { error } = await supabase.from("tenant_memberships").update(values).eq("id", existing.id);
+    if (error) throw error;
+    return;
   }
-}
 
-async function applyMigration() {
-  const sql = `
-CREATE OR REPLACE FUNCTION public.create_team_invitation(
-  _tenant_id uuid,
-  _email text,
-  _role app_role,
-  _message text DEFAULT NULL,
-  _expires_in_days int DEFAULT 14
-)
-RETURNS TABLE (
-  id uuid,
-  token text,
-  expires_at timestamptz
-)
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_user uuid := auth.uid();
-  v_token text;
-  v_invite public.team_invitations;
-BEGIN
-  IF v_user IS NULL THEN
-    RAISE EXCEPTION 'Não autenticado' USING errcode = '42501';
-  END IF;
-  IF NOT (
-    public.has_any_tenant_role(v_user, _tenant_id, ARRAY['owner'::app_role, 'manager'::app_role])
-    OR public.is_super_admin(v_user)
-  ) THEN
-    RAISE EXCEPTION 'Sem permissão para convidar nesta loja' USING errcode = '42501';
-  END IF;
-  IF _role IN ('super_admin'::app_role, 'client'::app_role) THEN
-    RAISE EXCEPTION 'Papel inválido para convite' USING errcode = '22023';
-  END IF;
-
-  v_token := encode(extensions.gen_random_bytes(24), 'hex');
-
-  INSERT INTO public.team_invitations (
-    tenant_id, email, role, invited_by, message, expires_at, token
-  ) VALUES (
-    _tenant_id, lower(_email), _role, v_user, _message,
-    now() + make_interval(days => GREATEST(_expires_in_days, 1)),
-    v_token
-  )
-  RETURNING * INTO v_invite;
-
-  UPDATE public.team_invitations
-     SET token = NULL
-   WHERE public.team_invitations.id = v_invite.id;
-
-  BEGIN
-    INSERT INTO public.audit_logs (tenant_id, actor_id, action, entity, entity_id, metadata)
-    VALUES (_tenant_id, v_user, 'team.invitation_created', 'team_invitation', v_invite.id,
-            jsonb_build_object('email', lower(_email), 'role', _role));
-  EXCEPTION WHEN OTHERS THEN NULL;
-  END;
-
-  id := v_invite.id;
-  token := v_token;
-  expires_at := v_invite.expires_at;
-  RETURN NEXT;
-END;
-$$;
-
-GRANT EXECUTE ON FUNCTION public.create_team_invitation(uuid, text, app_role, text, int) TO authenticated;
-
-CREATE OR REPLACE FUNCTION public.admin_provision_team_invitation(
-  _tenant_id uuid,
-  _email text,
-  _role app_role,
-  _message text DEFAULT NULL,
-  _expires_in_days int DEFAULT 14
-)
-RETURNS TABLE (
-  id uuid,
-  token text,
-  email text,
-  role app_role,
-  expires_at timestamptz
-)
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_email text := lower(trim(_email));
-  v_invite public.team_invitations;
-  v_existing public.team_invitations;
-  v_tenant public.tenants;
-  v_token text;
-BEGIN
-  IF NOT public.is_super_admin(auth.uid()) THEN
-    RAISE EXCEPTION 'Apenas super admin pode provisionar usuários' USING errcode = '42501';
-  END IF;
-  IF v_email IS NULL OR v_email !~ '^.+@.+\\..+$' THEN
-    RAISE EXCEPTION 'E-mail inválido' USING errcode = '22023';
-  END IF;
-  IF _role IN ('super_admin'::app_role, 'client'::app_role) THEN
-    RAISE EXCEPTION 'Papel inválido para convite de equipe' USING errcode = '22023';
-  END IF;
-  SELECT * INTO v_tenant FROM public.tenants WHERE public.tenants.id = _tenant_id;
-  IF v_tenant.id IS NULL THEN
-    RAISE EXCEPTION 'Tenant não encontrado' USING errcode = 'P0002';
-  END IF;
-
-  v_token := encode(extensions.gen_random_bytes(24), 'hex');
-
-  SELECT * INTO v_existing
-    FROM public.team_invitations
-   WHERE public.team_invitations.tenant_id = _tenant_id
-     AND lower(public.team_invitations.email) = v_email
-     AND public.team_invitations.status = 'pending'
-   LIMIT 1;
-
-  IF v_existing.id IS NOT NULL THEN
-    UPDATE public.team_invitations
-       SET role = _role,
-           message = COALESCE(_message, public.team_invitations.message),
-           expires_at = now() + make_interval(days => GREATEST(COALESCE(_expires_in_days, 14), 1)),
-           token = v_token,
-           updated_at = now()
-     WHERE public.team_invitations.id = v_existing.id
-     RETURNING * INTO v_invite;
-  ELSE
-    INSERT INTO public.team_invitations (
-      tenant_id, email, role, invited_by, message, expires_at, token
-    ) VALUES (
-      _tenant_id, v_email, _role, auth.uid(), _message,
-      now() + make_interval(days => GREATEST(COALESCE(_expires_in_days, 14), 1)),
-      v_token
-    )
-    RETURNING * INTO v_invite;
-  END IF;
-
-  UPDATE public.team_invitations
-     SET token = NULL
-   WHERE public.team_invitations.id = v_invite.id;
-
-  BEGIN
-    INSERT INTO public.audit_logs (tenant_id, actor_id, action, entity, entity_id, metadata)
-    VALUES (_tenant_id, auth.uid(),
-            'admin.team.invitation_provisioned', 'team_invitation', v_invite.id,
-            jsonb_build_object('email', v_email, 'role', _role));
-  EXCEPTION WHEN OTHERS THEN NULL;
-  END;
-
-  id := v_invite.id;
-  token := v_token;
-  email := v_invite.email;
-  role := v_invite.role;
-  expires_at := v_invite.expires_at;
-  RETURN NEXT;
-END;
-$$;
-
-GRANT EXECUTE ON FUNCTION public.admin_provision_team_invitation(uuid, text, app_role, text, integer) TO authenticated;
-`;
-
-  // Não podemos executar DDL via PostgREST. Salvamos o SQL para execução manual.
-  console.log("⚠️ A migração SQL precisa ser aplicada manualmente no SQL Editor do Supabase.");
-  console.log("   Salvando script em scripts/remote-migration-fix.sql ...");
-  const fs = await import("node:fs");
-  fs.writeFileSync("scripts/remote-migration-fix.sql", sql);
-  return false;
+  const { error } = await supabase
+    .from("tenant_memberships")
+    .insert({ tenant_id: tenantId, user_id: userId, ...values });
+  if (error) throw error;
 }
 
 async function main() {
-  console.log("=== Cativa Remote Fix ===\n");
+  const users = await listAllUsers();
+  const owner = QA_USERS[0];
+  const ownerId = await ensureAuthUser(owner.email, owner.password, users);
+  await ensureProfile(ownerId, owner.email);
+  const tenantId = await findOwnerTenant(ownerId);
 
-  const tenantInfo = await findOwnerTenant();
-  if (!tenantInfo) {
-    console.log("\n⚠️ Não foi possível identificar a tenant do owner.");
-    process.exit(1);
+  for (const qaUser of QA_USERS) {
+    const userId =
+      qaUser.role === "owner"
+        ? ownerId
+        : await ensureAuthUser(qaUser.email, qaUser.password, users);
+    await ensureProfile(userId, qaUser.email);
+    await ensureMembership(userId, tenantId, qaUser.role);
+    console.log(`OK ${qaUser.role}: conta e membership QA validados.`);
   }
 
-  const { tenantId } = tenantInfo;
-
-  // Criar usuários de teste
-  const users = [
-    { email: "manager.studio-teste-qa@cativa.test", pass: "Cativa@2026", role: "manager" },
-    { email: "frontdesk.studio-teste-qa@cativa.test", pass: "Cativa@2026", role: "frontdesk" },
-    { email: "professional.studio-teste-qa@cativa.test", pass: "Cativa@2026", role: "professional" },
-  ];
-
-  for (const u of users) {
-    try {
-      const userId = await createTestUser(u.email, u.pass);
-      await ensureTeamMember(userId, tenantId, u.role);
-    } catch (err) {
-      console.error(`❌ Erro com ${u.email}:`, err.message);
-    }
-  }
-
-  await applyMigration();
-
-  console.log("\n✅ Usuários de teste criados/atualizados com sucesso!");
-  console.log("⚠️  Aplique o arquivo scripts/remote-migration-fix.sql no SQL Editor do Supabase.");
+  console.log(`OK tenant QA: ${tenantId}`);
+  console.log("Nenhuma migration ou alteração de schema foi aplicada por este script.");
 }
 
-main().catch(err => {
-  console.error("Erro fatal:", err);
+main().catch((error) => {
+  console.error(error instanceof Error ? error.message : String(error));
   process.exit(1);
 });

@@ -24,6 +24,7 @@
 import { test, expect } from "@playwright/test";
 import { AUTH_SKIP_REASON, HAS_E2E_AUTH } from "../_helpers/auth";
 import {
+  prepareAuthenticatedVisualState,
   prepareForSnapshot,
   assertNoHorizontalOverflow,
   assertBottomNavVisible,
@@ -64,6 +65,10 @@ async function waitForMain(page: import("@playwright/test").Page, route: string)
 
 test.describe("cenários de navegação — safe-area + BottomNav", () => {
   test.skip(!HAS_E2E_AUTH, AUTH_SKIP_REASON);
+
+  test.beforeEach(async ({ page }) => {
+    await prepareAuthenticatedVisualState(page);
+  });
 
   // Garante que estado offline NUNCA vaza para o próximo teste.
   test.afterEach(async ({ context }) => {

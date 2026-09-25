@@ -19,6 +19,8 @@
     "test:rls": "psql \"$SUPABASE_DB_URL\" -X -v ON_ERROR_STOP=1 -f supabase/tests/rls-regression.sql",
     "test:idor": "psql \"$SUPABASE_DB_URL\" -X -v ON_ERROR_STOP=1 -f supabase/tests/tenant-idor-regression.sql",
     "test:visual:roles": "node scripts/e2e-role-check.mjs",
+    "test:rbac:e2e": "node scripts/e2e-role-check.mjs && npm run build && playwright test -c playwright.smoke.config.ts e2e/diagnostics/role-based-access.spec.ts --project=iphone-14-portrait --workers 1",
+    "test:tenant:isolation:remote": "npm run build && playwright test -c playwright.smoke.config.ts e2e/diagnostics/multi-tenant-isolation.spec.ts --project=iphone-14-portrait --workers 1",
     "test:crm:media": "npm run test:auth:bootstrap && npm run build && playwright test -c playwright.smoke.config.ts e2e/diagnostics/crm-media.spec.ts --project=iphone-14-portrait --workers 1",
     "test:portal:booking": "npm run test:auth:bootstrap && npm run build && playwright test -c playwright.smoke.config.ts e2e/diagnostics/portal-booking.spec.ts --project=iphone-14-portrait --workers 1",
     "test:team:invite": "npm run test:auth:bootstrap && npm run build && playwright test -c playwright.smoke.config.ts e2e/diagnostics/team-invite.spec.ts --project=iphone-14-portrait --workers 1",

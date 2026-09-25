@@ -7,7 +7,11 @@
  */
 import { test, expect, type Page } from "@playwright/test";
 import { AUTH_SKIP_REASON, HAS_E2E_AUTH } from "../_helpers/auth";
-import { prepareForSnapshot, assertNoHorizontalOverflow } from "../_helpers/visual";
+import {
+  prepareAuthenticatedVisualState,
+  prepareForSnapshot,
+  assertNoHorizontalOverflow,
+} from "../_helpers/visual";
 
 const TIMEOUT = 60_000;
 
@@ -34,6 +38,10 @@ async function openAppRoute(page: Page, path: string): Promise<void> {
 test.describe("dialog overflow — mobile", () => {
   test.describe.configure({ timeout: TIMEOUT });
   test.skip(!HAS_E2E_AUTH, AUTH_SKIP_REASON);
+
+  test.beforeEach(async ({ page }) => {
+    await prepareAuthenticatedVisualState(page);
+  });
 
   test("Agenda — dialog Novo agendamento", async ({ page }) => {
     test.skip((page.viewportSize()?.width ?? 0) >= 768, "Dialogs mobile");

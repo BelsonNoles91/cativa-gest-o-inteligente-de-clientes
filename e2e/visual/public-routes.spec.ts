@@ -10,6 +10,7 @@
 import { test, expect } from "@playwright/test";
 import { AUTH_SKIP_REASON, HAS_E2E_AUTH } from "../_helpers/auth";
 import {
+  prepareAuthenticatedVisualState,
   prepareForSnapshot,
   assertNoHorizontalOverflow,
   assertBottomNavVisible,
@@ -73,6 +74,10 @@ test.describe("rotas públicas", () => {
 test.describe("rotas autenticadas", () => {
   test.describe.configure({ timeout: AUTH_VISUAL_TIMEOUT });
   test.skip(!HAS_E2E_AUTH, AUTH_SKIP_REASON);
+  test.beforeEach(async ({ page }) => {
+    await prepareAuthenticatedVisualState(page);
+  });
+
   for (const { path, name } of [
     { path: "/app", name: "dashboard" },
     { path: "/app/agenda", name: "agenda" },

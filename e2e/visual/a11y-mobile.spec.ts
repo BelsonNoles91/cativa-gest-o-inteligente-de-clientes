@@ -6,6 +6,7 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { AUTH_SKIP_REASON, HAS_E2E_AUTH } from "../_helpers/auth";
+import { prepareAuthenticatedVisualState } from "../_helpers/visual";
 
 const AXE_TAGS = ["wcag2a", "wcag2aa"];
 
@@ -48,6 +49,10 @@ test.describe("a11y mobile — rotas públicas", () => {
 
 test.describe("a11y mobile — rotas autenticadas", () => {
   test.skip(!HAS_E2E_AUTH, AUTH_SKIP_REASON);
+
+  test.beforeEach(async ({ page }) => {
+    await prepareAuthenticatedVisualState(page);
+  });
 
   test("/app — axe wcag2a/aa", async ({ page }) => {
     test.skip((page.viewportSize()?.width ?? 0) >= 768, "A11y mobile viewports");

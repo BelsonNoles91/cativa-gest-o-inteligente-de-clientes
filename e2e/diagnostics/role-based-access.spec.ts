@@ -1,7 +1,22 @@
-import { test, expect } from "@playwright/test";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type Session, type SupabaseClient, type User } from "@supabase/supabase-js";
+import { expect, test, type Page } from "@playwright/test";
+
+type QaRole = "owner" | "manager" | "frontdesk" | "professional";
+
+type QaProfile = {
+  label: QaRole;
+  email: string;
+  password: string;
+};
+
+type Membership = {
+  tenant_id: string;
+  role: QaRole | "super_admin" | "client";
+  status: string;
+  tenants: { slug: string } | null;
+};
 
 function loadEnvFile(file: string) {
   if (!existsSync(file)) return;
@@ -19,9 +34,7 @@ function loadEnvFile(file: string) {
     ) {
       value = value.slice(1, -1);
     }
-    if (!(key in process.env)) {
-      process.env[key] = value;
-    }
+    if (!(key in process.env)) process.env[key] = value;
   }
 }
 
@@ -30,168 +43,184 @@ function env(key: string) {
   return typeof value === "string" && value.trim() ? value.trim() : "";
 }
 
+function tokenStorageKey(supabaseUrl: string) {
+  const configuredProjectId = env("VITE_SUPABASE_PROJECT_ID");
+  if (configuredProjectId) return `sb-${configuredProjectId}-auth-token`;
+  const projectRef = new URL(supabaseUrl).hostname.split(".")[0];
+  return `sb-${projectRef}-auth-token`;
+}
+
 loadEnvFile(resolve(process.cwd(), ".env.local"));
 loadEnvFile(resolve(process.cwd(), ".env"));
 
 const SUPABASE_URL = env("VITE_SUPABASE_URL");
 const PUBLISHABLE_KEY = env("VITE_SUPABASE_PUBLISHABLE_KEY");
+const E2E_TENANT_SLUG = env("E2E_TENANT_SLUG");
 
-const PROFILES: Array<{ label: string; email: string; password: string }> = [
+const PROFILES: QaProfile[] = [
   { label: "owner", email: env("E2E_USER"), password: env("E2E_PASS") },
   { label: "manager", email: env("E2E_MANAGER_USER"), password: env("E2E_MANAGER_PASS") },
-  { label: "frontdesk", email: env("E2E_FRONTDESK_USER"), password: env("E2E_FRONTDESK_PASS") },
-  { label: "professional", email: env("E2E_PROFESSIONAL_USER"), password: env("E2E_PROFESSIONAL_PASS") },
+  {
+    label: "frontdesk",
+    email: env("E2E_FRONTDESK_USER"),
+    password: env("E2E_FRONTDESK_PASS"),
+  },
+  {
+    label: "professional",
+    email: env("E2E_PROFESSIONAL_USER"),
+    password: env("E2E_PROFESSIONAL_PASS"),
+  },
 ];
 
-/** Rotas acessíveis por qualquer membro ativo (sem RoleGuard) */
-const OPEN_ROUTES = [
-  { path: "/app", name: "Dashboard" },
-  { path: "/app/agenda", name: "Agenda" },
-  { path: "/app/clientes", name: "Clientes" },
-  { path: "/app/confirmacoes", name: "Confirmações" },
-  { path: "/app/lista-de-espera", name: "Lista de Espera" },
-];
+const HAS_ROLE_FIXTURES = Boolean(
+  SUPABASE_URL &&
+    PUBLISHABLE_KEY &&
+    PROFILES.every((profile) => profile.email && profile.password),
+);
 
-/** Rotas restritas a owner/manager */
+const OPEN_ROUTES = ["/app", "/app/agenda", "/app/clientes", "/app/confirmacoes"];
 const MANAGER_ROUTES = [
-  { path: "/app/servicos", name: "Serviços" },
-  { path: "/app/pacotes", name: "Pacotes" },
-  { path: "/app/analytics", name: "Analytics" },
-  { path: "/app/meu-plano", name: "Meu Plano" },
-  { path: "/app/assinatura", name: "Assinatura" },
-  { path: "/app/dados", name: "Import/Export" },
-  { path: "/app/configuracoes", name: "Configurações" },
+  "/app/servicos",
+  "/app/pacotes",
+  "/app/analytics",
+  "/app/meu-plano",
+  "/app/assinatura",
+  "/app/dados",
+  "/app/configuracoes",
 ];
 
-/** Rotas restritas a super_admin */
-const ADMIN_ROUTES = [
-  { path: "/app/super-admin", name: "Super Admin" },
-];
-
-async function signIn(email: string, password: string) {
-  const supabase = createClient(SUPABASE_URL, PUBLISHABLE_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+function createSupabase() {
+  return createClient(SUPABASE_URL, PUBLISHABLE_KEY, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
   });
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error || !data.session) throw new Error(`Login falhou para ${email}: ${error?.message}`);
-  return { session: data.session, user: data.user };
 }
 
-test.describe("Role-based access control", () => {
-  test.describe.configure({ timeout: 240_000 });
+async function signInProfile(profile: QaProfile) {
+  const supabase = createSupabase();
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: profile.email,
+    password: profile.password,
+  });
+  if (error || !data.session || !data.user) {
+    throw new Error(`Login QA falhou para ${profile.label}: ${error?.message ?? "sessão ausente"}`);
+  }
+
+  let query = supabase
+    .from("tenant_memberships")
+    .select("tenant_id, role, status, tenants:tenants!inner(slug)")
+    .eq("user_id", data.user.id)
+    .eq("status", "active");
+  if (E2E_TENANT_SLUG) query = query.eq("tenants.slug", E2E_TENANT_SLUG);
+
+  const { data: memberships, error: membershipError } = await query;
+  if (membershipError) throw membershipError;
+  const membership = (memberships?.[0] ?? null) as Membership | null;
+  if (!membership) {
+    throw new Error(`Perfil ${profile.label} não possui membership ativo no tenant QA.`);
+  }
+  if (membership.role !== profile.label) {
+    throw new Error(
+      `Perfil ${profile.label} autenticou com role ${membership.role}; fixture QA está inconsistente.`,
+    );
+  }
+
+  return { supabase, session: data.session, user: data.user, membership };
+}
+
+async function injectSession(
+  page: Page,
+  session: Session,
+  user: User,
+  tenantId: string,
+) {
+  const storageKey = tokenStorageKey(SUPABASE_URL);
+  await page.addInitScript(
+    ({ key, sess, usr, selectedTenantId }) => {
+      window.localStorage.clear();
+      window.localStorage.setItem(
+        key,
+        JSON.stringify({ ...sess, user: usr, weak_password: null }),
+      );
+      window.localStorage.setItem("cativa.currentTenantId", selectedTenantId);
+    },
+    { key: storageKey, sess: session, usr: user, selectedTenantId: tenantId },
+  );
+}
+
+async function expectRoute(page: Page, path: string, allowed: boolean) {
+  await page.goto(path, { waitUntil: "domcontentloaded", timeout: 20_000 });
+  if (allowed) {
+    await expect.poll(() => new URL(page.url()).pathname, { timeout: 15_000 }).toBe(path);
+  } else {
+    await expect.poll(() => new URL(page.url()).pathname, { timeout: 15_000 }).toBe("/app");
+  }
+}
+
+async function cleanupClient(supabase: SupabaseClient, clientId: string) {
+  if (!clientId) return;
+  const { error } = await supabase.from("clients").delete().eq("id", clientId);
+  if (error) throw error;
+}
+
+test.describe("RBAC real por perfil", () => {
+  test.describe.configure({ timeout: 300_000 });
+  test.skip(
+    !HAS_ROLE_FIXTURES,
+    "Credenciais QA de owner/manager/frontdesk/professional não estão configuradas.",
+  );
 
   for (const profile of PROFILES) {
-    test.describe(`${profile.label}`, () => {
-      
-      test("acessa rotas abertas", async ({ page }) => {
-        const { session, user } = await signIn(profile.email, profile.password);
-        
-        // Navega para /app com sessão injetada
-        await page.goto("/app", { waitUntil: "domcontentloaded", timeout: 20_000 });
-        await page.evaluate(({ key, sess, usr }) => {
-          window.localStorage.clear();
-          window.localStorage.setItem(key, JSON.stringify({
-            access_token: sess.access_token,
-            refresh_token: sess.refresh_token,
-            expires_in: sess.expires_in,
-            expires_at: sess.expires_at,
-            token_type: sess.token_type,
-            user: usr,
-          }));
-          window.location.reload();
-        }, { key: `sb-${env("VITE_SUPABASE_PROJECT_ID")}-auth-token`, sess: session, usr: user });
-        
-        // Aguarda carregar após reload
-        await page.waitForLoadState("domcontentloaded", { timeout: 20_000 });
-        await page.waitForTimeout(3000);
-        
-        // Testa cada rota aberta
-        for (const route of OPEN_ROUTES) {
-          await page.goto(route.path, { waitUntil: "domcontentloaded", timeout: 15_000 });
-          await page.waitForTimeout(1500);
-          const url = page.url();
-          expect(url, `${profile.label} deveria acessar ${route.name}`).toContain(route.path);
+    test(`${profile.label}: rotas respeitam a hierarquia`, async ({ page }) => {
+      const { supabase, session, user, membership } = await signInProfile(profile);
+      try {
+        await injectSession(page, session, user, membership.tenant_id);
+
+        for (const path of OPEN_ROUTES) await expectRoute(page, path, true);
+
+        const canUseManagerRoutes = profile.label === "owner" || profile.label === "manager";
+        for (const path of MANAGER_ROUTES) {
+          await expectRoute(page, path, canUseManagerRoutes);
         }
-      });
 
-      test("acesso a rotas manager/owner", async ({ page }) => {
-        const { session, user } = await signIn(profile.email, profile.password);
-        
-        await page.goto("/app", { waitUntil: "domcontentloaded", timeout: 20_000 });
-        await page.evaluate(({ key, sess, usr }) => {
-          window.localStorage.clear();
-          window.localStorage.setItem(key, JSON.stringify({
-            access_token: sess.access_token,
-            refresh_token: sess.refresh_token,
-            expires_in: sess.expires_in,
-            expires_at: sess.expires_at,
-            token_type: sess.token_type,
-            user: usr,
-          }));
-          window.location.reload();
-        }, { key: `sb-${env("VITE_SUPABASE_PROJECT_ID")}-auth-token`, sess: session, usr: user });
-        
-        await page.waitForLoadState("domcontentloaded", { timeout: 20_000 });
-        await page.waitForTimeout(3000);
+        await expectRoute(page, "/app/super-admin", false);
+      } finally {
+        await supabase.auth.signOut();
+      }
+    });
 
-        const canAccess = profile.label === "owner" || profile.label === "manager";
+    test(`${profile.label}: RLS de clientes respeita o papel`, async () => {
+      const { supabase, membership } = await signInProfile(profile);
+      const marker = `QA RBAC ${profile.label} ${Date.now()}`;
+      let createdClientId = "";
 
-        for (const route of MANAGER_ROUTES) {
-          // Navega para a rota e aguarda possível redirect
-          await page.goto(route.path, { waitUntil: "domcontentloaded", timeout: 15_000 });
-          await page.waitForTimeout(2500);
-          
-          const url = page.url();
-          
-          if (canAccess) {
-            // Owner/manager devem acessar (URL deve conter a rota, não /app)
-            const wasRedirectedToApp = url === "http://127.0.0.1:8080/app" || url.endsWith("/app");
-            expect(wasRedirectedToApp, `${profile.label} deveria acessar ${route.name} mas foi redirecionado`).toBe(false);
-          } else {
-            // Frontdesk/professional devem ser redirecionados para /app
-            expect(url, `${profile.label} NÃO deveria acessar ${route.name}`).not.toContain(route.path);
-            expect(url).toContain("/app");
-          }
+      try {
+        const { data, error } = await supabase
+          .from("clients")
+          .insert({
+            tenant_id: membership.tenant_id,
+            full_name: marker,
+            origin: "qa-rbac",
+          })
+          .select("id")
+          .maybeSingle();
+
+        const canManageClients = profile.label !== "professional";
+        if (canManageClients) {
+          expect(error, `${profile.label} deveria inserir cliente no próprio tenant`).toBeNull();
+          expect(data?.id).toBeTruthy();
+          createdClientId = data?.id ?? "";
+        } else {
+          expect(error, "professional não deve inserir cliente por acesso direto ao banco").toBeTruthy();
+          expect(data).toBeNull();
         }
-      });
-
-      test("acesso a rotas super_admin", async ({ page }) => {
-        const { session, user } = await signIn(profile.email, profile.password);
-        
-        await page.goto("/app", { waitUntil: "domcontentloaded", timeout: 20_000 });
-        await page.evaluate(({ key, sess, usr }) => {
-          window.localStorage.clear();
-          window.localStorage.setItem(key, JSON.stringify({
-            access_token: sess.access_token,
-            refresh_token: sess.refresh_token,
-            expires_in: sess.expires_in,
-            expires_at: sess.expires_at,
-            token_type: sess.token_type,
-            user: usr,
-          }));
-          window.location.reload();
-        }, { key: `sb-${env("VITE_SUPABASE_PROJECT_ID")}-auth-token`, sess: session, usr: user });
-        
-        await page.waitForLoadState("domcontentloaded", { timeout: 20_000 });
-        await page.waitForTimeout(3000);
-
-        const canAccess = profile.label === "super_admin";
-
-        for (const route of ADMIN_ROUTES) {
-          await page.goto(route.path, { waitUntil: "domcontentloaded", timeout: 15_000 });
-          await page.waitForTimeout(2500);
-          
-          const url = page.url();
-          
-          if (canAccess) {
-            const wasRedirectedToApp = url === "http://127.0.0.1:8080/app" || url.endsWith("/app");
-            expect(wasRedirectedToApp, `${profile.label} deveria acessar ${route.name} mas foi redirecionado`).toBe(false);
-          } else {
-            expect(url, `${profile.label} NÃO deveria acessar ${route.name}`).not.toContain(route.path);
-            expect(url).toContain("/app");
-          }
-        }
-      });
+      } finally {
+        if (createdClientId) await cleanupClient(supabase, createdClientId);
+        await supabase.auth.signOut();
+      }
     });
   }
 });

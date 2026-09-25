@@ -27,7 +27,11 @@
  */
 import { test, expect, type Page } from "@playwright/test";
 import { AUTH_SKIP_REASON, HAS_E2E_AUTH } from "../_helpers/auth";
-import { prepareForSnapshot, assertBottomNavVisible } from "../_helpers/visual";
+import {
+  prepareAuthenticatedVisualState,
+  prepareForSnapshot,
+  assertBottomNavVisible,
+} from "../_helpers/visual";
 import { captureFailureReport, type Offender } from "../_helpers/safeAreaReport";
 
 /** Máximo de área de um item do nav que pode ser coberta antes de falhar. */
@@ -234,6 +238,10 @@ async function waitForAppShell(page: Page, path: string): Promise<void> {
 test.describe("BottomNav overlap detection", () => {
   test.describe.configure({ timeout: SCENARIO_TIMEOUT });
   test.skip(!HAS_E2E_AUTH, AUTH_SKIP_REASON);
+
+  test.beforeEach(async ({ page }) => {
+    await prepareAuthenticatedVisualState(page);
+  });
 
   for (const { path, name } of ROUTES_TO_CHECK) {
     test(`${name}: nenhum item do BottomNav é coberto por flutuantes`, async ({
