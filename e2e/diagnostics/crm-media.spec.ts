@@ -121,6 +121,7 @@ test.describe("CRM media", () => {
       await expect(dialog).toBeVisible({ timeout: 15_000 });
       await dialog.getByTestId("client-form-full-name").fill(fullName);
       await dialog.getByTestId("client-form-email").fill(`${marker}@cativa.test`);
+      await dialog.getByTestId("client-form-whatsapp").fill("85988887777");
       await dialog.getByTestId("client-form-phone").fill("85999999999");
       await dialog.getByTestId("client-form-origin").fill("E2E CRM media");
       await dialog.getByTestId("client-form-submit").click();
