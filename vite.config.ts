@@ -13,17 +13,9 @@ export default defineConfig(({ mode, command }) => {
   // Em dev / build:dev apenas avisa — não bloqueia.
   // ─────────────────────────────────────────────────────────────
   const env = { ...process.env, ...loadEnv(mode, process.cwd(), "") };
-  // Credenciais públicas do cliente. O fallback mantém o bundle funcional
-  // quando o ambiente de publicação não injeta as variáveis gerenciadas.
-  // Nunca incluir aqui service role, senha do banco ou qualquer segredo.
-  const managedPublicUrl = "https://pegvtrvqdvzxysndddts.supabase.co";
-  const managedPublishableKey =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlZ3Z0cnZxZHZ6eHlzbmRkZHRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3OTY5MjksImV4cCI6MjA5MjM3MjkyOX0.oZH96G_G5GRHbuX4Gj-Kswb8VmMHC83oZuFqlBqQaSY";
   const configuredSupabaseUrl = env.VITE_SUPABASE_URL;
   const configuredSupabaseKey =
     env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY;
-  const supabaseUrl = configuredSupabaseUrl || managedPublicUrl;
-  const supabaseKey = configuredSupabaseKey || managedPublishableKey;
 
   const missing: string[] = [];
   if (!configuredSupabaseUrl) missing.push("VITE_SUPABASE_URL");
@@ -52,21 +44,16 @@ export default defineConfig(({ mode, command }) => {
       "",
     ].join("\n");
 
-    // Só bloqueia em build de PRODUÇÃO. `build:dev` (mode=development)
-    // e `vite dev` apenas avisam, para não travar preview/sandbox
-    // enquanto o .env ainda não foi injetado.
-    // Nunca bloqueia o build: o runtime já exibe BackendConfigMissingScreen
-    // com instruções acionáveis caso as variáveis realmente estejam ausentes
-    // no bundle publicado. Bloquear aqui impede republish quando o .env
-    // gerenciado pelo Lovable Cloud ainda não foi injetado no ambiente de build.
+    // Um bundle de produção sem alvo explícito do Supabase não deve ser
+    // publicado. Em desenvolvimento continuamos permitindo o boot para que
+    // BackendConfigMissingScreen mostre as instruções de configuração.
+    if (command === "build" && mode === "production") {
+      throw new Error(message);
+    }
     console.warn(message);
   }
 
   return ({
-  define: {
-    "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(supabaseUrl),
-    "import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY": JSON.stringify(supabaseKey),
-  },
   server: {
     host: "::",
     port: 8080,
