@@ -31,7 +31,7 @@ import { EmptyState } from "@/components/feedback/EmptyState";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/features/auth/AuthProvider";
+import { useTenant } from "@/features/tenant/TenantProvider";
 
 type AuditRow = {
   id: string;
@@ -65,7 +65,7 @@ export function AuditLogsTab({
   tenants?: Array<{ id: string; name: string }>;
 }) {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { isSuperAdmin } = useTenant();
   const [rows, setRows] = useState<AuditRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [tenantFilter, setTenantFilter] = useState<string>("all");
@@ -80,8 +80,6 @@ export function AuditLogsTab({
   const [fromDate, setFromDate] = useState<string>("");
   const [toDate, setToDate] = useState<string>("");
   const [totalCount, setTotalCount] = useState(0);
-
-  const isSuperAdmin = user?.role === 'super_admin';
 
   const resolveRange = useCallback((): { from: string | null; to: string | null } => {
     if (periodPreset === "custom") {
