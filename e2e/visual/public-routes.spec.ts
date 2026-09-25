@@ -19,6 +19,7 @@ import {
   assertBottomNavItemsRespectSafeArea,
   assertCriticalActionsAboveBottomNav,
 } from "../_helpers/visual";
+import { installAnalyticsVisualFixture } from "../_helpers/analyticsVisualFixture";
 
 const AUTH_VISUAL_TIMEOUT = 60_000;
 
@@ -93,6 +94,9 @@ test.describe("rotas autenticadas", () => {
     { path: "/app/assinatura", name: "assinatura" },
   ]) {
     test(`${path} — sem cortes e baseline visual`, async ({ page }) => {
+      if (name === "analytics") {
+        await installAnalyticsVisualFixture(page);
+      }
       await openAuthenticatedVisualRoute(page, path);
       await prepareForSnapshot(page);
 
