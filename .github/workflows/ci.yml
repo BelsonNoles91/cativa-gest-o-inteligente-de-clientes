@@ -75,6 +75,15 @@ jobs:
         run: npm run test:visual:auth:critical
         continue-on-error: ${{ !secrets.E2E_USER }}
 
+      - name: Preserva evidências da falha visual antes do diagnóstico
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-auth-failure-${{ github.run_id }}
+          path: e2e/.artifacts/
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Gera snapshots autenticados atuais para diagnóstico
         if: failure()
         run: >-
