@@ -32,6 +32,12 @@ DECLARE
   u_sup  uuid := '00000000-0000-4000-8000-0000000000f1';
   inc    uuid := '00000000-0000-4000-8000-00000000c001';
   inv    uuid := '00000000-0000-4000-8000-00000000d001';
+  v_created_inv uuid;
+  v_manager_inv uuid;
+  v_admin_inv uuid;
+  v_uuid uuid;
+  v_token text;
+  v_text text;
   v      bigint;
   flag   boolean;
   n_rows int;
@@ -45,11 +51,21 @@ BEGIN
   EXCEPTION WHEN insufficient_privilege THEN NULL;
   END;
   BEGIN
+    DELETE FROM public.team_invitations
+     WHERE id = inv
+        OR email IN (
+          'owner-created+rlstest@example.test',
+          'manager-created+rlstest@example.test',
+          'admin-created+rlstest@example.test'
+        );
+  EXCEPTION WHEN insufficient_privilege THEN NULL;
+  END;
+  BEGIN
     DELETE FROM public.tenants WHERE id IN (t_a, t_b);
   EXCEPTION WHEN insufficient_privilege THEN NULL;
   END;
   BEGIN
-    DELETE FROM auth.users WHERE id IN (u_own, u_mng, u_pro, u_ownb, u_sup);
+    DELETE FROM auth.users WHERE id IN (u_own, u_mng, u_pro, u_inv, u_ownb, u_sup);
   EXCEPTION WHEN insufficient_privilege THEN NULL;
   END;
 
@@ -58,7 +74,7 @@ BEGIN
   SELECT x.id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
          x.label || '+rlstest@example.test', '', now(), now(), now()
   FROM (VALUES (u_own,'owner-a'), (u_mng,'manager-a'), (u_pro,'professional-a'),
-               (u_ownb,'owner-b'), (u_sup,'super')) AS x(id, label);
+               (u_inv,'convidado'), (u_ownb,'owner-b'), (u_sup,'super')) AS x(id, label);
 
   -- Os triggers de proteção impedem criar um super admin por INSERT direto
   -- (comportamento desejado). Para a fixture, desabilitamos temporariamente.
@@ -67,7 +83,7 @@ BEGIN
 
   INSERT INTO public.profiles (id, full_name, is_super_admin)
   VALUES (u_own,'Owner A',false), (u_mng,'Manager A',false), (u_pro,'Pro A',false),
-         (u_ownb,'Owner B',false), (u_sup,'Super',true)
+         (u_inv,'Convidado',false), (u_ownb,'Owner B',false), (u_sup,'Super',true)
   ON CONFLICT (id) DO UPDATE SET is_super_admin = EXCLUDED.is_super_admin;
 
   ALTER TABLE public.profiles ENABLE TRIGGER profiles_block_super_admin_changes_trg;
@@ -156,6 +172,58 @@ BEGIN
     RAISE WARNING 'FALHOU: authenticated perdeu acesso às colunas não sensíveis';
   ELSE RAISE NOTICE 'ok  team_invitations: colunas não sensíveis continuam legíveis'; END IF;
 
+  IF has_table_privilege('authenticated', 'public.team_invitations', 'INSERT')
+     OR has_table_privilege('authenticated', 'public.team_invitations', 'UPDATE')
+     OR has_table_privilege('authenticated', 'public.team_invitations', 'DELETE') THEN
+    failures := failures + 1;
+    RAISE WARNING 'FALHOU: authenticated mantém escrita direta em team_invitations';
+  ELSE RAISE NOTICE 'ok  team_invitations: authenticated sem INSERT/UPDATE/DELETE direto'; END IF;
+
+  IF has_function_privilege('anon', 'public.accept_team_invitation(text)', 'EXECUTE')
+     OR has_function_privilege('anon', 'public.lookup_team_invitation(text)', 'EXECUTE')
+     OR has_function_privilege('anon', 'public.list_pending_invitations_for_current_user()', 'EXECUTE')
+     OR has_function_privilege('anon', 'public.revoke_team_invitation(uuid)', 'EXECUTE')
+     OR has_function_privilege('anon', 'public.create_team_invitation(uuid,text,public.app_role,text,integer)', 'EXECUTE')
+     OR has_function_privilege('anon', 'public.admin_provision_team_invitation(uuid,text,public.app_role,text,integer)', 'EXECUTE')
+     OR has_function_privilege('anon', 'public.admin_list_team_invitations(uuid)', 'EXECUTE')
+     OR has_function_privilege('anon', 'public.team_invitations_hash_token()', 'EXECUTE') THEN
+    failures := failures + 1;
+    RAISE WARNING 'FALHOU: anon ainda consegue executar RPC/helper de convites';
+  ELSE RAISE NOTICE 'ok  team_invitations: anon sem EXECUTE em RPCs/helpers'; END IF;
+
+  IF has_function_privilege('authenticated', 'public.team_invitations_hash_token()', 'EXECUTE') THEN
+    failures := failures + 1;
+    RAISE WARNING 'FALHOU: authenticated consegue chamar helper interno de hash';
+  ELSE RAISE NOTICE 'ok  team_invitations: helper de hash restrito ao backend'; END IF;
+
+  SELECT pg_get_function_result('public.lookup_team_invitation(text)'::regprocedure)
+    INTO v_text;
+  IF lower(v_text) LIKE '%token%' THEN
+    failures := failures + 1;
+    RAISE WARNING 'FALHOU: lookup_team_invitation expõe token em seu contrato: %', v_text;
+  ELSE RAISE NOTICE 'ok  team_invitations: lookup não expõe token/token_hash'; END IF;
+
+  SELECT pg_get_function_result('public.list_pending_invitations_for_current_user()'::regprocedure)
+    INTO v_text;
+  IF lower(v_text) LIKE '%token%' THEN
+    failures := failures + 1;
+    RAISE WARNING 'FALHOU: list_pending expõe token em seu contrato: %', v_text;
+  ELSE RAISE NOTICE 'ok  team_invitations: list_pending não expõe token/token_hash'; END IF;
+
+  SELECT pg_get_function_result('public.admin_list_team_invitations(uuid)'::regprocedure)
+    INTO v_text;
+  IF lower(v_text) LIKE '%token%' THEN
+    failures := failures + 1;
+    RAISE WARNING 'FALHOU: admin_list expõe token em seu contrato: %', v_text;
+  ELSE RAISE NOTICE 'ok  team_invitations: admin_list não expõe token/token_hash'; END IF;
+
+  SELECT pg_get_function_result('public.revoke_team_invitation(uuid)'::regprocedure)
+    INTO v_text;
+  IF lower(v_text) <> 'uuid' THEN
+    failures := failures + 1;
+    RAISE WARNING 'FALHOU: revoke_team_invitation retorna %, esperado uuid', v_text;
+  ELSE RAISE NOTICE 'ok  team_invitations: revoke retorna somente UUID'; END IF;
+
   EXECUTE 'SET LOCAL ROLE anon';
   PERFORM set_config('request.jwt.claim.sub', '', true);
   PERFORM set_config('request.jwt.claims', NULL, true);
@@ -190,9 +258,9 @@ BEGIN
     RAISE WARNING 'FALHOU: owner do tenant não enxerga o convite';
   ELSE RAISE NOTICE 'ok  team_invitations: owner do tenant lê o convite'; END IF;
 
-  -- Convidado autenticado ainda não pertence ao tenant e deliberadamente não
-  -- possui linha em auth.users nesta fixture. O acesso deve depender apenas do
-  -- claim de e-mail da sessão e não de SELECT direto no schema auth.
+  -- Convidado autenticado ainda não pertence ao tenant. A policy de SELECT usa
+  -- o e-mail assinado no JWT, enquanto as RPCs sensíveis confirmam o e-mail em
+  -- auth.users.
   EXECUTE 'SET LOCAL ROLE authenticated';
   PERFORM set_config('request.jwt.claim.sub', u_inv::text, true);
   PERFORM set_config('request.jwt.claims',
@@ -209,6 +277,24 @@ BEGIN
     RAISE WARNING 'FALHOU: convidado autenticado não conseguiu ler o próprio convite via JWT';
   ELSE RAISE NOTICE 'ok  team_invitations: convidado lê o próprio convite via JWT sem auth.users'; END IF;
 
+  -- A listagem segura usa o e-mail verificado em auth.users e retorna apenas o
+  -- convite do destinatário atual.
+  EXECUTE 'SET LOCAL ROLE authenticated';
+  PERFORM set_config('request.jwt.claim.sub', u_inv::text, true);
+  PERFORM set_config('request.jwt.claims',
+    json_build_object('sub', u_inv, 'role', 'authenticated', 'email', 'convidado+rlstest@example.test')::text, true);
+  EXECUTE 'SELECT count(*) FROM public.list_pending_invitations_for_current_user()' INTO v;
+  EXECUTE format('SELECT count(*) FROM public.lookup_team_invitation(%L)', inv::text) INTO n_rows;
+  RESET ROLE;
+  PERFORM set_config('request.jwt.claim.sub', '', true);
+  PERFORM set_config('request.jwt.claims', NULL, true);
+  IF v <> 1 THEN failures := failures + 1;
+    RAISE WARNING 'FALHOU: list_pending retornou % convite(s), esperado 1', v;
+  ELSE RAISE NOTICE 'ok  team_invitations: list_pending retorna apenas convite do e-mail autenticado'; END IF;
+  IF n_rows <> 1 THEN failures := failures + 1;
+    RAISE WARNING 'FALHOU: destinatário não conseguiu lookup por UUID';
+  ELSE RAISE NOTICE 'ok  team_invitations: UUID funciona como handle do próprio destinatário'; END IF;
+
   EXECUTE 'SET LOCAL ROLE authenticated';
   PERFORM set_config('request.jwt.claim.sub', u_ownb::text, true);
   PERFORM set_config('request.jwt.claims',
@@ -220,6 +306,138 @@ BEGIN
   IF v <> 0 THEN failures := failures + 1;
     RAISE WARNING 'FALHOU: owner de outro tenant enxergou o convite';
   ELSE RAISE NOTICE 'ok  team_invitations: convite não vaza para outro tenant'; END IF;
+
+  -- UUID de convite não pode ser usado por uma conta com e-mail divergente.
+  EXECUTE 'SET LOCAL ROLE authenticated';
+  PERFORM set_config('request.jwt.claim.sub', u_ownb::text, true);
+  PERFORM set_config('request.jwt.claims',
+    json_build_object('sub', u_ownb, 'role', 'authenticated', 'email', 'owner-b+rlstest@example.test')::text, true);
+  EXECUTE format('SELECT count(*) FROM public.lookup_team_invitation(%L)', inv::text) INTO v;
+  BEGIN
+    EXECUTE format('SELECT (public.accept_team_invitation(%L)).id', inv::text) INTO v_uuid;
+    flag := false;
+  EXCEPTION WHEN OTHERS THEN
+    flag := true;
+  END;
+  RESET ROLE;
+  PERFORM set_config('request.jwt.claim.sub', '', true);
+  PERFORM set_config('request.jwt.claims', NULL, true);
+  IF v <> 0 OR NOT flag THEN failures := failures + 1;
+    RAISE WARNING 'FALHOU: usuário de e-mail divergente fez lookup/accept por UUID';
+  ELSE RAISE NOTICE 'ok  team_invitations: UUID não atravessa identidade/e-mail'; END IF;
+
+  -- O destinatário correto consegue aceitar pelo UUID; em seguida a fixture é
+  -- restaurada para não alterar os testes de memberships abaixo.
+  EXECUTE 'SET LOCAL ROLE authenticated';
+  PERFORM set_config('request.jwt.claim.sub', u_inv::text, true);
+  PERFORM set_config('request.jwt.claims',
+    json_build_object('sub', u_inv, 'role', 'authenticated', 'email', 'convidado+rlstest@example.test')::text, true);
+  EXECUTE format('SELECT (public.accept_team_invitation(%L)).id', inv::text) INTO v_uuid;
+  RESET ROLE;
+  PERFORM set_config('request.jwt.claim.sub', '', true);
+  PERFORM set_config('request.jwt.claims', NULL, true);
+  SELECT count(*) INTO v
+    FROM public.tenant_memberships
+   WHERE tenant_id = t_a AND user_id = u_inv AND status = 'active';
+  IF v_uuid IS NULL OR v <> 1 THEN failures := failures + 1;
+    RAISE WARNING 'FALHOU: destinatário correto não aceitou convite por UUID';
+  ELSE RAISE NOTICE 'ok  team_invitations: destinatário aceita convite por UUID'; END IF;
+  DELETE FROM public.tenant_memberships WHERE tenant_id = t_a AND user_id = u_inv;
+  UPDATE public.team_invitations
+     SET status = 'pending', accepted_by = NULL, accepted_at = NULL, updated_at = now()
+   WHERE id = inv;
+
+  -- create_team_invitation entrega o token plaintext apenas na resposta e o
+  -- remove imediatamente da linha persistida.
+  EXECUTE 'SET LOCAL ROLE authenticated';
+  PERFORM set_config('request.jwt.claim.sub', u_own::text, true);
+  PERFORM set_config('request.jwt.claims', json_build_object('sub', u_own, 'role', 'authenticated')::text, true);
+  EXECUTE format(
+    'SELECT id, token FROM public.create_team_invitation(%L::uuid, %L, %L::public.app_role, NULL, 14)',
+    t_a, 'owner-created+rlstest@example.test', 'front_desk'
+  ) INTO v_created_inv, v_token;
+  RESET ROLE;
+  PERFORM set_config('request.jwt.claim.sub', '', true);
+  PERFORM set_config('request.jwt.claims', NULL, true);
+  SELECT (token IS NULL AND token_hash IS NOT NULL) INTO flag
+    FROM public.team_invitations WHERE id = v_created_inv;
+  IF v_created_inv IS NULL OR coalesce(v_token, '') = '' OR NOT coalesce(flag, false) THEN
+    failures := failures + 1;
+    RAISE WARNING 'FALHOU: create_team_invitation não preservou semântica de token único';
+  ELSE RAISE NOTICE 'ok  team_invitations: create retorna token uma vez e não o persiste'; END IF;
+
+  -- Outro tenant não revoga o convite; o owner do tenant correto revoga e a
+  -- RPC retorna somente o UUID.
+  EXECUTE 'SET LOCAL ROLE authenticated';
+  PERFORM set_config('request.jwt.claim.sub', u_ownb::text, true);
+  PERFORM set_config('request.jwt.claims', json_build_object('sub', u_ownb, 'role', 'authenticated')::text, true);
+  BEGIN
+    EXECUTE format('SELECT public.revoke_team_invitation(%L::uuid)', v_created_inv) INTO v_uuid;
+    flag := false;
+  EXCEPTION WHEN OTHERS THEN flag := true;
+  END;
+  RESET ROLE;
+  IF NOT flag THEN failures := failures + 1;
+    RAISE WARNING 'FALHOU: owner de outro tenant revogou convite alheio';
+  ELSE RAISE NOTICE 'ok  team_invitations: revoke respeita isolamento entre tenants'; END IF;
+
+  EXECUTE 'SET LOCAL ROLE authenticated';
+  PERFORM set_config('request.jwt.claim.sub', u_own::text, true);
+  PERFORM set_config('request.jwt.claims', json_build_object('sub', u_own, 'role', 'authenticated')::text, true);
+  EXECUTE format('SELECT public.revoke_team_invitation(%L::uuid)', v_created_inv) INTO v_uuid;
+  RESET ROLE;
+  PERFORM set_config('request.jwt.claim.sub', '', true);
+  PERFORM set_config('request.jwt.claims', NULL, true);
+  IF v_uuid IS DISTINCT FROM v_created_inv THEN failures := failures + 1;
+    RAISE WARNING 'FALHOU: revoke não retornou o UUID esperado';
+  ELSE RAISE NOTICE 'ok  team_invitations: owner revoga convite do próprio tenant'; END IF;
+
+  -- Manager opera no próprio tenant e não pode criar convite em outro tenant.
+  EXECUTE 'SET LOCAL ROLE authenticated';
+  PERFORM set_config('request.jwt.claim.sub', u_mng::text, true);
+  PERFORM set_config('request.jwt.claims', json_build_object('sub', u_mng, 'role', 'authenticated')::text, true);
+  EXECUTE format(
+    'SELECT id FROM public.create_team_invitation(%L::uuid, %L, %L::public.app_role, NULL, 14)',
+    t_a, 'manager-created+rlstest@example.test', 'front_desk'
+  ) INTO v_manager_inv;
+  BEGIN
+    EXECUTE format(
+      'SELECT id FROM public.create_team_invitation(%L::uuid, %L, %L::public.app_role, NULL, 14)',
+      t_b, 'manager-cross-tenant+rlstest@example.test', 'front_desk'
+    ) INTO v_uuid;
+    flag := false;
+  EXCEPTION WHEN OTHERS THEN flag := true;
+  END;
+  RESET ROLE;
+  PERFORM set_config('request.jwt.claim.sub', '', true);
+  PERFORM set_config('request.jwt.claims', NULL, true);
+  IF v_manager_inv IS NULL OR NOT flag THEN failures := failures + 1;
+    RAISE WARNING 'FALHOU: autorização de manager para convites está incorreta';
+  ELSE RAISE NOTICE 'ok  team_invitations: manager opera apenas no próprio tenant'; END IF;
+
+  -- Super admin mantém provisionamento/listagem e o token plaintext também é
+  -- efêmero nesse fluxo administrativo.
+  EXECUTE 'SET LOCAL ROLE authenticated';
+  PERFORM set_config('request.jwt.claim.sub', u_sup::text, true);
+  PERFORM set_config('request.jwt.claims', json_build_object('sub', u_sup, 'role', 'authenticated')::text, true);
+  EXECUTE format(
+    'SELECT id, token FROM public.admin_provision_team_invitation(%L::uuid, %L, %L::public.app_role, NULL, 14)',
+    t_b, 'admin-created+rlstest@example.test', 'front_desk'
+  ) INTO v_admin_inv, v_token;
+  EXECUTE format('SELECT count(*) FROM public.admin_list_team_invitations(%L::uuid) WHERE id = %L::uuid', t_b, v_admin_inv)
+    INTO v;
+  RESET ROLE;
+  PERFORM set_config('request.jwt.claim.sub', '', true);
+  PERFORM set_config('request.jwt.claims', NULL, true);
+  SELECT (token IS NULL AND token_hash IS NOT NULL) INTO flag
+    FROM public.team_invitations WHERE id = v_admin_inv;
+  IF v_admin_inv IS NULL OR coalesce(v_token, '') = '' OR v <> 1 OR NOT coalesce(flag, false) THEN
+    failures := failures + 1;
+    RAISE WARNING 'FALHOU: fluxo administrativo de convites perdeu segurança/funcionalidade';
+  ELSE RAISE NOTICE 'ok  team_invitations: super_admin provisiona/lista sem persistir plaintext token'; END IF;
+
+  DELETE FROM public.team_invitations
+   WHERE id IN (v_created_inv, v_manager_inv, v_admin_inv);
 
   -- =========================================================================
   -- 3. tenant_memberships — gap owner/manager e super_admin
@@ -330,12 +548,24 @@ BEGIN
     RAISE NOTICE 'aviso: sem privilégio para limpar system_incidents (%);', inc;
   END;
   BEGIN
+    DELETE FROM public.team_invitations
+     WHERE id = inv
+        OR email IN (
+          'owner-created+rlstest@example.test',
+          'manager-created+rlstest@example.test',
+          'manager-cross-tenant+rlstest@example.test',
+          'admin-created+rlstest@example.test'
+        );
+  EXCEPTION WHEN insufficient_privilege THEN
+    RAISE NOTICE 'aviso: sem privilégio para limpar convites de teste';
+  END;
+  BEGIN
     DELETE FROM public.tenants WHERE id IN (t_a, t_b);
   EXCEPTION WHEN insufficient_privilege THEN
     RAISE NOTICE 'aviso: sem privilégio para limpar tenants de teste';
   END;
   BEGIN
-    DELETE FROM auth.users WHERE id IN (u_own, u_mng, u_pro, u_ownb, u_sup);
+    DELETE FROM auth.users WHERE id IN (u_own, u_mng, u_pro, u_inv, u_ownb, u_sup);
   EXCEPTION WHEN insufficient_privilege THEN
     RAISE NOTICE 'aviso: sem privilégio para limpar auth.users de teste';
   END;
@@ -353,8 +583,16 @@ EXCEPTION WHEN OTHERS THEN
     ALTER TABLE public.profiles ENABLE TRIGGER profiles_block_super_admin_changes_trg;
     ALTER TABLE public.profiles ENABLE TRIGGER profiles_block_self_super_admin;
     DELETE FROM public.system_incidents WHERE id = inc;
+    DELETE FROM public.team_invitations
+     WHERE id = inv
+        OR email IN (
+          'owner-created+rlstest@example.test',
+          'manager-created+rlstest@example.test',
+          'manager-cross-tenant+rlstest@example.test',
+          'admin-created+rlstest@example.test'
+        );
     DELETE FROM public.tenants WHERE id IN (t_a, t_b);
-    DELETE FROM auth.users WHERE id IN (u_own, u_mng, u_pro, u_ownb, u_sup);
+    DELETE FROM auth.users WHERE id IN (u_own, u_mng, u_pro, u_inv, u_ownb, u_sup);
   EXCEPTION WHEN OTHERS THEN NULL;
   END;
   RAISE;

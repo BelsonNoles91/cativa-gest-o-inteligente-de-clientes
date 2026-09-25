@@ -211,7 +211,7 @@ test.describe("cenários de navegação — safe-area + BottomNav", () => {
 
     await assertNoHorizontalOverflow(page);
 
-    // O conteúdo do sheet deve respeitar a safe-area inferior (pb-safe).
+    // O conteúdo rolável deve caber no viewport e reservar a safe-area inferior.
     const result = await page.evaluate(() => {
       // Probe de safe-area-inset-bottom.
       const probe = document.createElement("div");
@@ -221,25 +221,35 @@ test.describe("cenários de navegação — safe-area + BottomNav", () => {
       const safeBottom = parseFloat(getComputedStyle(probe).paddingBottom) || 0;
       probe.remove();
 
-      const dialog = document.querySelector(
-        '[role="dialog"]',
-      ) as HTMLElement | null;
+      const dialog = document.querySelector('[role="dialog"]') as HTMLElement | null;
       if (!dialog) return { found: false as const };
-      const buttons = Array.from(
-        dialog.querySelectorAll<HTMLElement>("a, button"),
+
+      const scroll = dialog.querySelector<HTMLElement>(
+        '[data-testid="bottom-nav-sheet-scroll"]',
+      );
+      if (!scroll) return { found: true as const, scrollFound: false as const };
+
+      const scrollStyle = getComputedStyle(scroll);
+      const paddingBottom = parseFloat(scrollStyle.paddingBottom) || 0;
+      scroll.scrollTop = scroll.scrollHeight;
+
+      const scrollRect = scroll.getBoundingClientRect();
+      const items = Array.from(
+        scroll.querySelectorAll<HTMLElement>('[data-testid="bottom-nav-sheet-item"]'),
       ).filter((el) => {
         const r = el.getBoundingClientRect();
         return r.width > 0 && r.height > 0;
       });
-      if (buttons.length === 0) {
-        return { found: true as const, safeBottom, lastBottom: null, viewportH: window.innerHeight };
-      }
-      const lastBottom = Math.max(
-        ...buttons.map((b) => b.getBoundingClientRect().bottom),
-      );
+      const lastBottom = items.length > 0
+        ? Math.max(...items.map((item) => item.getBoundingClientRect().bottom))
+        : null;
+
       return {
         found: true as const,
+        scrollFound: true as const,
         safeBottom,
+        paddingBottom,
+        scrollBottom: scrollRect.bottom,
         lastBottom,
         viewportH: window.innerHeight,
       };
@@ -248,13 +258,31 @@ test.describe("cenários de navegação — safe-area + BottomNav", () => {
     expect(result.found, '[role="dialog"] do Sheet "Mais" não encontrado').toBe(
       true,
     );
-    if (result.found && result.lastBottom !== null) {
-      const limit = result.viewportH - result.safeBottom + 2;
+    if (result.found) {
+      expect(result.scrollFound, 'Container rolável do Sheet "Mais" não encontrado').toBe(true);
+    }
+    if (result.found && result.scrollFound) {
       expect(
-        result.lastBottom,
-        `Último item do Sheet (${result.lastBottom}px) ultrapassa o limite ` +
-          `de safe-area inferior (${limit}px). Verifique pb-safe no SheetContent.`,
-      ).toBeLessThanOrEqual(limit);
+        result.scrollBottom,
+        `Container rolável do Sheet termina em ${result.scrollBottom}px, abaixo do viewport ` +
+          `de ${result.viewportH}px.`,
+      ).toBeLessThanOrEqual(result.viewportH + 2);
+
+      const minimumBottomPadding = Math.max(16, result.safeBottom);
+      expect(
+        result.paddingBottom,
+        `Padding inferior do Sheet (${result.paddingBottom}px) não cobre a safe-area ` +
+          `esperada (${minimumBottomPadding}px).`,
+      ).toBeGreaterThanOrEqual(minimumBottomPadding - 1);
+
+      if (result.lastBottom !== null) {
+        const itemLimit = result.scrollBottom - result.paddingBottom + 2;
+        expect(
+          result.lastBottom,
+          `Último item do Sheet (${result.lastBottom}px) invade o padding inferior ` +
+            `reservado à safe-area (limite ${itemLimit}px).`,
+        ).toBeLessThanOrEqual(itemLimit);
+      }
     }
   });
 });

@@ -5045,7 +5045,6 @@ export type Database = {
           status: string
           tenant_id: string
           tenant_name: string
-          token: string
           updated_at: string
         }[]
       }

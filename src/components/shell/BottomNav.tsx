@@ -168,7 +168,10 @@ export function BottomNav() {
               <X className="h-4 w-4" />
             </SheetClose>
           </SheetHeader>
-          <div className="min-h-0 flex-1 overflow-y-auto p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <div
+            data-testid="bottom-nav-sheet-scroll"
+            className="min-h-0 flex-1 overflow-y-auto p-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
+          >
             {billingLoading ? (
               <div
                 className="grid grid-cols-3 gap-3"

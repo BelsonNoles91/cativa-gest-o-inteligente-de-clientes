@@ -80,7 +80,7 @@ export function RequireOnboarding({ children }: { children?: ReactNode }) {
   const { user } = useAuth();
   const { loading, verified, loadError, hasActiveTenant, isClient, isSuperAdmin, refresh } = useTenant();
   const [checkingInvites, setCheckingInvites] = useState(false);
-  const [pendingInviteToken, setPendingInviteToken] = useState<string | null | undefined>(undefined);
+  const [pendingInviteId, setPendingInviteId] = useState<string | null | undefined>(undefined);
 
   // Verificar convites pendentes quando não tem tenant ativo
   useEffect(() => {
@@ -93,17 +93,12 @@ export function RequireOnboarding({ children }: { children?: ReactNode }) {
       try {
         const invites = await listPendingInvitationsForCurrentUser();
         if (!active) return;
-        // Se houver convites pendentes, pegar o token do primeiro
-        if (invites && invites.length > 0) {
-          // A RPC retorna dados do convite — precisamos do token (se disponível)
-          // ou pelo menos redirecionar para a página com o ID
-          const firstInvite = invites[0] as { token?: string | null; id?: string | null };
-          setPendingInviteToken(firstInvite.token ?? firstInvite.id ?? null);
-        } else {
-          setPendingInviteToken(null);
-        }
+        // Tokens plaintext não são persistidos nem retornados por RPCs de lista.
+        // lookup/accept aceitam o UUID como handle somente quando o e-mail da
+        // sessão autenticada corresponde ao destinatário do convite.
+        setPendingInviteId(invites[0]?.id ?? null);
       } catch {
-        if (active) setPendingInviteToken(null);
+        if (active) setPendingInviteId(null);
       } finally {
         if (active) setCheckingInvites(false);
       }
@@ -125,11 +120,11 @@ export function RequireOnboarding({ children }: { children?: ReactNode }) {
 
   if (!hasActiveTenant) {
     // Ainda verificando convites
-    if (checkingInvites || pendingInviteToken === undefined) return <FullScreenLoader />;
+    if (checkingInvites || pendingInviteId === undefined) return <FullScreenLoader />;
 
     // Se tem convite pendente, redirecionar para aceite
-    if (pendingInviteToken) {
-      return <Navigate to={`/auth/aceite-convite?token=${pendingInviteToken}`} replace />;
+    if (pendingInviteId) {
+      return <Navigate to={`/auth/aceite-convite?token=${pendingInviteId}`} replace />;
     }
 
     // Sem convites → onboarding normal (criar negócio)
