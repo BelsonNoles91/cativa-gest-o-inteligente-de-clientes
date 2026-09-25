@@ -37,6 +37,49 @@ function assertResult(result, label) {
   return result.data;
 }
 
+function dateInTimeZone(timeZone, offsetDays = 0) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+  const baseUtc = Date.UTC(
+    Number(values.year),
+    Number(values.month) - 1,
+    Number(values.day),
+  );
+  return new Date(baseUtc + offsetDays * 86_400_000).toISOString().slice(0, 10);
+}
+
+async function findAvailableSlot({
+  tenantId,
+  professionalId,
+  unitId,
+  serviceId,
+  timeZone,
+}) {
+  for (let offset = 1; offset <= 21; offset += 1) {
+    const day = dateInTimeZone(timeZone, offset);
+    const slots = assertResult(
+      await client.rpc("get_available_slots", {
+        _tenant_id: tenantId,
+        _professional_id: professionalId,
+        _unit_id: unitId,
+        _service_id: serviceId,
+        _day: day,
+        _slot_step_minutes: 15,
+      }),
+      `buscar horário disponível em ${day}`,
+    );
+    if (slots?.length) return slots[0];
+  }
+  throw new Error(
+    "Fixtures E2E: nenhum horário disponível encontrado nos próximos 21 dias.",
+  );
+}
+
 async function firstOrCreate({ table, select, filters, insert, label }) {
   let query = client.from(table).select(select).limit(1);
   for (const [column, value] of Object.entries(filters))
@@ -146,6 +189,15 @@ try {
   });
 
   const marker = "E2E_FIXTURE_CONFIRMATION_MODAL_V1";
+  const tenant = assertResult(
+    await client
+      .from("tenants")
+      .select("timezone")
+      .eq("id", tenantId)
+      .single(),
+    "buscar timezone do tenant E2E",
+  );
+  const tenantTimezone = tenant.timezone || "America/Sao_Paulo";
   let businessHours = assertResult(
     await client
       .from("unit_business_hours")
@@ -158,7 +210,8 @@ try {
     "buscar horário da unidade E2E",
   );
   if (!businessHours) {
-    const tomorrowWeekday = (new Date().getUTCDay() + 1) % 7;
+    const tomorrow = dateInTimeZone(tenantTimezone, 1);
+    const tomorrowWeekday = new Date(`${tomorrow}T00:00:00Z`).getUTCDay();
     businessHours = assertResult(
       await client
         .from("unit_business_hours")
@@ -175,12 +228,15 @@ try {
       "criar horário da unidade E2E",
     );
   }
-  const startsAt = new Date();
-  const daysAhead = (businessHours.weekday - startsAt.getUTCDay() + 7) % 7 || 7;
-  startsAt.setUTCDate(startsAt.getUTCDate() + daysAhead);
-  const [openHour, openMinute] = businessHours.opens_at.split(":").map(Number);
-  startsAt.setUTCHours(openHour, openMinute + 30, 0, 0);
-  const endsAt = new Date(startsAt.getTime() + 30 * 60 * 1000);
+  const slot = await findAvailableSlot({
+    tenantId,
+    professionalId: professional.id,
+    unitId: unit.id,
+    serviceId: service.id,
+    timeZone: tenantTimezone,
+  });
+  const startsAt = new Date(slot.slot_start);
+  const endsAt = new Date(slot.slot_end);
   const appointmentPatch = {
     tenant_id: tenantId,
     unit_id: unit.id,
