@@ -1,7 +1,6 @@
 /**
  * UserMenu — perfil + signOut real + Notificações.
  */
-import { useEffect, useState } from "react";
 import { LogOut, Settings, User, Bell, BellOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -14,32 +13,27 @@ import { Button } from "@/components/ui/button";
 import { roleLabels } from "@/domain/roles";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { usePushNotifications } from "@/features/notifications/usePushNotifications";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 
 export function UserMenu() {
   const navigate = useNavigate();
-  const { currentRole, isSuperAdmin } = useTenant();
+  const { currentRole, isSuperAdmin, currentTenant } = useTenant();
   const { user, signOut } = useAuth();
   const isMobile = useIsMobile();
-  const [pushStatus, setPushStatus] = useState<NotificationPermission | "unsupported">("default");
-
-  useEffect(() => {
-    if (!("Notification" in window)) {
-      setPushStatus("unsupported");
-    } else {
-      setPushStatus(Notification.permission);
-    }
-  }, []);
+  const {
+    state: pushStatus,
+    busy: pushBusy,
+    enable: enablePush,
+  } = usePushNotifications(currentTenant?.id);
 
   const requestPush = async () => {
-    if (!("Notification" in window)) return;
-    const permission = await Notification.requestPermission();
-    setPushStatus(permission);
-    if (permission === "granted") {
-      toast.success("Notificações habilitadas com sucesso!");
+    const result = await enablePush();
+    if (result.ok) {
+      toast.success(result.message);
     } else {
-      toast.error("Permissão de notificação negada.");
+      toast.error(result.message);
     }
   };
 
@@ -69,14 +63,28 @@ export function UserMenu() {
           {role && <span className="text-xs text-muted-foreground">{roleLabels[role]}</span>}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {pushStatus !== "granted" && pushStatus !== "unsupported" && (
-          <DropdownMenuItem onSelect={requestPush} className="gap-2">
+        {pushStatus === "off" && (
+          <DropdownMenuItem
+            disabled={pushBusy}
+            onSelect={() => void requestPush()}
+            className="gap-2"
+          >
             <Bell className="h-4 w-4" /> Ativar notificações push
           </DropdownMenuItem>
         )}
-        {pushStatus === "granted" && (
+        {pushStatus === "on" && (
           <DropdownMenuItem disabled className="gap-2 opacity-50">
             <Bell className="h-4 w-4" /> Notificações ativas
+          </DropdownMenuItem>
+        )}
+        {pushStatus === "denied" && (
+          <DropdownMenuItem disabled className="gap-2 opacity-50">
+            <BellOff className="h-4 w-4" /> Notificações bloqueadas
+          </DropdownMenuItem>
+        )}
+        {pushStatus === "open-in-new-tab" && (
+          <DropdownMenuItem disabled className="gap-2 opacity-50">
+            <BellOff className="h-4 w-4" /> Abra em uma aba para ativar
           </DropdownMenuItem>
         )}
         {pushStatus === "unsupported" && isMobile && (

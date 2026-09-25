@@ -36,7 +36,7 @@ export function PushNotificationsCard({ tenantId, description }: Props) {
         </CardTitle>
         <CardDescription>
           {description ??
-            "Receba um aviso no aparelho um dia antes do horário, mesmo com o app fechado."}
+            "Receba avisos do Cativa neste aparelho, inclusive confirmações e notificações de teste."}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-wrap gap-2">
