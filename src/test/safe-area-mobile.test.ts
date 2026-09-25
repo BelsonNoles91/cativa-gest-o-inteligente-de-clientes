@@ -140,11 +140,12 @@ describe("BottomNav — visível só em mobile, com safe-area completa", () => {
     expect(src).toMatch(/aria-expanded=\{moreOpen\}/);
   });
 
-  it("Sheet de Mais módulos tem max-h-[85vh] + overflow-y-auto + pb-safe", () => {
-    expect(src).toMatch(/max-h-\[85vh\]/);
+  it("Sheet de Mais módulos limita altura dinâmica e mantém conteúdo rolável dentro da safe-area", () => {
+    expect(src).toMatch(/max-h-\[85dvh\]/);
+    expect(src).toMatch(/overflow-hidden/);
+    expect(src).toMatch(/min-h-0 flex-1/);
     expect(src).toMatch(/overflow-y-auto/);
-    // pb-safe dentro do conteúdo rolável do sheet
-    expect(src).toMatch(/p-4 pb-safe/);
+    expect(src).toMatch(/pb-\[max\(1rem,env\(safe-area-inset-bottom\)\)\]/);
   });
 });
 
