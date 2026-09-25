@@ -152,9 +152,9 @@ export function BottomNav() {
         <SheetContent
           side="bottom"
           data-testid="bottom-nav-sheet"
-          className="rounded-t-3xl border-t border-border/70 p-0 max-h-[85vh]"
+          className="flex max-h-[85dvh] flex-col overflow-hidden rounded-t-3xl border-t border-border/70 p-0"
         >
-          <SheetHeader className="flex-row items-center justify-between border-b border-border/60 px-5 py-4">
+          <SheetHeader className="shrink-0 flex-row items-center justify-between border-b border-border/60 px-5 py-4">
             <div className="space-y-1 text-left">
               <SheetTitle className="text-left">Todos os módulos</SheetTitle>
               <SheetDescription>
@@ -168,7 +168,7 @@ export function BottomNav() {
               <X className="h-4 w-4" />
             </SheetClose>
           </SheetHeader>
-          <div className="overflow-y-auto p-4 pb-safe">
+          <div className="min-h-0 flex-1 overflow-y-auto p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
             {billingLoading ? (
               <div
                 className="grid grid-cols-3 gap-3"
