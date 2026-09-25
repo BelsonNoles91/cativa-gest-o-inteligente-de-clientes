@@ -81,6 +81,7 @@ jobs:
         with:
           name: visual-auth-failure-${{ github.run_id }}
           path: e2e/.artifacts/
+          include-hidden-files: true
           if-no-files-found: warn
           retention-days: 7
 
@@ -104,6 +105,7 @@ jobs:
           path: |
             e2e/.artifacts/
             e2e/__screenshots__/visual/public-routes.spec.ts/
+          include-hidden-files: true
           if-no-files-found: warn
           retention-days: 7
 
