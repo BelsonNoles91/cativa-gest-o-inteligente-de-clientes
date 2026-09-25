@@ -244,7 +244,7 @@ export default function AnalyticsPage() {
           </div>
 
           <TabsContent value="executive" className="mt-0 space-y-6">
-            <div className="grid gap-6 xl:grid-cols-2">
+            <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-2">
               <SectionCard
                 title="Receita e agenda futura"
                 description="Leitura executiva do pipeline de faturamento já agendado."
@@ -300,7 +300,7 @@ export default function AnalyticsPage() {
               </SectionCard>
             </div>
 
-            <div className="grid gap-6 xl:grid-cols-3">
+            <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-3">
               <RankedCard
                 title="Ticket por serviço"
                 description="Serviços com maior receita no período."
@@ -332,7 +332,7 @@ export default function AnalyticsPage() {
                 }))}
               />
             </div>
-            <div className="grid gap-6 xl:grid-cols-2">
+            <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-2">
               <SectionCard
                 title="Rentabilidade por Profissional"
                 description="Receita gerada por hora trabalhada (concluídos)."
@@ -402,7 +402,7 @@ export default function AnalyticsPage() {
               />
             </div>
 
-            <div className="grid gap-6 xl:grid-cols-2">
+            <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-2">
               <SectionCard
                 title="Confirmação e risco"
                 description="Ritmo operacional da agenda e impacto imediato na receita."
@@ -450,7 +450,7 @@ export default function AnalyticsPage() {
 
           <TabsContent value="retention" className="mt-0 space-y-6">
             {canManage && <RetentionInsightsCard />}
-            <div className="grid gap-6 xl:grid-cols-3">
+            <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-3">
               <SectionCard
                 title="Coortes de retorno"
                 description="Leitura das etapas críticas da jornada entre visitas."
@@ -533,12 +533,12 @@ function SectionCard({
   className?: string;
 }) {
   return (
-    <Card className={cn(className)}>
-      <CardHeader>
+    <Card className={cn("min-w-0 w-full max-w-full", className)}>
+      <CardHeader className="min-w-0">
         <CardTitle className="text-base">{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">{children}</CardContent>
+      <CardContent className="min-w-0 space-y-4">{children}</CardContent>
     </Card>
   );
 }
