@@ -246,6 +246,13 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     return availableTenants[0]?.id ?? null;
   }, [currentTenantId, availableTenants]);
 
+  // Mantém o contexto persistido coerente com o tenant efetivamente autorizado.
+  // Isso também recupera caches antigos/inválidos sem deixar IDs órfãos no storage.
+  useEffect(() => {
+    if (!verified || !effectiveTenantId || currentTenantId === effectiveTenantId) return;
+    setCurrentTenantId(effectiveTenantId);
+  }, [verified, effectiveTenantId, currentTenantId, setCurrentTenantId]);
+
   // Carrega unidades e configurações APENAS do tenant selecionado
   useEffect(() => {
     if (!effectiveTenantId) {
