@@ -437,8 +437,8 @@ export default function ClientsPage() {
     };
   }, [photos]);
 
-  async function refreshSelectedClient() {
-    if (!selectedId || !currentTenant) return;
+  async function refreshSelectedClient(clientId = selectedId) {
+    if (!clientId || !currentTenant) return;
     const [
       client,
       clientTagIds,
@@ -451,16 +451,16 @@ export default function ClientsPage() {
       templates,
       responses,
     ] = await Promise.all([
-      getClient(selectedId),
-      listClientTagIds(selectedId),
-      listNotes(selectedId),
-      listFiles(selectedId),
-      listPhotos(selectedId),
-      listTimeline(selectedId),
+      getClient(clientId),
+      listClientTagIds(clientId),
+      listNotes(clientId),
+      listFiles(clientId),
+      listPhotos(clientId),
+      listTimeline(clientId),
       listCustomFieldDefs(currentTenant.id),
-      listClientCustomValues(selectedId),
+      listClientCustomValues(clientId),
       listConsentTemplates(currentTenant.id),
-      listConsentResponses(selectedId),
+      listConsentResponses(clientId),
     ]);
     setSelectedClient(client);
     setSelectedTagIds(clientTagIds);
@@ -546,7 +546,7 @@ export default function ClientsPage() {
       setForm(clientToForm(saved));
       setEditing(true);
       setOpenCreate(false);
-      await refreshSelectedClient();
+      await refreshSelectedClient(saved.id);
     } catch (error) {
       toast({
         title: "Falha ao salvar cliente",
