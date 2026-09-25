@@ -75,6 +75,29 @@ jobs:
         run: npm run test:visual:auth:critical
         continue-on-error: ${{ !secrets.E2E_USER }}
 
+      - name: Gera snapshots autenticados atuais para diagnóstico
+        if: failure()
+        run: >-
+          npm run test:auth:bootstrap &&
+          npx playwright test e2e/visual/public-routes.spec.ts
+          -g "rotas autenticadas"
+          --project=iphone-14-portrait
+          --project=iphone-se
+          --project=android-360-portrait
+          --workers 1
+          --update-snapshots
+
+      - name: Publica evidências da regressão visual
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-auth-regression-${{ github.run_id }}
+          path: |
+            e2e/.artifacts/
+            e2e/__screenshots__/visual/public-routes.spec.ts/
+          if-no-files-found: warn
+          retention-days: 7
+
   qa-authenticated:
     needs: vitest
     runs-on: ubuntu-latest
