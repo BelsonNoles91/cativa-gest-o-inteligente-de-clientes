@@ -141,34 +141,66 @@ Deno.serve(async (req) => {
 
   const results: ProvisionResult[] = [];
 
+  // Carrega os usuários-alvo percorrendo todas as páginas do Auth. O projeto de
+  // QA pode ter mais de 200 usuários; olhar apenas a primeira página faz a
+  // função tentar recriar um e-mail já existente e retornar password_set=false.
+  const targetEmails = new Set(
+    ROLES.map((role) => `${role}.${tenant.slug}@${domain}`.toLowerCase()),
+  );
+  const usersByEmail = new Map<string, string>();
+  const authPageSize = 200;
+  for (let page = 1; usersByEmail.size < targetEmails.size; page += 1) {
+    const { data: list, error: listErr } = await admin.auth.admin.listUsers({
+      page,
+      perPage: authPageSize,
+    });
+    if (listErr) {
+      return json(
+        { error: `Falha ao consultar usuários existentes: ${listErr.message}` },
+        500,
+        headers,
+      );
+    }
+
+    const users = list?.users ?? [];
+    for (const user of users) {
+      const normalizedEmail = (user.email ?? "").toLowerCase();
+      if (targetEmails.has(normalizedEmail)) {
+        usersByEmail.set(normalizedEmail, user.id);
+      }
+    }
+
+    if (users.length < authPageSize) break;
+  }
+
   for (const role of ROLES) {
     const email = `${role}.${tenant.slug}@${domain}`.toLowerCase();
     const fullName = roleFullName(role);
 
-    // 3.1) Procura usuário existente (paginação simples)
-    let existingUserId: string | null = null;
-    {
-      // listUsers tem paginação, mas para ambiente de teste 200 cobre.
-      const { data: list } = await admin.auth.admin.listUsers({
-        page: 1,
-        perPage: 200,
-      });
-      const found = list?.users.find(
-        (u) => (u.email ?? "").toLowerCase() === email,
-      );
-      existingUserId = found?.id ?? null;
-    }
+    // 3.1) Reutiliza usuário existente, independentemente da página no Auth.
+    const existingUserId = usersByEmail.get(email) ?? null;
 
     let userId: string;
     let createdNew = false;
     if (existingUserId) {
       userId = existingUserId;
       // Reseta a senha para o padrão informado, garante email confirmado
-      await admin.auth.admin.updateUserById(userId, {
+      const { error: updateUserErr } = await admin.auth.admin.updateUserById(userId, {
         password,
         email_confirm: true,
         user_metadata: { full_name: fullName },
       });
+      if (updateUserErr) {
+        results.push({
+          role,
+          email,
+          user_id: userId,
+          status: "existing",
+          password_set: false,
+          notes: `Falha ao atualizar usuário existente: ${updateUserErr.message}`,
+        });
+        continue;
+      }
     } else {
       const { data: created, error: createErr } = await admin.auth.admin.createUser({
         email,
@@ -192,9 +224,20 @@ Deno.serve(async (req) => {
     }
 
     // 3.2) Garante profile
-    await admin
+    const { error: profileErr } = await admin
       .from("profiles")
       .upsert({ id: userId, full_name: fullName }, { onConflict: "id" });
+    if (profileErr) {
+      results.push({
+        role,
+        email,
+        user_id: userId,
+        status: createdNew ? "created" : "existing",
+        password_set: true,
+        notes: `Falha ao garantir perfil: ${profileErr.message}`,
+      });
+      continue;
+    }
 
     // 3.3) Vincula como membro do tenant (exceto client puro do portal)
     if (role !== "client") {
