@@ -1,18 +1,18 @@
 #!/usr/bin/env node
 /**
- * Verifica que `vite build` (produção) falha com mensagem clara quando
- * VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY estão ausentes.
+ * Verifica que `vite build` (produção) NÃO falha quando VITE_SUPABASE_URL e
+ * VITE_SUPABASE_PUBLISHABLE_KEY estão ausentes: o vite.config.ts injeta o
+ * alvo gerenciado do Lovable Cloud como fallback via `define`.
  *
  * Roteiro:
  *   1. Executa `vite build` em um cwd temporário, com um HOME temporário
  *      e sem as variáveis Supabase no ambiente. Como o cwd temporário
  *      não tem .env, `loadEnv` não injeta nada.
- *   2. Espera exit code != 0.
- *   3. Espera que stderr/stdout contenha os marcadores da mensagem
- *      definida em vite.config.ts (guard de build de produção).
+ *   2. Espera exit code 0 (build concluído com fallback).
+ *   3. Espera que o aviso de variáveis ausentes apareça na saída.
  *
  * Uso: `node scripts/verify-missing-env-build.mjs`
- * Retorna exit 0 quando o guard funciona, exit 1 caso contrário.
+ * Retorna exit 0 quando o fallback funciona, exit 1 caso contrário.
  */
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -54,28 +54,20 @@ try { rmSync(tmpHome, { recursive: true, force: true }); } catch {}
 
 const combined = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
 
-const expectedMarkers = [
-  "Variáveis de ambiente obrigatórias ausentes",
-  "VITE_SUPABASE_URL",
-  "VITE_SUPABASE_PUBLISHABLE_KEY",
-];
-
+const expectedMarkers = ["Variáveis de ambiente obrigatórias ausentes"];
 const missingMarkers = expectedMarkers.filter((m) => !combined.includes(m));
-const failedAsExpected = result.status !== 0;
 
-if (!failedAsExpected) {
-  console.error("✗ vite build finalizou com exit 0 — guard NÃO bloqueou o build.");
+if (result.status !== 0) {
+  console.error("✗ vite build falhou — o fallback do backend gerenciado NÃO funcionou.");
   console.error(combined.slice(0, 2000));
   process.exit(1);
 }
 
 if (missingMarkers.length > 0) {
-  console.error("✗ vite build falhou, mas a mensagem esperada não apareceu.");
+  console.error("✗ vite build passou, mas o aviso esperado não apareceu.");
   console.error("  Marcadores ausentes:", missingMarkers);
-  console.error("--- saída capturada ---");
-  console.error(combined.slice(0, 2000));
   process.exit(1);
 }
 
-console.log("✓ Guard de env vars funcionou: build abortou com mensagem clara.");
+console.log("✓ Fallback funcionou: build concluído com o alvo gerenciado do backend.");
 process.exit(0);
