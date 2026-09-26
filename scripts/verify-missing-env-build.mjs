@@ -39,7 +39,10 @@ console.log("→ Rodando `vite build` sem VITE_SUPABASE_URL / _PUBLISHABLE_KEY�
 
 const result = spawnSync(
   process.execPath,
-  [viteBin, "build", "--mode", "production", "--config", resolve(projectRoot, "vite.config.ts")],
+  // Passa a raiz do projeto como argumento posicional: o cwd temporário
+  // garante que `loadEnv` não encontre nenhum .env, enquanto a raiz
+  // explícita permite ao Vite resolver o index.html e os módulos.
+  [viteBin, "build", projectRoot, "--mode", "production", "--config", resolve(projectRoot, "vite.config.ts")],
   {
     cwd: tmpCwd,
     env: cleanEnv,
