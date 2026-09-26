@@ -134,6 +134,9 @@ export default function TenantPublic() {
     }
   });
   const [contactLoaded, setContactLoaded] = useState(false);
+  // Permite fechar o pop-up para apenas olhar serviços/preços; ele reabre
+  // automaticamente quando a pessoa tenta concluir um agendamento.
+  const [contactDismissed, setContactDismissed] = useState(false);
   const [contactForm, setContactForm] = useState({ fullName: "", whatsapp: "" });
   const [contactTouched, setContactTouched] = useState(false);
   const contactValid = isValidFullName(contact.fullName) && isValidMobileBR(contact.whatsapp);
@@ -325,6 +328,7 @@ export default function TenantPublic() {
     if (!contactValid) {
       setContactForm(contact);
       setContactLoaded(true);
+      setContactDismissed(false);
       return;
     }
     setSubmitting(true);
@@ -386,19 +390,19 @@ export default function TenantPublic() {
     page.headline || `Agende online em ${page.name}. Serviços, unidades e horários disponíveis.`;
   const canonical = `https://cativapp.lovable.app/e/${page.slug}`;
 
-  const needsContact = Boolean(user) && contactLoaded && !contactValid && !confirmedId;
+  const needsContact = Boolean(user) && contactLoaded && !contactValid && !confirmedId && !contactDismissed;
   const nameError = contactTouched && !isValidFullName(contactForm.fullName);
   const phoneError = contactTouched && !isValidMobileBR(contactForm.whatsapp);
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <Dialog open={needsContact}>
-        <DialogContent
-          className="max-w-md rounded-2xl [&>button]:hidden"
-          onEscapeKeyDown={(e) => e.preventDefault()}
-          onPointerDownOutside={(e) => e.preventDefault()}
-          onInteractOutside={(e) => e.preventDefault()}
-        >
+      <Dialog
+        open={needsContact}
+        onOpenChange={(open) => {
+          if (!open) setContactDismissed(true);
+        }}
+      >
+        <DialogContent className="max-w-md rounded-2xl">
           <DialogHeader>
             <DialogTitle>Complete seu cadastro</DialogTitle>
             <DialogDescription>
