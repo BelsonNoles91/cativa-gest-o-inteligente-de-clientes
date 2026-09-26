@@ -5,70 +5,56 @@
  * alvo gerenciado do Lovable Cloud como fallback via `define`.
  *
  * Roteiro:
- *   1. Executa `vite build` em um cwd temporário, com um HOME temporário
- *      e sem as variáveis Supabase no ambiente. Como o cwd temporário
- *      não tem .env, `loadEnv` não injeta nada.
- *   2. Espera exit code 0 (build concluído com fallback).
- *   3. Espera que o aviso de variáveis ausentes apareça na saída.
+ *   1. Afasta temporariamente o `.env` da raiz (renomeia para .env.bak-verify)
+ *      e remove as variáveis VITE_SUPABASE_* do ambiente.
+ *   2. Executa `vite build` na raiz do projeto.
+ *   3. Restaura o `.env` (sempre, mesmo em falha).
+ *   4. Espera exit code 0 (build concluído com fallback) e o aviso de
+ *      variáveis ausentes na saída.
  *
  * Uso: `node scripts/verify-missing-env-build.mjs`
  * Retorna exit 0 quando o fallback funciona, exit 1 caso contrário.
  */
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { existsSync, renameSync } from "node:fs";
+import { resolve } from "node:path";
 
 const projectRoot = resolve(process.cwd());
 const viteBin = resolve(projectRoot, "node_modules/vite/bin/vite.js");
+const envFile = resolve(projectRoot, ".env");
+const envBackup = resolve(projectRoot, ".env.bak-verify");
+const hadEnv = existsSync(envFile);
 
-const tmpCwd = mkdtempSync(join(tmpdir(), "cativa-missing-env-"));
-const tmpHome = mkdtempSync(join(tmpdir(), "cativa-missing-env-home-"));
-
-// Env limpo: preserva PATH/Node, remove todas as VITE_SUPABASE_* e
-// aponta HOME/USERPROFILE para um diretório vazio, evitando qualquer
-// .env global.
+// Env limpo: remove todas as VITE_SUPABASE_* do ambiente.
 const cleanEnv = { ...process.env };
 for (const key of Object.keys(cleanEnv)) {
   if (key.startsWith("VITE_SUPABASE_")) delete cleanEnv[key];
 }
-cleanEnv.HOME = tmpHome;
-cleanEnv.USERPROFILE = tmpHome;
 
 console.log("→ Rodando `vite build` sem VITE_SUPABASE_URL / _PUBLISHABLE_KEY…");
 
-const result = spawnSync(
-  process.execPath,
-  // Passa a raiz do projeto como argumento posicional: o cwd temporário
-  // garante que `loadEnv` não encontre nenhum .env, enquanto a raiz
-  // explícita permite ao Vite resolver o index.html e os módulos.
-  [viteBin, "build", projectRoot, "--mode", "production", "--config", resolve(projectRoot, "vite.config.ts")],
-  {
-    cwd: tmpCwd,
-    env: cleanEnv,
-    encoding: "utf8",
-    timeout: 120_000,
-  },
-);
+if (hadEnv) renameSync(envFile, envBackup);
+let result;
+try {
+  result = spawnSync(
+    process.execPath,
+    [viteBin, "build", "--mode", "production"],
+    { cwd: projectRoot, env: cleanEnv, encoding: "utf8", timeout: 180_000 },
+  );
+} finally {
+  if (hadEnv) renameSync(envBackup, envFile);
+}
 
-// Limpeza best-effort
-try { rmSync(tmpCwd, { recursive: true, force: true }); } catch {}
-try { rmSync(tmpHome, { recursive: true, force: true }); } catch {}
+const combined = `${result?.stdout ?? ""}\n${result?.stderr ?? ""}`;
 
-const combined = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
-
-const expectedMarkers = ["Variáveis de ambiente obrigatórias ausentes"];
-const missingMarkers = expectedMarkers.filter((m) => !combined.includes(m));
-
-if (result.status !== 0) {
+if (!result || result.status !== 0) {
   console.error("✗ vite build falhou — o fallback do backend gerenciado NÃO funcionou.");
   console.error(combined.slice(0, 2000));
   process.exit(1);
 }
 
-if (missingMarkers.length > 0) {
+if (!combined.includes("Variáveis de ambiente obrigatórias ausentes")) {
   console.error("✗ vite build passou, mas o aviso esperado não apareceu.");
-  console.error("  Marcadores ausentes:", missingMarkers);
   process.exit(1);
 }
 
