@@ -30,19 +30,21 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+>(({ className, children, style, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
+    {/* Keep centering independent from transform-based entrance/exit animations. */}
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-[50%] top-[50%] z-50 flex w-full max-w-lg translate-x-[-50%] translate-y-[-50%] flex-col gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
+        "fixed left-[50%] top-[50%] z-50 flex w-full max-w-lg flex-col gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-lg",
         // Garantir que diálogos altos não estourem o viewport — header fixo e corpo rolável.
         "max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain",
         // Alvos de toque adequados em dialogs móveis (WCAG 2.2 / touch target).
         "max-sm:[&_button]:min-h-11 max-sm:[&_button]:min-w-11 max-sm:[&_[role=combobox]]:min-h-11 max-sm:[&_[role=combobox]]:min-w-11 max-sm:[&_input:not([type=checkbox]):not([type=radio])]:min-h-11 max-sm:[&_input:not([type=checkbox]):not([type=radio])]:min-w-11 max-sm:[&_select]:min-h-11 max-sm:[&_select]:min-w-11 max-sm:[&_textarea]:min-w-11 max-sm:[&_a[href]]:min-h-11",
         className,
       )}
+      style={{ translate: "-50% -50%", ...style }}
       {...props}
     >
       {children}
