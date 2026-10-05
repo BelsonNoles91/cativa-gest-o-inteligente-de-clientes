@@ -53,6 +53,11 @@ const cleanEnv = { ...process.env };
 for (const key of Object.keys(cleanEnv)) {
   if (key.startsWith("VITE_SUPABASE_")) cleanEnv[key] = "";
 }
+// Simulate GitHub Actions, where configured secrets may exist as env vars but
+// intentionally contain empty strings when they are not configured.
+cleanEnv.VITE_SUPABASE_URL = "";
+cleanEnv.VITE_SUPABASE_PUBLISHABLE_KEY = "";
+cleanEnv.VITE_SUPABASE_ANON_KEY = "";
 
 console.log("→ Verificando bloqueio de produção sem VITE_SUPABASE_URL / _PUBLISHABLE_KEY…");
 

@@ -4142,3 +4142,12 @@ commits da PR (`GET /pulls/1/commits`, `Resource not accessible by integration`)
 sem apontar segredos encontrados. O job agora tem somente `pull-requests: read`
 além de `contents: read`; comentários automáticos continuam desativados. O
 scanner será reexecutado na próxima atualização da branch.
+
+No primeiro run completo do CI, **952/952 Vitest passaram**, assim como lint,
+typecheck, Deno, actionlint e Gitleaks. O gate de build sem env falhou porque o
+Actions representa secrets ausentes como variáveis vazias; a configuração
+tratava `""` como URL/chave definidos e deixava de aplicar o fallback local.
+Agora valores vazios ou só com espaços são normalizados como ausentes, e o
+próprio gate sempre simula essa condição. A reprodução, os três builds isolados,
+typecheck e lint focado passaram sob Node 22.22.3; o CI no novo SHA ainda precisa
+confirmar. Os jobs dependentes foram corretamente pulados após a falha anterior.

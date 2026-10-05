@@ -15,9 +15,11 @@ export default defineConfig(({ mode, command }) => {
   // Valores fornecidos pelo ambiente de execução/CI devem prevalecer sobre
   // arquivos .env, como no comportamento padrão do Vite.
   const env = { ...loadEnv(mode, process.cwd(), ""), ...process.env };
-  const configuredSupabaseUrl = env.VITE_SUPABASE_URL;
+  const configuredSupabaseUrl = env.VITE_SUPABASE_URL?.trim() || undefined;
   const configuredSupabaseKey =
-    env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY;
+    env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim() ||
+    env.VITE_SUPABASE_ANON_KEY?.trim() ||
+    undefined;
 
   const missing: string[] = [];
   if (!configuredSupabaseUrl) missing.push("VITE_SUPABASE_URL");
