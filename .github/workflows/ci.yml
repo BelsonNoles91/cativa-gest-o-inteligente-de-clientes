@@ -87,7 +87,7 @@ jobs:
 
       - name: Publica evidências dos testes unitários
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: unit-test-results-${{ github.run_id }}
           path: |
@@ -117,7 +117,7 @@ jobs:
           node-version: "22"
           cache: npm
 
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         with:
           version: "2.119.0"
 
@@ -244,7 +244,7 @@ jobs:
 
       - name: Publica manifesto e evidências das jornadas
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: local-role-journeys-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -329,7 +329,7 @@ jobs:
 
       - name: Publish security test evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: public-content-security-${{ github.run_id }}
           path: |
@@ -369,7 +369,7 @@ jobs:
 
       - name: Publica relatório e artefatos de performance
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: core-web-vitals-${{ github.run_id }}
           path: |
@@ -432,7 +432,7 @@ jobs:
 
       - name: Publica evidências de layout
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: layout-quality-${{ github.run_id }}
           path: |
@@ -468,7 +468,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         with:
           version: "2.119.0"
 
@@ -510,7 +510,7 @@ jobs:
 
       - name: Preserva evidências da falha visual antes do diagnóstico
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: visual-auth-failure-${{ github.run_id }}
           path: |
@@ -537,7 +537,7 @@ jobs:
 
       - name: Publica evidências da regressão visual
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: visual-auth-regression-${{ github.run_id }}
           path: |
@@ -619,7 +619,7 @@ jobs:
 
       - name: Publica evidências E2E autenticadas
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: qa-authenticated-${{ github.run_id }}
           path: |
@@ -673,7 +673,7 @@ jobs:
 
       - name: Publica evidências de concorrência
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: backend-integrity-${{ github.run_id }}
           path: |

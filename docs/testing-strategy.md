@@ -15,16 +15,16 @@ dispositivo físico permanecem parciais até a execução real.
 | Frente                                          | Progresso | Evidência / pendência principal                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ----------------------------------------------- | --------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Ambiente limpo, dependências, typecheck e build |      100% | `npm ci` passou no runtime empacotado; typecheck e build de produção foram verificados também em Node 22.23.2 (mesma major do CI), além de Node 24. O build isolado transformou 3.264 módulos e gerou 138 entradas de precache.                                                                                                                                                                                                                                            |
-| Isolamento do alvo QA e provisionamento         |       90% | Guard e fixtures sintéticas A/B foram exercitados no Supabase descartável local. Nesta execução foi provisionada uma instância temporária nova, com projeto/portas próprios, sete perfis e dois tenants; o retry idempotente segue validado em 7/7 testes. No run `37305874062`, o job `qa-authenticated` terminou verde, mas registrou `E2E_QA_PROJECT_REF`, allowlist e contas QA vazios e pulou as mutações remotas. Falta aceite no QA remoto configurado. |
-| Jornadas E2E por papel e funcionalidade         |       99% | Smoke/RBAC/portal/CRM/offline e Go-Live passaram com perfis sintéticos no QA descartável e no CI do SHA candidato. As jornadas locais incluem 17/17 fluxos de papéis/assinatura/UX, onboarding em 5 viewports, limites 3/3, portal/confirmação 8/8 e, no último CI, os dois testes da Central de Confirmação (2/2). O QA autenticado remoto segue sem configuração/secrets. |
-| Métricas, retenção e Jev                        |       99% | Regras da fila de confirmação aplicam as opções configuradas; `queueRules.ts` está em 100% statements/branches/funções/linhas. Agenda, recursos por plano, domínio puro do portal, adaptador cliente de retenção/Jev e serviço de agendamento também estão em 100%. O catálogo CRUD segue em 92,60% statements, 90,35% branches, 100% funções e linhas em 21 testes focados. O CI publicado no SHA `279eaee` passou 954/954 testes em 73 arquivos; com o harness Jev local ainda não publicado, a suíte foi repetida em Node 24 e passou 967/967 em 74 arquivos. Typecheck e `deno check` passaram; lint teve 0 erros e 17 avisos Fast Refresh existentes. O benchmark possui corpus sintético e métricas de qualidade/estabilidade, mas a medição live de drift e calibração no domínio seguem pendentes. |
-| RLS, IDOR, storage e auditoria                  |       99% | As 18 regressões SQL, Storage, quota e isolamento cross-tenant passaram no Supabase descartável e no job de integridade do CI atual. Carga multi-tenant repetida registrou zero vazamentos. O aceite autenticado no QA remoto continua pendente porque as credenciais/alvos QA não estão configurados no GitHub. |
-| Infraestrutura de layout/responsividade         |       99% | A matriz pública passou 300/300 casos em 15 projetos Chromium, Firefox e WebKit. A matriz autenticada passou 180/180 em 15 projetos; a regressão de redimensionamento de modal passou 15/15. No CI atual, confirmação e geometria do dialog também passaram; o erro reportado em `8b930ec` foi corrigido no branch atual. Ainda faltam aparelhos físicos/device farm. |
-| Execução visual e acessibilidade                |       99% | Passaram 66/66 verificações de segurança/acessibilidade pública, 21/21 contrastes públicos, 48/48 casos Axe de contraste (68 análises de rota/tema) e 67/67 checks visuais autenticados; zero violações sérias/críticas WCAG AA nos gates executados. Reflow/layout público passou 300/300. A baseline Agenda → Confirmações foi revisada; permanecem leitor de tela/dispositivos físicos e revisão humana integral das baselines. |
-| Resiliência, concorrência e performance         |       89% | O soak manual de 10 min em Supabase descartável recém-criado passou: 12.521 lotes, 100.168 tentativas (8 concorrentes), exatamente 12.521 reservas vencedoras, 87.647 conflitos esperados, p95 máximo 57 ms, mediana 10 ms e zero resíduos. Rajadas de 25/50/100, tráfego misto e matriz multi-tenant também passaram anteriormente. Ainda faltam execução noturna registrada no Actions/QA remoto e dispositivos reais. |
-| CI, gates e artefatos                           |       99% | O run candidato `37305874062`, no SHA `279eaee`, passou nos 10 jobs, incluindo 954 Vitest em 73 arquivos, typecheck, build, lint, Deno, actionlint, secret scan, Playwright/layout, Core Web Vitals e Supabase local. O job QA remoto concluiu sem erro, mas pulou as jornadas autenticadas por falta de configuração. O workflow de soak existe apenas no branch da PR e não está disponível para dispatch enquanto não estiver na branch padrão; o soak foi executado localmente em instância isolada. Evidência do soak tem JUnit 1/1 e manifesto SHA-256 verificado. As adições do harness Jev ainda aguardam execução no CI. |
+| Isolamento do alvo QA e provisionamento         |       90% | Guard e fixtures sintéticas A/B foram exercitados no Supabase descartável local. No run atual `37312213780` foi provisionado e destruído um Supabase efêmero, com sete perfis e dois tenants; o retry idempotente segue validado em 7/7 testes. O job `qa-authenticated` terminou verde, mas `E2E_QA_PROJECT_REF` e allowlist estavam vazios e as mutações remotas não foram executadas. Falta aceite no QA remoto configurado. |
+| Jornadas E2E por papel e funcionalidade         |       99% | O job completo de jornadas do run `37312213780` passou no Supabase descartável; inclui auth, RBAC, isolamento tenant A/B, portal, CRM/mídia, convites, limites, import/export e checklist Go-Live. Nele passaram confirmação 2/2, geometria/foco de dialog 10/10 e as 18 regressões SQL. O QA autenticado remoto segue sem configuração/secrets e não foi exercitado. |
+| Métricas, retenção e Jev                        |       99% | `queueRules.ts` está em 100% statements/branches/funções/linhas; agenda, recursos por plano, domínio puro do portal, adaptador cliente de retenção/Jev e serviço de agendamento também estão em 100%. O catálogo CRUD segue em 92,60% statements e 90,35% branches. O CI atual passou 967/967 testes em 74 arquivos; cobertura agregada: 25,99% statements, 25,73% branches, 19,56% funções e 26,11% linhas. O harness Jev está incluído no SHA `41ebac9`, mas drift/calibração live no domínio permanecem pendentes; seus limiares estão explicitamente não calibrados. |
+| RLS, IDOR, storage e auditoria                  |       99% | As 18/18 regressões SQL, Storage, quota e isolamento cross-tenant passaram no Supabase descartável e no job de integridade. As jornadas autenticadas por tenant também passaram sem vazamentos. O aceite no QA remoto continua pendente porque as credenciais/alvos QA não estão configurados no GitHub. |
+| Infraestrutura de layout/responsividade         |       99% | No run atual, a matriz pública passou 300/300 casos em viewports e motores configurados; os fluxos autenticados críticos passaram no job Playwright mobile, e a geometria/foco de dialogs passou 10/10. A regressão original de centralização do modal foi corrigida e passou no mesmo SHA. Ainda faltam aparelhos físicos/device farm e aceite QA remoto para a matriz geométrica autenticada completa. |
+| Execução visual e acessibilidade                |       99% | No SHA `41ebac9`, passaram layout público 300/300 e contraste público WCAG AA 21/21; também passaram os fluxos visuais autenticados executáveis com fixtures locais. Histórico complementar: 48/48 casos Axe de contraste em 68 análises de rota/tema e 67/67 checks visuais autenticados. Permanecem leitor de tela/dispositivos físicos e revisão humana integral das baselines. |
+| Resiliência, concorrência e performance         |       89% | O soak isolado de 10 min passou com 12.521 lotes/100.168 tentativas, uma reserva vencedora por lote, 87.647 conflitos esperados, p95 máximo 57 ms e zero resíduos. No run `37312213780` também passaram as regressões SQL e de integridade, rajadas concorrentes, tráfego misto e PWA/offline no Supabase efêmero. Ainda faltam execução noturna no Actions/QA remoto e dispositivos reais. |
+| CI, gates e artefatos                           |       99% | O run candidato [`37312213780`](https://github.com/BelsonNoles91/cativa-gest-o-inteligente-de-clientes/actions/runs/37312213780), no SHA `41ebac9`, passou nos 10 jobs: 967 testes/74 arquivos, typecheck, build, lint, Deno, workflow/secret scans, Playwright/layout, Core Web Vitals, integridade e Supabase efêmero. O job QA remoto terminou verde, mas pulou as jornadas autenticadas por falta de configuração. O workflow de soak segue indisponível para dispatch enquanto não estiver na branch padrão; o soak foi executado em instância isolada. |
 | Integrações reais e dispositivos físicos        |       55% | OAuth Google/Apple iniciou no broker simulado e o callback sintético Supabase percorreu tokens em fragmento, validação da sessão, remoção do token da URL e retorno local: 9/9 em Chromium, Firefox e WebKit. Login válido na aplicação contra Auth local QA passou pela interface nos três motores. Ainda pendentes callback/provider sandbox real e aparelhos físicos/device farm. |
-| **Total (média das dez frentes)**               | **92,8%** | **CI GitHub no SHA `279eaee` (run `37305874062`) verde nos 10 jobs, com 954/954 testes em 73 arquivos. Após adições locais ainda não publicadas, `npm test` no Node 24 passou 967/967 em 74 arquivos; typecheck e Deno check passaram; lint: 0 erros, 17 avisos conhecidos. `npm audit --omit=dev` reportou 0 vulnerabilidades na última auditoria registrada. Também passaram 18/18 gates SQL, 300/300 casos públicos de layout e o soak local independente de 10 minutos: 12.521/12.521 reservas, 100.168 tentativas, zero double-booking e zero resíduo. A última cobertura instrumentada permanece em 25,98% statements, 25,67% branches, 19,57% funções e 26,11% linhas. Faltam QA remoto configurado, execução live/calibração do benchmark Jev, revisão humana integral dos snapshots, aceite OAuth/provedores reais, aparelhos/device farm e workflow noturno disponível na branch padrão.** |
+| **Total (média das dez frentes)**               | **92,8%** | **CI GitHub no SHA `41ebac9` (run `37312213780`) verde nos 10 jobs: 967/967 testes em 74 arquivos, layout público 300/300, contraste público 21/21, 18/18 regressões SQL e jornadas sintéticas completas. Cobertura instrumentada: 25,99% statements, 25,73% branches, 19,56% funções e 26,11% linhas; lint: 0 erros e 17 avisos Fast Refresh conhecidos. QA remoto não foi testado: credenciais/alvo ausentes fizeram os jobs remotos pular as etapas autenticadas. O soak isolado de 10 minutos registrou 12.521 lotes/100.168 tentativas, zero double-booking e zero resíduo. Ainda faltam QA remoto configurado, benchmark live/calibração Jev, revisão humana integral das baselines, aceite real de provedores, aparelhos/device farm e workflow noturno disponível na branch padrão.** |
 
 ## Índice extra para a meta de 110% — 2026-10-03
 
@@ -4263,12 +4263,48 @@ rede mesmo com chave placeholder, e `--confirm-live` sem credencial também
 encerrou antes da rede. A avaliação live não foi executada e não houve consumo
 de chamadas.
 
-Esses arquivos e testes ainda são alterações locais, ausentes do CI verde
-`37305874062` (SHA `279eaee`, 954/954 em 73 arquivos); portanto o resultado
-967/967 não é apresentado como CI remoto. A execução live permanece dependente
-de credencial TypeSafe válida não exposta e autorização explícita para consumir
-chamadas. O índice-base continua **92,8%** e o combinado **102,8/110 (93,5%)**;
-nenhum ponto foi acrescentado por apenas criar o harness. Próximo passo seguro:
-publicar essas mudanças na branch candidata após revisão/diff final e deixar o
-CI validá-las; depois, executar o benchmark live somente com credencial
-rotacionada e confirmação do usuário.
+Esses arquivos e testes foram publicados na branch candidata no commit
+`41ebac9` e agora foram validados pelo CI `37312213780`: 967/967 em 74 arquivos,
+typecheck, build, lint e Deno check passaram. A execução live permanece
+dependente de credencial TypeSafe válida não exposta e autorização explícita
+para consumir chamadas. Não houve chamada ao provedor. O índice-base continua
+**92,8%** e o combinado **102,8/110 (93,5%)**; nenhum ponto foi acrescentado
+por apenas criar o harness nem por reexecutar gates já cobertos.
+
+## CI integral candidato e jornadas locais por perfil — 2026-10-05
+
+A execução [37312213780](https://github.com/BelsonNoles91/cativa-gest-o-inteligente-de-clientes/actions/runs/37312213780),
+no SHA `41ebac9`, terminou verde nos **10/10 jobs**. Além da suíte de unidade
+967/967 em 74 arquivos, a matriz pública de layout passou **300/300** e o
+contraste público WCAG AA passou **21/21**. O Playwright mobile autenticado
+passou seus fluxos críticos; a jornada local de confirmações passou **2/2** e
+o gate de geometria/retorno de foco dos dialogs passou **10/10**. No Supabase
+efêmero descartável passaram também **18/18 regressões SQL**, jornadas de
+logout, concorrência, perfis, isolamento cross-tenant, portal, CRM/mídia,
+convites, limites, import/export e checklist Go-Live. O job de integridade do
+backend e o job Core Web Vitals também terminaram com sucesso.
+
+O verde não deve ser confundido com QA remoto: `qa-authenticated` e as etapas
+autenticadas do job de layout concluíram sem erro porque o gate seguro pulou as
+execuções externas, já que `E2E_QA_PROJECT_REF` e `E2E_TARGET_ALLOWLIST` estão
+vazios. As evidências deste run são sintéticas e descartáveis. A PR segue
+aberta e não mesclada; não houve publicação no Lovable nem escrita em produção.
+O índice permanece **92,8% base + 10/10 extraordinários = 102,8/110 (93,5%)**.
+
+## Remoção de avisos de runtime das Actions — 2026-10-05
+
+O run `37312213780` ficou verde, mas ainda reportou que `actions/upload-artifact@v4`
+e `supabase/setup-cli@v1` usavam Node 20 e seriam forçados a Node 24. A versão
+oficial `actions/upload-artifact@v7` declara runtime Node 24 e preserva os inputs
+usados pelos workflows ([release](https://github.com/actions/upload-artifact/releases/tag/v7.0.1),
+[manifesto da action](https://raw.githubusercontent.com/actions/upload-artifact/v7.0.1/action.yml)).
+O `supabase/setup-cli@v3` é composite, suporta versão CLI fixa publicada no npm
+e utiliza runtime Node 20+ ([release](https://github.com/supabase/setup-cli/releases/tag/v3.0.0),
+[README](https://github.com/supabase/setup-cli#usage)); confirmei que `supabase@2.119.0`
+continua publicado.
+
+Atualizei localmente os workflows `ci.yml`, `security-rescan.yml` e
+`nightly-soak.yml`: upload de artefatos v4→v7 e setup-cli v1→v3, mantendo o CLI
+fixo em `2.119.0`. O lint estático local dos workflows passou. Esta revisão ainda
+aguarda um novo run do GitHub Actions antes de ser considerada validada; a nota
+do plano permanece **92,8% base + 10/10 extras = 102,8/110 (93,5%)**.
