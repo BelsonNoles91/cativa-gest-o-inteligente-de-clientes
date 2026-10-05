@@ -49,11 +49,57 @@ test("Logout encerra sessão e impede acesso posterior à área autenticada", as
     session: { ...data.session, user: data.user ?? data.session.user, weak_password: null },
     marker: bootstrapMarker,
   });
-  await page.goto("/app", { waitUntil: "domcontentloaded" });
-  await expect(page).toHaveURL(/\/app(?:\/|$)/, { timeout: 20_000 });
-
   const visibleUserMenuTrigger = page.locator('[data-testid="user-menu-trigger"]:visible');
-  await expect(visibleUserMenuTrigger).toHaveCount(1);
+  const tenantLoadError = page.getByText("Não foi possível carregar seus dados", { exact: true });
+  const supabaseOrigin = new URL(supabaseUrl).origin;
+  const failedBackendRequests: string[] = [];
+  const captureFailedResponse = (response: import("@playwright/test").Response) => {
+    const url = new URL(response.url());
+    if (url.origin === supabaseOrigin && response.status() >= 400) {
+      failedBackendRequests.push(
+        `${response.request().method()} ${url.pathname} HTTP ${response.status()}`,
+      );
+    }
+  };
+  const captureFailedRequest = (request: import("@playwright/test").Request) => {
+    const url = new URL(request.url());
+    if (url.origin === supabaseOrigin) {
+      failedBackendRequests.push(
+        `${request.method()} ${url.pathname} ${request.failure()?.errorText ?? "falha de transporte"}`,
+      );
+    }
+  };
+  page.on("response", captureFailedResponse);
+  page.on("requestfailed", captureFailedRequest);
+  try {
+    await page.goto("/app", { waitUntil: "domcontentloaded" });
+    await expect(page).toHaveURL(/\/app(?:\/|$)/, { timeout: 20_000 });
+
+    // O app oferece recuperação explícita para falha transitória ao resolver
+    // tenant/membership. Exercitamos esse retry, sem considerar a tela de erro
+    // equivalente a uma sessão autenticada pronta para executar logout.
+    await expect
+      .poll(
+        async () => (await visibleUserMenuTrigger.isVisible()) || (await tenantLoadError.isVisible()),
+        { timeout: 20_000, message: "app autenticado pronto ou erro de dados recuperável" },
+      )
+      .toBe(true);
+
+    if (await tenantLoadError.isVisible()) {
+      await page.getByRole("button", { name: "Tentar novamente" }).click();
+    }
+    await expect(visibleUserMenuTrigger).toBeVisible({ timeout: 20_000 });
+  } catch (error) {
+    await test.info().attach("diagnostico-inicializacao-logout.json", {
+      body: JSON.stringify({ failedBackendRequests }, null, 2),
+      contentType: "application/json",
+    });
+    throw error;
+  } finally {
+    page.off("response", captureFailedResponse);
+    page.off("requestfailed", captureFailedRequest);
+  }
+
   await visibleUserMenuTrigger.click();
   await page.getByRole("menuitem", { name: "Sair" }).click();
   await expect(page).toHaveURL(/\/auth\/login/);
