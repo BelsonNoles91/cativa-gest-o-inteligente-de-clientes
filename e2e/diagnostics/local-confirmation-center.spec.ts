@@ -438,9 +438,18 @@ test.describe("Central de Confirmação com tenant local descartável", () => {
     const fixedChrome = await page.evaluate(() => {
       const header = document.querySelector('[data-testid="tenant-badge-trigger"]')?.closest("header");
       const bottomNav = document.querySelector('nav[aria-label="Navegação principal"]');
+      const bottomNavRect = bottomNav?.getBoundingClientRect();
+      const bottomNavStyle = bottomNav ? window.getComputedStyle(bottomNav) : null;
+      const bottomNavVisible = Boolean(
+        bottomNavRect &&
+          bottomNavRect.width > 0 &&
+          bottomNavRect.height > 0 &&
+          bottomNavStyle?.display !== "none" &&
+          bottomNavStyle?.visibility !== "hidden",
+      );
       return {
         headerBottom: header?.getBoundingClientRect().bottom ?? 0,
-        bottomNavTop: bottomNav?.getBoundingClientRect().top ?? window.innerHeight,
+        bottomNavTop: bottomNavVisible ? bottomNavRect!.top : window.innerHeight,
       };
     });
     expect(buttonBox, "Botão de confirmação precisa ter posição mensurável").not.toBeNull();
