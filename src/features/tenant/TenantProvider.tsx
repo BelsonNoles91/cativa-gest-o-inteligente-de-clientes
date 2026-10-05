@@ -96,6 +96,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const userId = user?.id ?? null;
   const location = useLocation();
+  const isPortalRoute = location.pathname.startsWith("/portal");
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [verified, setVerified] = useState(false);
@@ -129,7 +130,6 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 
   const loadBaseData = useCallback(async (force = false) => {
     if (authLoading) return;
-    const isPortalRoute = window.location.pathname.startsWith("/portal");
     if (isPortalRoute) {
       setLoading(false);
       setVerified(true);
@@ -235,7 +235,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [userId, authLoading, verified]);
+  }, [userId, authLoading, verified, isPortalRoute]);
 
   useEffect(() => {
     let ignore = false;
