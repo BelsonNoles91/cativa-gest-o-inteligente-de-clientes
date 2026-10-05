@@ -4190,13 +4190,43 @@ outros falharam em cascata. O job não preservava o log do processo Postgres.
 
 Acrescentei checkpoints em cada verificação de permissão do teste de Storage e
 um passo condicional que coleta estado/possível OOM e os últimos 300 logs do
-Postgres antes da limpeza, com URLs, JWTs e API keys redigidos. `actionlint` e a
-regressão de Storage local passaram com esses checkpoints. O novo diagnóstico
-precisa ser enviado e executado no Actions antes de atribuir uma causa ou
-considerar o gate remoto aprovado.
+Postgres antes da limpeza, com URLs, JWTs e API keys redigidos.
+
+### Diagnóstico do SIGSEGV do Postgres no GitHub Actions — 2026-10-05
+
+O log preservado do run `37259942011` confirmou `signal 11: Segmentation fault`
+(sem OOM) durante tentativas de executar RPCs com `EXECUTE` revogado sob os
+papéis reservados `anon` e `authenticated`. Esse comportamento corresponde ao
+defeito documentado em [`supabase/postgres#2112`](https://github.com/supabase/postgres/issues/2112): algumas builds locais do Supabase Postgres/supautils encerram o backend no caminho de negação de privilégio, em vez de retornar `42501`.
+
+Para evitar que a própria infraestrutura derrube o banco e produza falhas em
+cascata, as regressões locais de Storage, quota Jev e onboarding passam a
+verificar diretamente `has_function_privilege` para esses limites de execução,
+sem disparar a chamada negada. Os fluxos autorizados e a proteção RLS entre
+tenants continuam testados em SQL; a resposta HTTP real de negação fica
+explicitamente reservada ao projeto QA remoto isolado, quando suas credenciais
+estiverem configuradas. O run seguinte precisa confirmar essa correção.
+
+A regressão visual pública identificou divergência na tela de login. A inspeção
+dos screenshots do CI confirmou o mesmo conteúdo, hierarquia e fluxo, sem
+clipping ou overflow; a diferença era a resolução de Arial/Georgia para fontes
+locais distintas entre a máquina que gerou a baseline e o runner Linux. O helper
+agora usa explicitamente Liberation Sans/Serif, disponíveis no runner Playwright
+e no QA local. Atualizei e revisei somente os cinco baselines de login, rodei
+os cinco projetos localmente, e comparei cada baseline com o screenshot `actual`
+do CI: **zero pixels acima do threshold em todos os viewports**. A tolerância
+global permanece em 0,2%.
 
 A pontuação permanece **92,7% base + 10/10 extraordinários = 102,7/110
 (93,4%)**: a reexecução fecha uma falha de compatibilidade dentro de uma frente
 já pontuada, mas ainda falta confirmar o novo SHA no Actions. Também seguem
 pendentes os secrets do QA remoto, aceite de provedores reais e revisão humana
 do preview visual. Por isso, ainda não recomendo publicar a versão no Lovable.
+
+Validação local desta correção, em ambiente QA descartável e com dados
+sintéticos: matriz de layout/reflow pública **300/300**; rotas autenticadas
+**36/36**; navegação offline **4/4**; confirmação/agendamento **4/4**; dialogs
+**9/9**; sobreposição da BottomNav **14/14**; regressões SQL **18/18**. Os
+screenshots alterados foram revisados e os casos foram repetidos após a
+atualização das baselines. O CI remoto ainda deve executar o novo SHA antes de
+esses resultados serem considerados aprovados pelo GitHub.

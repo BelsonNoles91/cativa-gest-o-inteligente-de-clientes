@@ -41,14 +41,9 @@ BEGIN
     (tenant_a, 'Retention Quota A', 'retention-quota-a-' || substring(run_suffix, 1, 12), 'salao', owner_a),
     (tenant_b, 'Retention Quota B', 'retention-quota-b-' || substring(run_suffix, 1, 12), 'salao', owner_b);
 
-  EXECUTE 'SET LOCAL ROLE authenticated';
-  BEGIN
-    PERFORM public.reserve_retention_advisor_evaluation(tenant_a, 2);
-  EXCEPTION WHEN insufficient_privilege THEN
-    denied := true;
-  END;
-  IF NOT denied THEN RAISE EXCEPTION 'authenticated executou a reserva de quota.'; END IF;
-  EXECUTE 'RESET ROLE';
+  -- The ACL check above is the local authorization assertion. Avoid calling
+  -- this EXECUTE-revoked RPC as a reserved role: affected Supabase Postgres
+  -- images can SIGSEGV on the expected permission-denied path (supabase/postgres#2112).
 
   EXECUTE 'SET LOCAL ROLE service_role';
   first_reserved := public.reserve_retention_advisor_evaluation(tenant_a, 2);

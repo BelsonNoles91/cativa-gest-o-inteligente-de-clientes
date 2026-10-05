@@ -316,7 +316,9 @@ try {
     stage: "today",
     status: "pending",
     priority: 80,
-    scheduled_for: new Date().toISOString(),
+    // Match prepareAuthenticatedVisualState's frozen browser clock
+    // (2026-09-22T12:00:00-03:00) so the deterministic visual queue is due.
+    scheduled_for: "2026-09-22T15:00:00.000Z",
     appointment_starts_at: startsAt.toISOString(),
     attempts_count: 0,
     closed_at: null,

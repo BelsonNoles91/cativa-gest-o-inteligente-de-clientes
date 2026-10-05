@@ -37,7 +37,6 @@ DECLARE
   v_invalid_payload_rejected boolean := false;
   v_error text;
   v_count integer;
-  v_anon_denied boolean := false;
 BEGIN
   IF NOT has_function_privilege(
        'authenticated',
@@ -68,18 +67,9 @@ BEGIN
     true
   );
 
-  EXECUTE 'SET LOCAL ROLE anon';
-  BEGIN
-    PERFORM public.create_tenant_with_owner(
-      'Unauthorized QA', v_slug, 'salao', 'Matriz QA'
-    );
-  EXCEPTION WHEN insufficient_privilege THEN
-    v_anon_denied := true;
-  END;
-  RESET ROLE;
-  IF NOT v_anon_denied THEN
-    RAISE EXCEPTION 'anon conseguiu executar a RPC de onboarding.';
-  END IF;
+  -- has_function_privilege above verifies anon cannot execute the RPC. Do not
+  -- make that denied call under the local reserved role: some Supabase Postgres
+  -- images crash in supautils instead of returning SQLSTATE 42501.
 
   EXECUTE 'SET LOCAL ROLE authenticated';
   SELECT tenant_id, unit_id, slug

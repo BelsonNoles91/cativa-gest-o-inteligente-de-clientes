@@ -522,8 +522,12 @@ jobs:
 
       - name: Gera snapshots autenticados atuais para diagnóstico
         if: failure()
+        # Este passo apenas coleta diagnóstico: não deve adicionar uma segunda
+        # falha ao job que já falhou no gate visual anterior.
+        continue-on-error: true
         run: >-
           npm run test:auth:bootstrap &&
+          node scripts/e2e-prepare-visual-fixtures.mjs &&
           npx playwright test e2e/visual/public-routes.spec.ts
           -g "rotas autenticadas"
           --project=iphone-14-portrait

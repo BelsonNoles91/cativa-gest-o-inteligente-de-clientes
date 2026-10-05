@@ -28,12 +28,13 @@ const SNAPSHOT_CSS = `
   /* Mascara o cursor de input piscando (caret) que diferencia builds */
   input, textarea { caret-color: transparent !important; }
   /* Evita troca entre Google Fonts e fallback entre capturas; os snapshots
-     verificam geometria e hierarquia com famílias locais estáveis. */
+     verificam geometria e hierarquia com as fontes Liberation, instaladas de
+     forma idêntica no runner Linux do Playwright e no ambiente QA local. */
   *, *::before, *::after {
-    font-family: Arial, Helvetica, sans-serif !important;
+    font-family: "Liberation Sans", Arial, Helvetica, sans-serif !important;
   }
   h1, h2, h3, h4, h5, h6, .font-display {
-    font-family: Georgia, "Times New Roman", serif !important;
+    font-family: "Liberation Serif", Georgia, "Times New Roman", serif !important;
   }
   /* Texto marcado é temporal/volátil; sua caixa e geometria permanecem. */
   [data-volatile], time {
@@ -62,8 +63,9 @@ const INSTALL_APP_DISMISS_KEY = "cativa:install-dismissed";
  * que esse banner desloque todo o layout usado nos snapshots.
  */
 export async function prepareAuthenticatedVisualState(page: Page): Promise<void> {
-  // A data é mantida igual à dos baselines; dados vindos do banco que variam
-  // por execução são ocultados sem remover suas caixas nem alterar a geometria.
+  // A data é mantida igual à fixture visual da fila (scripts/e2e-seed-fixtures.mjs)
+  // para que o contato apareça como devido, não como futuro, em cada execução.
+  // Dados variáveis são ocultados sem remover suas caixas nem alterar a geometria.
   await page.clock.install({ time: new Date("2026-09-22T12:00:00-03:00") });
   await page.addInitScript((dismissKey) => {
     window.localStorage.setItem(dismissKey, "1");

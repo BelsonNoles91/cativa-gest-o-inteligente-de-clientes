@@ -28,8 +28,13 @@ async function applyTextSpacingOverride(page: Page) {
   });
   await page.evaluate(() => document.fonts.ready);
 
-  const textTarget = page.locator("h1:visible, h2:visible, h3:visible, p:visible, label:visible, button:visible, a[href]:visible").first();
-  await expect(textTarget, "a página precisa apresentar texto visível sob o override").toBeVisible();
+  // A role locator avoids depending on Playwright's CSS `:visible` selector
+  // across Chromium, Firefox and WebKit. On slower CI workers the app may also
+  // finish hydrating after DOMContentLoaded, so wait for a real visible H1.
+  const textTarget = page.getByRole("heading", { level: 1 }).first();
+  await expect(textTarget, "a página precisa apresentar texto visível sob o override").toBeVisible({
+    timeout: 15_000,
+  });
   const spacing = await textTarget.evaluate((element) => {
     const style = getComputedStyle(element);
     const fontSize = Number.parseFloat(style.fontSize);
