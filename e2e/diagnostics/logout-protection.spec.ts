@@ -80,7 +80,7 @@ test("Logout encerra sessão e impede acesso posterior à área autenticada", as
     // equivalente a uma sessão autenticada pronta para executar logout.
     await expect
       .poll(
-        async () => (await visibleUserMenuTrigger.isVisible()) || (await tenantLoadError.isVisible()),
+        async () => (await visibleUserMenuTrigger.count()) === 1 || (await tenantLoadError.isVisible()),
         { timeout: 20_000, message: "app autenticado pronto ou erro de dados recuperável" },
       )
       .toBe(true);
@@ -88,7 +88,7 @@ test("Logout encerra sessão e impede acesso posterior à área autenticada", as
     if (await tenantLoadError.isVisible()) {
       await page.getByRole("button", { name: "Tentar novamente" }).click();
     }
-    await expect(visibleUserMenuTrigger).toBeVisible({ timeout: 20_000 });
+    await expect(visibleUserMenuTrigger).toHaveCount(1, { timeout: 20_000 });
   } catch (error) {
     await test.info().attach("diagnostico-inicializacao-logout.json", {
       body: JSON.stringify({ failedBackendRequests }, null, 2),
