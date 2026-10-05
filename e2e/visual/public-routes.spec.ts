@@ -7,7 +7,7 @@
  * As asserções de overflow horizontal e BottomNav rodam em todos os perfis
  * de dispositivo; o screenshot é o "selo" final.
  */
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { AUTH_SKIP_REASON, HAS_E2E_AUTH } from "../_helpers/auth";
 import {
   prepareAuthenticatedVisualState,
@@ -24,7 +24,42 @@ import { installAnalyticsVisualFixture } from "../_helpers/analyticsVisualFixtur
 
 const AUTH_VISUAL_TIMEOUT = 60_000;
 
-async function waitForAuthenticatedShell(page: import("@playwright/test").Page) {
+async function isolateRemoteFonts(page: Page) {
+  // These snapshots force local Liberation fonts, so fetching Google Fonts is
+  // unnecessary. In particular, the @import at the top of index.css can delay
+  // the rest of the stylesheet and make layout assertions observe unstyled DOM.
+  await page.route("https://fonts.googleapis.com/**", (route) =>
+    route.fulfill({ status: 200, contentType: "text/css", body: "" }),
+  );
+}
+
+async function waitForAppStyles(page: Page) {
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const hasDesignTokens = Boolean(
+            getComputedStyle(document.documentElement)
+              .getPropertyValue("--background")
+              .trim(),
+          );
+          const bottomNav =
+            document.querySelector<HTMLElement>("[data-bottom-nav]");
+          const bottomNavIsStyled =
+            !bottomNav || getComputedStyle(bottomNav).position === "fixed";
+
+          return hasDesignTokens && bottomNavIsStyled;
+        }),
+      {
+        message:
+          "O CSS principal do app deve estar aplicado antes das medições visuais.",
+        timeout: 15_000,
+      },
+    )
+    .toBe(true);
+}
+
+async function waitForAuthenticatedShell(page: Page) {
   await page
     .locator('main[data-app-main], [data-app-main]')
     .first()
@@ -32,7 +67,7 @@ async function waitForAuthenticatedShell(page: import("@playwright/test").Page) 
 }
 
 async function openAuthenticatedVisualRoute(
-  page: import("@playwright/test").Page,
+  page: Page,
   path: string,
 ) {
   await page.goto(path, { waitUntil: "commit", timeout: 15_000 });
@@ -90,7 +125,9 @@ test.describe("rotas públicas", () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
   test("/auth/login — sem overflow e baseline visual", async ({ page }) => {
+    await isolateRemoteFonts(page);
     await page.goto("/auth/login");
+    await waitForAppStyles(page);
     await prepareForSnapshot(page);
     await expect(
       page.getByRole("heading", { name: "Bem-vindo de volta" }),
@@ -109,6 +146,7 @@ test.describe("rotas autenticadas", () => {
   test.describe.configure({ timeout: AUTH_VISUAL_TIMEOUT });
   test.skip(!HAS_E2E_AUTH, AUTH_SKIP_REASON);
   test.beforeEach(async ({ page }) => {
+    await isolateRemoteFonts(page);
     await prepareAuthenticatedVisualState(page);
   });
 
@@ -131,6 +169,7 @@ test.describe("rotas autenticadas", () => {
         await installAnalyticsVisualFixture(page);
       }
       await openAuthenticatedVisualRoute(page, path);
+      await waitForAppStyles(page);
       if (name === "assinatura") {
         await assertSubscriptionPeriodLoaded(page);
       }
