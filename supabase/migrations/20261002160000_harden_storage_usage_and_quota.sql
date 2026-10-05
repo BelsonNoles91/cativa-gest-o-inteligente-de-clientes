@@ -23,6 +23,10 @@ BEGIN
     FROM storage.objects AS objects
     WHERE objects.bucket_id IN ('tenant-logos', 'client-media')
       AND (storage.foldername(objects.name))[1] = _tenant_id::text
+      -- Storage schema versions differ: some expose archived_at while older
+      -- supported versions do not. JSON access keeps this query compatible;
+      -- a missing key means every stored object is active.
+      AND (to_jsonb(objects)->>'archived_at') IS NULL
   );
 END;
 $function$;
@@ -75,7 +79,8 @@ BEGIN
     INTO v_used_bytes
   FROM storage.objects AS objects
   WHERE objects.bucket_id IN ('tenant-logos', 'client-media')
-    AND (storage.foldername(objects.name))[1] = v_tenant_id::text;
+    AND (storage.foldername(objects.name))[1] = v_tenant_id::text
+    AND (to_jsonb(objects)->>'archived_at') IS NULL;
 
   IF TG_OP = 'UPDATE' THEN
     IF OLD.bucket_id IN ('tenant-logos', 'client-media') THEN
@@ -98,7 +103,7 @@ BEGIN
       FROM storage.objects AS objects
       WHERE objects.bucket_id = NEW.bucket_id
         AND objects.name = NEW.name
-        AND objects.archived_at IS NULL
+        AND (to_jsonb(objects)->>'archived_at') IS NULL
       LIMIT 1
     ), 0) INTO v_replaced_bytes;
   END IF;

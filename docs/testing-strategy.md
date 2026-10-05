@@ -6,7 +6,7 @@ para o Supabase local descartável explicitamente marcado e limitado a loopback.
 
 ## Acompanhamento da implementação
 
-Atualizado em 2026-10-04. O percentual geral é a média simples das dez frentes
+Atualizado em 2026-10-05. O percentual geral é a média simples das dez frentes
 abaixo; mede a implementação e validação comprovável do plano, não apenas a
 quantidade de código adicionada. Uma frente só chega a 100% quando seus gates
 relevantes foram executados com evidência. Itens dependentes de QA externo ou
@@ -4161,3 +4161,28 @@ instalar Chromium, Firefox e WebKit; essa correção local passou pelo actionlin
 mas ainda aguarda novo SHA no Actions. As matrizes de layout e jornadas locais
 continuam em execução. Os checks de QA remoto foram pulados por não haver
 secrets QA configurados; nenhum projeto protegido foi acessado.
+
+## Correção de compatibilidade do Storage e validação em banco recriado — 2026-10-05
+
+O primeiro run limpo da PR reproduziu uma falha no teste de Storage: o serviço
+Storage usado pelo CI não tem a coluna opcional `storage.objects.archived_at`,
+enquanto a instância descartável persistente local tinha. A migration passa a
+detectar objetos arquivados via `to_jsonb(objects)->>'archived_at'`: quando a
+coluna existe, objetos arquivados são ignorados no cálculo de uso e cota; quando
+não existe, todos os objetos armazenados são considerados ativos. Isso mantém
+compatibilidade entre as versões de schema sem alterar tabela gerenciada pelo
+serviço.
+
+Recriei o banco QA estritamente local, reapliquei toda a sequência de migrations
+e executei a matriz SQL agregada: **18/18 passaram**, incluindo Storage/cotas,
+RLS, IDOR, agenda, portal, referências entre tenants, quota Jev e auditoria. O
+teste de Storage confirmou limites, substituição no limite exato, bloqueio de
+excesso, privacidade da RPC e isolamento A/B com a migration atual. Nenhum
+ambiente remoto foi usado. A mudança está pronta para o próximo run da PR; o CI
+no SHA anterior ainda não deve ser considerado evidência dessa correção.
+
+A pontuação permanece **92,7% base + 10/10 extraordinários = 102,7/110
+(93,4%)**: a reexecução fecha uma falha de compatibilidade dentro de uma frente
+já pontuada, mas ainda falta confirmar o novo SHA no Actions. Também seguem
+pendentes os secrets do QA remoto, aceite de provedores reais e revisão humana
+do preview visual. Por isso, ainda não recomendo publicar a versão no Lovable.
