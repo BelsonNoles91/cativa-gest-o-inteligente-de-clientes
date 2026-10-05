@@ -180,6 +180,7 @@ BEGIN
   IF has_function_privilege('anon', 'public.tenant_storage_bytes_used(uuid)', 'EXECUTE') THEN
     RAISE EXCEPTION 'Falha de segurança: anon conserva EXECUTE na RPC de uso de Storage.';
   END IF;
+  RAISE NOTICE 'ok  Storage RPC ACL: anon sem EXECUTE';
 
   EXECUTE 'SET LOCAL ROLE anon';
   denied := false;
@@ -192,6 +193,7 @@ BEGIN
   IF NOT denied THEN
     RAISE EXCEPTION 'Falha de segurança: usuário anônimo acessou a RPC de uso de Storage.';
   END IF;
+  RAISE NOTICE 'ok  Storage RPC runtime: anon bloqueado';
 
   EXECUTE 'SET LOCAL ROLE authenticated';
   PERFORM set_config('request.jwt.claim.sub', owner_b::text, true);
@@ -207,6 +209,7 @@ BEGIN
   IF NOT denied THEN
     RAISE EXCEPTION 'Falha de segurança: tenant B consultou uso de Storage do tenant A.';
   END IF;
+  RAISE NOTICE 'ok  Storage RPC runtime: tenant B isolado';
 
   object_path := tenant_a::text || '/storage-regression/cross-tenant.txt';
   denied := false;
@@ -220,6 +223,7 @@ BEGIN
   IF NOT denied THEN
     RAISE EXCEPTION 'Falha de segurança: tenant B criou objeto no caminho do tenant A.';
   END IF;
+  RAISE NOTICE 'ok  Storage RLS: INSERT cross-tenant bloqueado';
   RESET ROLE;
   PERFORM set_config('request.jwt.claim.sub', '', true);
   PERFORM set_config('request.jwt.claims', NULL, true);

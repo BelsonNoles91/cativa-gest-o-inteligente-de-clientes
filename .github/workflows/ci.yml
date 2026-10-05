@@ -148,6 +148,23 @@ jobs:
       - name: Executa as 18 regressões SQL com evidência JUnit no banco efêmero
         run: npm run test:backend:sql
 
+      - name: Diagnostica Postgres após falha das regressões SQL
+        if: failure()
+        shell: bash
+        run: |
+          mapfile -t db_containers < <(docker ps -aq --filter "name=supabase_db")
+          if ((${#db_containers[@]} == 0)); then
+            echo "Container Postgres já não está disponível para diagnóstico."
+            exit 0
+          fi
+          for container_id in "${db_containers[@]}"; do
+            docker inspect --format 'container={{.Name}} exit={{.State.ExitCode}} oom_killed={{.State.OOMKilled}} error={{.State.Error}}' "$container_id"
+            docker logs --tail 300 "$container_id" 2>&1 | sed -E \
+              -e 's#(postgres(ql)?://)[^[:space:]]+#\1[URL_REDACTED]#g' \
+              -e 's/(API_URL|DB_URL|JWT_SECRET|ANON_KEY|SERVICE_ROLE_KEY|PUBLISHABLE_KEY|SECRET_KEY)=.*/\1=[REDACTED]/' \
+              -e 's/(eyJ[a-zA-Z0-9._-]{20,}|sb_(publishable|secret)_[a-zA-Z0-9_-]+|apikey_[A-Za-z0-9_-]{16,})/[TOKEN_REDACTED]/g'
+          done
+
       - name: Gera super-admin, perfis, memberships e tenants sintéticos
         run: npm run test:qa:provision:local
 

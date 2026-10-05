@@ -4182,11 +4182,18 @@ jornadas autenticadas locais: **17/17 passaram** após build de produção e nov
 provisionamento sintético. Nenhum ambiente remoto foi usado.
 
 O CI no SHA `d3094f5` confirmou novamente **952/952 Vitest**, typecheck, build,
-lint, Deno, actionlint e scanner de segredos, mas a variante JSON fez o processo
-Postgres terminar durante a RPC do gate Storage e interrompeu mais seis SQL
-gates em cascata. A implementação com consultas dinâmicas foi validada nas duas
-variantes locais e aguarda push/novo Actions; não considero o run anterior prova
-de aprovação da correção atual.
+lint, Deno, actionlint e scanner de segredos, mas o processo Postgres terminou
+durante a regressão de Storage. No SHA seguinte `57732a2`, a troca por SQL
+dinâmico passou localmente com e sem `archived_at`, porém o runner ainda perdeu
+a conexão logo após a checagem da cota; somente 12/18 gates terminaram e alguns
+outros falharam em cascata. O job não preservava o log do processo Postgres.
+
+Acrescentei checkpoints em cada verificação de permissão do teste de Storage e
+um passo condicional que coleta estado/possível OOM e os últimos 300 logs do
+Postgres antes da limpeza, com URLs, JWTs e API keys redigidos. `actionlint` e a
+regressão de Storage local passaram com esses checkpoints. O novo diagnóstico
+precisa ser enviado e executado no Actions antes de atribuir uma causa ou
+considerar o gate remoto aprovado.
 
 A pontuação permanece **92,7% base + 10/10 extraordinários = 102,7/110
 (93,4%)**: a reexecução fecha uma falha de compatibilidade dentro de uma frente
