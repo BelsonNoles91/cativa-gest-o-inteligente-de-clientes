@@ -427,7 +427,9 @@ test.describe("Central de Confirmação com tenant local descartável", () => {
       const header = document.querySelector('[data-testid="tenant-badge-trigger"]')?.closest("header");
       if (!header) throw new Error("Header do app não encontrado para validar a área segura.");
 
-      const topLimit = header.getBoundingClientRect().bottom + 8;
+      // Deixa 4px de folga além do limite estrito verificado abaixo, evitando
+      // arredondamento subpixel no scroll de WebKit.
+      const topLimit = header.getBoundingClientRect().bottom + 12;
       const topDelta = element.getBoundingClientRect().top - topLimit;
       if (topDelta < 0) window.scrollBy(0, topDelta);
     });
