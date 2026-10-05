@@ -233,6 +233,13 @@ test.describe("Core Web Vitals — build de produção isolado", () => {
       }).not.toBeNull();
       const lcpBeforeInteraction = await readLargestContentfulPaint();
 
+      // A primeira ação fica abaixo da dobra na landing. Posiciona o alvo
+      // antes do clique medido e deixa as animações disparadas pelo scroll
+      // terminarem; assim o INP representa a resposta ao clique, não a soma de
+      // scroll automático + animações de entrada concorrendo no mesmo frame.
+      await interaction.scrollIntoViewIfNeeded();
+      await page.waitForTimeout(700);
+
       let comparisonHeadingDocumentTop: number | undefined;
       let failuresBeforeRetry = 0;
       if (route.name === "planos") {

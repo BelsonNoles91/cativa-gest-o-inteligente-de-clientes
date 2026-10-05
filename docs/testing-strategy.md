@@ -24,7 +24,7 @@ dispositivo físico permanecem parciais até a execução real.
 | Resiliência, concorrência e performance         |       89% | O soak isolado de 10 min passou com 12.521 lotes/100.168 tentativas, uma reserva vencedora por lote, 87.647 conflitos esperados, p95 máximo 57 ms e zero resíduos. No run `37316495967` também passaram as regressões SQL e os fluxos locais de integridade e PWA/offline. Ainda faltam execução noturna no Actions/QA remoto e dispositivos reais. |
 | CI, gates e artefatos                           |       99% | O run candidato [`37316495967`](https://github.com/BelsonNoles91/cativa-gest-o-inteligente-de-clientes/actions/runs/37316495967), no SHA `c7b4210`, passou nos 10 jobs: 967 testes/74 arquivos, typecheck, build, lint, Deno, workflow/secret scans, Playwright/layout, Core Web Vitals, integridade e Supabase efêmero. O job QA remoto terminou verde, mas pulou as jornadas autenticadas por falta de configuração. A migração das Actions para upload-artifact v7/setup-cli v3 também passou; o workflow de soak segue indisponível para dispatch enquanto não estiver na branch padrão. |
 | Integrações reais e dispositivos físicos        |       55% | OAuth Google/Apple iniciou no broker simulado e o callback sintético Supabase percorreu tokens em fragmento, validação da sessão, remoção do token da URL e retorno local: 9/9 em Chromium, Firefox e WebKit. Login válido na aplicação contra Auth local QA passou pela interface nos três motores. Ainda pendentes callback/provider sandbox real e aparelhos físicos/device farm. |
-| **Total (média das dez frentes)**               | **92,8%** | **Último CI totalmente verde: SHA `c7b4210`, run `37316495967` (10 jobs). No run posterior `37321144361`, Vitest passou 970/970, mas o job de jornadas detectou uma falha no posicionamento do botão sob o header sticky em WebKit; correção preparada, aguardando nova execução. Cobertura agregada local: 26,16% statements, 26,09% branches, 19,59% funções e 26,12% linhas. Lint: 0 erros e 17 avisos Fast Refresh conhecidos; os arquivos alterados passaram ESLint focal. QA remoto não foi testado: credenciais/alvo ausentes fizeram os jobs remotos pular as etapas autenticadas. O soak isolado de 10 minutos registrou 12.521 lotes/100.168 tentativas, zero double-booking e zero resíduo. Ainda faltam QA remoto configurado, benchmark live/calibração Jev, revisão humana integral das baselines, aceite real de provedores, aparelhos/device farm e workflow noturno disponível na branch padrão.** |
+| **Total (média das dez frentes)**               | **92,8%** | **Último CI totalmente verde: SHA `c7b4210`, run `37316495967` (10 jobs). No run `37321144361`, Vitest passou 970/970 e a matriz visual passou; a jornada WebKit apontou ajuste de rolagem sob header sticky. No run `37324379144`, Core Web Vitals falhou em 2/18 amostras por INP 208/224 ms; a medição local repetida após pré-rolar e aguardar animações passou 2/2 em 48 ms, mantendo o limite de 200 ms. Correções estão na revisão e aguardam CI. Cobertura agregada local: 26,16% statements, 26,09% branches, 19,59% funções e 26,12% linhas. Lint: 0 erros e 17 avisos Fast Refresh conhecidos; arquivos alterados passaram ESLint focal. QA remoto não foi testado: credenciais/alvo ausentes fizeram os jobs remotos pular as etapas autenticadas. O soak isolado de 10 minutos registrou 12.521 lotes/100.168 tentativas, zero double-booking e zero resíduo. Ainda faltam QA remoto configurado, benchmark live/calibração Jev, revisão humana integral das baselines, aceite real de provedores, aparelhos/device farm e workflow noturno disponível na branch padrão.** |
 
 ## Índice extra para a meta de 110% — 2026-10-03
 
@@ -4339,9 +4339,14 @@ O run GitHub `37321144361`, no SHA `73b0846`, validou os 970 testes no job
 Vitest. A jornada mobile de confirmação encontrou uma falha de posicionamento
 no WebKit/iPhone: `scrollIntoView(center)` deixou o botão sob a área ocupada pelo
 header sticky. A correção usa os limites reais do header e da navegação inferior
-para posicionar o controle e mantém as asserções estritas contra sobreposição;
-ESLint e typecheck passaram localmente. O gate de cobertura integral do catálogo
-também foi adicionado. A validação dessas mudanças aguarda o próximo CI. A pontuação continua
+para posicionar o controle e mantém as asserções estritas contra sobreposição.
+O run posterior `37324379144` encontrou também duas leituras INP de 208/224 ms
+na landing. A causa provável era a interação medida ainda combinar o scroll
+automático do CTA abaixo da dobra com animações `whileInView`; o teste passou a
+pré-posicionar o CTA e aguardar essas animações antes de medir o clique, sem
+relaxar o limite de 200 ms. A reprodução focal local passou 2/2 com INP de 48 ms.
+ESLint, typecheck e testes locais focados passaram; o gate de cobertura integral
+do catálogo também foi adicionado. A validação final aguarda o próximo CI. A pontuação continua
 **92,8% base + 10/10 extraordinários = 102,8/110 (93,5%)** até a consolidação
 desse novo gate; cobertura unitária maior, por si só, não conclui QA remoto,
 benchmark Jev live, integração de provedores, revisão visual humana nem device
