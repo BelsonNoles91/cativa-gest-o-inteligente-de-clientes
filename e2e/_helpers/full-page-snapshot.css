@@ -4,11 +4,12 @@
   visibility: hidden !important;
 }
 
-/* Keep a full-page baseline independent of remote Google Fonts availability. */
+/* Keep full-page baselines independent of remote fonts and identical on Linux
+   CI and local QA, including when Arial/Georgia are not installed. */
 *,
 *::before,
 *::after {
-  font-family: Arial, Helvetica, sans-serif !important;
+  font-family: "Liberation Sans", Arial, Helvetica, sans-serif !important;
 }
 
 h1,
@@ -18,5 +19,5 @@ h4,
 h5,
 h6,
 .font-display {
-  font-family: Georgia, "Times New Roman", serif !important;
+  font-family: "Liberation Serif", Georgia, "Times New Roman", serif !important;
 }

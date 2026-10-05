@@ -144,6 +144,11 @@ function PreloadAppModules() {
   const { user } = useAuth();
   useEffect(() => {
     if (!user) return;
+    // Em toque/coarse pointer, carregar todas as telas antecipadamente disputa
+    // rede e memória com a rota ativa — especialmente em WebKit móvel. Nessas
+    // telas, os módulos continuam sendo carregados sob demanda pelo React.lazy.
+    if (window.matchMedia("(pointer: coarse)").matches) return;
+
     let cancelled = false;
     const run = async () => {
       for (const load of APP_MODULE_IMPORTS) {

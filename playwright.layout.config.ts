@@ -13,7 +13,12 @@ export default defineConfig({
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 4 : 2,
-  timeout: 60_000,
+  // A matriz combina páginas longas, zoom de reflow e WebKit em vários
+  // viewports. Sob a carga concorrente do runner do Actions, 60 s causou um
+  // timeout isolado durante a checagem de foco da landing em landscape, apesar
+  // de as 299 demais verificações passarem. Mantemos o retry e damos margem ao
+  // teste para terminar sem relaxar nenhuma assertion geométrica/a11y.
+  timeout: 90_000,
   reporter: [
     ["line"],
     ["junit", { outputFile: `${OUTPUT_DIR}/junit.xml` }],

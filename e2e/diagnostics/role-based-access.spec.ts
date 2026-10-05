@@ -319,9 +319,13 @@ async function exerciseLocalAdminSubscriptionFlow(
     const subscriptions = page.getByTestId("tenant-subscriptions-tab");
     await expect(subscriptions).toBeVisible();
 
-    const fixtureRow = subscriptions
-      .getByRole("listitem")
-      .filter({ hasText: E2E_TENANT_SLUG });
+    // `studio-teste-qa` is a substring of the companion tenant slug
+    // `studio-teste-qa-b`; match the exact slug text to select only tenant A.
+    const exactTenantSlug = subscriptions.getByText(E2E_TENANT_SLUG, {
+      exact: true,
+    });
+    await expect(exactTenantSlug).toHaveCount(1);
+    const fixtureRow = exactTenantSlug.locator("xpath=ancestor::li[1]");
     await expect(fixtureRow).toHaveCount(1);
     const manageButton = fixtureRow.getByRole("button", { name: "Gerenciar" });
     // Centre the action in the viewport so the fixed mobile header/BottomNav
