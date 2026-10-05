@@ -4129,10 +4129,16 @@ em dashboard/clientes) e o provisionamento de perfis recebeu HTTP 500 do Auth,
 com `Database error finding users`. O Secret scan do mesmo SHA passou. Não fiz
 push, rerun, publicação ou qualquer escrita remota nesta auditoria.
 
-O checkout local contém mudanças que aparentam tratar esses dois pontos — novas
-baselines após revisão de layout e retry limitado/idempotente do provisionador —,
-mas isso ainda não prova que o workflow completo passará. O próximo gate será
-um commit candidato revisado, sem arquivos de estado do Playwright/Supabase nem
-backups de baselines, executado em branch de CI. A sincronização com Lovable e
-a produção continuam bloqueadas até haver evidência verde no SHA candidato e
+O candidato foi enviado na branch `codex/cativa-testing-candidate` e está em
+revisão na [PR #1](https://github.com/BelsonNoles91/cativa-gest-o-inteligente-de-clientes/pull/1);
+nenhum arquivo de estado do Playwright/Supabase ou backup de baseline foi
+versionado. A primeira execução dos workflows está em andamento, portanto ainda
+não comprova que o SHA candidato passará integralmente. A sincronização com
+Lovable e a produção continuam bloqueadas até os checks ficarem verdes e haver
 aceite remoto autorizado.
+
+Na primeira execução da PR #1, o scanner Gitleaks falhou ao tentar publicar seu
+comentário opcional (`Resource not accessible by integration`), sem apontar
+segredos encontrados. Mantive a permissão mínima do job e desativei somente os
+comentários automáticos do action; o scan de segredos será reexecutado na
+próxima atualização da branch.
