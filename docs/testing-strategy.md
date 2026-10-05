@@ -4141,7 +4141,7 @@ Na primeira execução da PR #1, o scanner Gitleaks falhou ao tentar enumerar os
 commits da PR (`GET /pulls/1/commits`, `Resource not accessible by integration`),
 sem apontar segredos encontrados. O job agora tem somente `pull-requests: read`
 além de `contents: read`; comentários automáticos continuam desativados. O
-scanner será reexecutado na próxima atualização da branch.
+Gitleaks passou no run atualizado.
 
 No primeiro run completo do CI, **952/952 Vitest passaram**, assim como lint,
 typecheck, Deno, actionlint e Gitleaks. O gate de build sem env falhou porque o
@@ -4149,5 +4149,15 @@ Actions representa secrets ausentes como variáveis vazias; a configuração
 tratava `""` como URL/chave definidos e deixava de aplicar o fallback local.
 Agora valores vazios ou só com espaços são normalizados como ausentes, e o
 próprio gate sempre simula essa condição. A reprodução, os três builds isolados,
-typecheck e lint focado passaram sob Node 22.22.3; o CI no novo SHA ainda precisa
-confirmar. Os jobs dependentes foram corretamente pulados após a falha anterior.
+typecheck e lint focado passaram sob Node 22.22.3; o CI no novo SHA confirmou o
+gate e os 952 testes. Os jobs dependentes tinham sido corretamente pulados após
+a falha anterior.
+
+No run seguinte, o gate de build, **952/952 Vitest** e a medição Core Web Vitals
+**18/18** passaram. O contrato OAuth iniciou os três cenários em
+Chromium, mas os seis casos Firefox/WebKit não iniciaram: o job instalava apenas
+Chromium, embora a matriz exigisse os três motores. Atualizei o job para
+instalar Chromium, Firefox e WebKit; essa correção local passou pelo actionlint,
+mas ainda aguarda novo SHA no Actions. As matrizes de layout e jornadas locais
+continuam em execução. Os checks de QA remoto foram pulados por não haver
+secrets QA configurados; nenhum projeto protegido foi acessado.

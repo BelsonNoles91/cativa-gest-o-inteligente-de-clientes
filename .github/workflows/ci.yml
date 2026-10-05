@@ -341,8 +341,8 @@ jobs:
       - name: Instala dependências
         run: npm ci
 
-      - name: Instala Chromium e dependências do browser
-        run: npx playwright install --with-deps chromium
+      - name: Instala navegadores para Core Web Vitals e OAuth sintético
+        run: npx playwright install --with-deps chromium firefox webkit
 
       - name: Mede Core Web Vitals com backend local simulado
         run: npm run test:performance:cwv
