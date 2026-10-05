@@ -9,7 +9,7 @@ on:
 jobs:
   workflow-lint:
     name: Validar workflows do GitHub Actions
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
@@ -25,7 +25,7 @@ jobs:
 
   edge-functions:
     name: Typecheck das Edge Functions Supabase
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
       contents: read
@@ -43,7 +43,7 @@ jobs:
         run: deno lint --no-config supabase/functions
 
   vitest:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
@@ -105,7 +105,7 @@ jobs:
   qa-role-journeys-local:
     name: Jornadas por perfil em Supabase local descartável
     needs: vitest
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     permissions:
       contents: read
@@ -298,7 +298,7 @@ jobs:
         run: supabase stop --no-backup --yes > /dev/null 2>&1 || true
 
   public-content-security:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
 
@@ -343,7 +343,7 @@ jobs:
   core-web-vitals:
     name: Core Web Vitals nas rotas públicas
     needs: vitest
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
       contents: read
@@ -384,7 +384,7 @@ jobs:
 
   layout-quality:
     needs: vitest
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
@@ -453,7 +453,7 @@ jobs:
   playwright-mobile:
     # Capturas visuais usam exclusivamente backend local efêmero e fixtures sintéticas.
     needs: [vitest]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     permissions:
       contents: read
@@ -555,7 +555,7 @@ jobs:
 
   qa-authenticated:
     needs: vitest
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
@@ -633,7 +633,7 @@ jobs:
 
   backend-integrity:
     needs: [vitest, qa-authenticated, playwright-mobile]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}

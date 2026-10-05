@@ -11,7 +11,7 @@ permissions:
 jobs:
   appointment-soak:
     name: Concorrência de agenda em Supabase efêmero
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 35
     permissions:
       contents: read
