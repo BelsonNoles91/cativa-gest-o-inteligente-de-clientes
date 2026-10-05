@@ -39,6 +39,7 @@ export default defineConfig({
         "src/domain/confirmation.ts": { statements: 100, branches: 100, functions: 100, lines: 100 },
         "src/domain/scheduling.ts": { statements: 95, branches: 90, functions: 95, lines: 95 },
         "src/lib/client-validation.ts": { statements: 100, branches: 100, functions: 100, lines: 100 },
+        "src/repositories/catalog.ts": { statements: 100, branches: 100, functions: 100, lines: 100 },
         "supabase/functions/_shared/jev.ts": { statements: 90, branches: 90, functions: 70, lines: 90 },
         "supabase/functions/retention-advisor/logic.ts": { statements: 90, branches: 85, functions: 95, lines: 90 },
       },

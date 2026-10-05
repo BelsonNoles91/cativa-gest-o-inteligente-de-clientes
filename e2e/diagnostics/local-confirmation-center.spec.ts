@@ -418,12 +418,32 @@ test.describe("Central de Confirmação com tenant local descartável", () => {
     await confirmButton.evaluate((element) =>
       element.scrollIntoView({ block: "center", inline: "nearest", behavior: "instant" }),
     );
+    // Em WebKit/iPhone, scrollIntoView(center) pode manter um alvo que já está
+    // parcialmente visível logo abaixo do topo da viewport, embora o header
+    // sticky o cubra. Ajusta somente a rolagem da página pelo tamanho real do
+    // header; a asserção abaixo continua exigindo que o botão fique totalmente
+    // fora das áreas cobertas pelo header e pela navegação inferior.
+    await confirmButton.evaluate((element) => {
+      const header = document.querySelector('[data-testid="tenant-badge-trigger"]')?.closest("header");
+      if (!header) throw new Error("Header do app não encontrado para validar a área segura.");
+
+      const topLimit = header.getBoundingClientRect().bottom + 8;
+      const topDelta = element.getBoundingClientRect().top - topLimit;
+      if (topDelta < 0) window.scrollBy(0, topDelta);
+    });
     await expect(confirmButton).toBeInViewport();
     const buttonBox = await confirmButton.boundingBox();
-    const viewportHeight = page.viewportSize()?.height ?? 0;
+    const fixedChrome = await page.evaluate(() => {
+      const header = document.querySelector('[data-testid="tenant-badge-trigger"]')?.closest("header");
+      const bottomNav = document.querySelector('nav[aria-label="Navegação principal"]');
+      return {
+        headerBottom: header?.getBoundingClientRect().bottom ?? 0,
+        bottomNavTop: bottomNav?.getBoundingClientRect().top ?? window.innerHeight,
+      };
+    });
     expect(buttonBox, "Botão de confirmação precisa ter posição mensurável").not.toBeNull();
-    expect(buttonBox!.y, "Botão não pode ficar sob o header fixo").toBeGreaterThan(60);
-    expect(buttonBox!.y + buttonBox!.height, "Botão não pode ficar sob a navegação fixa").toBeLessThan(viewportHeight - 60);
+    expect(buttonBox!.y, "Botão não pode ficar sob o header fixo").toBeGreaterThan(fixedChrome.headerBottom + 8);
+    expect(buttonBox!.y + buttonBox!.height, "Botão não pode ficar sob a navegação fixa").toBeLessThan(fixedChrome.bottomNavTop - 8);
     await confirmButton.click();
     await expect
       .poll(() => readFixtureStatuses(current), { timeout: 20_000 })
