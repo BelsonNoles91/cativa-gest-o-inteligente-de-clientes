@@ -252,6 +252,13 @@ async function injectSession(page: Page, session: Session, user: User, tenantId:
 async function expectPath(page: Page, path: string, expectedPath: string) {
   // Auth/tenant guards podem redirecionar antes de DOMContentLoaded. Considerar
   // somente essa interrupção esperada e estabilizar a navegação direta.
+  let webkitInternalLoadError = false;
+  const captureWebKitLoadError = (request: import("@playwright/test").Request) => {
+    if (/WebKit encountered an internal error/i.test(request.failure()?.errorText ?? "")) {
+      webkitInternalLoadError = true;
+    }
+  };
+  page.on("requestfailed", captureWebKitLoadError);
   const navigate = async () => {
     for (let attempt = 0; attempt < 2; attempt += 1) {
       try {
@@ -271,14 +278,36 @@ async function expectPath(page: Page, path: string, expectedPath: string) {
       }
     }
   };
-  await navigate();
-  const shell = expectedPath.startsWith("/portal")
-    ? page.locator('main[data-app-context="portal"]')
-    : page.locator('main[data-app-context="tenant"]');
-  await expect(shell).toBeVisible({ timeout: 15_000 });
-  const currentPath = () => new URL(page.url()).pathname;
-  if (currentPath() !== expectedPath && currentPath() !== path) await navigate();
-  await expect.poll(currentPath, { timeout: 15_000 }).toBe(expectedPath);
+  try {
+    const shell = expectedPath.startsWith("/portal")
+      ? page.locator('main[data-app-context="portal"]')
+      : page.locator('main[data-app-context="tenant"]');
+
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      await navigate();
+      try {
+        await expect(shell).toBeVisible({ timeout: 15_000 });
+      } catch (error) {
+        // Linux WebKit can return HTTP 200 for a route but fail to load its
+        // JS/CSS subresources with an engine-level internal error. In that
+        // case React never mounts and the shell remains absent; retry only
+        // this explicit browser-engine failure, never an app assertion.
+        if (attempt === 0 && webkitInternalLoadError) {
+          webkitInternalLoadError = false;
+          console.warn(`[e2e] WebKit falhou ao carregar recursos de ${path}; repetindo a navegação uma vez.`);
+          continue;
+        }
+        throw error;
+      }
+
+      const currentPath = () => new URL(page.url()).pathname;
+      if (currentPath() !== expectedPath && currentPath() !== path) await navigate();
+      await expect.poll(currentPath, { timeout: 15_000 }).toBe(expectedPath);
+      return;
+    }
+  } finally {
+    page.off("requestfailed", captureWebKitLoadError);
+  }
 }
 
 async function cleanupClient(supabase: SupabaseClient, clientId: string) {
