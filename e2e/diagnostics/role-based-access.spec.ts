@@ -144,6 +144,8 @@ const CLIENT_PORTAL_ROUTES = [
   "/portal/anamnese",
 ];
 
+const routedPages = new WeakSet<Page>();
+
 function createSupabase() {
   return createClient(SUPABASE_URL, PUBLISHABLE_KEY, {
     auth: {
@@ -249,7 +251,12 @@ async function injectSession(page: Page, session: Session, user: User, tenantId:
   );
 }
 
-async function expectPath(page: Page, path: string, expectedPath: string) {
+async function expectPath(
+  page: Page,
+  path: string,
+  expectedPath: string,
+  options: { direct?: boolean } = {},
+) {
   // Guards de auth/tenant podem redirecionar durante a inicialização do app.
   let webkitInternalLoadError = false;
   const consoleErrors: string[] = [];
@@ -259,14 +266,23 @@ async function expectPath(page: Page, path: string, expectedPath: string) {
   };
   const captureFailedRequest = (request: import("@playwright/test").Request) => {
     const failure = request.failure()?.errorText ?? "falha sem detalhe do navegador";
-    failedRequests.push(`${request.method()} ${request.url()} — ${failure}`);
+    const url = new URL(request.url());
+    failedRequests.push(`${request.method()} ${url.origin}${url.pathname} — ${failure}`);
     if (/WebKit encountered an internal error/i.test(failure)) webkitInternalLoadError = true;
   };
   const capturePageError = (error: Error) => consoleErrors.push(error.stack ?? error.message);
   page.on("console", captureConsoleError);
   page.on("requestfailed", captureFailedRequest);
   page.on("pageerror", capturePageError);
+  let forceDocumentNavigation = Boolean(options.direct) || !routedPages.has(page);
   const navigate = async () => {
+    if (!forceDocumentNavigation) {
+      await page.evaluate((targetPath) => {
+        window.history.pushState(window.history.state, "", targetPath);
+        window.dispatchEvent(new PopStateEvent("popstate", { state: window.history.state }));
+      }, path);
+      return;
+    }
     for (let attempt = 0; attempt < 2; attempt += 1) {
       try {
         // Espera apenas o documento ser comprometido. A prontidão real da rota
@@ -292,7 +308,7 @@ async function expectPath(page: Page, path: string, expectedPath: string) {
       ? page.locator('main[data-app-context="portal"]')
       : page.locator('main[data-app-context="tenant"]');
 
-    for (let attempt = 0; attempt < 2; attempt += 1) {
+    for (let attempt = 0; attempt < 3; attempt += 1) {
       await navigate();
       try {
         await expect(shell).toBeVisible({ timeout: 15_000 });
@@ -301,9 +317,10 @@ async function expectPath(page: Page, path: string, expectedPath: string) {
         // JS/CSS subresources with an engine-level internal error. In that
         // case React never mounts and the shell remains absent; retry only
         // this explicit browser-engine failure, never an app assertion.
-        if (attempt === 0 && webkitInternalLoadError) {
+        if (attempt < 2 && webkitInternalLoadError) {
           webkitInternalLoadError = false;
-          console.warn(`[e2e] WebKit falhou ao carregar recursos de ${path}; repetindo a navegação uma vez.`);
+          forceDocumentNavigation = true;
+          console.warn(`[e2e] WebKit falhou ao carregar recursos de ${path}; repetindo a navegação (${attempt + 2}/3).`);
           continue;
         }
         throw error;
@@ -318,8 +335,19 @@ async function expectPath(page: Page, path: string, expectedPath: string) {
         const routeFallback = page.locator(
           'main[data-app-context="tenant"] [aria-busy="true"][aria-label="Carregando"]',
         );
-        await expect(routeFallback).toBeHidden({ timeout: 20_000 });
+        try {
+          await expect(routeFallback).toBeHidden({ timeout: 20_000 });
+        } catch (error) {
+          if (attempt < 2 && webkitInternalLoadError) {
+            webkitInternalLoadError = false;
+            forceDocumentNavigation = true;
+            console.warn(`[e2e] WebKit falhou ao carregar a tela lazy de ${path}; repetindo a navegação (${attempt + 2}/3).`);
+            continue;
+          }
+          throw error;
+        }
       }
+      routedPages.add(page);
       return;
     }
   } catch (error) {
@@ -503,23 +531,41 @@ test.describe("RBAC real por perfil", () => {
         await injectSession(page, session, user, membership.tenant_id);
 
         if (profile.label === "client") {
-          for (const route of STAFF_ROUTE_CONTRACT) {
+          await expectPath(page, STAFF_ROUTE_CONTRACT[0].path, "/portal");
+          await expectPath(page, "/portal", "/portal", { direct: true });
+          for (const route of STAFF_ROUTE_CONTRACT.slice(1)) {
             await expectPath(page, route.path, "/portal");
           }
-          for (const path of CLIENT_PORTAL_ROUTES) await expectPath(page, path, path);
+          for (const path of CLIENT_PORTAL_ROUTES.slice(1)) await expectPath(page, path, path);
           return;
         }
 
         if (profile.label === "super_admin") {
           await expectPath(page, "/app", "/app");
-          await expectPath(page, "/app/super-admin", "/app/super-admin");
+          await expectPath(page, "/app/super-admin", "/app/super-admin", { direct: true });
           await exerciseLocalAdminSubscriptionFlow(page, supabase, user.id, membership.tenant_id);
           return;
         }
 
-        for (const route of STAFF_ROUTE_CONTRACT) {
-          const expectedPath = route.roles.includes(profile.label) ? route.path : "/app";
-          await expectPath(page, route.path, expectedPath);
+        const roleRoutes = STAFF_ROUTE_CONTRACT.map((route) => ({
+          ...route,
+          expectedPath: route.roles.includes(profile.label) ? route.path : "/app",
+        }));
+        const directDeniedRoute = roleRoutes.find((route) => route.expectedPath !== route.path);
+        const directAllowedRoute = roleRoutes.find((route) => route.roles.includes(profile.label));
+        const firstRoute = directDeniedRoute ?? directAllowedRoute ?? roleRoutes[0];
+        await expectPath(page, firstRoute.path, firstRoute.expectedPath);
+        if (directDeniedRoute && directAllowedRoute) {
+          await expectPath(
+            page,
+            directAllowedRoute.path,
+            directAllowedRoute.path,
+            { direct: true },
+          );
+        }
+        for (const route of roleRoutes) {
+          if (route === firstRoute || route === directDeniedRoute || route === directAllowedRoute) continue;
+          await expectPath(page, route.path, route.expectedPath);
         }
       } finally {
         await supabase.auth.signOut();
