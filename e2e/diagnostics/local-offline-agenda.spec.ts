@@ -371,6 +371,12 @@ test.afterEach(async ({ context, page }) => {
   }
 });
 
+test.describe("falhas transitórias de sincronização da fila offline", () => {
+  // Network interception cannot see requests handled by a Service Worker.
+  // These cases exercise queue retries and HTTP fault handling; dedicated
+  // tests below keep Service Workers enabled for cache/offline-shell coverage.
+  test.use({ serviceWorkers: "block" });
+
 test("guarda ação sem PII, preserva fila após HTTP 503 e sincroniza no retry", async ({ page, context }) => {
   const current = fixture;
   if (!current) throw new Error("Fixture local do teste offline não foi preparada.");
@@ -639,6 +645,7 @@ test("preserva a fila após falhas HTTP e de transporte até o servidor voltar",
   expect(failureIndex).toBe(failures.length);
   expect(appointmentRequests).toBe(failures.length + 1);
   await expect(card).toContainText("Confirmado");
+});
 });
 
 test("reflete na agenda a alteração confirmada por outra sessão via Supabase Realtime", async ({ page }) => {

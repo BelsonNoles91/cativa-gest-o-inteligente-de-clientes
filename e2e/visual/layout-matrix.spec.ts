@@ -43,10 +43,10 @@ async function settle(page: Page) {
 
 async function exerciseKeyboard(page: Page, label: string) {
   await page.keyboard.press("Tab").catch(() => undefined);
-  await page.locator(":focus").first().scrollIntoViewIfNeeded().catch(() => undefined);
+  // Verify the focus in-place: scrolling it into view first masks focus/scroll
+  // regressions and can hang WebKit on long, transformed landing-page layouts.
   await assertFocusIsVisible(page, label);
   await page.keyboard.press("Tab").catch(() => undefined);
-  await page.locator(":focus").first().scrollIntoViewIfNeeded().catch(() => undefined);
   await assertFocusIsVisible(page, label);
 }
 
