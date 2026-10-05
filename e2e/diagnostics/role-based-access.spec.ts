@@ -294,9 +294,14 @@ async function expectPath(
         if (/Frame load interrupted|Navigation to ".+" is interrupted by another navigation/.test(message)) {
           return;
         }
-        if (attempt === 0 && /WebKit encountered an internal error/i.test(message)) {
-          console.warn(`[e2e] WebKit interrompeu a navegação para ${path}; repetindo uma vez.`);
-          await page.waitForTimeout(100);
+        const isTransientNavigationFailure =
+          /WebKit encountered an internal error/i.test(message) ||
+          (error instanceof Error && error.name === "TimeoutError");
+        if (attempt === 0 && isTransientNavigationFailure) {
+          console.warn(
+            `[e2e] Navegação para ${path} não foi confirmada pelo navegador; repetindo uma vez (${message.split("\n")[0]}).`,
+          );
+          await page.waitForTimeout(250);
           continue;
         }
         throw error;
