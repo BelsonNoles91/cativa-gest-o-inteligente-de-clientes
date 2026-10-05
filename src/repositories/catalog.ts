@@ -6,6 +6,7 @@
  * UI consome apenas estes métodos — mantém o app portável.
  */
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import type {
   CancellationPolicy,
   Membership,
@@ -58,6 +59,13 @@ function toCategory(r: Record<string, unknown>): ServiceCategory {
     position: (r.position as number) ?? 0,
     isActive: Boolean(r.is_active),
   };
+}
+
+function requireRpcRow(value: Json | null, label: string): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`A operação atômica de ${label} não retornou o registro esperado.`);
+  }
+  return value as Record<string, unknown>;
 }
 
 export async function listCategories(tenantId: string): Promise<ServiceCategory[]> {
@@ -227,9 +235,7 @@ export interface CreateServiceInput {
 }
 
 export async function createService(input: CreateServiceInput): Promise<Service> {
-  const { data, error } = await supabase
-    .from("services")
-    .insert({
+  const serviceValues = {
       tenant_id: input.tenantId,
       name: input.name,
       description: input.description ?? null,
@@ -251,21 +257,25 @@ export async function createService(input: CreateServiceInput): Promise<Service>
       is_active: input.isActive ?? true,
       is_featured: input.isFeatured ?? false,
       internal_code: input.internalCode ?? null,
-    })
+  };
+
+  if (input.basePriceCents !== undefined) {
+    const { data, error } = await supabase.rpc("catalog_create_service_with_price", {
+      _service: serviceValues as Json,
+      _amount_cents: input.basePriceCents,
+      _currency: input.currency ?? "BRL",
+    });
+    if (error) throw error;
+    return toService(requireRpcRow(data, "criação do serviço e preço-base"));
+  }
+
+  const { data, error } = await supabase
+    .from("services")
+    .insert(serviceValues)
     .select(SERVICE_COLS)
     .single();
   if (error) throw error;
-  const created = toService(data);
-  if (input.basePriceCents !== undefined) {
-    await supabase.from("service_prices").insert({
-      tenant_id: input.tenantId,
-      service_id: created.id,
-      currency: input.currency ?? "BRL",
-      amount_cents: input.basePriceCents,
-      is_default: true,
-    });
-  }
-  return created;
+  return toService(data);
 }
 
 export type UpdateServiceInput = Partial<Omit<CreateServiceInput, "tenantId">>;
@@ -293,6 +303,17 @@ export async function updateService(id: string, patch: UpdateServiceInput): Prom
   if (patch.isFeatured !== undefined) dbPatch.is_featured = patch.isFeatured;
   if (patch.internalCode !== undefined) dbPatch.internal_code = patch.internalCode;
 
+  if (patch.basePriceCents !== undefined) {
+    const { data, error } = await supabase.rpc("catalog_update_service_with_price", {
+      _service_id: id,
+      _patch: dbPatch as Json,
+      _amount_cents: patch.basePriceCents,
+      _currency: patch.currency ?? null,
+    });
+    if (error) throw error;
+    return toService(requireRpcRow(data, "atualização do serviço e preço-base"));
+  }
+
   const { data, error } = await supabase
     .from("services")
     .update(dbPatch as never)
@@ -300,32 +321,7 @@ export async function updateService(id: string, patch: UpdateServiceInput): Prom
     .select(SERVICE_COLS)
     .single();
   if (error) throw error;
-  const updated = toService(data);
-
-  if (patch.basePriceCents !== undefined) {
-    // upsert do preço base
-    const { data: existing } = await supabase
-      .from("service_prices")
-      .select("id")
-      .eq("service_id", id)
-      .eq("is_default", true)
-      .maybeSingle();
-    if (existing) {
-      await supabase
-        .from("service_prices")
-        .update({ amount_cents: patch.basePriceCents } as never)
-        .eq("id", existing.id);
-    } else {
-      await supabase.from("service_prices").insert({
-        tenant_id: updated.tenantId,
-        service_id: id,
-        currency: patch.currency ?? "BRL",
-        amount_cents: patch.basePriceCents,
-        is_default: true,
-      });
-    }
-  }
-  return updated;
+  return toService(data);
 }
 
 export async function deleteService(id: string): Promise<void> {
@@ -381,20 +377,15 @@ export async function saveUnitPriceOverrides(input: {
     durationMinutes?: number | null;
   }>;
 }): Promise<void> {
-  const { error: deleteError } = await supabase
-    .from("service_unit_prices")
-    .delete()
-    .eq("service_id", input.serviceId);
-  if (deleteError) throw deleteError;
-  if (input.overrides.length === 0) return;
-  const rows = input.overrides.map((override) => ({
-    tenant_id: input.tenantId,
-    service_id: input.serviceId,
-    unit_id: override.unitId,
-    amount_cents: override.amountCents,
-    duration_minutes: override.durationMinutes ?? null,
-  }));
-  const { error } = await supabase.from("service_unit_prices").insert(rows);
+  const { error } = await supabase.rpc("catalog_replace_service_unit_prices", {
+    _tenant_id: input.tenantId,
+    _service_id: input.serviceId,
+    _overrides: input.overrides.map((override) => ({
+      unit_id: override.unitId,
+      amount_cents: override.amountCents,
+      duration_minutes: override.durationMinutes ?? null,
+    })),
+  });
   if (error) throw error;
 }
 
@@ -423,20 +414,15 @@ export async function saveProfessionalPriceOverrides(input: {
     durationMinutes?: number | null;
   }>;
 }): Promise<void> {
-  const { error: deleteError } = await supabase
-    .from("service_professional_prices")
-    .delete()
-    .eq("service_id", input.serviceId);
-  if (deleteError) throw deleteError;
-  if (input.overrides.length === 0) return;
-  const rows = input.overrides.map((override) => ({
-    tenant_id: input.tenantId,
-    service_id: input.serviceId,
-    professional_id: override.professionalId,
-    amount_cents: override.amountCents,
-    duration_minutes: override.durationMinutes ?? null,
-  }));
-  const { error } = await supabase.from("service_professional_prices").insert(rows);
+  const { error } = await supabase.rpc("catalog_replace_service_professional_prices", {
+    _tenant_id: input.tenantId,
+    _service_id: input.serviceId,
+    _overrides: input.overrides.map((override) => ({
+      professional_id: override.professionalId,
+      amount_cents: override.amountCents,
+      duration_minutes: override.durationMinutes ?? null,
+    })),
+  });
   if (error) throw error;
 }
 
@@ -487,10 +473,10 @@ export interface CreatePackageInput {
 }
 
 export async function createPackage(input: CreatePackageInput): Promise<Package> {
-  const { data, error } = await supabase
-    .from("packages")
-    .insert({
-      tenant_id: input.tenantId,
+  const { data, error } = await supabase.rpc("catalog_save_package_bundle", {
+    _id: null,
+    _tenant_id: input.tenantId,
+    _values: {
       kind: input.kind ?? "package",
       name: input.name,
       description: input.description ?? null,
@@ -500,16 +486,17 @@ export async function createPackage(input: CreatePackageInput): Promise<Package>
       usage_rules: input.usageRules ?? null,
       notes: input.notes ?? null,
       is_active: input.isActive ?? true,
-    })
-    .select(PACKAGE_COLS)
-    .single();
+    },
+    _items: (input.items ?? []).map((item) => ({ service_id: item.serviceId, sessions: item.sessions })),
+  });
   if (error) throw error;
-  const created = toPackage(data);
-  await replacePackageItems(created.id, input.tenantId, input.items ?? []);
-  return created;
+  return toPackage(requireRpcRow(data, "criação do pacote e itens"));
 }
 
 export async function updatePackage(id: string, patch: Partial<CreatePackageInput>): Promise<void> {
+  if (patch.items !== undefined && patch.tenantId === undefined) {
+    throw new Error("tenantId é obrigatório para substituir os itens do pacote.");
+  }
   const dbPatch: Record<string, unknown> = {};
   if (patch.name !== undefined) dbPatch.name = patch.name;
   if (patch.kind !== undefined) dbPatch.kind = patch.kind;
@@ -520,12 +507,17 @@ export async function updatePackage(id: string, patch: Partial<CreatePackageInpu
   if (patch.usageRules !== undefined) dbPatch.usage_rules = patch.usageRules;
   if (patch.notes !== undefined) dbPatch.notes = patch.notes;
   if (patch.isActive !== undefined) dbPatch.is_active = patch.isActive;
-  if (Object.keys(dbPatch).length) {
+  if (patch.tenantId !== undefined && patch.items !== undefined) {
+    const { error } = await supabase.rpc("catalog_save_package_bundle", {
+      _id: id,
+      _tenant_id: patch.tenantId,
+      _values: dbPatch as Json,
+      _items: patch.items.map((item) => ({ service_id: item.serviceId, sessions: item.sessions })),
+    });
+    if (error) throw error;
+  } else if (Object.keys(dbPatch).length) {
     const { error } = await supabase.from("packages").update(dbPatch as never).eq("id", id);
     if (error) throw error;
-  }
-  if (patch.tenantId && patch.items) {
-    await replacePackageItems(id, patch.tenantId, patch.items);
   }
 }
 
@@ -548,25 +540,6 @@ export async function listPackageItems(packageId: string): Promise<PackageItem[]
     sessions: r.sessions,
     position: r.position,
   }));
-}
-
-async function replacePackageItems(
-  packageId: string,
-  tenantId: string,
-  items: Array<{ serviceId: string; sessions: number }>,
-): Promise<void> {
-  const { error: deleteError } = await supabase.from("package_items").delete().eq("package_id", packageId);
-  if (deleteError) throw deleteError;
-  if (items.length === 0) return;
-  const rows = items.map((it, idx) => ({
-    tenant_id: tenantId,
-    package_id: packageId,
-    service_id: it.serviceId,
-    sessions: it.sessions,
-    position: idx,
-  }));
-  const { error } = await supabase.from("package_items").insert(rows);
-  if (error) throw error;
 }
 
 // =============================================================================
@@ -610,26 +583,31 @@ export interface CreateMembershipInput {
 }
 
 export async function createMembership(input: CreateMembershipInput): Promise<Membership> {
-  const { data, error } = await supabase
-    .from("memberships")
-    .insert({
-      tenant_id: input.tenantId,
+  const { data, error } = await supabase.rpc("catalog_save_membership_bundle", {
+    _id: null,
+    _tenant_id: input.tenantId,
+    _values: {
       name: input.name,
       description: input.description ?? null,
       price_cents: input.priceCents ?? 0,
       billing_cycle: input.billingCycle ?? "monthly",
       is_active: input.isActive ?? true,
       notes: input.notes ?? null,
-    })
-    .select(MEMBERSHIP_COLS)
-    .single();
+    },
+    _benefits: (input.benefits ?? []).map((benefit) => ({
+      service_id: benefit.serviceId,
+      sessions_per_cycle: benefit.sessionsPerCycle,
+      discount_pct: benefit.discountPct ?? 0,
+    })),
+  });
   if (error) throw error;
-  const created = toMembership(data);
-  await replaceMembershipBenefits(created.id, input.tenantId, input.benefits ?? []);
-  return created;
+  return toMembership(requireRpcRow(data, "criação da assinatura e benefícios"));
 }
 
 export async function updateMembership(id: string, patch: Partial<CreateMembershipInput>): Promise<void> {
+  if (patch.benefits !== undefined && patch.tenantId === undefined) {
+    throw new Error("tenantId é obrigatório para substituir os benefícios da assinatura.");
+  }
   const dbPatch: Record<string, unknown> = {};
   if (patch.name !== undefined) dbPatch.name = patch.name;
   if (patch.description !== undefined) dbPatch.description = patch.description;
@@ -637,12 +615,21 @@ export async function updateMembership(id: string, patch: Partial<CreateMembersh
   if (patch.billingCycle !== undefined) dbPatch.billing_cycle = patch.billingCycle;
   if (patch.isActive !== undefined) dbPatch.is_active = patch.isActive;
   if (patch.notes !== undefined) dbPatch.notes = patch.notes;
-  if (Object.keys(dbPatch).length) {
+  if (patch.tenantId !== undefined && patch.benefits !== undefined) {
+    const { error } = await supabase.rpc("catalog_save_membership_bundle", {
+      _id: id,
+      _tenant_id: patch.tenantId,
+      _values: dbPatch as Json,
+      _benefits: patch.benefits.map((benefit) => ({
+        service_id: benefit.serviceId,
+        sessions_per_cycle: benefit.sessionsPerCycle,
+        discount_pct: benefit.discountPct ?? 0,
+      })),
+    });
+    if (error) throw error;
+  } else if (Object.keys(dbPatch).length) {
     const { error } = await supabase.from("memberships").update(dbPatch as never).eq("id", id);
     if (error) throw error;
-  }
-  if (patch.tenantId && patch.benefits) {
-    await replaceMembershipBenefits(id, patch.tenantId, patch.benefits);
   }
 }
 
@@ -664,28 +651,6 @@ export async function listMembershipBenefits(membershipId: string): Promise<Memb
     sessionsPerCycle: r.sessions_per_cycle,
     discountPct: r.discount_pct,
   }));
-}
-
-async function replaceMembershipBenefits(
-  membershipId: string,
-  tenantId: string,
-  benefits: Array<{ serviceId: string; sessionsPerCycle: number; discountPct?: number }>,
-): Promise<void> {
-  const { error: deleteError } = await supabase
-    .from("membership_benefits")
-    .delete()
-    .eq("membership_id", membershipId);
-  if (deleteError) throw deleteError;
-  if (benefits.length === 0) return;
-  const rows = benefits.map((benefit) => ({
-    tenant_id: tenantId,
-    membership_id: membershipId,
-    service_id: benefit.serviceId,
-    sessions_per_cycle: benefit.sessionsPerCycle,
-    discount_pct: benefit.discountPct ?? 0,
-  }));
-  const { error } = await supabase.from("membership_benefits").insert(rows);
-  if (error) throw error;
 }
 
 // =============================================================================
@@ -733,28 +698,34 @@ export interface CreateProtocolInput {
 }
 
 export async function createProtocol(input: CreateProtocolInput): Promise<Protocol> {
-  const { data, error } = await supabase
-    .from("protocols")
-    .insert({
-      tenant_id: input.tenantId,
+  const steps = input.steps ?? [];
+  const { data, error } = await supabase.rpc("catalog_save_protocol_bundle", {
+    _id: null,
+    _tenant_id: input.tenantId,
+    _values: {
       name: input.name,
       description: input.description ?? null,
-      total_sessions: input.totalSessions ?? input.steps?.length ?? 1,
+      total_sessions: input.totalSessions ?? (input.steps?.length ?? 1),
       recommended_interval_days: input.recommendedIntervalDays ?? null,
       total_price_cents: input.totalPriceCents ?? null,
       pre_instructions: input.preInstructions ?? null,
       post_instructions: input.postInstructions ?? null,
       is_active: input.isActive ?? true,
-    })
-    .select(PROTOCOL_COLS)
-    .single();
+    },
+    _steps: steps.map((step) => ({
+      service_id: step.serviceId,
+      interval_days: step.intervalDays ?? null,
+      notes: step.notes ?? null,
+    })),
+  });
   if (error) throw error;
-  const created = toProtocol(data);
-  await replaceProtocolSteps(created.id, input.tenantId, input.steps ?? []);
-  return created;
+  return toProtocol(requireRpcRow(data, "criação do protocolo e etapas"));
 }
 
 export async function updateProtocol(id: string, patch: Partial<CreateProtocolInput>): Promise<void> {
+  if (patch.steps !== undefined && patch.tenantId === undefined) {
+    throw new Error("tenantId é obrigatório para substituir as etapas do protocolo.");
+  }
   const dbPatch: Record<string, unknown> = {};
   if (patch.name !== undefined) dbPatch.name = patch.name;
   if (patch.description !== undefined) dbPatch.description = patch.description;
@@ -764,12 +735,21 @@ export async function updateProtocol(id: string, patch: Partial<CreateProtocolIn
   if (patch.preInstructions !== undefined) dbPatch.pre_instructions = patch.preInstructions;
   if (patch.postInstructions !== undefined) dbPatch.post_instructions = patch.postInstructions;
   if (patch.isActive !== undefined) dbPatch.is_active = patch.isActive;
-  if (Object.keys(dbPatch).length) {
+  if (patch.tenantId !== undefined && patch.steps !== undefined) {
+    const { error } = await supabase.rpc("catalog_save_protocol_bundle", {
+      _id: id,
+      _tenant_id: patch.tenantId,
+      _values: dbPatch as Json,
+      _steps: patch.steps.map((step) => ({
+        service_id: step.serviceId,
+        interval_days: step.intervalDays ?? null,
+        notes: step.notes ?? null,
+      })),
+    });
+    if (error) throw error;
+  } else if (Object.keys(dbPatch).length) {
     const { error } = await supabase.from("protocols").update(dbPatch as never).eq("id", id);
     if (error) throw error;
-  }
-  if (patch.tenantId && patch.steps) {
-    await replaceProtocolSteps(id, patch.tenantId, patch.steps);
   }
 }
 
@@ -793,29 +773,6 @@ export async function listProtocolSessions(protocolId: string): Promise<Protocol
     intervalDays: r.interval_days,
     notes: r.notes,
   }));
-}
-
-async function replaceProtocolSteps(
-  protocolId: string,
-  tenantId: string,
-  steps: Array<{ serviceId: string; intervalDays?: number; notes?: string }>,
-): Promise<void> {
-  const { error: deleteError } = await supabase
-    .from("protocol_sessions")
-    .delete()
-    .eq("protocol_id", protocolId);
-  if (deleteError) throw deleteError;
-  if (steps.length === 0) return;
-  const rows = steps.map((step, idx) => ({
-    tenant_id: tenantId,
-    protocol_id: protocolId,
-    service_id: step.serviceId,
-    step: idx + 1,
-    interval_days: step.intervalDays ?? null,
-    notes: step.notes ?? null,
-  }));
-  const { error } = await supabase.from("protocol_sessions").insert(rows);
-  if (error) throw error;
 }
 
 // =============================================================================

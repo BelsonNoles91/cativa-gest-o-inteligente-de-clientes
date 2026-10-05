@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { test, expect } from "@playwright/test";
 import { AUTH_SKIP_REASON, HAS_E2E_AUTH } from "../_helpers/auth";
+import { getDestructiveE2ESkipReason } from "../_helpers/qaTarget";
 
 type MembershipSnapshot = {
   id: string;
@@ -62,8 +63,8 @@ function loadRequiredEnv() {
   const projectId = env("VITE_SUPABASE_PROJECT_ID");
   const ownerEmail = env("E2E_USER");
   const ownerPassword = env("E2E_PASS");
-  const inviteeEmail = env("E2E_FRONTDESK_USER");
-  const inviteePassword = env("E2E_FRONTDESK_PASS");
+  const inviteeEmail = env("E2E_INVITEE_USER") || env("E2E_FRONTDESK_USER");
+  const inviteePassword = env("E2E_INVITEE_PASS") || env("E2E_FRONTDESK_PASS");
 
   if (
     !supabaseUrl ||
@@ -105,7 +106,10 @@ async function signIn(
   email: string,
   password: string,
 ) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
   if (error) throw error;
   if (!data.user || !data.session) {
     throw new Error(`Login E2E não retornou sessão para ${email}.`);
@@ -183,11 +187,21 @@ async function deletePendingInvites(
 test.describe("team invitation", () => {
   test.describe.configure({ timeout: 120_000 });
   test.skip(!HAS_E2E_AUTH, AUTH_SKIP_REASON);
+  const qaTargetSkipReason = getDestructiveE2ESkipReason();
+  test.skip(Boolean(qaTargetSkipReason), qaTargetSkipReason ?? "");
 
-  test("cria convite e aceita pela tela /auth/aceite-convite", async ({ page }) => {
+  test("cria convite e aceita pela tela /auth/aceite-convite", async ({
+    page,
+  }) => {
     const config = loadRequiredEnv();
-    const ownerSupabase = createSupabase(config.supabaseUrl, config.publishableKey);
-    const inviteeSupabase = createSupabase(config.supabaseUrl, config.publishableKey);
+    const ownerSupabase = createSupabase(
+      config.supabaseUrl,
+      config.publishableKey,
+    );
+    const inviteeSupabase = createSupabase(
+      config.supabaseUrl,
+      config.publishableKey,
+    );
     let invitationId = "";
     let tenantId = "";
     let inviteeUserId = "";
@@ -251,12 +265,18 @@ test.describe("team invitation", () => {
         waitUntil: "commit",
         timeout: 15_000,
       });
-      await page.waitForLoadState("domcontentloaded", { timeout: 30_000 }).catch(() => {});
+      await page
+        .waitForLoadState("domcontentloaded", { timeout: 30_000 })
+        .catch(() => {});
 
-      await expect(page.getByRole("heading", { name: "Convite de equipe" })).toBeVisible({
+      await expect(
+        page.getByRole("heading", { name: "Convite de equipe" }),
+      ).toBeVisible({
         timeout: 30_000,
       });
-      await expect(page.getByText(config.inviteeEmail, { exact: true })).toBeVisible({
+      await expect(
+        page.getByText(config.inviteeEmail, { exact: true }),
+      ).toBeVisible({
         timeout: 30_000,
       });
       await expect(page.getByText("Recepção", { exact: true })).toBeVisible({
@@ -264,7 +284,9 @@ test.describe("team invitation", () => {
       });
 
       await page.getByRole("button", { name: "Aceitar convite" }).click();
-      await expect(page.getByText("Convite aceito!", { exact: false }).first()).toBeVisible({
+      await expect(
+        page.getByText("Convite aceito!", { exact: false }).first(),
+      ).toBeVisible({
         timeout: 30_000,
       });
 
@@ -298,7 +320,10 @@ test.describe("team invitation", () => {
         .toBe("frontdesk:active");
     } finally {
       if (invitationId) {
-        await ownerSupabase.from("team_invitations").delete().eq("id", invitationId);
+        await ownerSupabase
+          .from("team_invitations")
+          .delete()
+          .eq("id", invitationId);
       }
       if (tenantId && inviteeUserId) {
         await restoreMembership(

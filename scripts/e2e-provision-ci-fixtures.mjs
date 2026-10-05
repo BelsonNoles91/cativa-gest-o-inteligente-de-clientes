@@ -1,6 +1,8 @@
 #!/usr/bin/env node
-import { appendFileSync } from "node:fs";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { createClient } from "@supabase/supabase-js";
+import { invokeWithRetry } from "./e2e-provision-retry.mjs";
 
 function env(key) {
   const value = process.env[key];
@@ -9,19 +11,23 @@ function env(key) {
 
 const SUPABASE_URL = env("VITE_SUPABASE_URL") || env("SUPABASE_URL");
 const PUBLISHABLE_KEY = env("VITE_SUPABASE_PUBLISHABLE_KEY") || env("SUPABASE_ANON_KEY");
-const E2E_USER = env("E2E_USER");
-const E2E_PASS = env("E2E_PASS");
+const SUPER_ADMIN_USER = env("E2E_SUPER_ADMIN_USER");
+const SUPER_ADMIN_PASS = env("E2E_SUPER_ADMIN_PASS");
+const FIXTURE_PASS = env("E2E_PASS");
 const TENANT_A_SLUG = env("E2E_TENANT_SLUG") || "studio-teste-qa";
 const TENANT_B_SLUG = env("E2E_TENANT_B_SLUG") || `${TENANT_A_SLUG}-b`;
 const EMAIL_DOMAIN = env("E2E_EMAIL_DOMAIN") || "cativa.test";
+const RUN_ID = (env("E2E_RUN_ID") || env("GITHUB_RUN_ID") || `local-${Date.now()}`)
+  .replace(/[^a-zA-Z0-9._-]/g, "-")
+  .slice(0, 80);
 
-if (!SUPABASE_URL || !PUBLISHABLE_KEY || !E2E_USER || !E2E_PASS) {
+if (!SUPABASE_URL || !PUBLISHABLE_KEY || !SUPER_ADMIN_USER || !SUPER_ADMIN_PASS || !FIXTURE_PASS) {
   throw new Error(
-    "VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY, E2E_USER e E2E_PASS são obrigatórios.",
+    "VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY, E2E_SUPER_ADMIN_USER, E2E_SUPER_ADMIN_PASS e E2E_PASS (senha das fixtures) são obrigatórios.",
   );
 }
-if (E2E_PASS.length < 12) {
-  throw new Error("E2E_PASS precisa ter ao menos 12 caracteres para o provisionamento seguro.");
+if (FIXTURE_PASS.length < 12) {
+  throw new Error("E2E_PASS precisa ter ao menos 12 caracteres para as contas de fixture.");
 }
 if (![".test", ".local", ".example"].some((suffix) => EMAIL_DOMAIN.endsWith(suffix))) {
   throw new Error("E2E_EMAIL_DOMAIN precisa terminar em .test, .local ou .example.");
@@ -87,13 +93,22 @@ async function ensureDefaultUnit(tenantId) {
 }
 
 async function provisionTenant(tenantId) {
-  const { data, error } = await supabase.functions.invoke("admin-provision-test-users", {
-    body: {
-      tenant_id: tenantId,
-      password: E2E_PASS,
-      email_domain: EMAIL_DOMAIN,
+  const { data, error } = await invokeWithRetry(
+    () => supabase.functions.invoke("admin-provision-test-users", {
+      body: {
+        tenant_id: tenantId,
+        password: FIXTURE_PASS,
+        email_domain: EMAIL_DOMAIN,
+      },
+    }),
+    {
+      onRetry: ({ nextAttempt, maxAttempts, delayMs, status }) => {
+        console.warn(
+          `Falha transitória no provisionamento QA${status ? ` (HTTP ${status})` : " (rede)"}; nova tentativa ${nextAttempt}/${maxAttempts} em ${delayMs} ms.`,
+        );
+      },
     },
-  });
+  );
   if (error) {
     let detail = error.message;
     const response = error.context;
@@ -123,7 +138,7 @@ async function provisionTenant(tenantId) {
       ? data.results
       : [];
   const byRole = new Map(accounts.map((entry) => [entry.role, entry]));
-  for (const role of ["owner", "manager", "frontdesk", "professional"]) {
+  for (const role of ["owner", "manager", "frontdesk", "professional", "client"]) {
     const entry = byRole.get(role);
     if (!entry?.email || !entry?.user_id || !entry?.password_set) {
       throw new Error(`fixture QA incompleta para o papel ${role}`);
@@ -143,7 +158,7 @@ function exportForLaterStep(key, value, { secret = false } = {}) {
 
 async function main() {
   const auth = assertResult(
-    await supabase.auth.signInWithPassword({ email: E2E_USER, password: E2E_PASS }),
+    await supabase.auth.signInWithPassword({ email: SUPER_ADMIN_USER, password: SUPER_ADMIN_PASS }),
     "autenticar usuário QA principal",
   );
   if (!auth.user) throw new Error("autenticação QA não retornou usuário");
@@ -158,30 +173,66 @@ async function main() {
   );
   if (!profile?.is_super_admin) {
     throw new Error(
-      "E2E_USER precisa ser super_admin para chamar o provisionador de fixtures de segurança.",
+      "E2E_SUPER_ADMIN_USER precisa ser super_admin para chamar o provisionador de fixtures de segurança.",
     );
   }
 
   const tenantA = await ensureTenant(TENANT_A_SLUG, "Studio Teste QA");
-  await ensureDefaultUnit(tenantA.id);
+  const unitA = await ensureDefaultUnit(tenantA.id);
   const rolesA = await provisionTenant(tenantA.id);
 
   const tenantB = await ensureTenant(TENANT_B_SLUG, "Studio Teste QA B");
-  await ensureDefaultUnit(tenantB.id);
+  const unitB = await ensureDefaultUnit(tenantB.id);
   const rolesB = await provisionTenant(tenantB.id);
 
+  const ownerEmail = rolesA.get("owner").email;
+  if (ownerEmail.toLowerCase() === SUPER_ADMIN_USER.toLowerCase()) {
+    throw new Error("A conta super-admin não pode ser reutilizada como owner da fixture QA.");
+  }
+
+  // A conta administrativa só provisiona as fixtures. Daqui em diante,
+  // E2E_USER/E2E_PASS representam o owner do tenant QA para as jornadas.
+  exportForLaterStep("E2E_USER", ownerEmail);
+  exportForLaterStep("E2E_PASS", FIXTURE_PASS, { secret: true });
   exportForLaterStep("E2E_MANAGER_USER", rolesA.get("manager").email);
-  exportForLaterStep("E2E_MANAGER_PASS", E2E_PASS, { secret: true });
+  exportForLaterStep("E2E_MANAGER_PASS", FIXTURE_PASS, { secret: true });
   exportForLaterStep("E2E_FRONTDESK_USER", rolesA.get("frontdesk").email);
-  exportForLaterStep("E2E_FRONTDESK_PASS", E2E_PASS, { secret: true });
+  exportForLaterStep("E2E_FRONTDESK_PASS", FIXTURE_PASS, { secret: true });
   exportForLaterStep("E2E_PROFESSIONAL_USER", rolesA.get("professional").email);
-  exportForLaterStep("E2E_PROFESSIONAL_PASS", E2E_PASS, { secret: true });
+  exportForLaterStep("E2E_PROFESSIONAL_PASS", FIXTURE_PASS, { secret: true });
+  exportForLaterStep("E2E_CLIENT_USER", rolesA.get("client").email);
+  exportForLaterStep("E2E_CLIENT_PASS", FIXTURE_PASS, { secret: true });
   exportForLaterStep("E2E_TENANT_B_USER", rolesB.get("owner").email);
-  exportForLaterStep("E2E_TENANT_B_PASS", E2E_PASS, { secret: true });
+  exportForLaterStep("E2E_TENANT_B_PASS", FIXTURE_PASS, { secret: true });
   exportForLaterStep("E2E_TENANT_B_SLUG", tenantB.slug);
+  exportForLaterStep("E2E_TENANT_A_ID", tenantA.id);
+  exportForLaterStep("E2E_TENANT_B_ID", tenantB.id);
+  exportForLaterStep("E2E_RUN_ID", RUN_ID);
+
+  // O manifesto é deliberadamente sintético e não contém senha/chave. Ele
+  // permite correlacionar evidências de RLS, layout e carga sem depender de
+  // e-mails fixos, e torna a limpeza/diagnóstico de uma execução idempotente.
+  const manifestDir = join(process.cwd(), "e2e", ".artifacts-qa");
+  mkdirSync(manifestDir, { recursive: true });
+  const manifestPath = join(manifestDir, `fixtures-${RUN_ID}.json`);
+  const manifest = {
+    runId: RUN_ID,
+    createdAt: new Date().toISOString(),
+    target: new URL(SUPABASE_URL).host,
+    tenants: [
+      { id: tenantA.id, slug: tenantA.slug, unitId: unitA.id, accounts: Object.fromEntries(rolesA) },
+      { id: tenantB.id, slug: tenantB.slug, unitId: unitB.id, accounts: Object.fromEntries(rolesB) },
+    ],
+    cleanup: {
+      strategy: "idempotent-static-slugs",
+      destructiveRequiresQaProjectRef: true,
+    },
+  };
+  writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, { encoding: "utf8", mode: 0o600 });
+  exportForLaterStep("E2E_FIXTURE_MANIFEST", manifestPath);
 
   console.log(
-    `Fixtures QA prontas: ${tenantA.slug} (RBAC) e ${tenantB.slug} (isolamento multi-tenant).`,
+    `Fixtures QA prontas (run_id=${RUN_ID}): ${tenantA.slug} (RBAC) e ${tenantB.slug} (isolamento multi-tenant).`,
   );
   await supabase.auth.signOut();
 }

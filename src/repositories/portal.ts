@@ -23,7 +23,7 @@ import type {
 const APPT_COLS = `
   id, tenant_id, unit_id, client_id, professional_id, resource_id,
   cancellation_policy_id, status, source, starts_at, ends_at,
-  duration_minutes, buffer_before_minutes, buffer_after_minutes,
+  duration_minutes, client_reschedule_count, buffer_before_minutes, buffer_after_minutes,
   is_walk_in, is_overbooked, total_price_cents, notes, internal_notes,
   confirmed_at, reminded_at, arrived_at, started_at, completed_at,
   canceled_at, no_show_at, canceled_reason, created_at, updated_at
@@ -43,6 +43,7 @@ function toAppointment(r: Record<string, unknown>): Appointment {
     startsAt: r.starts_at as string,
     endsAt: r.ends_at as string,
     durationMinutes: r.duration_minutes as number,
+    clientRescheduleCount: Number(r.client_reschedule_count ?? 0),
     bufferBeforeMinutes: (r.buffer_before_minutes as number) ?? 0,
     bufferAfterMinutes: (r.buffer_after_minutes as number) ?? 0,
     isWalkIn: Boolean(r.is_walk_in),

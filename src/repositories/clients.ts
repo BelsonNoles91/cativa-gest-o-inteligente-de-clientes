@@ -4,6 +4,7 @@
  * UI consome apenas estes métodos (portabilidade futura para outro backend).
  */
 import { supabase } from "@/integrations/supabase/client";
+import { validateClientFileContent, validateClientPhotoContent } from "@/lib/client-media-validation";
 import type {
   Client,
   ClientFile,
@@ -379,6 +380,18 @@ export async function deleteNote(noteId: string): Promise<void> {
 // -----------------------------------------------------------------------------
 // FILES
 // -----------------------------------------------------------------------------
+class ClientFileUploadRollbackError extends Error {
+  readonly errors: [unknown, unknown];
+
+  constructor(databaseError: unknown, cleanupError: unknown) {
+    super(
+      "Não foi possível salvar os dados do arquivo e a limpeza automática também falhou. Verifique a mídia antes de tentar novamente.",
+    );
+    this.name = "ClientFileUploadRollbackError";
+    this.errors = [databaseError, cleanupError];
+  }
+}
+
 export async function listFiles(clientId: string): Promise<ClientFile[]> {
   const { data, error } = await supabase
     .from("client_files")
@@ -411,6 +424,9 @@ export async function uploadClientFile(input: {
   file: File;
   description?: string | null;
 }): Promise<ClientFile> {
+  const validationError = await validateClientFileContent(input.file);
+  if (validationError) throw new TypeError(validationError);
+
   const safeName = input.file.name.replace(/[^\w.-]+/g, "_");
   const storagePath = `${input.tenantId}/${input.clientId}/${crypto.randomUUID()}-${safeName}`;
   const { error: uploadError } = await supabase.storage
@@ -436,7 +452,25 @@ export async function uploadClientFile(input: {
     })
     .select("id, client_id, storage_path, file_name, mime_type, size_bytes, description, created_at")
     .single();
-  if (error) throw error;
+  if (error) {
+    // Storage e Postgres não compartilham transação. Se a linha não for criada,
+    // tente remover o objeto já enviado para não deixar mídia órfã no tenant.
+    let cleanupError: unknown;
+    try {
+      const { error: removeError } = await supabase.storage
+        .from("client-media")
+        .remove([storagePath]);
+      cleanupError = removeError;
+    } catch (removeError) {
+      cleanupError = removeError;
+    }
+
+    if (cleanupError) {
+      throw new ClientFileUploadRollbackError(error, cleanupError);
+    }
+
+    throw error;
+  }
 
   await addTimelineEvent({
     tenantId: input.tenantId,
@@ -509,6 +543,9 @@ export async function uploadClientPhoto(input: {
   caption?: string | null;
   takenAt?: string | null;
 }): Promise<ClientPhoto> {
+  const validationError = await validateClientPhotoContent(input.file);
+  if (validationError) throw new TypeError(validationError);
+
   const safeName = input.file.name.replace(/[^\w.-]+/g, "_");
   const storagePath = `${input.tenantId}/${input.clientId}/${crypto.randomUUID()}-${safeName}`;
   const { error: uploadError } = await supabase.storage

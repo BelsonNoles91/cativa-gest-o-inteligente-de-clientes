@@ -1,4 +1,5 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
+import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
+import type { Database, Json } from "../../../src/integrations/supabase/types.ts";
 import { callJev, JevHttpError } from "../_shared/jev.ts";
 import {
   buildRetentionState,
@@ -28,19 +29,22 @@ Deno.serve(async (req) => {
   if (!supabaseUrl || !anonKey) {
     return json({ error: "Configuração do backend ausente." }, 500, headers);
   }
-  if (!typesafeKey) {
-    return json({ error: "A inteligência Jev ainda não foi configurada." }, 503, headers);
-  }
 
   const authorization = req.headers.get("Authorization") ?? "";
   if (!authorization) return json({ error: "Não autenticado." }, 401, headers);
 
-  const supabase = createClient(supabaseUrl, anonKey, {
+  const supabase = createClient<Database>(supabaseUrl, anonKey, {
     global: { headers: { Authorization: authorization } },
     auth: { persistSession: false },
   });
   const { data: authData, error: authError } = await supabase.auth.getUser();
   if (authError || !authData.user) return json({ error: "Sessão inválida." }, 401, headers);
+  if (!serviceRoleKey) {
+    return json({ error: "Configuração segura de avaliação indisponível." }, 503, headers);
+  }
+  if (!typesafeKey) {
+    return json({ error: "A inteligência Jev ainda não foi configurada." }, 503, headers);
+  }
 
   const body = await req.json().catch(() => null) as { tenantId?: unknown; clientId?: unknown } | null;
   const tenantId = typeof body?.tenantId === "string" ? body.tenantId : "";
@@ -68,29 +72,10 @@ Deno.serve(async (req) => {
     return json({ error: "Sem acesso ao tenant informado." }, 403, headers);
   }
 
-  const serviceClient = serviceRoleKey
-    ? createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } })
-    : null;
+  const serviceClient = createClient<Database>(supabaseUrl, serviceRoleKey, {
+    auth: { persistSession: false },
+  });
   const dailyLimit = positiveInteger(Deno.env.get("RETENTION_DAILY_TENANT_LIMIT"), 200);
-  if (serviceClient) {
-    const startOfDay = new Date();
-    startOfDay.setUTCHours(0, 0, 0, 0);
-    const { count, error: quotaError } = await serviceClient
-      .from("audit_logs")
-      .select("id", { count: "exact", head: true })
-      .eq("tenant_id", tenantId)
-      .eq("action", "retention_advice.evaluated")
-      .gte("created_at", startOfDay.toISOString());
-    if (quotaError) {
-      logEvent("retention_advisor.quota_check_failed", requestId, {
-        tenant_id: tenantId,
-        error: quotaError.message,
-      });
-    } else if ((count ?? 0) >= dailyLimit) {
-      logEvent("retention_advisor.quota_exceeded", requestId, { tenant_id: tenantId, daily_limit: dailyLimit });
-      return json({ error: "Limite diário de avaliações Jev atingido para este tenant." }, 429, headers);
-    }
-  }
 
   const now = new Date();
   const historyStart = new Date(now.getTime() - 365 * 86_400_000).toISOString();
@@ -148,6 +133,22 @@ Deno.serve(async (req) => {
     now,
   );
 
+  const { data: quotaReserved, error: quotaError } = await serviceClient.rpc(
+    "reserve_retention_advisor_evaluation",
+    { _tenant_id: tenantId, _daily_limit: dailyLimit },
+  );
+  if (quotaError) {
+    logEvent("retention_advisor.quota_reservation_failed", requestId, {
+      tenant_id: tenantId,
+      database_error_code: quotaError.code ?? null,
+    });
+    return json({ error: "Não foi possível validar o limite diário de avaliações." }, 503, headers);
+  }
+  if (quotaReserved !== true) {
+    logEvent("retention_advisor.quota_exceeded", requestId, { tenant_id: tenantId, daily_limit: dailyLimit });
+    return json({ error: "Limite diário de avaliações Jev atingido para este tenant." }, 429, headers);
+  }
+
   try {
     const response = await callJev({
       apiKey: typesafeKey,
@@ -156,6 +157,7 @@ Deno.serve(async (req) => {
     const policy = parseRetentionPolicy(
       Deno.env.get("RETENTION_ACTION_CONFIDENCE_THRESHOLD"),
       Deno.env.get("RETENTION_EVIDENCE_THRESHOLD"),
+      Deno.env.get("RETENTION_URGENCY_CONFIDENCE_THRESHOLD"),
     );
     const advice = interpretRetentionResponse(response, state, policy);
     const metadata = {
@@ -163,7 +165,7 @@ Deno.serve(async (req) => {
       suggested_action: advice.action,
       confidence: advice.confidence,
       evidence_sufficiency: advice.evidenceSufficiency,
-      urgency: advice.urgency,
+      urgency_level: advice.urgencyLevel,
       model: advice.model,
       input_tokens: response.usage?.input_tokens ?? null,
       output_tokens: response.usage?.output_tokens ?? null,
@@ -237,12 +239,12 @@ function logEvent(event: string, requestId: string, fields: Record<string, unkno
 }
 
 async function writeAuditEvent(
-  serviceClient: ReturnType<typeof createClient> | null,
+  serviceClient: SupabaseClient<Database> | null,
   event: {
     tenantId: string;
     actorId: string;
     clientId: string;
-    metadata: Record<string, unknown>;
+    metadata: Json;
     requestId: string;
   },
 ) {

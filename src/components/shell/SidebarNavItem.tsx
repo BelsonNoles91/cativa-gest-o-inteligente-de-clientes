@@ -91,8 +91,6 @@ export function SidebarNavItem({
           )}
           aria-current={isActive ? "page" : undefined}
           aria-disabled={locked || isLoading}
-          role="menuitem"
-          tabIndex={0}
           data-testid={`sidebar-nav-item-${label.toLowerCase().replace(/\s+/g, "-")}`}
           data-active={isActive}
           data-loading={isLoading}
@@ -131,4 +129,3 @@ export function SidebarNavItem({
     </SidebarMenuItem>
   );
 }
-

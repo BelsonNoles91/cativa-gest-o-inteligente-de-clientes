@@ -8,6 +8,10 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import type { ConfirmationStage } from "@/domain/confirmation";
+import {
+  getQueueScheduledFor,
+  matchesConfirmationRule,
+} from "./queueRules";
 
 interface RuleRow {
   id: string;
@@ -30,6 +34,7 @@ interface ApptRow {
   starts_at: string;
   status: string;
   total_price_cents: number;
+  confirmed_at: string | null;
 }
 
 interface ClientRow {
@@ -51,6 +56,20 @@ export interface GenerateQueueResult {
   created: number;
   skipped: number;
   total: number;
+  warning?: string;
+}
+
+async function syncReactivationTasks(tenantId: string): Promise<string | undefined> {
+  try {
+    const { error } = await supabase.rpc("generate_reactivation_tasks", {
+      _tenant_id: tenantId,
+    });
+    if (error) return `Falha ao sincronizar tarefas de recuperação: ${error.message}`;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "erro inesperado";
+    return `Falha ao sincronizar tarefas de recuperação: ${message}`;
+  }
+  return undefined;
 }
 
 export async function generateQueueForTenant(
@@ -69,18 +88,27 @@ export async function generateQueueForTenant(
     .eq("is_active", true);
   if (rulesErr) throw rulesErr;
   const rules = (rulesData ?? []) as RuleRow[];
+  const invalidRule = rules.find(
+    (rule) => !Number.isInteger(rule.hours_before_appointment) || rule.hours_before_appointment < 0,
+  );
+  if (invalidRule) {
+    throw new Error(`A regra ${invalidRule.id} tem antecedência inválida; use horas inteiras não negativas.`);
+  }
 
   // Agendamentos elegíveis
   const { data: apptsData, error: apptsErr } = await supabase
     .from("appointments")
-    .select("id, client_id, unit_id, starts_at, status, total_price_cents")
+    .select("id, client_id, unit_id, starts_at, status, total_price_cents, confirmed_at")
     .eq("tenant_id", tenantId)
     .gte("starts_at", now.toISOString())
     .lte("starts_at", until.toISOString())
     .not("status", "in", "(canceled,no_show,completed)");
   if (apptsErr) throw apptsErr;
   const appts = (apptsData ?? []) as ApptRow[];
-  if (appts.length === 0) return { created: 0, skipped: 0, total: 0 };
+  if (appts.length === 0) {
+    const warning = await syncReactivationTasks(tenantId);
+    return { created: 0, skipped: 0, total: 0, ...(warning ? { warning } : {}) };
+  }
 
   // Carrega clients para flags VIP / risk
   const clientIds = Array.from(new Set(appts.map((a) => a.client_id)));
@@ -91,6 +119,34 @@ export async function generateQueueForTenant(
   if (cliErr) throw cliErr;
   const cliMap = new Map<string, ClientRow>();
   for (const c of clientsData ?? []) cliMap.set(c.id as string, c as ClientRow);
+
+  // Protocol appointments are derived from booked appointment_items whose
+  // services belong to a configured protocol session in this tenant.
+  const protocolAppointmentIds = new Set<string>();
+  if (rules.some((rule) => rule.applies_to_protocol)) {
+    const [appointmentItemsRes, protocolSessionsRes] = await Promise.all([
+      supabase
+        .from("appointment_items")
+        .select("appointment_id, service_id")
+        .eq("tenant_id", tenantId)
+        .in("appointment_id", appts.map((appointment) => appointment.id)),
+      supabase
+        .from("protocol_sessions")
+        .select("service_id")
+        .eq("tenant_id", tenantId),
+    ]);
+    if (appointmentItemsRes.error) throw appointmentItemsRes.error;
+    if (protocolSessionsRes.error) throw protocolSessionsRes.error;
+
+    const protocolServiceIds = new Set(
+      (protocolSessionsRes.data ?? []).map((session) => session.service_id as string),
+    );
+    for (const item of appointmentItemsRes.data ?? []) {
+      if (protocolServiceIds.has(item.service_id as string)) {
+        protocolAppointmentIds.add(item.appointment_id as string);
+      }
+    }
+  }
 
   // Itens já existentes (para deduplicar por appointment_id + stage)
   const apptIds = appts.map((a) => a.id);
@@ -130,6 +186,33 @@ export async function generateQueueForTenant(
         rules.find((r) => r.stage === stage && r.unit_id === appt.unit_id) ??
         rules.find((r) => r.stage === stage && r.unit_id == null);
 
+      if (rule) {
+        if (!matchesConfirmationRule(
+          {
+            appliesToVip: rule.applies_to_vip,
+            appliesToHighRisk: rule.applies_to_high_risk,
+            appliesToProtocol: rule.applies_to_protocol,
+            minAppointmentValueCents: rule.min_appointment_value_cents,
+            skipIfAlreadyConfirmed: rule.skip_if_already_confirmed,
+          },
+          {
+            status: appt.status,
+            confirmedAt: appt.confirmed_at,
+            totalPriceCents: appt.total_price_cents,
+          },
+          cli ? { isVip: cli.is_vip, riskLevel: cli.risk_level } : null,
+          protocolAppointmentIds.has(appt.id),
+        )) {
+          skipped++;
+          continue;
+        }
+      } else if (appt.status === "confirmed" || appt.confirmed_at !== null) {
+        // Even without custom rules, already-confirmed appointments should not
+        // produce a new manual contact task.
+        skipped++;
+        continue;
+      }
+
       // Calcula prioridade via RPC
       let priority = rule?.base_priority ?? 50;
       try {
@@ -153,6 +236,9 @@ export async function generateQueueForTenant(
         stage,
         rule_id: rule?.id ?? null,
         priority,
+        scheduled_for: rule
+          ? getQueueScheduledFor(appt.starts_at, rule.hours_before_appointment)
+          : now.toISOString(),
       });
       if (insErr) {
         skipped++;
@@ -163,12 +249,10 @@ export async function generateQueueForTenant(
     }
   }
 
-  // Gera também tarefas de reativação (Recovery) baseadas em inteligência
-  try {
-    await supabase.rpc("generate_reactivation_tasks", { _tenant_id: tenantId });
-  } catch (err) {
-    console.error("[QueueGenerator:Reactivation]", err);
-  }
+  // Gera também tarefas de reativação (Recovery) mesmo quando esta execução
+  // não encontra novos agendamentos. Erros são apresentados sem apagar o
+  // resultado parcial da geração principal.
+  const warning = await syncReactivationTasks(tenantId);
 
-  return { created, skipped, total: created + skipped };
+  return { created, skipped, total: created + skipped, ...(warning ? { warning } : {}) };
 }

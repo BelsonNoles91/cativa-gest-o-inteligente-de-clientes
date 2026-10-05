@@ -12,7 +12,7 @@
  */
 import { translateAuthError } from "@/lib/auth-errors";
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Building2, Sparkles, Rocket, ArrowRight, Check, Mail, Lock, User,
   Palette, Loader2, UserPlus, Trash2, Phone, ImagePlus, UploadCloud, Scissors, PlusCircle, DollarSign,
@@ -34,6 +34,7 @@ import { inviteMember } from "@/services/team/inviteMember";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { SignOutAndRestart } from "@/components/auth/SignOutAndRestart";
+import { validateTenantLogoFileContent } from "@/lib/client-media-validation";
 
 interface InviteDraft {
   email: string;
@@ -50,18 +51,24 @@ const CURRENCIES = ["BRL", "USD", "EUR"];
 const INVITE_ROLES: Role[] = ROLES.filter((r) => r !== "super_admin" && r !== "client" && r !== "owner");
 
 export default function Onboarding() {
-  const { user, signUp, loading: authLoading } = useAuth();
+  const { user, signUp } = useAuth();
   const {
     refresh,
     setCurrentTenantId,
     setCurrentUnitId,
   } = useTenant();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Step 0 sempre aparece quando o usuário ainda não tem tenant/membership completo,
   // mesmo que já exista uma sessão ativa (preview, navegador antigo, etc.).
   // Só pulamos o Step 0 quando o avanço for explícito (após signup ou login bem-sucedido).
-  const [step, setStep] = useState(0);
+  // Signup autentica imediatamente; o OnboardingGuard pode ocultar o wizard
+  // enquanto verifica o tenant. O estado da rota também restaura a etapa 1 se
+  // houver remount, sem expor um parâmetro que permita pular o cadastro pela URL.
+  const [step, setStep] = useState(() =>
+    (location.state as { setupStep?: unknown } | null)?.setupStep === "business" ? 1 : 0,
+  );
   const [submitting, setSubmitting] = useState(false);
   const [pendingEmailConfirmation, setPendingEmailConfirmation] = useState(false);
 
@@ -87,18 +94,15 @@ export default function Onboarding() {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
-  const onPickLogo = (file: File | null) => {
+  const onPickLogo = async (file: File | null) => {
     if (!file) {
       setLogoFile(null);
       setLogoPreview(null);
       return;
     }
-    if (!file.type.startsWith("image/")) {
-      toast.error("Selecione um arquivo de imagem.");
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Imagem muito grande", { description: "Máximo de 2 MB." });
+    const validationError = await validateTenantLogoFileContent(file);
+    if (validationError) {
+      toast.error("Não foi possível usar este logo", { description: validationError });
       return;
     }
     setLogoFile(file);
@@ -135,21 +139,30 @@ export default function Onboarding() {
       return;
     }
     setSubmitting(true);
-    const { error, requiresEmailConfirmation } = await signUp(email.trim(), password, fullName.trim());
-    setSubmitting(false);
-    if (error) {
-      toast.error("Não foi possível criar a conta", { description: translateAuthError(error.message) });
-      return;
-    }
+    try {
+      const { error, requiresEmailConfirmation } = await signUp(email.trim(), password, fullName.trim());
+      if (error) {
+        toast.error("Não foi possível criar a conta", { description: translateAuthError(error.message) });
+        return;
+      }
 
-    if (requiresEmailConfirmation) {
-      setPendingEmailConfirmation(true);
-      toast.success("Conta criada! Confirme seu e-mail para continuar.");
-      return;
-    }
+      if (requiresEmailConfirmation) {
+        setPendingEmailConfirmation(true);
+        toast.success("Conta criada! Confirme seu e-mail para continuar.");
+        return;
+      }
 
-    toast.success("Conta criada!");
-    setStep(1);
+      toast.success("Conta criada!");
+      setStep(1);
+      navigate("/onboarding", { replace: true, state: { setupStep: "business" } });
+    } catch (err) {
+      // A SDK também pode rejeitar (por exemplo, timeout/rede offline) em vez
+      // de devolver { error }. Não deixe o formulário preso em "carregando".
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error("Não foi possível criar a conta", { description: translateAuthError(message) });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const addInvite = () => {
@@ -167,6 +180,9 @@ export default function Onboarding() {
   };
 
   const handleFinish = async () => {
+    // O guard e o AuthProvider já validaram a sessão desta página. Consultar
+    // getSession() de novo aqui pode disputar o lock interno da SDK após signup
+    // no WebKit e deixar a ação sem feedback antes mesmo da chamada transacional.
     if (!user) {
       toast.error("Sessão expirada. Faça login novamente.");
       navigate("/auth/login");
@@ -180,7 +196,6 @@ export default function Onboarding() {
     setSubmitting(true);
     try {
       const result = await createTenantWithOwner({
-        ownerUserId: user.id,
         name: bizName.trim(),
         segment: segment as TenantSegment,
         timezone,
@@ -189,6 +204,8 @@ export default function Onboarding() {
         unitPhone: unitPhone.trim() || undefined,
         brandPrimary, brandSecondary, brandAccent,
         whatsappPhone: whatsappPhone.trim() || undefined,
+        initialProfessionals: proDrafts,
+        initialServices: serviceDrafts,
       });
 
       // Upload do logo (se houver) — só agora temos tenantId + membership ativa.
@@ -223,63 +240,13 @@ export default function Onboarding() {
       for (const inv of invites) {
         try {
           await inviteMember({
-            tenantId: result.tenantId,
-            email: inv.email,
-            role: inv.role,
-            inviterUserId: user.id,
-          });
+          tenantId: result.tenantId,
+          email: inv.email,
+          role: inv.role,
+          inviterUserId: user.id,
+        });
         } catch (err) {
           console.error("Falha ao registrar convite", err);
-        }
-      }
-
-      // Criar profissionais e serviços rascunhados em lote
-      if (proDrafts.length > 0) {
-        await supabase.from("professionals").insert(
-          proDrafts.map(proName => ({
-            tenant_id: result.tenantId,
-            display_name: proName,
-            is_active: true
-          }))
-        );
-      }
-
-      if (serviceDrafts.length > 0) {
-        for (const svc of serviceDrafts) {
-          const { data: svcData } = await supabase.from("services").insert({
-            tenant_id: result.tenantId,
-            name: svc.name,
-            duration_minutes: 30,
-            is_active: true
-          }).select("id").single();
-
-          if (svcData) {
-            await supabase.from("service_prices").insert({
-              tenant_id: result.tenantId,
-              service_id: svcData.id,
-              amount_cents: Math.round(parseFloat(svc.price) * 100),
-              currency: currency || 'BRL',
-              is_default: true
-            });
-          }
-        }
-      }
-
-      // Criar agendamento de teste se houver profissional e serviço
-      if (proDrafts.length > 0 && serviceDrafts.length > 0) {
-        const { data: pros } = await supabase.from("professionals").select("id").eq("tenant_id", result.tenantId).limit(1);
-        const { data: svcs } = await supabase.from("services").select("id").eq("tenant_id", result.tenantId).limit(1);
-        
-        if (pros?.[0] && svcs?.[0]) {
-          await supabase.from("appointments").insert({
-            // tenant_id e unit_id são resolvidos por trigger/RLS ou passados se permitidos
-            unit_id: result.unitId,
-            professional_id: pros[0].id,
-            starts_at: new Date(new Date().getTime() + 2 * 60 * 60 * 1000).toISOString(),
-            ends_at: new Date(new Date().getTime() + 3 * 60 * 60 * 1000).toISOString(),
-            status: 'confirmed',
-            notes: 'Agendamento de teste do onboarding'
-          } as never);
         }
       }
 
@@ -303,12 +270,12 @@ export default function Onboarding() {
 
   const addServiceDraft = (name: string, price: string) => {
     if (!name.trim()) return;
-    setServiceDrafts([...serviceDrafts, { name, price }]);
+    setServiceDrafts((current) => [...current, { name: name.trim(), price }]);
   };
 
   const addProDraft = (name: string) => {
     if (!name.trim()) return;
-    setProDrafts([...proDrafts, name]);
+    setProDrafts((current) => [...current, name.trim()]);
   };
 
   // ----- Render -----
@@ -424,8 +391,13 @@ export default function Onboarding() {
               </div>
             </div>
 
-            <Button type="submit" disabled={submitting || pendingEmailConfirmation} className="group h-16 w-full rounded-full bg-primary-dark text-lg font-bold text-white shadow-xl transition-all hover:bg-accent active:scale-[0.98]">
-              {submitting ? <Loader2 className="h-6 w-6 animate-spin" /> : (<span className="flex items-center gap-2">Continuar para Configuração <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" /></span>)}
+            <Button type="submit" disabled={submitting || pendingEmailConfirmation} className="group h-auto min-h-16 w-full whitespace-normal rounded-full bg-primary-dark px-4 py-3 text-lg font-bold text-white shadow-xl transition-all hover:bg-accent active:scale-[0.98]">
+              {submitting ? <Loader2 className="h-6 w-6 animate-spin" /> : (
+                <span className="flex w-full min-w-0 items-center justify-center gap-2 whitespace-normal text-center">
+                  <span className="min-w-0 whitespace-normal break-words [overflow-wrap:anywhere]">Continuar para Configuração</span>
+                  <ArrowRight className="h-5 w-5 shrink-0 transition-transform group-hover:translate-x-1" />
+                </span>
+              )}
             </Button>
 
             {pendingEmailConfirmation && (
@@ -504,6 +476,9 @@ export default function Onboarding() {
           <Button onClick={() => {
             if (!bizName.trim() || !segment) { toast.error("Preencha o nome e o segmento."); return; }
             setStep(2);
+            if ((location.state as { setupStep?: unknown } | null)?.setupStep === "business") {
+              navigate("/onboarding", { replace: true, state: null });
+            }
           }} className="group h-16 w-full rounded-full bg-primary-dark text-lg font-bold text-white shadow-xl transition-all hover:bg-accent active:scale-[0.98]">
             Continuar para Identidade Visual <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
           </Button>
@@ -542,7 +517,7 @@ export default function Onboarding() {
                     }
                   }}
                 />
-                <Button variant="outline" size="icon" onClick={() => { 
+                <Button type="button" variant="outline" size="icon" onClick={() => {
                   const el = document.getElementById('pro-input') as HTMLInputElement;
                   addProDraft(el.value);
                   el.value = '';
@@ -571,7 +546,7 @@ export default function Onboarding() {
                     <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input id="svc-price" placeholder="Valor" className="rounded-xl h-11 pl-9" type="number" />
                   </div>
-                  <Button variant="outline" onClick={() => {
+                  <Button type="button" variant="outline" onClick={() => {
                     const n = document.getElementById('svc-name') as HTMLInputElement;
                     const p = document.getElementById('svc-price') as HTMLInputElement;
                     addServiceDraft(n.value, p.value);
@@ -591,8 +566,8 @@ export default function Onboarding() {
           </div>
 
           <div className="flex gap-4 pt-4">
-            <Button variant="outline" onClick={() => setStep(1)} className="h-16 flex-1 rounded-full border-2 border-primary-dark/10 font-bold text-primary-dark">Voltar</Button>
-            <Button onClick={() => setStep(3)} className="h-16 flex-1 rounded-full bg-primary-dark font-bold text-white shadow-xl hover:bg-accent transition-all">Continuar</Button>
+            <Button type="button" variant="outline" onClick={() => setStep(1)} className="h-16 flex-1 rounded-full border-2 border-primary-dark/10 font-bold text-primary-dark">Voltar</Button>
+            <Button type="button" onClick={() => setStep(3)} className="h-16 flex-1 rounded-full bg-primary-dark font-bold text-white shadow-xl hover:bg-accent transition-all">Continuar</Button>
           </div>
         </div>
       )}
@@ -639,8 +614,8 @@ export default function Onboarding() {
           </div>
 
           <div className="flex gap-4 pt-4">
-            <Button variant="outline" onClick={() => setStep(2)} className="h-16 flex-1 rounded-full border-2 border-primary-dark/10 font-bold text-primary-dark">Voltar</Button>
-            <Button onClick={() => setStep(4)} className="h-16 flex-1 rounded-full bg-primary-dark font-bold text-white shadow-xl hover:bg-accent transition-all">Continuar</Button>
+            <Button type="button" variant="outline" onClick={() => setStep(2)} className="h-16 flex-1 rounded-full border-2 border-primary-dark/10 font-bold text-primary-dark">Voltar</Button>
+            <Button type="button" onClick={() => setStep(4)} className="h-16 flex-1 rounded-full bg-primary-dark font-bold text-white shadow-xl hover:bg-accent transition-all">Continuar</Button>
           </div>
         </div>
       )}
@@ -669,22 +644,31 @@ export default function Onboarding() {
                 { label: "Colaboradores", val: `${proDrafts.length} profissional(is)` },
                 { label: "Serviços", val: `${serviceDrafts.length} item(ns)` },
               ].map((item, i) => (
-                <div key={i} className="flex items-center justify-between pb-4 border-b border-border/10 last:border-0 last:pb-0">
+                <div key={i} data-testid="onboarding-summary-item" className="flex min-w-0 flex-col gap-1 border-b border-border/10 pb-4 last:border-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                   <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{item.label}</span>
-                  <span className="font-bold text-primary-dark text-lg">{item.val}</span>
+                  <span className="min-w-0 break-words text-base font-bold text-primary-dark [overflow-wrap:anywhere] sm:max-w-[55%] sm:text-right sm:text-lg">{item.val}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <Button onClick={handleFinish} disabled={submitting} className="group h-20 w-full rounded-full bg-primary-dark text-xl font-bold text-white shadow-2xl transition-all hover:bg-accent active:scale-[0.98]">
-            {submitting ? <Loader2 className="h-8 w-8 animate-spin" /> : (
-              <span className="flex items-center gap-3">
-                Finalizar e Acessar o Cativa
-                <ArrowRight className="h-6 w-6 transition-transform group-hover:translate-x-1" />
+          <div className="space-y-2">
+            <Button
+              onClick={handleFinish}
+              disabled={submitting}
+              aria-busy={submitting}
+              aria-label={submitting ? "Criando seu espaço de trabalho" : undefined}
+              className="group h-auto min-h-20 w-full rounded-full bg-primary-dark px-4 py-4 text-base font-bold text-white shadow-2xl transition-all hover:bg-accent active:scale-[0.98] sm:px-6 sm:text-lg"
+            >
+              {submitting ? <Loader2 aria-hidden="true" className="h-8 w-8 animate-spin" /> : (
+              <span className="flex min-w-0 items-center justify-center gap-2 text-center leading-tight">
+                <span className="min-w-0 whitespace-normal">Finalizar e Acessar o Cativa</span>
+                <ArrowRight className="h-5 w-5 shrink-0 transition-transform group-hover:translate-x-1 sm:h-6 sm:w-6" />
               </span>
-            )}
-          </Button>
+              )}
+            </Button>
+            {submitting && <span className="sr-only" role="status" aria-live="polite">Criando seu espaço de trabalho</span>}
+          </div>
         </div>
       )}
     </AuthLayout>

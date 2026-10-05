@@ -2,7 +2,10 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const HAS_ENV_AUTH = Boolean(process.env.E2E_USER && process.env.E2E_PASS);
-const storageStatePath = resolve(process.cwd(), "e2e/.auth/storageState.json");
+const storageStatePath = resolve(
+  process.cwd(),
+  process.env.E2E_STORAGE_STATE_PATH?.trim() || "e2e/.auth/storageState.json",
+);
 
 function hasSessionInStorageState(): boolean {
   if (!existsSync(storageStatePath)) return false;

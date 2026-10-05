@@ -99,9 +99,8 @@ export function PortalLayout() {
 
   return (
     <div className="min-h-screen bg-gradient-soft">
-      <OfflineBanner />
       {/* Header pessoal: o portal é do cliente, não do estabelecimento */}
-      <header className="sticky top-0 z-30 border-b border-border/60 bg-card/80 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-border/60 bg-card/80 backdrop-blur pt-safe-top">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
           <div className="flex min-w-0 items-center gap-3">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-brand font-display text-base font-semibold text-primary-foreground">
@@ -153,6 +152,7 @@ export function PortalLayout() {
             );
           })}
         </div>
+        <OfflineBanner />
       </header>
 
       {/* Conteúdo */}

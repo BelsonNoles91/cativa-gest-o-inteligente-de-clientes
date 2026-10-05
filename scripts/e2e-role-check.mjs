@@ -78,7 +78,20 @@ if (!supabaseUrl || !publishableKey) {
 }
 
 const checks = await Promise.all([
-  validate("owner", env("E2E_USER"), env("E2E_PASS"), supabaseUrl, publishableKey),
+  validate(
+    "super_admin (provisionamento)",
+    env("E2E_SUPER_ADMIN_USER"),
+    env("E2E_SUPER_ADMIN_PASS"),
+    supabaseUrl,
+    publishableKey,
+  ),
+  validate(
+    "owner",
+    env("E2E_USER"),
+    env("E2E_PASS"),
+    supabaseUrl,
+    publishableKey,
+  ),
   validate(
     "manager",
     env("E2E_MANAGER_USER"),
@@ -100,7 +113,41 @@ const checks = await Promise.all([
     supabaseUrl,
     publishableKey,
   ),
+  validate(
+    "client",
+    env("E2E_CLIENT_USER"),
+    env("E2E_CLIENT_PASS"),
+    supabaseUrl,
+    publishableKey,
+  ),
+  validate(
+    "owner (tenant B)",
+    env("E2E_TENANT_B_USER"),
+    env("E2E_TENANT_B_PASS"),
+    supabaseUrl,
+    publishableKey,
+  ),
 ]);
+
+const inviteeEmail = env("E2E_INVITEE_USER");
+const inviteePassword = env("E2E_INVITEE_PASS");
+if (inviteeEmail || inviteePassword) {
+  checks.push(
+    inviteeEmail && inviteePassword
+      ? await validate(
+          "convidado pendente",
+          inviteeEmail,
+          inviteePassword,
+          supabaseUrl,
+          publishableKey,
+        )
+      : {
+          label: "convidado pendente",
+          ok: false,
+          detail: "credenciais incompletas",
+        },
+  );
+}
 
 console.log("Cativa E2E role check");
 console.log("");

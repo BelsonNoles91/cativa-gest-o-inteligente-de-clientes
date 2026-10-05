@@ -71,7 +71,8 @@ export async function importServices(
   rows: Array<Record<string, unknown>>,
   ctx: { tenantId: string },
 ): Promise<ImportRunResult> {
-  // 1) cria serviços
+  // 1) cria serviços em lotes, mantendo os IDs retornados junto ao lote que
+  // originou cada linha; nomes não são chaves únicas dentro de um tenant.
   const payload = rows.map((r) => ({
     tenant_id: ctx.tenantId,
     name: String(r.name ?? "").trim(),
@@ -81,27 +82,76 @@ export async function importServices(
     buffer_after_minutes: Number(r.bufferAfterMinutes ?? 0),
     is_active: true,
   }));
-  const result = await insertChunked("services", payload);
+  const result: ImportRunResult = { inserted: 0, failed: 0, errors: [] };
 
-  // 2) preços base — reload para pegar IDs e inserir service_prices
-  if (result.inserted > 0) {
-    const { data: services } = await supabase
+  // 2) usa os IDs retornados pelo próprio INSERT. Consultar o catálogo por
+  // nome poderia associar o preço a um serviço antigo ou homônimo.
+  for (let offset = 0; offset < rows.length; offset += CHUNK) {
+    const rowChunk = rows.slice(offset, offset + CHUNK);
+    const payloadChunk = payload.slice(offset, offset + CHUNK);
+    const { data: insertedServices, error: serviceInsertError } = await supabase
       .from("services")
-      .select("id, name")
-      .eq("tenant_id", ctx.tenantId);
-    const byName = new Map((services ?? []).map((s) => [s.name, s.id]));
-    const priceRows = rows
-      .filter((r) => typeof r.priceCents === "number" && r.priceCents !== null)
-      .map((r) => ({
-        tenant_id: ctx.tenantId,
-        service_id: byName.get(String(r.name).trim()),
-        currency: "BRL",
-        amount_cents: Math.round(Number(r.priceCents) * 100),
-        is_default: true,
-      }))
-      .filter((r) => r.service_id);
+      .insert(payloadChunk as never)
+      .select("id, name");
+
+    if (serviceInsertError) {
+      result.failed += rowChunk.length;
+      result.errors.push({ rowIndex: offset, message: serviceInsertError.message });
+      continue;
+    }
+
+    result.inserted += rowChunk.length;
+    const pricedRows = rowChunk
+      .map((row, localIndex) => ({ row, rowIndex: offset + localIndex }))
+      .filter(({ row }) => typeof row.priceCents === "number" && Number.isFinite(row.priceCents));
+    if (pricedRows.length === 0) continue;
+
+    const idsByName = new Map<string, string[]>();
+    for (const service of insertedServices ?? []) {
+      const ids = idsByName.get(service.name) ?? [];
+      ids.push(service.id);
+      idsByName.set(service.name, ids);
+    }
+
+    const priceRows: Array<{ rowIndex: number; payload: Record<string, unknown> }> = [];
+    for (const { row, rowIndex } of pricedRows) {
+      const serviceName = String(row.name ?? "").trim();
+      const matchingIds = idsByName.get(serviceName) ?? [];
+      if (matchingIds.length !== 1) {
+        result.failed += 1;
+        result.errors.push({
+          rowIndex,
+          message: matchingIds.length > 1
+            ? `Serviço importado, mas há nomes repetidos no lote; o preço de ${serviceName || "—"} não foi associado.`
+            : `Serviço importado, mas não foi possível confirmar o ID para gravar o preço de ${serviceName || "—"}.`,
+        });
+        continue;
+      }
+      priceRows.push({
+        rowIndex,
+        payload: {
+          tenant_id: ctx.tenantId,
+          service_id: matchingIds[0],
+          currency: "BRL",
+          amount_cents: Math.round(Number(row.priceCents) * 100),
+          is_default: true,
+        },
+      });
+    }
+
     if (priceRows.length > 0) {
-      await supabase.from("service_prices").insert(priceRows as never);
+      const { error: priceInsertError } = await supabase
+        .from("service_prices")
+        .insert(priceRows.map(({ payload: pricePayload }) => pricePayload) as never);
+      if (priceInsertError) {
+        for (const { rowIndex } of priceRows) {
+          result.failed += 1;
+          result.errors.push({
+            rowIndex,
+            message: `Serviço importado, mas o preço não foi gravado: ${priceInsertError.message}`,
+          });
+        }
+      }
     }
   }
   return result;

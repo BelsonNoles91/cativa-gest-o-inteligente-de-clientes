@@ -425,11 +425,11 @@ export default function WaitlistPage() {
       <Card>
         <CardContent className="flex flex-col gap-4 pt-6 lg:flex-row lg:items-center lg:justify-between">
           <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as "all" | WaitlistStatus)} className="w-full lg:w-auto">
-            <TabsList className="w-full justify-start overflow-x-auto">
-              <TabsTrigger value="open">Aguardando</TabsTrigger>
-              <TabsTrigger value="contacted">Contatados</TabsTrigger>
-              <TabsTrigger value="scheduled">Agendados</TabsTrigger>
-              <TabsTrigger value="all">Todos</TabsTrigger>
+            <TabsList className="grid h-auto w-full grid-cols-2 gap-1 p-1 min-[480px]:inline-flex min-[480px]:h-10 min-[480px]:grid-cols-none min-[480px]:flex-nowrap min-[480px]:justify-start lg:w-auto">
+              <TabsTrigger value="open" className="min-w-0 whitespace-normal px-2 text-xs min-[480px]:whitespace-nowrap min-[480px]:px-3 min-[480px]:text-sm">Aguardando</TabsTrigger>
+              <TabsTrigger value="contacted" className="min-w-0 whitespace-normal px-2 text-xs min-[480px]:whitespace-nowrap min-[480px]:px-3 min-[480px]:text-sm">Contatados</TabsTrigger>
+              <TabsTrigger value="scheduled" className="min-w-0 whitespace-normal px-2 text-xs min-[480px]:whitespace-nowrap min-[480px]:px-3 min-[480px]:text-sm">Agendados</TabsTrigger>
+              <TabsTrigger value="all" className="min-w-0 whitespace-normal px-2 text-xs min-[480px]:whitespace-nowrap min-[480px]:px-3 min-[480px]:text-sm">Todos</TabsTrigger>
             </TabsList>
           </Tabs>
 

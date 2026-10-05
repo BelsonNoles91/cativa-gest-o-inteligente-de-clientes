@@ -167,12 +167,23 @@ function safeRatio(num: number, den: number): number {
 }
 
 function clamp(n: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, n));
+  const finite = Number.isFinite(n) ? n : min;
+  return Math.max(min, Math.min(max, finite));
 }
 
 function pct(n: number): number {
-  return Math.round(n * 1000) / 10; // 1 casa
+  return Math.round(clamp(n, 0, 1) * 1000) / 10; // 1 casa, sempre 0..100
 }
+
+function reaisFromCents(cents: number): number {
+  return Math.round(cents) / 100;
+}
+
+const ATTENDED_STATUSES: ReadonlySet<AppointmentStatus> = new Set([
+  "arrived",
+  "in_service",
+  "completed",
+]);
 
 /** Filtra um conjunto de appts pelos filtros declarados. */
 export function applyFilters<T extends Pick<ApptFact, "unitId" | "professionalId" | "serviceId" | "source">>(
@@ -195,9 +206,7 @@ export function applyFilters<T extends Pick<ApptFact, "unitId" | "professionalId
 /** comparecimento = comparecimentos / agendamentos não cancelados no prazo */
 export function attendanceRate(rows: ApptFact[]): { rate: number; attended: number; eligible: number } {
   const eligible = rows.filter((r) => r.status !== "canceled").length;
-  const attended = rows.filter((r) =>
-    ["arrived", "in_service", "completed"].includes(r.status),
-  ).length;
+  const attended = rows.filter((r) => ATTENDED_STATUSES.has(r.status)).length;
   return { rate: pct(safeRatio(attended, eligible)), attended, eligible };
 }
 
@@ -217,10 +226,11 @@ export function cancellationRate(rows: ApptFact[]): { rate: number; canceled: nu
 
 /** confirmação = agendamentos confirmados / agendamentos elegíveis para confirmação */
 export function confirmationRate(rows: ApptFact[]): { rate: number; confirmed: number; eligible: number } {
-  const eligible = rows.filter(
+  const eligibleRows = rows.filter(
     (r) => r.status !== "canceled" && r.status !== "no_show",
-  ).length;
-  const confirmed = rows.filter(
+  );
+  const eligible = eligibleRows.length;
+  const confirmed = eligibleRows.filter(
     (r) =>
       r.confirmedAt !== null ||
       ["confirmed", "reminded", "arrived", "in_service", "completed"].includes(r.status),
@@ -237,7 +247,7 @@ export function occupancyRate(av: AvailabilityFact): { rate: number } {
 export function averageTicket(rows: ApptFact[]): number {
   const completed = rows.filter((r) => r.status === "completed");
   const total = completed.reduce((acc, r) => acc + r.totalPriceCents, 0);
-  return Math.round(safeRatio(total, completed.length) / 100);
+  return reaisFromCents(safeRatio(total, completed.length));
 }
 
 export interface GroupTicket {
@@ -266,19 +276,19 @@ export function ticketByGroup(
     .map(([k, v]) => ({
       key: k,
       label: labelOf(k),
-      ticket: Math.round(safeRatio(v.rev, v.cnt) / 100),
+      ticket: reaisFromCents(safeRatio(v.rev, v.cnt)),
       visits: v.cnt,
-      revenue: Math.round(v.rev / 100),
+      revenue: reaisFromCents(v.rev),
     }))
     .sort((a, b) => b.revenue - a.revenue);
 }
 
 /** Valor futuro agendado = soma de cents dos agendamentos futuros não cancelados. */
 export function futureBookedValue(future: ApptFact[]): number {
-  return Math.round(
+  return reaisFromCents(
     future
       .filter((r) => r.status !== "canceled" && r.status !== "no_show")
-      .reduce((acc, r) => acc + r.totalPriceCents, 0) / 100,
+      .reduce((acc, r) => acc + r.totalPriceCents, 0),
   );
 }
 
@@ -292,7 +302,7 @@ export function futureRevenueAtRisk(future: ApptFact[]): { value: number; count:
       !["confirmed", "reminded", "arrived", "in_service", "completed"].includes(r.status),
   );
   return {
-    value: Math.round(risky.reduce((acc, r) => acc + r.totalPriceCents, 0) / 100),
+    value: reaisFromCents(risky.reduce((acc, r) => acc + r.totalPriceCents, 0)),
     count: risky.length,
   };
 }
@@ -458,14 +468,17 @@ export function avgHoursToConfirm(rows: ApptFact[]): number {
   return Math.round((sum / confirmed.length) * 10) / 10;
 }
 
-/** Novos vs recorrentes no período. */
+/** Novos vs recorrentes entre clientes com visita atendida no período. */
 export function newVsReturning(
   appts: ApptFact[],
   clients: ClientFact[],
   range: { start: Date; end: Date },
 ): { news: number; returning: number; total: number } {
   const inRange = appts.filter(
-    (a) => new Date(a.startsAt) >= range.start && new Date(a.startsAt) <= range.end,
+    (a) =>
+      ATTENDED_STATUSES.has(a.status) &&
+      new Date(a.startsAt) >= range.start &&
+      new Date(a.startsAt) <= range.end,
   );
   const seen = new Set<string>();
   let news = 0;
@@ -486,9 +499,17 @@ export function sourceBreakdown(appts: ApptFact[]): Array<{ source: AppointmentS
   const total = appts.length || 1;
   const map = new Map<AppointmentSource, number>();
   for (const a of appts) map.set(a.source, (map.get(a.source) ?? 0) + 1);
-  return Array.from(map.entries())
+  const result = Array.from(map.entries())
     .map(([source, count]) => ({ source, count, pct: pct(count / total) }))
     .sort((a, b) => b.count - a.count);
+
+  // A soma de percentuais arredondados independentemente pode resultar em
+  // 99,9% ou 100,1%. Absorve o resíduo de uma casa decimal na maior categoria.
+  const drift = Math.round((100 - result.reduce((sum, row) => sum + row.pct, 0)) * 10) / 10;
+  if (result.length > 0 && drift !== 0) {
+    result[0].pct = Math.round((result[0].pct + drift) * 10) / 10;
+  }
+  return result;
 }
 
 /** Lealdade ao profissional: clientes que retornaram ao mesmo profissional / clientes recorrentes. */
@@ -680,6 +701,36 @@ export function cativaIndex(inputs: CativaIndexInputs): CativaIndexBreakdown {
     isStrength: c.valuePct >= 80,
   }));
 
+  // Arredondamento por componente não pode fazer o breakdown divergir do
+  // score exibido. Corrigimos a diferença de no máximo alguns pontos no
+  // componente de maior peso, preservando a explicabilidade do índice.
+  let contributionDelta = score - components.reduce((sum, component) => sum + component.contribution, 0);
+  if (contributionDelta !== 0) {
+    // A single component may already be at 0 or at its weight. Distribuímos a
+    // diferença inteira entre componentes por peso, em vez de deixar o
+    // breakdown inconsistente em casos extremos (por exemplo, NaN/100%).
+    const order = components
+      .map((component, index) => ({ index, weight: component.weight }))
+      .sort((a, b) => b.weight - a.weight);
+    for (const { index } of order) {
+      if (contributionDelta === 0) break;
+      const component = components[index];
+      const capacity = contributionDelta > 0
+        ? component.weight - component.contribution
+        : component.contribution;
+      const adjustment = Math.sign(contributionDelta) * Math.min(Math.abs(contributionDelta), capacity);
+      component.contribution += adjustment;
+      contributionDelta -= adjustment;
+    }
+  }
+
+  // Esta é uma invariante do contrato do índice. Se novos pesos/componentes
+  // forem adicionados, falhar cedo evita publicar um score que não explica o
+  // próprio breakdown.
+  if (contributionDelta !== 0) {
+    throw new Error("Índice Cativa não conseguiu reconciliar o breakdown");
+  }
+
   return { score, components };
 }
 
@@ -799,7 +850,7 @@ export function nextBestActions(i: NbaInputs): NextBestAction[] {
 }
 
 /**
- * Rentabilidade por Hora (Cents/h)
+ * Rentabilidade por hora (em reais, com precisão de centavos).
  * Calcula quanto cada profissional ou serviço gera por hora trabalhada.
  */
 export function hourlyProfitability(
@@ -821,7 +872,7 @@ export function hourlyProfitability(
   return Array.from(map.entries())
     .map(([k, v]) => ({
       label: labelOf(k),
-      hourlyRate: Math.round(safeRatio(v.totalRevenue, v.totalMinutes) * 60 / 100),
+      hourlyRate: reaisFromCents(safeRatio(v.totalRevenue, v.totalMinutes) * 60),
     }))
     .sort((a, b) => b.hourlyRate - a.hourlyRate);
 }
@@ -838,6 +889,5 @@ export function estimatedLtv(rows: ApptFact[], clients: ClientFact[]): number {
   if (uniqueClients === 0) return 0;
   
   const frequency = totalCompleted / uniqueClients;
-  return Math.round(tkt * frequency * 12);
+  return Math.round(tkt * frequency * 12 * 100) / 100;
 }
-

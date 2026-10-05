@@ -98,5 +98,5 @@ export function PageActionCluster({ secondary = [], primary, className }: PageAc
  * Helper opcional para CTA primário com visual padronizado.
  */
 export function PrimaryAction({ className, ...props }: ButtonProps) {
-  return <Button {...props} className={cn("h-9 rounded-xl shadow-sm", className)} />;
+  return <Button {...props} className={cn("h-11 min-h-11 rounded-xl shadow-sm", className)} />;
 }

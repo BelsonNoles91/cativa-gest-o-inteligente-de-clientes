@@ -167,10 +167,15 @@ export default function PortalAgenda() {
             const rescheduleCheck = canClientReschedule(
               a.startsAt,
               rules,
-              (a as unknown as { clientRescheduleCount?: number }).clientRescheduleCount ?? 0,
+              a.clientRescheduleCount ?? 0,
             );
             return (
-              <Card key={a.id} className="p-4">
+              <Card
+                key={a.id}
+                className="p-4"
+                data-testid="portal-appointment-card"
+                data-appointment-id={a.id}
+              >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <h3 className="truncate font-display text-base font-semibold">

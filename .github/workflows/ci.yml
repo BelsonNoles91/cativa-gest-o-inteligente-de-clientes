@@ -7,8 +7,43 @@ on:
     branches: [main]
 
 jobs:
+  workflow-lint:
+    name: Validar workflows do GitHub Actions
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Analisar sintaxe, expressões e comandos shell dos workflows
+        run: >-
+          docker run --rm
+          -v "$GITHUB_WORKSPACE:/repo:ro"
+          -w /repo
+          rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
+          -color
+
+  edge-functions:
+    name: Typecheck das Edge Functions Supabase
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2
+        with:
+          deno-version: "2.9.7"
+
+      - name: Typecheck todas as Edge Functions
+        run: deno check --no-config supabase/functions/*/index.ts
+
+      - name: Lint das Edge Functions
+        run: deno lint --no-config supabase/functions
+
   vitest:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
@@ -23,14 +58,43 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Audit de dependências de runtime
+        run: npm audit --omit=dev
+
+      - name: Test evidence manifest integrity
+        run: npm run test:evidence:manifest
+
+      - name: Test retry bounded do provisionamento QA
+        run: npm run test:e2e:provision:retry
+
+      - name: Test storage key do Supabase nos alvos QA
+        run: npm run test:e2e:storage-key
+
+      - name: Test guard de alvo do re-scan de segurança do banco
+        run: npm run test:security:target
+
+      - name: Teste unitário do relatório JUnit das regressões SQL
+        run: npm run test:e2e:sql-junit
+
       - name: Lint
         run: npm run lint
 
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Test
-        run: npm test
+      - name: Unit tests and critical-module coverage
+        run: mkdir -p test-results && npm run test:coverage -- --reporter=default --reporter=junit --outputFile.junit=test-results/unit-junit.xml
+
+      - name: Publica evidências dos testes unitários
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: unit-test-results-${{ github.run_id }}
+          path: |
+            test-results/
+            coverage/
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Build
         run: npm run build
@@ -38,15 +102,296 @@ jobs:
       - name: Verifica guard de env vars ausentes
         run: npm run test:build:missing-env
 
-  playwright-mobile:
+  qa-role-journeys-local:
+    name: Jornadas por perfil em Supabase local descartável
     needs: vitest
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+
+      - uses: supabase/setup-cli@v3
+        with:
+          version: "2.119.0"
+
+      - name: Instala dependências do projeto
+        run: npm ci
+
+      - name: Instala navegadores Chromium, Firefox e WebKit
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Inicia Supabase efêmero do runner
+        shell: bash
+        run: |
+          if ! supabase start --exclude studio,mailpit,logflare,vector,postgres-meta,supavisor > "$RUNNER_TEMP/supabase-start.log" 2>&1; then
+            sed -E \
+              -e 's#(postgres(ql)?://)[^[:space:]]+#\1[URL_REDACTED]#g' \
+              -e 's/(API_URL|DB_URL|JWT_SECRET|ANON_KEY|SERVICE_ROLE_KEY|PUBLISHABLE_KEY|SECRET_KEY)=.*/\1=[REDACTED]/' \
+              -e 's/(eyJ[a-zA-Z0-9._-]{20,}|sb_(publishable|secret)_[a-zA-Z0-9_-]+)/[TOKEN_REDACTED]/g' \
+              "$RUNNER_TEMP/supabase-start.log" >&2
+            exit 1
+          fi
+
+      - name: Recria banco local a partir de todas as migrations
+        run: supabase db reset --local
+
+      - name: Exporta somente configuração local e mascara as chaves efêmeras
+        run: node scripts/e2e-export-local-supabase-env.mjs
+
+      - name: Executa as 18 regressões SQL com evidência JUnit no banco efêmero
+        run: npm run test:backend:sql
+
+      - name: Diagnostica Postgres após falha das regressões SQL
+        if: failure()
+        shell: bash
+        run: |
+          mapfile -t db_containers < <(docker ps -aq --filter "name=supabase_db")
+          if ((${#db_containers[@]} == 0)); then
+            echo "Container Postgres já não está disponível para diagnóstico."
+            exit 0
+          fi
+          for container_id in "${db_containers[@]}"; do
+            docker inspect --format 'container={{.Name}} exit={{.State.ExitCode}} oom_killed={{.State.OOMKilled}} error={{.State.Error}}' "$container_id"
+            docker logs --tail 300 "$container_id" 2>&1 | sed -E \
+              -e 's#(postgres(ql)?://)[^[:space:]]+#\1[URL_REDACTED]#g' \
+              -e 's/(API_URL|DB_URL|JWT_SECRET|ANON_KEY|SERVICE_ROLE_KEY|PUBLISHABLE_KEY|SECRET_KEY)=.*/\1=[REDACTED]/' \
+              -e 's/(eyJ[a-zA-Z0-9._-]{20,}|sb_(publishable|secret)_[a-zA-Z0-9_-]+|apikey_[A-Za-z0-9_-]{16,})/[TOKEN_REDACTED]/g'
+          done
+
+      - name: Gera super-admin, perfis, memberships e tenants sintéticos
+        run: npm run test:qa:provision:local
+
+      - name: Valida atomicidade do limite Jev com concorrência
+        run: npm run test:retention:quota:concurrency
+
+      - name: Valida Storage por papel e tenant com objetos temporários
+        run: npm run test:storage:check
+
+      - name: Gera storageState da conta owner para a suíte Playwright
+        run: node scripts/generate-storage-state.mjs
+
+      - name: Valida agenda offline, retry de falha e sincronização
+        run: npm run test:local:offline-agenda
+
+      - name: Valida PWA offline e reload pelo Service Worker em WebKit
+        run: npm run test:local:offline-agenda:webkit
+
+      - name: Valida confirmações operacionais com fixture sintética
+        run: npm run test:local:confirmation
+
+      - name: Valida geometria e retorno do foco do dialog em mobile/tablet
+        run: npm run test:local:confirmation:matrix
+
+      - name: Executa matriz de rotas e RLS dos perfis
+        run: npm run test:rbac:e2e
+
+      - name: Remove chave privilegiada dos passos seguintes
+        if: always()
+        run: |
+          printf 'SUPABASE_SERVICE_ROLE_KEY=\nSUPABASE_DB_URL=\n' >> "$GITHUB_ENV"
+
+      - name: Verifica logout e bloqueia retorno à área autenticada
+        run: npm run test:local:logout-protection
+
+      - name: Valida concorrência e integridade da agenda
+        run: npm run test:backend:concurrency
+
+      - name: Valida autenticação dos perfis e do convidado pendente
+        run: npm run test:visual:roles
+
+      - name: Valida isolamento entre os dois tenants fictícios
+        run: npm run test:tenant:isolation:remote
+
+      - name: Executa autoagendamento real pelo portal do cliente fictício
+        run: npm run test:local:portal-booking
+
+      - name: Valida autoatendimento, segurança e integração com fila de espera
+        run: npm run test:local:portal-self-service
+
+      - name: Executa CRUD e ciclo de mídia do CRM pelo owner sintético
+        run: npm run test:crm:media
+
+      - name: Valida convite de equipe com usuário sintético pendente
+        run: npm run test:team:invite
+
+      - name: Valida limite sintético de unidades do tenant
+        run: npm run test:plan:limits
+
+      - name: Valida limite sintético de clientes ativos
+        run: npm run test:client:limit
+
+      - name: Valida importação e exportação de clientes
+        run: npm run test:import-export:clients
+
+      - name: Valida importação e exportação do catálogo
+        run: npm run test:import-export:services
+
+      - name: Valida importação e exportação da equipe
+        run: npm run test:import-export:team
+
+      - name: Executa o checklist Go-Live com owner sintético no Supabase local
+        run: npm run test:local:go-live
+
+      - name: Exercita tráfego autenticado isolado entre tenants e papéis
+        run: npm run test:backend:multitenant
+
+      - name: Publica manifesto e evidências das jornadas
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: local-role-journeys-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            e2e/.artifacts-qa/
+            e2e/.artifacts-smoke/
+            e2e/.report-smoke/
+            e2e/.artifacts-rbac/
+            e2e/.report-rbac/
+            e2e/.artifacts-tenant-isolation/
+            e2e/.report-tenant-isolation/
+            e2e/.artifacts-local-portal/
+            e2e/.report-local-portal/
+            e2e/.artifacts-local-portal-self-service/
+            e2e/.report-local-portal-self-service/
+            e2e/.artifacts-crm-media/
+            e2e/.report-crm-media/
+            e2e/.artifacts-team-invite/
+            e2e/.report-team-invite/
+            e2e/.artifacts-go-live/
+            e2e/.report-go-live/
+            e2e/.artifacts-plan-limits/
+            e2e/.report-plan-limits/
+            e2e/.artifacts-client-limit/
+            e2e/.report-client-limit/
+            e2e/.artifacts-import-export-clients/
+            e2e/.report-import-export-clients/
+            e2e/.artifacts-import-export-services/
+            e2e/.report-import-export-services/
+            e2e/.artifacts-import-export-team/
+            e2e/.report-import-export-team/
+            e2e/.artifacts-local-confirmation/
+            e2e/.report-local-confirmation/
+            e2e/.artifacts-logout-protection/
+            e2e/.report-logout-protection/
+            e2e/.artifacts-local-offline-agenda/
+            e2e/.report-local-offline-agenda/
+            e2e/.artifacts-pwa-webkit-offline/
+            e2e/.report-pwa-webkit-offline/
+            e2e/.artifacts-backend/
+            e2e/.report-backend/
+            e2e/.artifacts-backend-multitenant/
+            e2e/.report-backend-multitenant/
+            !e2e/**/trace.zip
+            test-results/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Destroi o Supabase efêmero
+        if: always()
+        run: supabase stop --no-backup --yes > /dev/null 2>&1 || true
+
+  public-content-security:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Test public tenant content security
+        run: npm run test:security:public
+
+      - name: Test auth recovery and failure contracts across browsers
+        run: npm run test:integration:auth-errors
+
+      - name: Generate evidence manifest and checksums
+        if: always()
+        run: >-
+          node scripts/e2e-evidence-manifest.mjs
+          --input e2e/.artifacts-security
+          --input e2e/.artifacts-auth-contract
+          --output e2e/.artifacts-auth-contract/evidence-manifest.json
+
+      - name: Publish security test evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: public-content-security-${{ github.run_id }}
+          path: |
+            e2e/.artifacts-security/
+            e2e/.artifacts-auth-contract/
+            !e2e/**/trace.zip
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14
+
+  core-web-vitals:
+    name: Core Web Vitals nas rotas públicas
+    needs: vitest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Instala dependências
+        run: npm ci
+
+      - name: Instala navegadores para Core Web Vitals e OAuth sintético
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Mede Core Web Vitals com backend local simulado
+        run: npm run test:performance:cwv
+
+      - name: Valida início OAuth Google e Apple em broker local simulado
+        run: npm run test:integration:oauth
+
+      - name: Publica relatório e artefatos de performance
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: core-web-vitals-${{ github.run_id }}
+          path: |
+            e2e/.artifacts-performance/
+            e2e/.report-performance/
+            e2e/.artifacts-oauth/
+            e2e/.report-oauth/
+            !e2e/**/trace.zip
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14
+
+  layout-quality:
+    needs: vitest
+    runs-on: ubuntu-24.04
     env:
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
       E2E_USER: ${{ secrets.E2E_USER }}
       E2E_PASS: ${{ secrets.E2E_PASS }}
-      E2E_SEED_FIXTURES: "true"
+      E2E_QA_PROJECT_REF: ${{ secrets.E2E_QA_PROJECT_REF }}
+      E2E_TARGET_ALLOWLIST: ${{ secrets.E2E_TARGET_ALLOWLIST }}
       E2E_TENANT_SLUG: studio-teste-qa
     steps:
       - uses: actions/checkout@v7
@@ -59,10 +404,99 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium webkit firefox
+
+      - name: Matriz pública de layout sem credenciais externas
+        run: npm run test:visual:layout:public
+
+      - name: Contraste WCAG AA nas rotas públicas sem segredos
+        run: npm run test:a11y:contrast:public
+
+      - name: Registra por que o layout autenticado não será executado
+        if: env.VITE_SUPABASE_URL == '' || env.VITE_SUPABASE_PUBLISHABLE_KEY == '' || env.E2E_USER == '' || env.E2E_PASS == '' || env.E2E_QA_PROJECT_REF == '' || env.E2E_TARGET_ALLOWLIST == ''
+        run: |
+          echo 'Matriz autenticada de layout/contraste pulada: QA remoto não configurado. A matriz pública e o job RBAC local descartável executam normalmente.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Identifica e valida alvo Supabase
+        if: env.VITE_SUPABASE_URL != '' && env.VITE_SUPABASE_PUBLISHABLE_KEY != '' && env.E2E_USER != '' && env.E2E_PASS != '' && env.E2E_QA_PROJECT_REF != '' && env.E2E_TARGET_ALLOWLIST != ''
+        run: node scripts/e2e-target-check.mjs
+
+      - name: Matriz geométrica desktop/tablet/mobile
+        if: env.VITE_SUPABASE_URL != '' && env.VITE_SUPABASE_PUBLISHABLE_KEY != '' && env.E2E_USER != '' && env.E2E_PASS != '' && env.E2E_QA_PROJECT_REF != '' && env.E2E_TARGET_ALLOWLIST != ''
+        run: npm run test:visual:layout
+
+      - name: Contraste e acessibilidade em temas
+        if: env.VITE_SUPABASE_URL != '' && env.VITE_SUPABASE_PUBLISHABLE_KEY != '' && env.E2E_USER != '' && env.E2E_PASS != '' && env.E2E_QA_PROJECT_REF != '' && env.E2E_TARGET_ALLOWLIST != ''
+        run: npm run test:a11y:contrast
+
+      - name: Publica evidências de layout
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: layout-quality-${{ github.run_id }}
+          path: |
+            e2e/.artifacts-layout/
+            e2e/.report-layout/
+            e2e/.artifacts-layout-public/
+            e2e/.report-layout-public/
+            e2e/.artifacts-a11y-public/
+            e2e/.report-a11y-public/
+            e2e/.artifacts-a11y/
+            e2e/.report-a11y/
+            test-results/
+            !e2e/**/trace.zip
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14
+
+  playwright-mobile:
+    # Capturas visuais usam exclusivamente backend local efêmero e fixtures sintéticas.
+    needs: [vitest]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - uses: supabase/setup-cli@v3
+        with:
+          version: "2.119.0"
+
+      - name: Inicia Supabase efêmero do runner
+        shell: bash
+        run: |
+          if ! supabase start --exclude studio,mailpit,logflare,vector,postgres-meta,supavisor > "$RUNNER_TEMP/supabase-start.log" 2>&1; then
+            sed -E \
+              -e 's#(postgres(ql)?://)[^[:space:]]+#\1[URL_REDACTED]#g' \
+              -e 's/(API_URL|DB_URL|JWT_SECRET|ANON_KEY|SERVICE_ROLE_KEY|PUBLISHABLE_KEY|SECRET_KEY)=.*/\1=[REDACTED]/' \
+              -e 's/(eyJ[a-zA-Z0-9._-]{20,}|sb_(publishable|secret)_[a-zA-Z0-9_-]+)/[TOKEN_REDACTED]/g' \
+              "$RUNNER_TEMP/supabase-start.log" >&2
+            exit 1
+          fi
+
+      - name: Recria banco local a partir de todas as migrations
+        run: supabase db reset --local
+
+      - name: Exporta somente configuração local e mascara chaves efêmeras
+        run: node scripts/e2e-export-local-supabase-env.mjs
+
+      - name: Provisiona perfis e tenant sintéticos no Supabase local
+        run: npm run test:qa:provision:local
+
       - name: Build
         run: npm run build
 
-      - name: Install Playwright browsers
+      - name: Instala navegadores Playwright
         run: npx playwright install --with-deps chromium webkit
 
       - name: Identifica alvo Supabase dos testes
@@ -73,58 +507,74 @@ jobs:
 
       - name: Visual regression — rotas autenticadas críticas
         run: npm run test:visual:auth:critical
-        continue-on-error: ${{ !secrets.E2E_USER }}
 
       - name: Preserva evidências da falha visual antes do diagnóstico
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: visual-auth-failure-${{ github.run_id }}
-          path: e2e/.artifacts/
+          path: |
+            e2e/.artifacts/
+            !e2e/.artifacts/**/trace.zip
           include-hidden-files: true
           if-no-files-found: warn
           retention-days: 7
 
       - name: Gera snapshots autenticados atuais para diagnóstico
         if: failure()
+        # Este passo apenas coleta diagnóstico: não deve adicionar uma segunda
+        # falha ao job que já falhou no gate visual anterior.
+        continue-on-error: true
         run: >-
           npm run test:auth:bootstrap &&
+          node scripts/e2e-prepare-visual-fixtures.mjs &&
           npx playwright test e2e/visual/public-routes.spec.ts
           -g "rotas autenticadas"
           --project=iphone-14-portrait
           --project=iphone-se
           --project=android-360-portrait
           --workers 1
-          --update-snapshots
 
       - name: Publica evidências da regressão visual
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: visual-auth-regression-${{ github.run_id }}
           path: |
             e2e/.artifacts/
+            e2e/.report/
             e2e/__screenshots__/visual/public-routes.spec.ts/
+            !e2e/.artifacts/**/trace.zip
           include-hidden-files: true
           if-no-files-found: warn
           retention-days: 7
 
+      - name: Destroi o Supabase efêmero
+        if: always()
+        run: supabase stop --no-backup --yes > /dev/null 2>&1 || true
+
   qa-authenticated:
     needs: vitest
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
       E2E_USER: ${{ secrets.E2E_USER }}
       E2E_PASS: ${{ secrets.E2E_PASS }}
+      E2E_SUPER_ADMIN_USER: ${{ secrets.E2E_SUPER_ADMIN_USER }}
+      E2E_SUPER_ADMIN_PASS: ${{ secrets.E2E_SUPER_ADMIN_PASS }}
       E2E_MANAGER_USER: ${{ secrets.E2E_MANAGER_USER }}
       E2E_MANAGER_PASS: ${{ secrets.E2E_MANAGER_PASS }}
       E2E_FRONTDESK_USER: ${{ secrets.E2E_FRONTDESK_USER }}
       E2E_FRONTDESK_PASS: ${{ secrets.E2E_FRONTDESK_PASS }}
       E2E_PROFESSIONAL_USER: ${{ secrets.E2E_PROFESSIONAL_USER }}
       E2E_PROFESSIONAL_PASS: ${{ secrets.E2E_PROFESSIONAL_PASS }}
+      E2E_CLIENT_USER: ${{ secrets.E2E_CLIENT_USER }}
+      E2E_CLIENT_PASS: ${{ secrets.E2E_CLIENT_PASS }}
       E2E_TENANT_B_USER: ${{ secrets.E2E_TENANT_B_USER }}
       E2E_TENANT_B_PASS: ${{ secrets.E2E_TENANT_B_PASS }}
+      E2E_QA_PROJECT_REF: ${{ secrets.E2E_QA_PROJECT_REF }}
+      E2E_TARGET_ALLOWLIST: ${{ secrets.E2E_TARGET_ALLOWLIST }}
       E2E_SEED_FIXTURES: "true"
       E2E_TENANT_SLUG: studio-teste-qa
     steps:
@@ -139,34 +589,58 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
+        if: env.VITE_SUPABASE_URL != '' && env.VITE_SUPABASE_PUBLISHABLE_KEY != '' && env.E2E_SUPER_ADMIN_USER != '' && env.E2E_SUPER_ADMIN_PASS != '' && env.E2E_PASS != '' && env.E2E_QA_PROJECT_REF != '' && env.E2E_TARGET_ALLOWLIST != ''
         run: npx playwright install --with-deps chromium webkit
 
+      - name: Registra ausência de configuração QA remota
+        if: env.VITE_SUPABASE_URL == '' || env.VITE_SUPABASE_PUBLISHABLE_KEY == '' || env.E2E_SUPER_ADMIN_USER == '' || env.E2E_SUPER_ADMIN_PASS == '' || env.E2E_PASS == '' || env.E2E_QA_PROJECT_REF == '' || env.E2E_TARGET_ALLOWLIST == ''
+        run: |
+          echo 'Suítes autenticadas no Supabase remoto puladas: credenciais/alvo QA não configurados. A trilha de perfis local descartável continua ativa.' >> "$GITHUB_STEP_SUMMARY"
+
       - name: Identifica alvo Supabase dos testes
+        if: env.VITE_SUPABASE_URL != '' && env.VITE_SUPABASE_PUBLISHABLE_KEY != '' && env.E2E_SUPER_ADMIN_USER != '' && env.E2E_SUPER_ADMIN_PASS != '' && env.E2E_PASS != '' && env.E2E_QA_PROJECT_REF != '' && env.E2E_TARGET_ALLOWLIST != ''
         run: node scripts/e2e-target-check.mjs
 
       - name: Provisiona perfis e segundo tenant de QA
-        if: env.E2E_USER != '' && env.E2E_PASS != ''
+        if: env.VITE_SUPABASE_URL != '' && env.VITE_SUPABASE_PUBLISHABLE_KEY != '' && env.E2E_SUPER_ADMIN_USER != '' && env.E2E_SUPER_ADMIN_PASS != '' && env.E2E_PASS != '' && env.E2E_QA_PROJECT_REF != '' && env.E2E_TARGET_ALLOWLIST != ''
         run: npm run test:qa:provision
 
       - name: QA autenticado com dados reais de teste
+        if: env.VITE_SUPABASE_URL != '' && env.VITE_SUPABASE_PUBLISHABLE_KEY != '' && env.E2E_SUPER_ADMIN_USER != '' && env.E2E_SUPER_ADMIN_PASS != '' && env.E2E_PASS != '' && env.E2E_QA_PROJECT_REF != '' && env.E2E_TARGET_ALLOWLIST != ''
         run: npm run test:qa:authenticated
 
-      - name: RBAC real por owner, manager, frontdesk e professional
-        if: env.E2E_USER != '' && env.E2E_PASS != ''
+      - name: RBAC real pelos seis perfis do produto
+        if: env.VITE_SUPABASE_URL != '' && env.VITE_SUPABASE_PUBLISHABLE_KEY != '' && env.E2E_SUPER_ADMIN_USER != '' && env.E2E_SUPER_ADMIN_PASS != '' && env.E2E_PASS != '' && env.E2E_QA_PROJECT_REF != '' && env.E2E_TARGET_ALLOWLIST != ''
         run: npm run test:rbac:e2e
 
       - name: Isolamento multi-tenant remoto com duas contas reais
-        if: env.E2E_USER != '' && env.E2E_PASS != ''
+        if: env.VITE_SUPABASE_URL != '' && env.VITE_SUPABASE_PUBLISHABLE_KEY != '' && env.E2E_SUPER_ADMIN_USER != '' && env.E2E_SUPER_ADMIN_PASS != '' && env.E2E_PASS != '' && env.E2E_QA_PROJECT_REF != '' && env.E2E_TARGET_ALLOWLIST != ''
         run: npm run test:tenant:isolation:remote
 
+      - name: Publica evidências E2E autenticadas
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: qa-authenticated-${{ github.run_id }}
+          path: |
+            e2e/.artifacts-smoke/
+            e2e/.report-smoke/
+            test-results/
+            !e2e/**/trace.zip
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14
+
   backend-integrity:
-    needs: vitest
-    runs-on: ubuntu-latest
+    needs: [vitest, qa-authenticated, playwright-mobile]
+    runs-on: ubuntu-24.04
     env:
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
       E2E_USER: ${{ secrets.E2E_USER }}
       E2E_PASS: ${{ secrets.E2E_PASS }}
+      E2E_QA_PROJECT_REF: ${{ secrets.E2E_QA_PROJECT_REF }}
+      E2E_TARGET_ALLOWLIST: ${{ secrets.E2E_TARGET_ALLOWLIST }}
       E2E_SEED_FIXTURES: "true"
       E2E_TENANT_SLUG: studio-teste-qa
     steps:
@@ -181,10 +655,32 @@ jobs:
         run: npm ci
 
       - name: Identifica alvo Supabase dos testes
+        if: env.VITE_SUPABASE_URL != '' && env.VITE_SUPABASE_PUBLISHABLE_KEY != '' && env.E2E_USER != '' && env.E2E_PASS != '' && env.E2E_QA_PROJECT_REF != '' && env.E2E_TARGET_ALLOWLIST != ''
         run: node scripts/e2e-target-check.mjs
 
       - name: Prepara fixtures reais de QA
-        run: node scripts/e2e-seed-fixtures.mjs
+        if: env.VITE_SUPABASE_URL != '' && env.VITE_SUPABASE_PUBLISHABLE_KEY != '' && env.E2E_USER != '' && env.E2E_PASS != '' && env.E2E_QA_PROJECT_REF != '' && env.E2E_TARGET_ALLOWLIST != ''
+        run: node scripts/e2e-target-check.mjs --destructive && node scripts/e2e-seed-fixtures.mjs
 
       - name: Concorrência e integridade da agenda
+        if: env.VITE_SUPABASE_URL != '' && env.VITE_SUPABASE_PUBLISHABLE_KEY != '' && env.E2E_USER != '' && env.E2E_PASS != '' && env.E2E_QA_PROJECT_REF != '' && env.E2E_TARGET_ALLOWLIST != ''
         run: npm run test:backend:concurrency
+
+      - name: Registra ausência de configuração QA para concorrência remota
+        if: env.VITE_SUPABASE_URL == '' || env.VITE_SUPABASE_PUBLISHABLE_KEY == '' || env.E2E_USER == '' || env.E2E_PASS == '' || env.E2E_QA_PROJECT_REF == '' || env.E2E_TARGET_ALLOWLIST == ''
+        run: |
+          echo 'Testes de concorrência remota pulados: QA remoto não configurado. A Action não cria credenciais fictícias para projetos externos.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publica evidências de concorrência
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: backend-integrity-${{ github.run_id }}
+          path: |
+            e2e/.artifacts-backend/
+            e2e/.report-backend/
+            test-results/
+            !e2e/**/trace.zip
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14

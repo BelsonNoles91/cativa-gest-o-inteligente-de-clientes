@@ -216,11 +216,11 @@ export default function PremiumLanding() {
                     initial={{ opacity: 0, scale: 0.8, rotate: 5 }}
                     animate={{ opacity: 1, scale: 1, rotate: 3 }}
                     exit={{ opacity: 0, scale: 0.8, rotate: 5 }}
-                    className="absolute -bottom-10 right-0 md:-bottom-10 md:-left-10 bg-accent text-white p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl z-20 max-w-[240px] md:max-w-xs"
+                    className="absolute -bottom-10 right-0 md:-bottom-10 md:-left-10 bg-accent-strong text-accent-strong-foreground p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl z-20 max-w-[240px] md:max-w-xs"
                  >
                     <Sparkles className="h-6 w-6 md:h-8 md:w-8 mb-4 opacity-60" />
                     <p className="text-sm md:text-lg font-medium leading-tight mb-2">{segments[activeSegment].quote}</p>
-                    <p className="text-[9px] font-bold uppercase tracking-widest opacity-90">{segments[activeSegment].author}</p>
+                    <p className="text-[9px] font-bold uppercase tracking-widest">{segments[activeSegment].author}</p>
                  </motion.div>
                </AnimatePresence>
             </div>
@@ -475,7 +475,7 @@ export default function PremiumLanding() {
         </PremiumSection>
       </main>
 
-      <Footer />
+      <Footer reserveMobileCtaSpace />
 
       {/* Sticky CTA Mobile */}
       <AnimatePresence>
@@ -484,7 +484,8 @@ export default function PremiumLanding() {
             initial={{ y: 100 }}
             animate={{ y: 0 }}
             exit={{ y: 100 }}
-            className="fixed bottom-0 left-0 right-0 z-[100] p-4 lg:hidden bg-white/90 backdrop-blur-xl border-t border-border/40 pb-safe shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.1)]"
+            data-testid="mobile-sticky-cta"
+            className="fixed bottom-0 left-0 right-0 z-[100] p-4 lg:hidden bg-white border-t border-border/40 pb-safe shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.1)]"
           >
             <div className="flex gap-3">
               {signupsOpen && (

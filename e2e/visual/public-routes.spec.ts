@@ -7,7 +7,7 @@
  * As asserções de overflow horizontal e BottomNav rodam em todos os perfis
  * de dispositivo; o screenshot é o "selo" final.
  */
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { AUTH_SKIP_REASON, HAS_E2E_AUTH } from "../_helpers/auth";
 import {
   prepareAuthenticatedVisualState,
@@ -18,12 +18,48 @@ import {
   assertContentNotHiddenByBottomNav,
   assertBottomNavItemsRespectSafeArea,
   assertCriticalActionsAboveBottomNav,
+  resetScrollForFullPageSnapshot,
 } from "../_helpers/visual";
 import { installAnalyticsVisualFixture } from "../_helpers/analyticsVisualFixture";
 
 const AUTH_VISUAL_TIMEOUT = 60_000;
 
-async function waitForAuthenticatedShell(page: import("@playwright/test").Page) {
+async function isolateRemoteFonts(page: Page) {
+  // These snapshots force local Liberation fonts, so fetching Google Fonts is
+  // unnecessary. In particular, the @import at the top of index.css can delay
+  // the rest of the stylesheet and make layout assertions observe unstyled DOM.
+  await page.route("https://fonts.googleapis.com/**", (route) =>
+    route.fulfill({ status: 200, contentType: "text/css", body: "" }),
+  );
+}
+
+async function waitForAppStyles(page: Page) {
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const hasDesignTokens = Boolean(
+            getComputedStyle(document.documentElement)
+              .getPropertyValue("--background")
+              .trim(),
+          );
+          const bottomNav =
+            document.querySelector<HTMLElement>("[data-bottom-nav]");
+          const bottomNavIsStyled =
+            !bottomNav || getComputedStyle(bottomNav).position === "fixed";
+
+          return hasDesignTokens && bottomNavIsStyled;
+        }),
+      {
+        message:
+          "O CSS principal do app deve estar aplicado antes das medições visuais.",
+        timeout: 15_000,
+      },
+    )
+    .toBe(true);
+}
+
+async function waitForAuthenticatedShell(page: Page) {
   await page
     .locator('main[data-app-main], [data-app-main]')
     .first()
@@ -31,7 +67,7 @@ async function waitForAuthenticatedShell(page: import("@playwright/test").Page) 
 }
 
 async function openAuthenticatedVisualRoute(
-  page: import("@playwright/test").Page,
+  page: Page,
   path: string,
 ) {
   await page.goto(path, { waitUntil: "commit", timeout: 15_000 });
@@ -53,11 +89,45 @@ async function openAuthenticatedVisualRoute(
   }
 }
 
+async function assertSubscriptionPeriodLoaded(
+  page: import("@playwright/test").Page,
+) {
+  for (const label of ["Início do período", "Próxima renovação"]) {
+    const value = page
+      .getByText(label, { exact: true })
+      .locator("xpath=..")
+      .locator("[data-volatile]");
+    await expect(
+      value,
+      `A data de "${label}" precisa estar carregada antes de mascarar dados voláteis.`,
+    ).toHaveText(/\b\d{4}\b/);
+  }
+}
+
+async function assertProfileEmailFieldsLoaded(
+  page: import("@playwright/test").Page,
+) {
+  const fields = page.locator('input[data-volatile]');
+  await expect(fields).toHaveCount(2);
+  const valuesAreValidAndConsistent = await fields.evaluateAll((inputs) => {
+    const [current, next] = inputs.map((input) =>
+      (input as HTMLInputElement).value,
+    );
+    return (
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(current ?? "") &&
+      next === current
+    );
+  });
+  expect(valuesAreValidAndConsistent).toBe(true);
+}
+
 test.describe("rotas públicas", () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
   test("/auth/login — sem overflow e baseline visual", async ({ page }) => {
+    await isolateRemoteFonts(page);
     await page.goto("/auth/login");
+    await waitForAppStyles(page);
     await prepareForSnapshot(page);
     await expect(
       page.getByRole("heading", { name: "Bem-vindo de volta" }),
@@ -76,6 +146,7 @@ test.describe("rotas autenticadas", () => {
   test.describe.configure({ timeout: AUTH_VISUAL_TIMEOUT });
   test.skip(!HAS_E2E_AUTH, AUTH_SKIP_REASON);
   test.beforeEach(async ({ page }) => {
+    await isolateRemoteFonts(page);
     await prepareAuthenticatedVisualState(page);
   });
 
@@ -98,6 +169,13 @@ test.describe("rotas autenticadas", () => {
         await installAnalyticsVisualFixture(page);
       }
       await openAuthenticatedVisualRoute(page, path);
+      await waitForAppStyles(page);
+      if (name === "assinatura") {
+        await assertSubscriptionPeriodLoaded(page);
+      }
+      if (name === "perfil") {
+        await assertProfileEmailFieldsLoaded(page);
+      }
       await prepareForSnapshot(page);
 
       // Asserções estruturais antes do diff de pixels.
@@ -111,15 +189,29 @@ test.describe("rotas autenticadas", () => {
       await assertBottomNavItemsRespectSafeArea(page);
       // Ações críticas marcadas com data-critical-action ficam acima do nav.
       await assertCriticalActionsAboveBottomNav(page);
+      if (name === "waitlist") {
+        const tabList = page.getByRole("tablist");
+        await expect(tabList.getByRole("tab")).toHaveCount(4);
+        const tabsFit = await tabList.evaluate((element) => {
+          const bounds = element.getBoundingClientRect();
+          const tabs = Array.from(element.querySelectorAll<HTMLElement>('[role="tab"]'));
+          return (
+            element.scrollWidth <= element.clientWidth &&
+            tabs.every((tab) => {
+              const tabBounds = tab.getBoundingClientRect();
+              return tabBounds.left >= bounds.left && tabBounds.right <= bounds.right;
+            })
+          );
+        });
+        expect(tabsFit, "As quatro opções da fila devem caber sem rolagem interna.").toBe(true);
+      }
 
+      await resetScrollForFullPageSnapshot(page);
       await expect(page).toHaveScreenshot(`${name}.png`, {
         fullPage: true,
-        // Mascara áreas voláteis: relógio do header, saudações com hora, KPIs
-        // que mudam por minuto (criados nos últimos 5 min etc).
-        mask: [
-          page.locator("[data-volatile]"),
-          page.locator("time"),
-        ],
+        // Playwright injects this stylesheet during capture; a page-level style
+        // can be lost when fullPage expands the viewport.
+        stylePath: "e2e/_helpers/full-page-snapshot.css",
       });
     });
   }

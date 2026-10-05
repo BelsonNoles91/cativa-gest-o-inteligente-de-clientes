@@ -25,6 +25,8 @@ import type {
   MessageTemplate,
 } from "@/domain/confirmation";
 import { generateQueueForTenant } from "@/services/confirmation/queueGenerator";
+import { isQueueItemDue } from "@/services/confirmation/queueRules";
+import { setAppointmentStatus } from "@/repositories/scheduling";
 
 export function useConfirmationCenter() {
   const { currentTenant } = useTenant();
@@ -83,8 +85,11 @@ export function useConfirmationCenter() {
     try {
       const r = await generateQueueForTenant(tenantId);
       toast({
-        title: "Fila atualizada",
-        description: `${r.created} agendamentos • Tarefas de reativação sincronizadas`,
+        title: r.warning ? "Fila atualizada parcialmente" : "Fila atualizada",
+        description: r.warning
+          ? `${r.created} agendamentos. ${r.warning}`
+          : `${r.created} agendamentos • Tarefas de reativação sincronizadas`,
+        ...(r.warning ? { variant: "destructive" as const } : {}),
       });
       await refresh();
     } catch (e) {
@@ -96,37 +101,79 @@ export function useConfirmationCenter() {
   }, [tenantId, refresh, toast]);
 
   const toggleSelection = useCallback((id: string) => {
+    const item = items.find((candidate) => candidate.id === id);
+    if (!item || !isQueueItemDue(item.scheduledFor)) return;
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
     });
-  }, []);
+  }, [items]);
 
   const selectAll = useCallback(() => {
-    setSelectedIds(new Set(items.map((i) => i.id)));
+    setSelectedIds(new Set(items.filter((item) => isQueueItemDue(item.scheduledFor)).map((i) => i.id)));
   }, [items]);
 
   const clearSelection = useCallback(() => {
     setSelectedIds(new Set());
   }, []);
 
-  const setBatchStatus = useCallback(async (status: ConfirmationQueueStatus) => {
-    if (selectedIds.size === 0) return;
-    setLoading(true);
-    try {
-      await Promise.all(
-        Array.from(selectedIds).map((id) => updateQueueStatus(id, status))
-      );
-      toast({ title: `${selectedIds.size} itens atualizados com sucesso` });
-      await refresh();
-    } catch (e) {
-      toast({ title: "Erro ao atualizar lote", variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedIds, refresh, toast]);
+  const persistItemStatus = useCallback(
+    async (
+      itemId: string,
+      status: ConfirmationQueueStatus,
+      extras?: { notes?: string; followUpAt?: string },
+    ) => {
+      const item = items.find((candidate) => candidate.id === itemId);
+      if (!item) {
+        throw new Error(
+          "O agendamento saiu da fila. Atualize a página e tente novamente.",
+        );
+      }
+      if (!isQueueItemDue(item.scheduledFor)) {
+        throw new Error("Este contato ainda está programado para um horário futuro.");
+      }
+
+      if (status === "confirmed") {
+        // O trigger do banco fecha a fila de forma atômica com a confirmação.
+        await setAppointmentStatus(item.appointmentId, "confirmed");
+        return;
+      }
+
+      if (status === "canceled") {
+        // Cancelar na central também libera o horário na agenda.
+        await setAppointmentStatus(item.appointmentId, "canceled", {
+          reason:
+            extras?.notes?.trim() ||
+            "Cancelamento registrado na Central de Confirmação.",
+        });
+        return;
+      }
+
+      await updateQueueStatus(itemId, status, extras);
+    },
+    [items],
+  );
+
+  const setBatchStatus = useCallback(
+    async (status: ConfirmationQueueStatus) => {
+      if (selectedIds.size === 0) return;
+      setLoading(true);
+      try {
+        await Promise.all(
+          Array.from(selectedIds).map((id) => persistItemStatus(id, status)),
+        );
+        toast({ title: `${selectedIds.size} itens atualizados com sucesso` });
+        await refresh();
+      } catch (e) {
+        toast({ title: "Erro ao atualizar lote", variant: "destructive" });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [selectedIds, persistItemStatus, refresh, toast],
+  );
 
   const logAttempt = useCallback(
     async (input: {
@@ -139,6 +186,14 @@ export function useConfirmationCenter() {
       followUpAt?: string | null;
     }) => {
       if (!tenantId) return;
+      if (!isQueueItemDue(input.item.scheduledFor)) {
+        toast({
+          title: "Contato ainda não está liberado",
+          description: "A ação ficará disponível no horário programado.",
+          variant: "destructive",
+        });
+        return;
+      }
       try {
         await recordAttempt({
           tenantId,
@@ -157,7 +212,8 @@ export function useConfirmationCenter() {
         await refresh();
         toast({ title: "Tentativa registrada" });
       } catch (e) {
-        const msg = e instanceof Error ? e.message : "Erro ao registrar tentativa";
+        const msg =
+          e instanceof Error ? e.message : "Erro ao registrar tentativa";
         toast({ title: "Erro", description: msg, variant: "destructive" });
       }
     },
@@ -172,6 +228,14 @@ export function useConfirmationCenter() {
       notes?: string | null;
     }) => {
       if (!tenantId) return;
+      if (!isQueueItemDue(input.item.scheduledFor)) {
+        toast({
+          title: "Contato ainda não está liberado",
+          description: "A ação ficará disponível no horário programado.",
+          variant: "destructive",
+        });
+        return;
+      }
       try {
         await recordCall({
           tenantId,
@@ -197,7 +261,8 @@ export function useConfirmationCenter() {
         await refresh();
         toast({ title: "Ligação registrada" });
       } catch (e) {
-        const msg = e instanceof Error ? e.message : "Erro ao registrar ligação";
+        const msg =
+          e instanceof Error ? e.message : "Erro ao registrar ligação";
         toast({ title: "Erro", description: msg, variant: "destructive" });
       }
     },
@@ -211,7 +276,7 @@ export function useConfirmationCenter() {
       extras?: { notes?: string; followUpAt?: string },
     ) => {
       try {
-        await updateQueueStatus(itemId, status, extras);
+        await persistItemStatus(itemId, status, extras);
         await refresh();
         toast({ title: "Status atualizado" });
       } catch (e) {
@@ -219,7 +284,7 @@ export function useConfirmationCenter() {
         toast({ title: "Erro", description: msg, variant: "destructive" });
       }
     },
-    [refresh, toast],
+    [persistItemStatus, refresh, toast],
   );
 
   const totalOpen = useMemo(
@@ -248,4 +313,3 @@ export function useConfirmationCenter() {
     setItemStatus,
   };
 }
-

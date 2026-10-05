@@ -56,7 +56,7 @@ export function FeaturesSection() {
           </div>
           <h2 className="text-4xl md:text-7xl font-display font-bold text-primary-dark leading-[0.95] tracking-tight">
             Uma plataforma pensada para <br />
-            <span className="text-accent italic serif font-normal">transformar rotina em resultado.</span>
+            <span className="text-accent-strong italic serif font-normal">transformar rotina em resultado.</span>
           </h2>
         </div>
         <p className="text-lg md:text-xl text-muted-foreground max-w-xl font-light leading-relaxed">

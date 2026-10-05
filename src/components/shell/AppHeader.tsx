@@ -1,11 +1,11 @@
 /**
  * AppHeader — header global do app.
  *
- * Desktop (md+): linha única com sidebar trigger, tenant, busca, ações.
- * Mobile     : linha única compacta (avatar tenant + nome + busca + perfil).
+ * Desktop (lg+): linha única com sidebar trigger, tenant, busca e ações.
+ * Tablet/mobile: linha compacta com troca de tenant/unidade e busca acessível.
  *               A busca abre num CommandDialog ao tocar no ícone.
  */
-import { useState, useMemo, lazy, Suspense } from "react";
+import { useState, useMemo, useEffect, lazy, Suspense } from "react";
 import { Bell, Search, ShieldCheck, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -14,8 +14,29 @@ import { TenantSwitcher } from "@/components/shell/TenantSwitcher";
 const GlobalSearch = lazy(() =>
   import("@/components/shell/GlobalSearch").then((m) => ({ default: m.GlobalSearch })),
 );
+
+function useIsDesktopViewport() {
+  const [isDesktop, setIsDesktop] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches,
+  );
+
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 1024px)");
+    const update = (event?: MediaQueryListEvent) => setIsDesktop(event?.matches ?? media.matches);
+    update();
+    media.addEventListener?.("change", update);
+    if (!media.addEventListener) media.addListener(update);
+    return () => {
+      media.removeEventListener?.("change", update);
+      if (!media.removeEventListener) media.removeListener(update);
+    };
+  }, []);
+
+  return isDesktop;
+}
 import { ThemeToggle } from "@/components/shell/ThemeToggle";
 import { UserMenu } from "@/components/shell/UserMenu";
+import { OfflineBanner } from "@/components/shell/OfflineBanner";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import {
   Sheet,
@@ -27,6 +48,7 @@ import {
 
 export function AppHeader() {
   const [searchOpen, setSearchOpen] = useState(false);
+  const isDesktopViewport = useIsDesktopViewport();
   const { currentTenant, currentUnit, currentLogoUrl } = useTenant();
 
   // Memoização do cálculo de iniciais para evitar processamento de strings em todo render
@@ -43,7 +65,7 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur-xl pt-safe-top">
       {/* Desktop */}
-      <div className="hidden h-16 items-center gap-3 px-4 md:flex">
+      <div className="hidden h-16 items-center gap-3 px-4 lg:flex">
         <SidebarTrigger className="rounded-lg" />
         {currentLogoUrl && (
           <img
@@ -57,9 +79,11 @@ export function AppHeader() {
           <TenantSwitcher />
         </div>
         <div className="mx-auto w-full max-w-xl">
-          <Suspense fallback={<div className="h-10 w-full rounded-lg bg-muted/50" />}>
-            <GlobalSearch />
-          </Suspense>
+          {isDesktopViewport && (
+            <Suspense fallback={<div className="h-10 w-full rounded-lg bg-muted/50" />}>
+              <GlobalSearch />
+            </Suspense>
+          )}
         </div>
         <Button variant="ghost" size="icon" className="rounded-full" aria-label="Notificações">
           < Bell className="h-4 w-4" />
@@ -69,7 +93,8 @@ export function AppHeader() {
       </div>
 
       {/* Mobile — uma linha apenas */}
-      <div className="flex h-14 items-center gap-2 px-3 md:hidden">
+      <div className="flex h-14 items-center gap-2 px-3 lg:hidden">
+        <SidebarTrigger className="hidden rounded-lg md:flex" />
         <Sheet>
           <SheetTrigger asChild>
             <Button
@@ -144,6 +169,9 @@ export function AppHeader() {
 
       </div>
 
+      {/* A faixa ocupa espaço no header sticky; não encobre controles no offline. */}
+      <OfflineBanner />
+
       {/* CommandDialog de busca controlado pelo botão mobile */}
       {searchOpen && (
         <Suspense fallback={null}>
@@ -157,4 +185,3 @@ export function AppHeader() {
     </header>
   );
 }
-

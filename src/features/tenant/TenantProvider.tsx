@@ -10,6 +10,10 @@ import { useAuth } from "@/features/auth/AuthProvider";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { handleError } from "@/lib/error-handler";
+import {
+  readOfflineTenantContext,
+  saveOfflineTenantContext,
+} from "@/features/tenant/offline-tenant-context";
 import type { Role } from "@/domain/roles";
 import type { TenantSegment } from "@/domain/tenant";
 
@@ -92,6 +96,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const userId = user?.id ?? null;
   const location = useLocation();
+  const isPortalRoute = location.pathname.startsWith("/portal");
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [verified, setVerified] = useState(false);
@@ -125,7 +130,6 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 
   const loadBaseData = useCallback(async (force = false) => {
     if (authLoading) return;
-    const isPortalRoute = window.location.pathname.startsWith("/portal");
     if (isPortalRoute) {
       setLoading(false);
       setVerified(true);
@@ -201,12 +205,37 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       }
       setVerified(true);
     } catch (err) {
-      handleError(err, { category: 'DATABASE', context: { action: 'loadBaseData' } });
+      const offlineFailure = typeof navigator !== "undefined" && !navigator.onLine;
+      handleError(err, {
+        category: "DATABASE",
+        context: { action: "loadBaseData" },
+        silent: offlineFailure,
+      });
+      if (offlineFailure) {
+        const cached = readOfflineTenantContext(userId);
+        if (cached) {
+          // Contexto local temporário para leitura da agenda somente.
+          // RequireOnboarding mantém bloqueadas as demais rotas até o servidor
+          // validar novamente o membership.
+          setMemberships([{
+            tenant_id: cached.tenant.id,
+            role: cached.role,
+            tenants: cached.tenant,
+          }]);
+          setUnits(cached.units);
+          setCurrentTenantIdState(cached.tenant.id);
+          setCurrentUnitIdState(cached.currentUnitId);
+          setIsSuperAdmin(false);
+          setIsClient(false);
+          setAllTenants([]);
+          setLogosByTenant({});
+        }
+      }
       setLoadError(err instanceof Error ? err.message : "Falha ao carregar dados da empresa");
     } finally {
       setLoading(false);
     }
-  }, [userId, authLoading, verified]);
+  }, [userId, authLoading, verified, isPortalRoute]);
 
   useEffect(() => {
     let ignore = false;
@@ -246,6 +275,29 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     return availableTenants[0]?.id ?? null;
   }, [currentTenantId, availableTenants]);
 
+  const currentTenant = useMemo(
+    () => availableTenants.find((tenant) => tenant.id === effectiveTenantId) ?? null,
+    [availableTenants, effectiveTenantId],
+  );
+  const availableUnits = useMemo(
+    () => units.filter((unit) => unit.tenant_id === effectiveTenantId),
+    [units, effectiveTenantId],
+  );
+  const effectiveUnitId = useMemo(
+    () => currentUnitId && availableUnits.some((unit) => unit.id === currentUnitId)
+      ? currentUnitId
+      : availableUnits[0]?.id ?? null,
+    [currentUnitId, availableUnits],
+  );
+  const currentUnit = useMemo(
+    () => availableUnits.find((unit) => unit.id === effectiveUnitId) ?? null,
+    [availableUnits, effectiveUnitId],
+  );
+  const currentRole = useMemo<Role | null>(() => {
+    const membershipRole = memberships.find((membership) => membership.tenant_id === effectiveTenantId)?.role ?? null;
+    return isSuperAdmin ? "super_admin" : membershipRole;
+  }, [memberships, effectiveTenantId, isSuperAdmin]);
+
   // Mantém o contexto persistido coerente com o tenant efetivamente autorizado.
   // Isso também recupera caches antigos/inválidos sem deixar IDs órfãos no storage.
   useEffect(() => {
@@ -260,6 +312,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       setLogosByTenant({});
       return;
     }
+    if (loadError && typeof navigator !== "undefined" && !navigator.onLine) return;
 
     let ignore = false;
     const loadTenantDetails = async () => {
@@ -289,7 +342,40 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 
     void loadTenantDetails();
     return () => { ignore = true; };
-  }, [effectiveTenantId]);
+  }, [effectiveTenantId, loadError]);
+
+  useEffect(() => {
+    if (
+      !userId ||
+      !verified ||
+      loadError ||
+      !currentTenant ||
+      !currentRole ||
+      isSuperAdmin ||
+      isClient ||
+      availableUnits.length === 0 ||
+      !["owner", "manager", "frontdesk", "professional"].includes(currentRole)
+    ) return;
+
+    saveOfflineTenantContext({
+      userId,
+      savedAt: new Date().toISOString(),
+      tenant: currentTenant,
+      role: currentRole as "owner" | "manager" | "frontdesk" | "professional",
+      units: availableUnits,
+      currentUnitId: currentUnit?.id ?? null,
+    });
+  }, [
+    userId,
+    verified,
+    loadError,
+    currentTenant,
+    currentRole,
+    isSuperAdmin,
+    isClient,
+    availableUnits,
+    currentUnit?.id,
+  ]);
 
   const impersonateTenant = useCallback(async (id: string, reason?: string | null) => {
     if (!isSuperAdmin) return;
@@ -320,17 +406,6 @@ export function TenantProvider({ children }: { children: ReactNode }) {
   }, [currentTenantId, isSuperAdmin, memberships, setCurrentTenantId]);
 
   const contextValue = useMemo<TenantContextValue>(() => {
-    const currentTenant = availableTenants.find((t) => t.id === effectiveTenantId) ?? null;
-    const availableUnits = units.filter((u) => u.tenant_id === effectiveTenantId);
-    
-    const effectiveUnitId = currentUnitId && availableUnits.some((u) => u.id === currentUnitId)
-      ? currentUnitId
-      : availableUnits[0]?.id ?? null;
-    const currentUnit = availableUnits.find((u) => u.id === effectiveUnitId) ?? null;
-
-    const membershipRole = memberships.find((m) => m.tenant_id === effectiveTenantId)?.role ?? null;
-    const currentRole: Role | null = isSuperAdmin ? ("super_admin" as Role) : membershipRole;
-
     const hasActiveTenant = (memberships.length > 0 || isSuperAdmin) && !location.pathname.startsWith("/portal");
     const currentLogoUrl = effectiveTenantId ? logosByTenant[effectiveTenantId] ?? null : null;
 
@@ -357,8 +432,9 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       refresh: () => loadBaseData(true),
     };
   }, [
-    loading, verified, loadError, memberships, availableTenants, effectiveTenantId, 
-    units, currentUnitId, isSuperAdmin, logosByTenant, loadBaseData,
+    loading, verified, loadError, memberships, availableTenants, effectiveTenantId,
+    currentTenant, availableUnits, currentUnit, currentRole,
+    isSuperAdmin, logosByTenant, loadBaseData,
     location.pathname, isClient, setCurrentTenantId, setCurrentUnitId,
     impersonateTenant, endImpersonation
   ]);

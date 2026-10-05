@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { test, expect } from "@playwright/test";
 import { AUTH_SKIP_REASON, HAS_E2E_AUTH } from "../_helpers/auth";
+import { getDestructiveE2ESkipReason } from "../_helpers/qaTarget";
 
 function loadEnvFile(file: string) {
   if (!existsSync(file)) return;
@@ -97,6 +98,8 @@ async function cleanupClientByName(supabase: SupabaseClient, fullName: string) {
 test.describe("CRM media", () => {
   test.describe.configure({ timeout: 120_000 });
   test.skip(!HAS_E2E_AUTH, AUTH_SKIP_REASON);
+  const qaTargetSkipReason = getDestructiveE2ESkipReason();
+  test.skip(Boolean(qaTargetSkipReason), qaTargetSkipReason ?? "");
 
   test("cria, lê e atualiza cliente real pela UI", async ({ page }) => {
     const supabase = await createSignedInSupabase();
@@ -200,8 +203,8 @@ test.describe("CRM media", () => {
     const supabase = await createSignedInSupabase();
     const marker = `cativa-crm-media-${Date.now()}`;
     const fullName = `E2E Cliente Midia ${marker}`;
-    const fileName = `${marker}.txt`;
-    const photoName = `${marker}.svg`;
+    const fileName = `../../${marker}.txt`;
+    const photoName = `${marker}.png`;
     const description = "Arquivo gerado pelo E2E para validar CRM media";
     const photoCaption = "Foto gerada pelo E2E para validar CRM media";
     let fileStoragePath = "";
@@ -243,14 +246,19 @@ test.describe("CRM media", () => {
       await expect(fileItem).toBeVisible({ timeout: 30_000 });
       await expect(fileItem).toContainText(description);
 
-      let fileRecord: { storage_path: string; file_name: string } | null = null;
+      let fileRecord: {
+        tenant_id: string;
+        client_id: string;
+        storage_path: string;
+        file_name: string;
+      } | null = null;
 
       await expect
         .poll(
           async () => {
             const { data } = await supabase
               .from("client_files")
-              .select("storage_path, file_name")
+              .select("tenant_id, client_id, storage_path, file_name")
               .eq("file_name", fileName)
               .maybeSingle();
             fileRecord = data;
@@ -261,6 +269,12 @@ test.describe("CRM media", () => {
         .toBe(true);
 
       fileStoragePath = fileRecord!.storage_path;
+      const [pathTenantId, pathClientId, storedFileName, ...extraPathSegments] = fileStoragePath.split("/");
+      expect(pathTenantId).toBe(fileRecord!.tenant_id);
+      expect(pathClientId).toBe(fileRecord!.client_id);
+      expect(storedFileName).toMatch(/^[0-9a-f-]{36}-/i);
+      expect(extraPathSegments).toHaveLength(0);
+      expect([pathTenantId, pathClientId, storedFileName]).not.toContain("..");
 
       const { data: signedData, error: signedError } = await supabase.storage
         .from("client-media")
@@ -291,13 +305,18 @@ test.describe("CRM media", () => {
         )
         .toBe(0);
 
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"><title>${marker}</title><rect width="12" height="12" fill="#f97316"/></svg>`;
+      // SVG is intentionally rejected to prevent active content in uploaded
+      // media; exercise the successful path with a valid, minimal PNG instead.
+      const png = Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADUlEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC",
+        "base64",
+      );
 
       await page.getByTestId("client-photo-caption").fill(photoCaption);
       await page.getByTestId("client-photo-upload-input").setInputFiles({
         name: photoName,
-        mimeType: "image/svg+xml",
-        buffer: Buffer.from(svg, "utf8"),
+        mimeType: "image/png",
+        buffer: png,
       });
 
       const photoItem = page.getByTestId("client-photo-item").filter({ hasText: photoCaption });
@@ -330,7 +349,11 @@ test.describe("CRM media", () => {
 
       const photoResponse = await fetch(photoSignedData!.signedUrl);
       expect(photoResponse.ok).toBe(true);
-      await expect(photoResponse.text()).resolves.toContain(marker);
+      expect(photoResponse.headers.get("content-type")).toContain("image/png");
+      const downloadedPng = Buffer.from(await photoResponse.arrayBuffer());
+      expect([...downloadedPng.subarray(0, 8)]).toEqual([
+        0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+      ]);
 
       await photoItem.getByTestId("client-photo-remove").click();
       await expect(page.getByText("Foto removida", { exact: true })).toBeVisible({

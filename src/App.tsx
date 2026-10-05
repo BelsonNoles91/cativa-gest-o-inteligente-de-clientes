@@ -42,18 +42,25 @@ const queryClient = new QueryClient({
 function lazyWithReload<T extends ComponentType<never>>(
   factory: () => Promise<{ default: T }>,
 ): LazyExoticComponent<T> {
+  const key = `__lovable_chunk_reload__:${factory.toString()}`;
   return lazy(() =>
-    factory().catch((error) => {
-      const key = "__lovable_chunk_reload__";
-      if (typeof window !== "undefined" && !sessionStorage.getItem(key)) {
-        sessionStorage.setItem(key, "1");
-        window.location.reload();
-        // Return a never-resolving promise while the page reloads.
-        return new Promise<{ default: T }>(() => {});
-      }
-      handleError(error, { category: 'NETWORK', context: { type: 'chunk_load_fail' } });
-      throw error;
-    }),
+    factory()
+      .then((module) => {
+        // A trava pertence a este chunk; sucesso em outra tela não pode
+        // consumir a única tentativa de recuperação desta importação.
+        if (typeof window !== "undefined") sessionStorage.removeItem(key);
+        return module;
+      })
+      .catch((error) => {
+        if (typeof window !== "undefined" && !sessionStorage.getItem(key)) {
+          sessionStorage.setItem(key, "1");
+          window.location.reload();
+          // Return a never-resolving promise while the page reloads.
+          return new Promise<{ default: T }>(() => {});
+        }
+        handleError(error, { category: 'NETWORK', context: { type: 'chunk_load_fail' } });
+        throw error;
+      }),
   );
 }
 
@@ -144,6 +151,11 @@ function PreloadAppModules() {
   const { user } = useAuth();
   useEffect(() => {
     if (!user) return;
+    // Em toque/coarse pointer, carregar todas as telas antecipadamente disputa
+    // rede e memória com a rota ativa — especialmente em WebKit móvel. Nessas
+    // telas, os módulos continuam sendo carregados sob demanda pelo React.lazy.
+    if (window.matchMedia("(pointer: coarse)").matches) return;
+
     let cancelled = false;
     const run = async () => {
       for (const load of APP_MODULE_IMPORTS) {
@@ -230,20 +242,34 @@ const App = () => (
                     {/* App autenticado + onboarding completo */}
                     <Route element={<ProtectedRoute />}>
                       <Route element={<RequireOnboarding />}>
-                        <Route path="/app" element={<AppLayout />}>
-                          <Route index element={<Dashboard />} />
-                          <Route path="agenda" element={<AgendaPage />} />
-                          <Route path="clientes" element={<ClientsPage />} />
-                          <Route
-                            path="confirmacoes"
-                            element={
-                              <FeatureGate featureKey="confirmation_center">
-                                <ConfirmationCenter />
-                              </FeatureGate>
-                            }
-                          />
-                          <Route path="lista-de-espera" element={<WaitlistPage />} />
-                          <Route path="minha-agenda" element={<MySchedulePage />} />
+                          <Route path="/app" element={<AppLayout />}>
+                            <Route index element={<Dashboard />} />
+                            <Route path="agenda" element={<AgendaPage />} />
+                            <Route
+                              element={
+                                <RoleGuard
+                                  allowed={["owner", "manager", "frontdesk"]}
+                                />
+                              }
+                            >
+                              <Route path="clientes" element={<ClientsPage />} />
+                            </Route>
+                            <Route element={<RoleGuard allowed={["owner", "manager", "frontdesk"]} />}>
+                              <Route
+                                path="confirmacoes"
+                                element={
+                                  <FeatureGate featureKey="confirmation_center">
+                                    <ConfirmationCenter />
+                                  </FeatureGate>
+                                }
+                              />
+                              <Route path="lista-de-espera" element={<WaitlistPage />} />
+                            </Route>
+                            <Route
+                              element={<RoleGuard allowed={["owner", "manager", "professional"]} />}
+                            >
+                              <Route path="minha-agenda" element={<MySchedulePage />} />
+                            </Route>
                           <Route path="perfil" element={<ProfilePage />} />
 
                           <Route

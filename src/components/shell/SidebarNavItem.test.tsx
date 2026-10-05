@@ -49,7 +49,7 @@ describe("SidebarNavItem", () => {
         isActive={true} 
       />
     );
-    const link = screen.getByRole("menuitem");
+    const link = screen.getByRole("link", { name: "Dashboard" });
     expect(link).toHaveAttribute("data-active", "true");
     expect(link).toHaveAttribute("aria-current", "page");
   });
@@ -63,7 +63,7 @@ describe("SidebarNavItem", () => {
         isActive={false} 
       />
     );
-    const link = screen.getByRole("menuitem");
+    const link = screen.getByRole("link", { name: "Dashboard" });
     fireEvent.click(link);
     
     expect(mockedUsedNavigate).toHaveBeenCalledWith("/dashboard");
@@ -82,7 +82,7 @@ describe("SidebarNavItem", () => {
         locked={true}
       />
     );
-    const link = screen.getByRole("menuitem");
+    const link = screen.getByRole("link", { name: "Admin" });
     fireEvent.click(link);
     
     expect(mockedUsedNavigate).not.toHaveBeenCalled();
@@ -99,7 +99,7 @@ describe("SidebarNavItem", () => {
         isActive={false} 
       />
     );
-    const link = screen.getByRole("menuitem");
+    const link = screen.getByRole("link", { name: "Settings" });
     fireEvent.keyDown(link, { key: "Enter", code: "Enter" });
     
     expect(mockedUsedNavigate).toHaveBeenCalledWith("/settings");

@@ -1,1 +1,5 @@
 project_id = "uqskxftzmjsumykpkwus"
+
+# CI and QA provision synthetic fixtures explicitly after recreating the schema.
+[db.seed]
+enabled = false

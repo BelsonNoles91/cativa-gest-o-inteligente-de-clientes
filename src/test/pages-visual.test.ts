@@ -41,6 +41,7 @@ const PAGES = {
   analyticsFiltersBar: readPage("src/features/analytics/AnalyticsFiltersBar.tsx"),
   portalLayout: readPage("src/components/shell/PortalLayout.tsx"),
   dialogPrimitive: readPage("src/components/ui/dialog.tsx"),
+  alertDialogPrimitive: readPage("src/components/ui/alert-dialog.tsx"),
 } as const;
 
 /** Conta ocorrências de um padrão regex. */
@@ -67,6 +68,18 @@ function getClassName(attrs: string): string {
 }
 
 describe("Páginas — invariantes visuais (mobile + 1366×768)", () => {
+  describe("Centralização de dialogs independente das animações", () => {
+    for (const [name, source] of [
+      ["Dialog", PAGES.dialogPrimitive],
+      ["AlertDialog", PAGES.alertDialogPrimitive],
+    ] as const) {
+      it(`${name} centraliza sem compartilhar transform com a animação`, () => {
+        expect(source).toMatch(/style=\{\{\s*translate:\s*"-50% -50%"/);
+        expect(source).not.toMatch(/translate-[xy]-\[-50%\]/);
+      });
+    }
+  });
+
   describe("DialogContent base (shadcn) garante max-h + scroll", () => {
     it("tem max-h-[calc(100dvh-2rem)] e overflow-y-auto no primitive", () => {
       // Garante que TODOS os dialogs herdam scroll vertical em mobile

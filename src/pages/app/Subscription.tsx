@@ -165,7 +165,7 @@ export default function Subscription() {
                   Escolha seu plano
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  Selecione o plano que melhor atende às suas necessidades. Planos pagos iniciam com um período de trial gratuito. O plano Apoio é gratuito para sempre.
+                  Selecione o plano que melhor atende às suas necessidades. O plano Começo oferece 30 dias grátis; os planos premium têm o período de avaliação indicado em cada cartão. Não há cobrança automática ao fim do trial.
                 </p>
               </div>
             </div>
@@ -189,7 +189,9 @@ export default function Subscription() {
                     {p.priceCents === 0 ? "Grátis" : formatPrice(p.priceCents, p.currency)}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {p.priceCents > 0 ? (p.billingPeriod === 'annual' ? 'por ano' : 'por mês') : "para sempre"}
+                    {p.priceCents > 0
+                      ? p.billingPeriod === "annual" ? "por ano" : "por mês"
+                      : p.trialDays > 0 ? `por ${p.trialDays} dias grátis` : "para sempre"}
                   </p>
                 </div>
                 <div className="mt-auto">
@@ -202,10 +204,12 @@ export default function Subscription() {
                   >
                     {isActing ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : p.trialDays > 0 ? (
+                      `Testar Grátis (${p.trialDays || 14} dias)`
                     ) : p.priceCents === 0 ? (
                       "Ativar Grátis"
                     ) : (
-                      `Testar Grátis (${p.trialDays || 14} dias)`
+                      "Selecionar plano"
                     )}
                   </Button>
                 </div>
@@ -247,6 +251,7 @@ export default function Subscription() {
               <Stat
                 label="Início do período"
                 value={formatDate(subscription.currentPeriodStart)}
+                volatile
               />
               <Stat
                 label="Próxima renovação"
@@ -255,6 +260,7 @@ export default function Subscription() {
                     ? formatDate(subscription.currentPeriodEnd)
                     : "—"
                 }
+                volatile
               />
             </div>
 
@@ -376,13 +382,15 @@ export default function Subscription() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value, volatile = false }: { label: string; value: string; volatile?: boolean }) {
   return (
     <div className="rounded-lg bg-muted/40 px-3 py-2">
       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
         {label}
       </p>
-      <p className="mt-0.5 text-sm font-medium">{value}</p>
+      <p className="mt-0.5 text-sm font-medium" data-volatile={volatile ? "" : undefined}>
+        {value}
+      </p>
     </div>
   );
 }

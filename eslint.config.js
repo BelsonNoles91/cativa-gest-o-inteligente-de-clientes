@@ -6,7 +6,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   // Arquivos gerados automaticamente pela plataforma (não editáveis no projeto).
-  { ignores: ["dist", "src/integrations/supabase/client.ts", "src/integrations/supabase/types.ts", "src/integrations/supabase/previewAuthStorage.ts"] },
+  { ignores: ["dist", "coverage", "test-results", "src/integrations/supabase/client.ts", "src/integrations/supabase/types.ts", "src/integrations/supabase/previewAuthStorage.ts"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],

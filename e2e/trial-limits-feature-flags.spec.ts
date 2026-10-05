@@ -1,63 +1,192 @@
+import { createClient } from '@supabase/supabase-js';
+import { expect, test, type Page } from '@playwright/test';
+import {
+  getDestructiveE2ESkipReason,
+  getE2ECredentialsSkipReason,
+} from './_helpers/qaTarget';
 
-import { test, expect } from '@playwright/test';
+function createQaAdminClient() {
+  const url = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceKey) {
+    throw new Error('Os testes de trial e flags exigem credenciais do Supabase QA local.');
+  }
+  return createClient(url, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  });
+}
 
-/**
- * Suite de testes E2E para validação de Trial, Limites de Plano e Feature Flags.
- * O objetivo é garantir que o sistema respeite as restrições de cada plano
- * e que as Feature Flags bloqueiem corretamente o acesso a funcionalidades premium.
- */
+async function withTrialState(page: Page) {
+  const tenantSlug = process.env.E2E_TENANT_SLUG;
+  if (!tenantSlug) throw new Error('E2E_TENANT_SLUG ausente para o fixture de trial.');
 
-test.describe('Trial, Limites de Plano e Feature Flags', () => {
+  const admin = createQaAdminClient();
+  const { data: tenant, error: tenantError } = await admin
+    .from('tenants')
+    .select('id')
+    .eq('slug', tenantSlug)
+    .single();
+  if (tenantError) throw tenantError;
+  const { data: subscription, error: subscriptionError } = await admin
+    .from('tenant_subscriptions')
+    .select('id,status,trial_started_at,trial_ends_at,overdue_since,suspended_at,canceled_at')
+    .eq('tenant_id', tenant.id)
+    .single();
+  if (subscriptionError) throw subscriptionError;
 
-  test.beforeEach(async ({ page }) => {
-    // Login padrão como Owner para os testes de limites
-    await page.goto('/auth/login');
-    await page.fill('input#email', 'elciocorrea@gmail.com');
-    await page.fill('input#password', 'DJECool321');
-    await page.click('button[type="submit"]');
-    await expect(page).toHaveURL(/\/app/);
+  const restore = async () => {
+    const { error } = await admin
+      .from('tenant_subscriptions')
+      .update({
+        status: subscription.status,
+        trial_started_at: subscription.trial_started_at,
+        trial_ends_at: subscription.trial_ends_at,
+        overdue_since: subscription.overdue_since,
+        suspended_at: subscription.suspended_at,
+        canceled_at: subscription.canceled_at,
+      })
+      .eq('id', subscription.id)
+      .eq('tenant_id', tenant.id);
+    if (error) throw new Error(`Não foi possível restaurar a assinatura QA: ${error.message}`);
+  };
+
+  const now = Date.now();
+  const { error: updateError } = await admin
+    .from('tenant_subscriptions')
+    .update({
+      status: 'trialing',
+      trial_started_at: new Date(now - 3 * 86_400_000).toISOString(),
+      trial_ends_at: new Date(now + 7 * 86_400_000).toISOString(),
+      overdue_since: null,
+      suspended_at: null,
+      canceled_at: null,
+    })
+    .eq('id', subscription.id)
+    .eq('tenant_id', tenant.id);
+  if (updateError) {
+    await restore();
+    throw updateError;
+  }
+
+  try {
+    await page.goto('/app/assinatura');
+    await expect(page.getByTestId('subscription-trial-countdown')).toContainText('Trial restante');
+    await page.goto('/app');
+    await expect(page.getByRole('heading', { name: 'Acesso bloqueado' })).toHaveCount(0);
+  } finally {
+    await restore();
+  }
+}
+
+test.describe('Trial, limites e feature flags QA', () => {
+  test.beforeEach(() => {
+    const skipReason =
+      getDestructiveE2ESkipReason() ?? getE2ECredentialsSkipReason();
+    test.skip(Boolean(skipReason), skipReason);
   });
 
-  test('Deve exibir banner de Trial e data de expiração', async ({ page }) => {
-    // Verificar se existe algum indicador de Trial no Dashboard ou Header
-    const trialBadge = page.locator('text=/Trial/i');
-    const trialCountdown = page.locator('text=/dias restantes/i');
-    
-    // Um dos dois deve estar visível para novos tenants
-    await expect(trialBadge.or(trialCountdown).first()).toBeVisible();
+  test('trial vigente exibe a contagem regressiva e mantém acesso operacional', async ({ page }) => {
+    await withTrialState(page);
   });
 
-  test('Bloqueio de funcionalidade premium via Feature Gate', async ({ page }) => {
-    // O Confirmation Center (Central de Confirmações) é uma feature premium
-    await page.goto('/app/confirmacoes');
+  test('flag do tenant pode liberar Analytics mesmo quando o plano Apoio a bloqueia', async ({ page }) => {
+    const tenantSlug = process.env.E2E_TENANT_SLUG;
+    if (!tenantSlug) throw new Error('E2E_TENANT_SLUG ausente para o fixture de feature flag.');
 
-    // Se o plano não permitir (Starter por exemplo), o FeatureGate deve redirecionar
-    // ou mostrar um Notice de bloqueio. 
-    // Com base no código do FeatureGate.tsx, ele redireciona para /app/meu-plano
-    await expect(page).toHaveURL(/\/app\/meu-plano/);
-    await expect(page.locator('h1, h2')).toContainText(/Assinatura|Plano/i);
-  });
+    const admin = createQaAdminClient();
+    const { data: tenant, error: tenantError } = await admin
+      .from('tenants')
+      .select('id')
+      .eq('slug', tenantSlug)
+      .single();
+    if (tenantError) throw tenantError;
 
-  test('Respeito aos limites quantitativos (Ex: Limite de Profissionais)', async ({ page }) => {
-    // Navegar para a tela de Profissionais/Equipe
-    await page.goto('/app/configuracoes'); // Supondo que equipe fica em configurações ou rota própria
-    
-    // Tentar adicionar um profissional além do limite do plano Starter (limite: 3)
-    // Este teste assume que já existem 3 profissionais cadastrados no tenant de teste
-    await page.click('button:has-text("Adicionar Profissional")');
-    
-    // Deve mostrar um aviso de upgrade ou erro de limite excedido
-    await expect(page.locator('text=/limite/i')).toBeVisible();
-    await expect(page.locator('button:has-text("Upgrade")')).toBeVisible();
-  });
+    const { data: subscription, error: subscriptionError } = await admin
+      .from('tenant_subscriptions')
+      .select('id,plan_id,override_limits')
+      .eq('tenant_id', tenant.id)
+      .single();
+    if (subscriptionError) throw subscriptionError;
 
-  test('Feature Flag específica de Tenant deve sobrescrever Plano', async ({ page }) => {
-    // Cenário: Tenant no Starter (sem Analytics), mas com Feature Flag manual "analytics_enabled = true"
-    // Validar que o acesso é liberado
-    await page.goto('/app/analytics');
-    
-    // Se a flag estiver ativa, a URL deve permanecer e o conteúdo carregar
-    await expect(page).toHaveURL(/\/app\/analytics/);
-    await expect(page.locator('canvas, .recharts-surface')).toBeVisible(); // Se houver gráficos
+    const { data: freePlan, error: planError } = await admin
+      .from('plans')
+      .select('id')
+      .eq('code', 'free')
+      .single();
+    if (planError) throw planError;
+
+    const { data: priorFlag, error: flagError } = await admin
+      .from('feature_flags')
+      .select('id,flag_key,label,description,value_type,value,is_global,tenant_id')
+      .eq('tenant_id', tenant.id)
+      .eq('flag_key', 'analytics')
+      .maybeSingle();
+    if (flagError) throw flagError;
+
+    const restore = async () => {
+      const subscriptionRestore = await admin
+        .from('tenant_subscriptions')
+        .update({ plan_id: subscription.plan_id, override_limits: subscription.override_limits })
+        .eq('id', subscription.id)
+        .eq('tenant_id', tenant.id);
+      if (subscriptionRestore.error) throw subscriptionRestore.error;
+
+      if (priorFlag) {
+        const flagRestore = await admin
+          .from('feature_flags')
+          .update({
+            label: priorFlag.label,
+            description: priorFlag.description,
+            value_type: priorFlag.value_type,
+            value: priorFlag.value,
+            is_global: priorFlag.is_global,
+            tenant_id: priorFlag.tenant_id,
+          })
+          .eq('id', priorFlag.id);
+        if (flagRestore.error) throw flagRestore.error;
+      } else {
+        const flagDelete = await admin
+          .from('feature_flags')
+          .delete()
+          .eq('tenant_id', tenant.id)
+          .eq('flag_key', 'analytics');
+        if (flagDelete.error) throw flagDelete.error;
+      }
+    };
+
+    const { error: planUpdateError } = await admin
+      .from('tenant_subscriptions')
+      .update({ plan_id: freePlan.id })
+      .eq('id', subscription.id)
+      .eq('tenant_id', tenant.id);
+    if (planUpdateError) throw planUpdateError;
+
+    const flagMutation = priorFlag
+      ? await admin
+          .from('feature_flags')
+          .update({ value: true, value_type: 'boolean', is_global: false })
+          .eq('id', priorFlag.id)
+      : await admin.from('feature_flags').insert({
+          tenant_id: tenant.id,
+          flag_key: 'analytics',
+          label: 'E2E: Analytics habilitado no tenant',
+          description: 'Override temporário, sintético e removido pelo teste.',
+          value_type: 'boolean',
+          value: true,
+          is_global: false,
+        });
+
+    if (flagMutation.error) {
+      await restore();
+      throw flagMutation.error;
+    }
+
+    try {
+      await page.goto('/app/analytics');
+      await expect(page).toHaveURL(/\/app\/analytics(?:$|[?#])/);
+      await expect(page.getByRole('heading', { name: 'Analytics', exact: true })).toBeVisible();
+    } finally {
+      await restore();
+    }
   });
 });

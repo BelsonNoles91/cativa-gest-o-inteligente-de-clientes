@@ -15,6 +15,9 @@ export function useOnlineStatus(): boolean {
     const handleOffline = () => setOnline(false);
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
+    // A conexão pode mudar entre a inicialização do estado e a instalação
+    // dos listeners (por exemplo, durante uma recarga offline do PWA).
+    setOnline(navigator.onLine);
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);

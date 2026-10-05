@@ -42,14 +42,13 @@ export function OfflineBanner() {
       data-offline-state={state}
       data-testid="offline-banner"
       className={cn(
-        "fixed inset-x-0 z-50 flex justify-center px-3 pointer-events-none",
-        "top-[calc(env(safe-area-inset-top)+8px)]",
+        "relative z-50 flex w-full justify-center px-3 py-2 pointer-events-none",
       )}
     >
       <div
         data-testid="offline-banner-message"
         className={cn(
-          "pointer-events-auto inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium shadow-lg backdrop-blur transition-all",
+          "pointer-events-auto inline-flex max-w-full items-center gap-2 rounded-full border px-4 py-2 text-center text-xs font-medium shadow-lg backdrop-blur transition-all",
           online
             ? "border-success/30 bg-success/15 text-success"
             : "border-warning/30 bg-warning/15 text-warning-foreground",

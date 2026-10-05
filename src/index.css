@@ -38,7 +38,9 @@
     --accent-strong-foreground: 0 0% 100%;
 
     --muted: 320 18% 94%;
-    --muted-foreground: 215 14% 42%;
+    /* 40% keeps body/supporting text above the WCAG AA 4.5:1 threshold on the
+       warm background, including the 18px marketing copy audited by axe. */
+    --muted-foreground: 215 14% 40%;
 
     /* Status */
     --success: 146 50% 36%;               /* #2E8B57 */

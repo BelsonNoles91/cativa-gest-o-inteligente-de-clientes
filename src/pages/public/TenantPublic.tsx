@@ -40,6 +40,7 @@ import {
   maskMobileBR,
 } from "@/lib/client-validation";
 import { buildManualWhatsAppLink } from "@/lib/whatsapp";
+import { getSafeExternalHttpUrl } from "@/lib/external-url";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { SocialAuthButtons } from "@/features/auth/SocialAuthButtons";
@@ -389,6 +390,7 @@ export default function TenantPublic() {
   const description =
     page.headline || `Agende online em ${page.name}. Serviços, unidades e horários disponíveis.`;
   const canonical = `https://cativapp.lovable.app/e/${page.slug}`;
+  const websiteUrl = getSafeExternalHttpUrl(page.website);
 
   const needsContact = Boolean(user) && contactLoaded && !contactValid && !confirmedId && !contactDismissed;
   const nameError = contactTouched && !isValidFullName(contactForm.fullName);
@@ -524,9 +526,9 @@ export default function TenantPublic() {
                   </a>
                 </Button>
               )}
-              {page.website && (
+              {websiteUrl && (
                 <Button asChild variant="outline" className="min-h-[44px] rounded-2xl">
-                  <a href={page.website} target="_blank" rel="noopener noreferrer">
+                  <a href={websiteUrl} target="_blank" rel="noopener noreferrer">
                     <Globe className="mr-2 h-4 w-4" /> Site
                   </a>
                 </Button>

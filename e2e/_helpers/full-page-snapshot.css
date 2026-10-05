@@ -1,0 +1,23 @@
+/* Fixed navigation is verified by dedicated viewport geometry assertions.
+   Hiding it here prevents it from floating through a full-page screenshot. */
+[data-bottom-nav] {
+  visibility: hidden !important;
+}
+
+/* Keep full-page baselines independent of remote fonts and identical on Linux
+   CI and local QA, including when Arial/Georgia are not installed. */
+*,
+*::before,
+*::after {
+  font-family: "Liberation Sans", Arial, Helvetica, sans-serif !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-display {
+  font-family: "Liberation Serif", Georgia, "Times New Roman", serif !important;
+}

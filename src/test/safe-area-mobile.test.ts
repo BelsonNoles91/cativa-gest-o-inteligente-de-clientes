@@ -21,6 +21,7 @@ const FILES = {
   indexHtml: read("index.html"),
   bottomNav: read("src/components/shell/BottomNav.tsx"),
   appLayout: read("src/components/shell/AppLayout.tsx"),
+  appHeader: read("src/components/shell/AppHeader.tsx"),
   portalLayout: read("src/components/shell/PortalLayout.tsx"),
   manifest: read("public/manifest.webmanifest"),
   offlineBanner: read("src/components/shell/OfflineBanner.tsx"),
@@ -164,8 +165,8 @@ describe("AppLayout — main reserva espaço para bottom nav + safe-area", () =>
     expect(src).toMatch(/hidden md:block/);
   });
 
-  it("OfflineBanner é renderizado dentro do layout autenticado", () => {
-    expect(src).toMatch(/<OfflineBanner/);
+  it("OfflineBanner fica dentro do header autenticado para não cobrir controles", () => {
+    expect(FILES.appHeader).toMatch(/<OfflineBanner\s*\/>/);
   });
 });
 
@@ -192,15 +193,20 @@ describe("PortalLayout — main reserva espaço para bottom nav + safe-area", ()
   });
 });
 
-describe("OfflineBanner — posicionamento respeita safe-area top", () => {
+describe("OfflineBanner — fluxo do header e safe-area", () => {
   const src = FILES.offlineBanner;
 
-  it("usa env(safe-area-inset-top) no top (não fica sob o notch)", () => {
-    expect(src).toMatch(/env\(safe-area-inset-top\)/);
+  it("AppHeader e portal reservam a safe-area superior", () => {
+    expect(FILES.appHeader).toMatch(/pt-safe-top/);
+    expect(FILES.portalLayout).toMatch(/pt-safe-top/);
   });
 
-  it("é fixed e tem z-index alto (z-50) — visível acima de tudo", () => {
-    expect(src).toMatch(/fixed/);
+  it("fica no fluxo do header em vez de sobrepor conteúdo e controles", () => {
+    expect(src).toMatch(/relative z-50/);
+    expect(src).not.toMatch(/fixed/);
+  });
+
+  it("mantém z-index de status para ficar acima do conteúdo no header", () => {
     expect(src).toMatch(/z-50/);
   });
 

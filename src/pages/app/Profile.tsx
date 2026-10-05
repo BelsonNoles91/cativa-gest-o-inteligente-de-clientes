@@ -94,13 +94,19 @@ export default function Profile() {
           <form onSubmit={handleUpdateEmail} className="space-y-4">
             <div className="space-y-2">
               <Label>E-mail Atual</Label>
-              <Input value={user?.email || ""} disabled className="bg-muted/50" />
+              <Input
+                data-volatile=""
+                value={user?.email || ""}
+                disabled
+                className="bg-muted/50"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="new-email">Novo E-mail</Label>
               <Input
                 id="new-email"
                 type="email"
+                data-volatile=""
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="novo.email@exemplo.com"

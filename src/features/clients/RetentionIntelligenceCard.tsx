@@ -9,6 +9,14 @@ import { evaluateRetentionWithJev } from "@/services/intelligence/retentionAdvis
 import type { Client } from "@/domain/client";
 import type { RetentionAdvice } from "@/domain/retentionIntelligence";
 
+const URGENCY_LABEL: Record<RetentionAdvice["urgencyLevel"], string> = {
+  none: "Sem urgência",
+  low: "Baixa",
+  moderate: "Moderada",
+  high: "Alta",
+  uncertain: "Incerta — revisar",
+};
+
 export function RetentionIntelligenceCard({ client }: { client: Client }) {
   const [advice, setAdvice] = useState<RetentionAdvice | null>(null);
   const [loading, setLoading] = useState(false);
@@ -57,7 +65,7 @@ export function RetentionIntelligenceCard({ client }: { client: Client }) {
             label="Risco de Churn"
             value={
               <div className="flex items-center gap-2" data-volatile>
-                <Progress value={client.churnRiskScore} className="h-2 w-24" />
+                <Progress aria-label={`Risco de churn de ${client.fullName}`} value={client.churnRiskScore} className="h-2 w-24" />
                 <span className="text-xs font-medium">{client.churnRiskScore}%</span>
               </div>
             }
@@ -81,7 +89,7 @@ export function RetentionIntelligenceCard({ client }: { client: Client }) {
             </div>
             <p className="mt-2 text-sm text-muted-foreground">{advice.description}</p>
             <div className="mt-3 grid gap-3 text-xs sm:grid-cols-3">
-              <span>Urgência: {advice.urgency}%</span>
+              <span>Urgência: {URGENCY_LABEL[advice.urgencyLevel]}</span>
               <span>Confiança: {Math.round(advice.confidence * 100)}%</span>
               <span>Dados suficientes: {Math.round(advice.evidenceSufficiency * 100)}%</span>
             </div>

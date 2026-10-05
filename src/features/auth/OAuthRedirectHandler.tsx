@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { safeOAuthRedirectTarget } from "@/features/auth/safeOAuthRedirect";
 
 const KEY = "cativa:auth_redirect";
 
@@ -22,9 +23,9 @@ export function OAuthRedirectHandler() {
     } catch {
       return;
     }
-    if (!target || !target.startsWith("/") || target.startsWith("//")) return;
-    if (target === location.pathname) return;
-    navigate(target, { replace: true });
+    const safeTarget = safeOAuthRedirectTarget(target, window.location.origin);
+    if (!safeTarget || safeTarget === location.pathname) return;
+    navigate(safeTarget, { replace: true });
   }, [loading, user, navigate, location.pathname]);
 
   return null;

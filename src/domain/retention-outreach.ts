@@ -182,7 +182,8 @@ export function buildReactivationCandidates(
 // ---------------------------------------------------------------------------
 
 function firstName(name: string): string {
-  return name.trim().split(/\s+/)[0] ?? name;
+  const normalized = name.trim();
+  return normalized ? normalized.split(/\s+/)[0] : "tudo bem";
 }
 
 function formatDate(iso: string): string {

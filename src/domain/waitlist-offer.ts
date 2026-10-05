@@ -52,7 +52,8 @@ export function matchWaitlistForSlot(
   now: Date = new Date(),
 ): RankedCandidate[] {
   const slotStart = new Date(slot.startsAt).getTime();
-  if (!Number.isFinite(slotStart) || slotStart <= now.getTime()) return [];
+  const slotEnd = new Date(slot.endsAt).getTime();
+  if (!Number.isFinite(slotStart) || !Number.isFinite(slotEnd) || slotEnd <= slotStart || slotStart <= now.getTime()) return [];
 
   const ranked: RankedCandidate[] = [];
 
@@ -96,7 +97,8 @@ export function matchWaitlistForSlot(
       reasons.push("Dentro do período pedido");
     }
 
-    score += Math.max(0, Math.min(100, candidate.priority)) / 10;
+    const priority = Number.isFinite(candidate.priority) ? candidate.priority : 0;
+    score += Math.max(0, Math.min(100, priority)) / 10;
 
     ranked.push({ candidate, score, reasons });
   }
@@ -108,8 +110,9 @@ export function matchWaitlistForSlot(
 }
 
 function firstName(name: string | null): string {
-  if (!name) return "tudo bem";
-  return name.trim().split(/\s+/)[0] ?? name;
+  const normalized = name?.trim();
+  if (!normalized) return "tudo bem";
+  return normalized.split(/\s+/)[0] ?? "tudo bem";
 }
 
 function formatWhen(startsAt: string): string {

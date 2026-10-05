@@ -7,6 +7,10 @@ if (!enabled) {
   process.exit(0);
 }
 
+const runId = (process.env.E2E_RUN_ID || process.env.GITHUB_RUN_ID || `local-${Date.now()}`)
+  .replace(/[^a-zA-Z0-9._-]/g, "-")
+  .slice(0, 80);
+
 const required = [
   "VITE_SUPABASE_URL",
   "VITE_SUPABASE_PUBLISHABLE_KEY",
@@ -312,7 +316,9 @@ try {
     stage: "today",
     status: "pending",
     priority: 80,
-    scheduled_for: new Date().toISOString(),
+    // Match prepareAuthenticatedVisualState's frozen browser clock
+    // (2026-09-22T12:00:00-03:00) so the deterministic visual queue is due.
+    scheduled_for: "2026-09-22T15:00:00.000Z",
     appointment_starts_at: startsAt.toISOString(),
     attempts_count: 0,
     closed_at: null,
@@ -362,7 +368,7 @@ try {
   }
 
   console.log(
-    "Fixtures E2E: cenário Agenda → Confirmações preparado com sucesso.",
+    `Fixtures E2E (run_id=${runId}): cenário Agenda → Confirmações preparado com sucesso.`,
   );
 } finally {
   await client.auth.signOut();

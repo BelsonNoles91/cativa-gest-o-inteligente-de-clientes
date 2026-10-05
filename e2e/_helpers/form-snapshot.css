@@ -1,0 +1,7 @@
+/* Hide synthetic/user-entered values without masking control appearance. */
+[role="dialog"] input,
+[role="dialog"] textarea {
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+  caret-color: transparent !important;
+}

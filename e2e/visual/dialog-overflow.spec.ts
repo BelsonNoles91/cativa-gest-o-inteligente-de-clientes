@@ -28,6 +28,24 @@ async function assertDialogFitsViewport(page: Page): Promise<void> {
     box!.width,
     `Dialog width (${box!.width}px) deve caber no viewport (${vw}px - 16px)`,
   ).toBeLessThanOrEqual(vw - 16 + 1);
+
+  const smallTargets = await dialog.locator(
+    'button, [role="combobox"], [role="switch"], [role="tab"], input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, textarea, a[href]',
+  ).evaluateAll((elements) => elements.flatMap((element) => {
+    const node = element as HTMLElement;
+    if (node.getClientRects().length === 0) return [];
+    const rect = node.getBoundingClientRect();
+    return rect.width < 43.5 || rect.height < 43.5
+      ? [{
+          tag: node.tagName.toLowerCase(),
+          role: node.getAttribute("role"),
+          label: node.getAttribute("aria-label") || node.textContent?.trim().slice(0, 48) || "",
+          width: Math.round(rect.width * 10) / 10,
+          height: Math.round(rect.height * 10) / 10,
+        }]
+      : [];
+  }));
+  expect(smallTargets, `Alvos de toque abaixo de 44×44 px: ${JSON.stringify(smallTargets)}`).toEqual([]);
 }
 
 async function openAppRoute(page: Page, path: string): Promise<void> {
@@ -54,6 +72,16 @@ test.describe("dialog overflow — mobile", () => {
       .first();
     await createBtn.click();
     await prepareForSnapshot(page);
+    await assertDialogFitsViewport(page);
+
+    const overbookingSwitch = page.getByRole("switch", { name: "Encaixe / overbooking" });
+    await expect(overbookingSwitch).toHaveAttribute("aria-checked", "false");
+    await overbookingSwitch.click();
+    await expect(overbookingSwitch).toHaveAttribute("aria-checked", "true");
+    await expect(page.locator('[role="dialog"] input[type="time"]')).toBeVisible();
+    await overbookingSwitch.click();
+    await expect(overbookingSwitch).toHaveAttribute("aria-checked", "false");
+    await expect(page.locator('[role="dialog"] input[type="time"]')).toHaveCount(0);
     await assertDialogFitsViewport(page);
   });
 

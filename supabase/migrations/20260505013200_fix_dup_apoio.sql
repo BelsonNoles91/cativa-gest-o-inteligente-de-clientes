@@ -19,4 +19,22 @@ DELETE FROM public.plan_features WHERE plan_id = '5c44bc13-02f0-464f-bbb2-96ab92
 DELETE FROM public.plans WHERE id = '5c44bc13-02f0-464f-bbb2-96ab92c33362';
 
 -- Adicionar constraint para evitar futuros duplicados
-ALTER TABLE public.plans ADD CONSTRAINT plans_name_unique UNIQUE (name);
+-- A migração seguinte consolida duplicatas legadas que não usam os IDs de
+-- produção acima. Não falhe um reset limpo antes que ela possa reconciliá-las.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM public.plans
+    GROUP BY name
+    HAVING count(*) > 1
+  ) AND NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'public.plans'::regclass
+      AND conname = 'plans_name_unique'
+  ) THEN
+    ALTER TABLE public.plans ADD CONSTRAINT plans_name_unique UNIQUE (name);
+  END IF;
+END;
+$$;

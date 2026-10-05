@@ -95,6 +95,7 @@ export interface Appointment {
   startsAt: string;
   endsAt: string;
   durationMinutes: number;
+  clientRescheduleCount?: number;
   bufferBeforeMinutes: number;
   bufferAfterMinutes: number;
   isWalkIn: boolean;

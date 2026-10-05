@@ -1,3 +1,4 @@
+import "./e2e/_helpers/private-artifacts";
 import { defineConfig } from "@playwright/test";
 
 export default defineConfig({

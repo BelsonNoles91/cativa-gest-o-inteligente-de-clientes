@@ -46,6 +46,11 @@ export function canCancelWithoutFee(
   policy: CancellationPolicySnapshot | null,
 ): { allowed: boolean; hoursLeft: number; willChargeFee: boolean; feePct: number } {
   const startsAt = new Date(startsAtIso).getTime();
+  if (!Number.isFinite(startsAt)) {
+    // Dados temporais inválidos não podem liberar cancelamento nem sugerir multa.
+    return { allowed: false, hoursLeft: 0, willChargeFee: false, feePct: 0 };
+  }
+
   const now = Date.now();
   const hoursLeft = Math.max(0, (startsAt - now) / 36e5);
 
@@ -138,7 +143,7 @@ export interface PortalPreferences {
 /** Retorna “primeiro nome”. */
 export function firstName(full: string | null | undefined): string {
   if (!full) return "";
-  return full.trim().split(/\s+/)[0] ?? "";
+  return full.trim().split(/\s+/)[0];
 }
 
 /** Formata moeda em BRL a partir de cents. */

@@ -10,6 +10,11 @@ npm run build
 # saída em dist/
 ```
 
+O build de produção exige `VITE_SUPABASE_URL` e uma chave pública
+(`VITE_SUPABASE_PUBLISHABLE_KEY` ou `VITE_SUPABASE_ANON_KEY`). Se estiverem
+ausentes, o build é interrompido: não há fallback de produção para um projeto
+Supabase embutido. Configure e confira o projeto correto antes de publicar.
+
 ## Vercel / Netlify
 
 1. Conecte o repositório.

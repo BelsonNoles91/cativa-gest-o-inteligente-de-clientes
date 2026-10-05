@@ -4,7 +4,14 @@
  * Não é aceitável — então blindamos aqui.
  */
 import { describe, it, expect } from "vitest";
-import { renderTemplate, digitsOnly } from "@/domain/confirmation";
+import {
+  attemptResultTone,
+  digitsOnly,
+  queueStatusTone,
+  renderTemplate,
+  type ContactAttemptResult,
+  type ConfirmationQueueStatus,
+} from "@/domain/confirmation";
 
 describe("domain/confirmation", () => {
   describe("renderTemplate", () => {
@@ -43,6 +50,11 @@ describe("domain/confirmation", () => {
       const out = renderTemplate("X={{a}} Y={{b}}", { a: null, b: undefined });
       expect(out).toBe("X= Y=");
     });
+
+    it("preserva textos sem variáveis e conteúdo em branco", () => {
+      expect(renderTemplate("Mensagem sem campos.", {})).toBe("Mensagem sem campos.");
+      expect(renderTemplate("", {})).toBe("");
+    });
   });
 
   describe("digitsOnly", () => {
@@ -51,5 +63,36 @@ describe("domain/confirmation", () => {
       expect(digitsOnly("+55 11 98765-4321")).toBe("5511987654321");
       expect(digitsOnly("nada")).toBe("");
     });
+  });
+
+  it.each([
+    ["pending", "warning"],
+    ["in_progress", "info"],
+    ["confirmed", "success"],
+    ["reschedule_requested", "warning"],
+    ["canceled", "destructive"],
+    ["no_response", "destructive"],
+    ["follow_up_scheduled", "info"],
+    ["closed", "muted"],
+  ] as const)("aplica tom visual da fila %s", (status, tone) => {
+    expect(queueStatusTone(status)).toBe(tone);
+  });
+
+  it.each([
+    ["pending", "warning"],
+    ["sent", "success"],
+    ["confirmed", "success"],
+    ["reschedule_requested", "destructive"],
+    ["canceled", "destructive"],
+    ["no_response", "destructive"],
+    ["call_made", "info"],
+    ["follow_up_scheduled", "info"],
+  ] as const)("aplica tom visual da tentativa %s", (result, tone) => {
+    expect(attemptResultTone(result)).toBe(tone);
+  });
+
+  it("usa tom discreto quando chega um estado desconhecido", () => {
+    expect(queueStatusTone("unknown" as ConfirmationQueueStatus)).toBe("muted");
+    expect(attemptResultTone("unknown" as ContactAttemptResult)).toBe("muted");
   });
 });

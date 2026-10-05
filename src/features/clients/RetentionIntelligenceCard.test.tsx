@@ -49,7 +49,7 @@ describe("RetentionIntelligenceCard", () => {
       action: "offer_rebooking",
       actionLabel: "Oferecer novo agendamento",
       description: "O ciclo de retorno está vencido.",
-      urgency: 67,
+      urgencyLevel: "moderate",
       confidence: 0.82,
       evidenceSufficiency: 0.91,
       model: "jev-1.13.0",
@@ -62,6 +62,8 @@ describe("RetentionIntelligenceCard", () => {
     fireEvent.click(screen.getByRole("button", { name: "Avaliar com Jev" }));
 
     await waitFor(() => expect(screen.getByText("Oferecer novo agendamento")).toBeInTheDocument());
+    expect(screen.getByText("Urgência: Moderada")).toBeInTheDocument();
+    expect(screen.queryByText(/Urgência: \d+%/)).not.toBeInTheDocument();
     expect(evaluateRetentionWithJev).toHaveBeenCalledWith({ tenantId: client.tenantId, clientId: client.id });
     expect(screen.getByText(/Nenhuma mensagem é enviada/)).toBeInTheDocument();
   });

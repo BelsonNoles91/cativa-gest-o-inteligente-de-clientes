@@ -2,6 +2,7 @@
  * QueueItemCard — cartão de um item da fila de confirmação.
  * Exibe cliente, agendamento e ações rápidas (abrir contato).
  */
+import { useEffect, useState } from "react";
 import { MessageCircle, Clock, CalendarClock, AlertTriangle, Crown, ExternalLink, CheckCircle2, CheckSquare, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -13,6 +14,7 @@ import {
 } from "@/domain/confirmation";
 import type { QueueItemHydrated } from "@/repositories/confirmation";
 import { buildManualWhatsAppLink } from "@/lib/whatsapp";
+import { isQueueItemDue } from "@/services/confirmation/queueRules";
 
 const toneMap = {
   default: "neutral",
@@ -30,7 +32,7 @@ interface SelectionContext {
 
 interface QueueItemCardProps {
   item: QueueItemHydrated;
-  onOpen: (item: QueueItemHydrated) => void;
+  onOpen: (item: QueueItemHydrated, trigger: HTMLButtonElement) => void;
   onConfirmQuick?: (item: QueueItemHydrated) => void;
   selection?: SelectionContext;
 }
@@ -57,6 +59,19 @@ export function QueueItemCard({
   onConfirmQuick, 
   selection 
 }: QueueItemCardProps) {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const scheduledAt = new Date(item.scheduledFor).getTime();
+    const delay = scheduledAt - Date.now();
+    if (!Number.isFinite(scheduledAt) || delay <= 0) {
+      setNow(new Date());
+      return;
+    }
+    const timer = window.setTimeout(() => setNow(new Date()), delay + 10);
+    return () => window.clearTimeout(timer);
+  }, [item.scheduledFor]);
+
+  const isDue = isQueueItemDue(item.scheduledFor, now);
   const t = formatStarts(item.appointmentStartsAt);
   const tone = toneMap[queueStatusTone(item.status)];
   const isSelected = selection?.selectedIds.has(item.id);
@@ -79,6 +94,7 @@ export function QueueItemCard({
               className="mt-1 shrink-0 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label={isSelected ? `Desmarcar ${item.clientName}` : `Selecionar ${item.clientName}`}
               aria-pressed={isSelected}
+              disabled={!isDue}
               onClick={(event) => {
                 event.stopPropagation();
                 selection.toggleSelection(item.id);
@@ -121,11 +137,11 @@ export function QueueItemCard({
       <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground border-b border-border/40 pb-3">
         <span className="inline-flex items-center gap-1.5">
           <CalendarClock className="h-4 w-4" />
-          {t.date} • {t.time}
+          <span data-volatile="">{t.date} • {t.time}</span>
         </span>
         <span className="inline-flex items-center gap-1.5 font-medium text-primary">
           <Clock className="h-4 w-4" />
-          {t.relative}
+          <span data-volatile="">{t.relative}</span>
         </span>
         {item.attemptsCount > 0 && (
           <span className="rounded-md bg-muted px-2 py-0.5 text-xs">
@@ -134,13 +150,29 @@ export function QueueItemCard({
         )}
       </div>
 
+      {!isDue && (
+        <p role="status" className="mt-3 rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">
+          Contato programado para{" "}
+          <time dateTime={item.scheduledFor}>
+            {new Date(item.scheduledFor).toLocaleString("pt-BR", {
+              day: "2-digit",
+              month: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </time>
+          . As ações serão liberadas nesse horário.
+        </p>
+      )}
+
       <div className="mt-4 flex flex-wrap gap-2">
         <Button
             size="sm"
             variant="secondary"
             className="flex-1 rounded-xl h-10 md:flex-none"
-            onClick={(e) => {
-              onOpen(item);
+            disabled={!isDue}
+            onClick={(event) => {
+              onOpen(item, event.currentTarget);
             }}
           >
             <MessageCircle className="mr-1.5 h-4 w-4" /> Ações
@@ -150,7 +182,8 @@ export function QueueItemCard({
           <Button
             size="sm"
             variant="outline"
-            className="flex-1 rounded-xl h-10 border-success/30 text-success hover:bg-success/5 md:flex-none"
+            className="flex-1 rounded-xl h-10 border-success-strong/30 text-success-strong hover:bg-success-strong/5 md:flex-none"
+            disabled={!isDue}
             onClick={(e) => {
               e.stopPropagation();
               window.open(whatsappLink, "_blank", "noopener,noreferrer");
@@ -164,7 +197,8 @@ export function QueueItemCard({
           <Button
             size="sm"
             variant="default"
-            className="flex-1 rounded-xl h-10 bg-success hover:bg-success/90 text-success-foreground md:flex-none"
+            className="flex-1 rounded-xl h-10 bg-success-strong hover:bg-success-strong/90 text-success-foreground md:flex-none"
+            disabled={!isDue}
             onClick={(e) => {
               e.stopPropagation();
               onConfirmQuick(item);

@@ -14,9 +14,10 @@ export function AuthLayout({ children }: { children: ReactNode }) {
       <aside className="relative hidden lg:flex flex-col justify-between overflow-hidden p-16 text-primary-dark">
         {/* Elementos Visuais de Fundo (Estilo Hero) */}
         <div className="absolute top-0 right-0 w-full h-full bg-[#F3EBF0] -skew-x-6 transform origin-top-right -z-10 translate-x-20 opacity-50" />
-        <div className="absolute top-[10%] left-[5%] text-[10rem] font-display font-bold text-primary/5 select-none pointer-events-none leading-none">
-          CATIVA
-        </div>
+        <div
+          aria-hidden="true"
+          className="absolute top-[10%] left-[5%] h-[13rem] w-[46rem] select-none pointer-events-none before:absolute before:inset-0 before:whitespace-nowrap before:font-display before:text-[10rem] before:font-bold before:leading-none before:text-primary/5 before:content-['CATIVA']"
+        />
 
         <Link to="/" className="relative z-10">
           <span className="text-3xl font-display font-black tracking-tighter text-primary-dark">

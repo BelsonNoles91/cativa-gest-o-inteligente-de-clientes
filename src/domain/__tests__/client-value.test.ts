@@ -77,6 +77,25 @@ describe("clientValueReport", () => {
     expect(clientValueReport(appts, clients, NOW).rows[1].tier).toBe("novo");
   });
 
+  it("classifica clientes fiéis e ocasionais abaixo do limite de concentração", () => {
+    const rows = [
+      appt({ id: "top-1", clientId: "top", startsAt: "2026-01-01T10:00:00.000Z", totalPriceCents: 60_000 }),
+      appt({ id: "top-2", clientId: "top", startsAt: "2026-02-01T10:00:00.000Z", totalPriceCents: 60_000 }),
+      appt({ id: "top-3", clientId: "top", startsAt: "2026-03-01T10:00:00.000Z", totalPriceCents: 60_000 }),
+      appt({ id: "faithful-1", clientId: "faithful", startsAt: "2026-01-01T10:00:00.000Z", totalPriceCents: 10_000 }),
+      appt({ id: "faithful-2", clientId: "faithful", startsAt: "2026-02-01T10:00:00.000Z", totalPriceCents: 10_000 }),
+      appt({ id: "faithful-3", clientId: "faithful", startsAt: "2026-03-01T10:00:00.000Z", totalPriceCents: 10_000 }),
+      appt({ id: "occasional-1", clientId: "occasional", startsAt: "2026-01-01T10:00:00.000Z", totalPriceCents: 5_000 }),
+      appt({ id: "occasional-2", clientId: "occasional", startsAt: "2026-02-01T10:00:00.000Z", totalPriceCents: 5_000 }),
+    ];
+    const report = clientValueReport(rows, [], NOW);
+    expect(Object.fromEntries(report.rows.map((row) => [row.clientId, row.tier]))).toEqual({
+      top: "top",
+      faithful: "fiel",
+      occasional: "ocasional",
+    });
+  });
+
   it("mede concentração de receita e mediana", () => {
     const r = clientValueReport(appts, clients, NOW);
     expect(r.topSharePct).toBeCloseTo(92.3, 1);

@@ -43,7 +43,7 @@ export function PremiumHeader() {
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out px-4 py-4 md:px-8",
         isScrolled 
-          ? "bg-white/90 backdrop-blur-xl border-b border-border/40 py-3 shadow-sm" 
+          ? "bg-white border-b border-border/40 py-3 shadow-sm"
           : "bg-transparent"
       )}
     >
