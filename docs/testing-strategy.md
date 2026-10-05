@@ -4137,8 +4137,8 @@ não comprova que o SHA candidato passará integralmente. A sincronização com
 Lovable e a produção continuam bloqueadas até os checks ficarem verdes e haver
 aceite remoto autorizado.
 
-Na primeira execução da PR #1, o scanner Gitleaks falhou ao tentar publicar seu
-comentário opcional (`Resource not accessible by integration`), sem apontar
-segredos encontrados. Mantive a permissão mínima do job e desativei somente os
-comentários automáticos do action; o scan de segredos será reexecutado na
-próxima atualização da branch.
+Na primeira execução da PR #1, o scanner Gitleaks falhou ao tentar enumerar os
+commits da PR (`GET /pulls/1/commits`, `Resource not accessible by integration`),
+sem apontar segredos encontrados. O job agora tem somente `pull-requests: read`
+além de `contents: read`; comentários automáticos continuam desativados. O
+scanner será reexecutado na próxima atualização da branch.
