@@ -591,4 +591,92 @@ describe("catalog repository — contract, mapping and persistence failures", ()
     await expect(createMembership({ tenantId, name: "Primitivo inesperado" }))
       .rejects.toThrow("criação da assinatura e benefícios não retornou o registro esperado");
   });
+
+  it("propaga falhas de leitura em todos os catálogos e listas relacionadas", async () => {
+    const readers: Array<[string, () => Promise<unknown>]> = [
+      ["service_prices", () => listBasePrices(tenantId)],
+      ["service_unit_prices", () => listUnitPriceOverrides("service-1")],
+      ["service_professional_prices", () => listProfessionalPriceOverrides("service-1")],
+      ["packages", () => listPackages(tenantId)],
+      ["package_items", () => listPackageItems("package-1")],
+      ["memberships", () => listMemberships(tenantId)],
+      ["membership_benefits", () => listMembershipBenefits("membership-1")],
+      ["protocols", () => listProtocols(tenantId)],
+      ["protocol_sessions", () => listProtocolSessions("protocol-1")],
+      ["cancellation_policies", () => listCancellationPolicies(tenantId)],
+    ];
+
+    for (const [table, read] of readers) {
+      respond(table, null, failure);
+      await expect(read(), `${table}: não deve converter erro em lista vazia`).rejects.toBe(failure);
+    }
+  });
+
+  it("representa catálogos vazios sem dados e aplica defaults explícitos", async () => {
+    const emptyReaders: Array<[string, () => Promise<unknown>]> = [
+      ["service_categories", () => listCategories(tenantId)],
+      ["service_prices", () => listBasePrices(tenantId)],
+      ["service_unit_prices", () => listUnitPriceOverrides("service-1")],
+      ["service_professional_prices", () => listProfessionalPriceOverrides("service-1")],
+      ["packages", () => listPackages(tenantId)],
+      ["package_items", () => listPackageItems("package-1")],
+      ["memberships", () => listMemberships(tenantId)],
+      ["membership_benefits", () => listMembershipBenefits("membership-1")],
+      ["protocols", () => listProtocols(tenantId)],
+      ["protocol_sessions", () => listProtocolSessions("protocol-1")],
+      ["cancellation_policies", () => listCancellationPolicies(tenantId)],
+    ];
+
+    for (const [table, read] of emptyReaders) {
+      respond(table, null);
+      const result = await read();
+      expect(result, `${table}: resposta sem dados deve ser vazia`).toEqual(
+        table === "service_prices" ? new Map() : [],
+      );
+    }
+
+    respondRpc(membershipRow());
+    await updateMembership("membership-1", {
+      tenantId,
+      benefits: [{ serviceId: "service-1", sessionsPerCycle: 1 }],
+    });
+    expect(latestRpc()?.[1]).toEqual(expect.objectContaining({
+      _benefits: [{ service_id: "service-1", sessions_per_cycle: 1, discount_pct: 0 }],
+    }));
+
+    respond("cancellation_policies", policyRow());
+    await updateCancellationPolicy("policy-1", {});
+    expect(latestQuery("cancellation_policies").update).toHaveBeenCalledWith({});
+  });
+
+  it("propaga falhas de gravação direta, bundle atômico e exclusão", async () => {
+    const directWrites: Array<[string, () => Promise<unknown>]> = [
+      ["services", () => createService({ tenantId, name: "Falha na criação" })],
+      ["services", () => updateService("service-1", { name: "Falha na atualização" })],
+      ["packages", () => deletePackage("package-1")],
+      ["memberships", () => deleteMembership("membership-1")],
+      ["protocols", () => deleteProtocol("protocol-1")],
+      ["cancellation_policies", () => createCancellationPolicy({ tenantId, name: "Falha" })],
+      ["cancellation_policies", () => updateCancellationPolicy("policy-1", { name: "Falha" })],
+      ["cancellation_policies", () => deleteCancellationPolicy("policy-1")],
+    ];
+
+    for (const [table, write] of directWrites) {
+      respond(table, null, failure);
+      await expect(write(), `${table}: deve propagar a falha de persistência`).rejects.toBe(failure);
+    }
+
+    const atomicWrites: Array<() => Promise<unknown>> = [
+      () => createMembership({ tenantId, name: "Falha" }),
+      () => updatePackage("package-1", { tenantId, items: [] }),
+      () => updateMembership("membership-1", { tenantId, benefits: [] }),
+      () => createProtocol({ tenantId, name: "Falha" }),
+      () => updateProtocol("protocol-1", { tenantId, steps: [] }),
+    ];
+
+    for (const write of atomicWrites) {
+      respondRpc(null, failure);
+      await expect(write()).rejects.toBe(failure);
+    }
+  });
 });
