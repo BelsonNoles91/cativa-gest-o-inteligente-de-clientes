@@ -4166,20 +4166,27 @@ secrets QA configurados; nenhum projeto protegido foi acessado.
 
 O primeiro run limpo da PR reproduziu uma falha no teste de Storage: o serviço
 Storage usado pelo CI não tem a coluna opcional `storage.objects.archived_at`,
-enquanto a instância descartável persistente local tinha. A migration passa a
-detectar objetos arquivados via `to_jsonb(objects)->>'archived_at'`: quando a
-coluna existe, objetos arquivados são ignorados no cálculo de uso e cota; quando
-não existe, todos os objetos armazenados são considerados ativos. Isso mantém
-compatibilidade entre as versões de schema sem alterar tabela gerenciada pelo
-serviço.
+enquanto a instância descartável persistente local tinha. Uma primeira
+compatibilização por conversão da linha inteira para JSON removeu o erro de
+coluna, mas o runner encerrou o processo Postgres ao consultar a RPC de uso.
+Substituí-a por consultas SQL dinâmicas escolhidas após verificar o catálogo:
+com `archived_at`, objetos arquivados ficam fora do uso/cota; sem a coluna,
+todos os objetos são ativos. Não há mutação da tabela gerenciada pelo Storage.
 
 Recriei o banco QA estritamente local, reapliquei toda a sequência de migrations
 e executei a matriz SQL agregada: **18/18 passaram**, incluindo Storage/cotas,
-RLS, IDOR, agenda, portal, referências entre tenants, quota Jev e auditoria. O
-teste de Storage confirmou limites, substituição no limite exato, bloqueio de
-excesso, privacidade da RPC e isolamento A/B com a migration atual. Nenhum
-ambiente remoto foi usado. A mudança está pronta para o próximo run da PR; o CI
-no SHA anterior ainda não deve ser considerado evidência dessa correção.
+RLS, IDOR, agenda, portal, referências entre tenants, quota Jev e auditoria.
+Storage passou em duas variantes locais — com `archived_at` e com a coluna
+removida temporariamente para simular o schema do CI. Também repetimos as
+jornadas autenticadas locais: **17/17 passaram** após build de produção e novo
+provisionamento sintético. Nenhum ambiente remoto foi usado.
+
+O CI no SHA `d3094f5` confirmou novamente **952/952 Vitest**, typecheck, build,
+lint, Deno, actionlint e scanner de segredos, mas a variante JSON fez o processo
+Postgres terminar durante a RPC do gate Storage e interrompeu mais seis SQL
+gates em cascata. A implementação com consultas dinâmicas foi validada nas duas
+variantes locais e aguarda push/novo Actions; não considero o run anterior prova
+de aprovação da correção atual.
 
 A pontuação permanece **92,7% base + 10/10 extraordinários = 102,7/110
 (93,4%)**: a reexecução fecha uma falha de compatibilidade dentro de uma frente

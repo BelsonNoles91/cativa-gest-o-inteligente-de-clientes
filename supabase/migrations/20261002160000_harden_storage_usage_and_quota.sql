@@ -8,6 +8,9 @@ STABLE
 SECURITY DEFINER
 SET search_path = pg_catalog, public, storage
 AS $function$
+DECLARE
+  v_used_bytes bigint;
+  v_has_archived_at boolean;
 BEGIN
   IF auth.uid() IS NULL
      OR NOT (
@@ -18,16 +21,34 @@ BEGIN
       USING ERRCODE = '42501';
   END IF;
 
-  RETURN (
-    SELECT COALESCE(SUM(COALESCE((objects.metadata->>'size')::bigint, 0)), 0)::bigint
-    FROM storage.objects AS objects
-    WHERE objects.bucket_id IN ('tenant-logos', 'client-media')
-      AND (storage.foldername(objects.name))[1] = _tenant_id::text
-      -- Storage schema versions differ: some expose archived_at while older
-      -- supported versions do not. JSON access keeps this query compatible;
-      -- a missing key means every stored object is active.
-      AND (to_jsonb(objects)->>'archived_at') IS NULL
-  );
+  SELECT EXISTS (
+    SELECT 1
+    FROM pg_catalog.pg_attribute
+    WHERE attrelid = 'storage.objects'::pg_catalog.regclass
+      AND attname = 'archived_at'
+      AND NOT attisdropped
+  ) INTO v_has_archived_at;
+
+  IF v_has_archived_at THEN
+    EXECUTE
+      'SELECT COALESCE(SUM(COALESCE((objects.metadata->>''size'')::bigint, 0)), 0)::bigint
+       FROM storage.objects AS objects
+       WHERE objects.bucket_id IN (''tenant-logos'', ''client-media'')
+         AND (storage.foldername(objects.name))[1] = $1
+         AND objects.archived_at IS NULL'
+      INTO v_used_bytes
+      USING _tenant_id::text;
+  ELSE
+    EXECUTE
+      'SELECT COALESCE(SUM(COALESCE((objects.metadata->>''size'')::bigint, 0)), 0)::bigint
+       FROM storage.objects AS objects
+       WHERE objects.bucket_id IN (''tenant-logos'', ''client-media'')
+         AND (storage.foldername(objects.name))[1] = $1'
+      INTO v_used_bytes
+      USING _tenant_id::text;
+  END IF;
+
+  RETURN COALESCE(v_used_bytes, 0);
 END;
 $function$;
 
@@ -48,6 +69,7 @@ DECLARE
   v_replaced_bytes bigint := 0;
   v_new_bytes bigint;
   v_limit_bytes bigint;
+  v_has_archived_at boolean;
 BEGIN
   IF NEW.bucket_id NOT IN ('tenant-logos', 'client-media') THEN
     RETURN NEW;
@@ -75,12 +97,22 @@ BEGIN
 
   v_limit_bytes := v_max_mb::bigint * 1024 * 1024;
   v_new_bytes := COALESCE((NEW.metadata->>'size')::bigint, 0);
-  SELECT COALESCE(SUM(COALESCE((objects.metadata->>'size')::bigint, 0)), 0)::bigint
+  SELECT EXISTS (
+    SELECT 1
+    FROM pg_catalog.pg_attribute
+    WHERE attrelid = 'storage.objects'::pg_catalog.regclass
+      AND attname = 'archived_at'
+      AND NOT attisdropped
+  ) INTO v_has_archived_at;
+
+  EXECUTE
+    'SELECT COALESCE(SUM(COALESCE((objects.metadata->>''size'')::bigint, 0)), 0)::bigint
+     FROM storage.objects AS objects
+     WHERE objects.bucket_id IN (''tenant-logos'', ''client-media'')
+       AND (storage.foldername(objects.name))[1] = $1'
+    || CASE WHEN v_has_archived_at THEN ' AND objects.archived_at IS NULL' ELSE '' END
     INTO v_used_bytes
-  FROM storage.objects AS objects
-  WHERE objects.bucket_id IN ('tenant-logos', 'client-media')
-    AND (storage.foldername(objects.name))[1] = v_tenant_id::text
-    AND (to_jsonb(objects)->>'archived_at') IS NULL;
+    USING v_tenant_id::text;
 
   IF TG_OP = 'UPDATE' THEN
     IF OLD.bucket_id IN ('tenant-logos', 'client-media') THEN
@@ -98,14 +130,17 @@ BEGIN
     -- Storage upserts enter through BEFORE INSERT before PostgreSQL applies
     -- ON CONFLICT DO UPDATE. Subtract the existing object's bytes here so a
     -- valid replacement is measured as a replacement, not double-counted.
-    SELECT COALESCE((
-      SELECT COALESCE((objects.metadata->>'size')::bigint, 0)
-      FROM storage.objects AS objects
-      WHERE objects.bucket_id = NEW.bucket_id
-        AND objects.name = NEW.name
-        AND (to_jsonb(objects)->>'archived_at') IS NULL
-      LIMIT 1
-    ), 0) INTO v_replaced_bytes;
+    EXECUTE
+      'SELECT COALESCE((
+         SELECT COALESCE((objects.metadata->>''size'')::bigint, 0)
+         FROM storage.objects AS objects
+         WHERE objects.bucket_id = $1
+           AND objects.name = $2'
+      || CASE WHEN v_has_archived_at THEN ' AND objects.archived_at IS NULL' ELSE '' END
+      || ' LIMIT 1
+       ), 0)'
+      INTO v_replaced_bytes
+      USING NEW.bucket_id, NEW.name;
   END IF;
 
   v_used_bytes := GREATEST(0, COALESCE(v_used_bytes, 0) - v_replaced_bytes);
