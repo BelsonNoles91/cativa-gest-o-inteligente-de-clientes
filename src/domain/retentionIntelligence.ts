@@ -8,12 +8,20 @@ export const retentionActionSchema = z.enum([
   "human_review",
 ]);
 
+export const retentionUrgencyLevelSchema = z.enum([
+  "none",
+  "low",
+  "moderate",
+  "high",
+  "uncertain",
+]);
+
 export const retentionAdviceSchema = z.object({
   status: z.enum(["suggested", "review"]),
   action: retentionActionSchema,
   actionLabel: z.string().min(1).max(120),
   description: z.string().min(1).max(600),
-  urgency: z.number().int().min(0).max(100),
+  urgencyLevel: retentionUrgencyLevelSchema,
   confidence: z.number().min(0).max(1),
   evidenceSufficiency: z.number().min(0).max(1),
   model: z.string().min(1).max(80),

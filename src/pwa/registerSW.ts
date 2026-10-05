@@ -23,11 +23,18 @@ const isInIframe = (() => {
 
 const isPreviewHost = (() => {
   const host = window.location.hostname;
+  const isLoopbackHost = new Set(["localhost", "127.0.0.1", "::1"]).has(
+    host.replace(/^\[|\]$/g, ""),
+  );
+  // E2E usa um build de produção isolado em loopback para validar cache/offline.
+  // O opt-in não habilita SW no Vite dev e não altera previews sem esta variável.
+  const allowLocalPwaE2E =
+    import.meta.env.PROD && import.meta.env.VITE_E2E_ENABLE_LOCAL_PWA === "true";
+
   return (
     host.includes("id-preview--") ||
     host.includes("lovableproject.com") ||
-    host === "localhost" ||
-    host === "127.0.0.1"
+    (isLoopbackHost && !allowLocalPwaE2E)
   );
 })();
 
@@ -60,8 +67,11 @@ export async function registerServiceWorker(): Promise<void> {
       wb.messageSkipWaiting();
     });
 
-    wb.addEventListener("controlling", () => {
+    wb.addEventListener("controlling", (event) => {
       // Atualização aplicada — recarrega para garantir bundle novo
+      // O primeiro controle (instalação inicial) não é uma atualização e
+      // não deve interromper a navegação que acabou de carregar o app.
+      if (!event.isUpdate) return;
       window.location.reload();
     });
 

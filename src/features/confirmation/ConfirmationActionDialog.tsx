@@ -5,7 +5,7 @@
  *
  * NUNCA dispara mensagens automaticamente.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type RefObject } from "react";
 import {
   Copy,
   ExternalLink,
@@ -43,11 +43,19 @@ interface Props {
   item: QueueItemHydrated | null;
   open: boolean;
   onOpenChange: (v: boolean) => void;
+  returnFocusRef: RefObject<HTMLButtonElement | null>;
   templates: MessageTemplate[];
   center: ReturnType<typeof useConfirmationCenter>;
 }
 
-export function ConfirmationActionDialog({ item, open, onOpenChange, templates, center }: Props) {
+export function ConfirmationActionDialog({
+  item,
+  open,
+  onOpenChange,
+  returnFocusRef,
+  templates,
+  center,
+}: Props) {
   const { currentTenant } = useTenant();
   const { toast } = useToast();
   const [templateId, setTemplateId] = useState<string>("");
@@ -197,7 +205,15 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-2rem)] max-h-[90vh] min-w-0 max-w-2xl overflow-hidden p-0 sm:w-full">
+      <DialogContent
+        className="w-[calc(100vw-2rem)] max-h-[90vh] min-w-0 max-w-2xl overflow-hidden p-0 sm:w-full [&_button]:min-h-11 [&_button]:min-w-[44px] [&>button:last-child]:flex [&>button:last-child]:items-center [&>button:last-child]:justify-center"
+        onCloseAutoFocus={(event) => {
+          const trigger = returnFocusRef.current;
+          if (!trigger?.isConnected) return;
+          event.preventDefault();
+          trigger.focus({ preventScroll: true });
+        }}
+      >
         <div className="max-h-[90vh] min-w-0 overflow-x-hidden overflow-y-auto">
           <div className="min-w-0 p-4 sm:p-6">
             <DialogHeader>
@@ -206,23 +222,25 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
               </DialogTitle>
               <DialogDescription className="break-words">
                 {item.serviceName ?? "Atendimento"} •{" "}
-                {new Date(item.appointmentStartsAt).toLocaleString("pt-BR", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                <span data-volatile="">
+                  {new Date(item.appointmentStartsAt).toLocaleString("pt-BR", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
                 {item.professionalName ? ` • ${item.professionalName}` : ""}
               </DialogDescription>
             </DialogHeader>
 
             <Tabs defaultValue="message" className="mt-4 min-w-0">
-              <TabsList className="flex w-full max-w-full justify-start overflow-x-auto">
-                <TabsTrigger value="message" className="shrink-0 whitespace-nowrap">Mensagem</TabsTrigger>
-                <TabsTrigger value="call" className="shrink-0 whitespace-nowrap">Ligação</TabsTrigger>
-                <TabsTrigger value="status" className="shrink-0 whitespace-nowrap">Status</TabsTrigger>
-                <TabsTrigger value="prefs" className="shrink-0 whitespace-nowrap">Preferências</TabsTrigger>
-                <TabsTrigger value="history" className="shrink-0 whitespace-nowrap">Histórico</TabsTrigger>
+              <TabsList className="flex h-11 min-h-11 w-full max-w-full justify-start overflow-x-auto">
+                <TabsTrigger value="message" className="min-h-11 min-w-[44px] shrink-0 whitespace-nowrap">Mensagem</TabsTrigger>
+                <TabsTrigger value="call" className="min-h-11 min-w-[44px] shrink-0 whitespace-nowrap">Ligação</TabsTrigger>
+                <TabsTrigger value="status" className="min-h-11 min-w-[44px] shrink-0 whitespace-nowrap">Status</TabsTrigger>
+                <TabsTrigger value="prefs" className="min-h-11 min-w-[44px] shrink-0 whitespace-nowrap">Preferências</TabsTrigger>
+                <TabsTrigger value="history" className="min-h-11 min-w-[44px] shrink-0 whitespace-nowrap">Histórico</TabsTrigger>
               </TabsList>
 
               {/* MENSAGEM */}
@@ -355,10 +373,10 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                <div className="grid grid-cols-1 gap-2 min-[340px]:grid-cols-2 sm:grid-cols-3">
                   <Button
                     variant="default"
-                    className="bg-success hover:bg-success/90"
+                    className="bg-success-strong hover:bg-success-strong/90 text-success-foreground"
                     onClick={() => center.setItemStatus(item.id, "confirmed")}
                   >
                     <CheckCircle2 className="mr-1.5 h-4 w-4" /> Confirmado
@@ -405,8 +423,8 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
                       O cliente não virá. Deseja registrar as opções de horários propostas para garantir a volta dele?
                     </p>
                     <div className="mt-3 flex gap-2">
-                      <Button size="sm" variant="outline" className="h-8 text-[11px] rounded-lg">Registrar opções</Button>
-                      <Button size="sm" variant="ghost" className="h-8 text-[11px] rounded-lg">Ignorar</Button>
+                      <Button size="sm" variant="outline" className="h-8 min-h-11 rounded-lg text-[11px]">Registrar opções</Button>
+                      <Button size="sm" variant="ghost" className="h-8 min-h-11 rounded-lg text-[11px]">Ignorar</Button>
                     </div>
                   </div>
                 )}
@@ -453,7 +471,7 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
                       type="time"
                       value={prefWindowStart}
                       onChange={(e) => setPrefWindowStart(e.target.value)}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     />
                   </div>
                   <div>
@@ -462,16 +480,17 @@ export function ConfirmationActionDialog({ item, open, onOpenChange, templates, 
                       type="time"
                       value={prefWindowEnd}
                       onChange={(e) => setPrefWindowEnd(e.target.value)}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     />
                   </div>
                 </div>
 
-                <label className="flex items-center gap-2 text-sm">
+                <label className="flex min-h-11 items-center gap-2 text-sm">
                   <input
                     type="checkbox"
                     checked={doNotDisturb}
                     onChange={(e) => setDoNotDisturb(e.target.checked)}
+                    className="h-5 w-5"
                   />
                   Não perturbar
                 </label>

@@ -18,7 +18,6 @@ import {
   CommandList,
   CommandShortcut,
 } from "@/components/ui/command";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useTenant } from "@/features/tenant/TenantProvider";
 import { listClients } from "@/repositories/clients";
@@ -137,25 +136,20 @@ export function GlobalSearch({
     <>
       {!hideTrigger && (
         <div className={cn("relative w-full", className)}>
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <button
             type="button"
             aria-label="Abrir busca global"
+            aria-haspopup="dialog"
+            aria-expanded={open}
             onClick={() => setOpen(true)}
-            className="w-full text-left"
+            className="relative flex h-11 w-full items-center rounded-xl border border-border/70 bg-card/60 pl-9 pr-16 text-left text-sm text-muted-foreground shadow-xs transition-colors hover:bg-card focus-visible:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
-            <Input
-              type="search"
-              readOnly
-              placeholder="Buscar clientes, agendamentos, serviços…"
-              aria-label="Busca global"
-              className="h-11 cursor-pointer rounded-xl border-border/70 bg-card/60 pl-9 shadow-xs focus-visible:bg-card"
-            />
+            <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+            <span>Buscar clientes, agendamentos, serviços…</span>
+            <kbd aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 select-none items-center gap-1 rounded border border-border/70 bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline-flex">
+              ⌘K
+            </kbd>
           </button>
-          <kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 select-none items-center gap-1 rounded border border-border/70 bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline-flex">
-            ⌘K
-          </kbd>
-
         </div>
       )}
 

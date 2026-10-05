@@ -91,7 +91,7 @@ async function validateCredentials(baseUrl, key, email, password) {
   });
 
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -104,7 +104,7 @@ async function validateCredentials(baseUrl, key, email, password) {
     await supabase.auth.signOut();
     return {
       ok: true,
-      detail: `login válido para ${data.user?.email ?? email}`,
+      detail: "login válido com credenciais QA (identidade ocultada)",
     };
   } catch (error) {
     const message =
@@ -164,12 +164,12 @@ printStatus(
 printStatus(
   "E2E user",
   Boolean(e2eUser),
-  e2eUser || "E2E_USER ausente",
+  e2eUser ? "configurado (identidade ocultada)" : "E2E_USER ausente",
 );
 printStatus(
   "E2E password",
   Boolean(e2ePass),
-  e2ePass ? mask(e2ePass) : "E2E_PASS ausente",
+  e2ePass ? "configurada (valor ocultado)" : "E2E_PASS ausente",
 );
 printStatus("E2E base URL", true, e2eBaseUrl);
 printStatus(

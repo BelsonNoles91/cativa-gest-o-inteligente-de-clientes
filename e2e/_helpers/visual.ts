@@ -9,6 +9,7 @@
  *   não é coberto por nada (z-index correto, safe-area aplicada).
  */
 import { expect, type Page } from "@playwright/test";
+import { createClient } from "@supabase/supabase-js";
 import { captureFailureReport, type Offender } from "./safeAreaReport";
 
 type Rect = { x: number; y: number; width: number; height: number };
@@ -26,6 +27,26 @@ const SNAPSHOT_CSS = `
   }
   /* Mascara o cursor de input piscando (caret) que diferencia builds */
   input, textarea { caret-color: transparent !important; }
+  /* Evita troca entre Google Fonts e fallback entre capturas; os snapshots
+     verificam geometria e hierarquia com famílias locais estáveis. */
+  *, *::before, *::after {
+    font-family: Arial, Helvetica, sans-serif !important;
+  }
+  h1, h2, h3, h4, h5, h6, .font-display {
+    font-family: Georgia, "Times New Roman", serif !important;
+  }
+  /* Texto marcado é temporal/volátil; sua caixa e geometria permanecem. */
+  [data-volatile], time {
+    color: transparent !important;
+    text-shadow: none !important;
+  }
+  /* Conteúdo dentro da faixa volátil não deve expor a magnitude variável. */
+  [data-volatile] [role="progressbar"] > div {
+    opacity: 0 !important;
+  }
+  input[data-volatile] {
+    -webkit-text-fill-color: transparent !important;
+  }
   /* Garante background sólido quando há blur/backdrop */
   .backdrop-blur, .backdrop-blur-xl, .backdrop-blur-md {
     backdrop-filter: none !important;
@@ -41,9 +62,81 @@ const INSTALL_APP_DISMISS_KEY = "cativa:install-dismissed";
  * que esse banner desloque todo o layout usado nos snapshots.
  */
 export async function prepareAuthenticatedVisualState(page: Page): Promise<void> {
+  // A data é mantida igual à dos baselines; dados vindos do banco que variam
+  // por execução são ocultados sem remover suas caixas nem alterar a geometria.
+  await page.clock.install({ time: new Date("2026-09-22T12:00:00-03:00") });
   await page.addInitScript((dismissKey) => {
     window.localStorage.setItem(dismissKey, "1");
   }, INSTALL_APP_DISMISS_KEY);
+}
+
+/**
+ * Portal visual usa uma identidade de cliente vinculada ao tenant; a sessão
+ * owner da matriz do app não representa um usuário do portal.
+ */
+export async function prepareClientPortalVisualState(page: Page): Promise<void> {
+  const supabaseUrl = process.env.VITE_SUPABASE_URL?.trim();
+  const publishableKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
+  const email = process.env.E2E_CLIENT_USER?.trim();
+  const password = process.env.E2E_CLIENT_PASS?.trim();
+  if (!supabaseUrl || !publishableKey || !email || !password) {
+    throw new Error(
+      "A matriz visual do portal exige VITE_SUPABASE_URL, chave pública e credenciais do cliente QA.",
+    );
+  }
+
+  const supabase = createClient(supabaseUrl, publishableKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  });
+
+  try {
+    const { data: auth, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (authError || !auth.session || !auth.user) {
+      throw new Error(
+        `Autenticação do cliente QA para a matriz visual falhou: ${authError?.message ?? "sessão ausente"}`,
+      );
+    }
+
+    const { data: link, error: linkError } = await supabase
+      .from("client_users")
+      .select("tenant_id")
+      .eq("user_id", auth.user.id)
+      .eq("status", "active")
+      .maybeSingle();
+    if (linkError || !link) {
+      throw new Error(
+        `Cliente QA sem vínculo ativo para a matriz visual: ${linkError?.message ?? "vínculo ausente"}`,
+      );
+    }
+
+    await page.addInitScript(
+      ({ session, user, tenantId, storageKey, dismissKey }) => {
+        window.localStorage.clear();
+        window.localStorage.setItem(
+          storageKey,
+          JSON.stringify({ ...session, user, weak_password: null }),
+        );
+        window.localStorage.setItem("cativa.portal.tenantId", tenantId);
+        window.localStorage.setItem(dismissKey, "1");
+      },
+      {
+        session: auth.session,
+        user: auth.user,
+        tenantId: link.tenant_id,
+        storageKey: `sb-${new URL(supabaseUrl).hostname.split(".")[0]}-auth-token`,
+        dismissKey: INSTALL_APP_DISMISS_KEY,
+      },
+    );
+  } finally {
+    await supabase.auth.signOut();
+  }
 }
 
 export async function prepareForSnapshot(page: Page): Promise<void> {
@@ -83,6 +176,26 @@ export async function prepareForSnapshot(page: Page): Promise<void> {
     });
   // Pequeno settle para layout final (carga assíncrona de avatares etc).
   await page.waitForTimeout(400);
+}
+
+/**
+ * Prepara a página para a captura full-page. Algumas asserções geométricas
+ * percorrem a página até o fim; elementos fixos podem ficar ancorados ao
+ * viewport e aparecer no meio do screenshot alto. A BottomNav é validada
+ * separadamente por geometria e em screenshots de viewport.
+ */
+export async function resetScrollForFullPageSnapshot(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    document
+      .querySelectorAll<HTMLElement>("[data-app-main], main")
+      .forEach((element) => {
+        element.scrollTop = 0;
+      });
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+    );
+  });
 }
 
 /**
@@ -772,6 +885,32 @@ export async function assertOfflineBannerLayout(page: Page): Promise<void> {
   await expect(banner).toBeVisible();
   const bannerBox = await banner.boundingBox();
   expect(bannerBox, "OfflineBanner sem bounding box").not.toBeNull();
+
+  const placement = await page.evaluate(() => {
+    const element = document.querySelector<HTMLElement>(
+      '[data-testid="offline-banner"]',
+    );
+    const header = element?.closest("header");
+    if (!element || !header) return { inHeader: false as const };
+    const previousBottom = Array.from(header.children)
+      .filter((child) => child !== element && child.getClientRects().length > 0)
+      .map((child) => child.getBoundingClientRect().bottom)
+      .reduce((max, bottom) => Math.max(max, bottom), header.getBoundingClientRect().top);
+    return {
+      inHeader: true as const,
+      position: getComputedStyle(element).position,
+      top: element.getBoundingClientRect().top,
+      previousBottom,
+    };
+  });
+  expect(placement.inHeader, "OfflineBanner deve pertencer ao header sticky").toBe(true);
+  if (placement.inHeader) {
+    expect(placement.position, "OfflineBanner não pode ser fixed sobre os controles").toBe("relative");
+    expect(
+      placement.top,
+      `OfflineBanner começa antes do conteúdo anterior do header (${placement.previousBottom}px).`,
+    ).toBeGreaterThanOrEqual(placement.previousBottom - 1);
+  }
 
   // Banner no topo, não no rodapé — não pode sobrepor o BottomNav.
   const vw = page.viewportSize()?.width ?? 0;

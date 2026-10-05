@@ -6,7 +6,7 @@
  * isolados de cada rota.
  *
  * Endurecimento de resiliência aplicado:
- *  - Navegação com fallback (link → goto direto se link falhar).
+ *  - Navegação real por BottomNav/Sheet (sem mascarar falha com goto direto).
  *  - afterEach garante restore de online state (evita vazamento entre testes).
  *  - Timeouts explícitos em waitForURL e waitFor de elementos.
  *  - Captura de debug-info quando assert principal falha.
@@ -94,15 +94,16 @@ test.describe("cenários de navegação — safe-area + BottomNav", () => {
 
     // ---- 2. Navega para tela longa (clientes) ----
     logStep(scenario, "2.navegar para /app/clientes");
-    await navigateOrFallback(page, {
-      label: "nav-clientes",
-      // Preferimos data-route (testid estável) ao href absoluto.
-      clickSelector:
-        '[data-testid="bottom-nav-item"][data-route="app-clientes"], [data-bottom-nav] a[href="/app/clientes"]',
-      fallbackUrl: "/app/clientes",
-      expectedUrlRegex: /\/app\/clientes/,
-      timeoutMs: MAIN_TIMEOUT,
+    await page.getByTestId("bottom-nav-more").click();
+    await expect(page.getByTestId("bottom-nav-sheet")).toBeVisible({
+      timeout: MAIN_TIMEOUT,
     });
+    const clientsMenuItem = page.locator(
+      '[data-testid="bottom-nav-sheet-item"][data-route="app-clientes"]',
+    );
+    await expect(clientsMenuItem).toBeVisible({ timeout: MAIN_TIMEOUT });
+    await clientsMenuItem.click();
+    await expect(page).toHaveURL(/\/app\/clientes/, { timeout: MAIN_TIMEOUT });
     await waitForMain(page, "/app/clientes");
     await prepareForSnapshot(page);
 
@@ -130,9 +131,11 @@ test.describe("cenários de navegação — safe-area + BottomNav", () => {
       // Snapshot do estado offline em tela longa (apenas no perfil principal
       // para não inflar a baseline em todos os 5 dispositivos).
       if (testInfo.project.name === "iphone-14-portrait") {
+        // O ponteiro pode continuar sobre um botão após rolar até o fim;
+        // tira o hover para comparar o estado neutro do componente.
+        await page.mouse.move(0, 0);
         await expect(page).toHaveScreenshot("scenario-clientes-offline.png", {
           fullPage: false,
-          mask: [page.locator("[data-volatile]"), page.locator("time")],
         });
       }
     } finally {

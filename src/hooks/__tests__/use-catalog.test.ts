@@ -49,6 +49,9 @@ describe('useCatalog Hook', () => {
     (catalogRepo.listCategories as any).mockResolvedValue(mockCategories);
     (catalogRepo.listServices as any).mockResolvedValue([]);
     (catalogRepo.listBasePrices as any).mockResolvedValue(new Map());
+    (catalogRepo.listProtocols as any).mockResolvedValue([]);
+    (catalogRepo.listPackages as any).mockResolvedValue([]);
+    (catalogRepo.listCancellationPolicies as any).mockResolvedValue([]);
 
     // Act
     const { result } = renderHook(() => useCatalog(), { wrapper: createWrapper() });
@@ -69,7 +72,11 @@ describe('useCatalog Hook', () => {
     // Assert
     // Verificamos o fetchStatus ou se os mocks foram chamados
     expect(catalogRepo.listCategories).not.toHaveBeenCalled();
-    expect(catalogRepo.listCategories).not.toHaveBeenCalled();
+    expect(catalogRepo.listServices).not.toHaveBeenCalled();
+    expect(catalogRepo.listBasePrices).not.toHaveBeenCalled();
+    expect(catalogRepo.listProtocols).not.toHaveBeenCalled();
+    expect(catalogRepo.listPackages).not.toHaveBeenCalled();
+    expect(catalogRepo.listCancellationPolicies).not.toHaveBeenCalled();
   });
 
   it('should respect the enabled option (Edge Case)', async () => {

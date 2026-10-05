@@ -13,6 +13,37 @@ export interface AppErrorOptions {
   silent?: boolean;
 }
 
+const DEFAULT_ERROR_MESSAGES: Record<ErrorCategory, string> = {
+  NETWORK: "Erro de conexão. Verifique sua internet.",
+  AUTH: "Sessão expirada ou acesso negado.",
+  DATABASE: "Falha ao processar dados. Tente novamente em instantes.",
+  VALIDATION: "Verifique as informações fornecidas.",
+  NOT_FOUND: "Recurso não encontrado.",
+  UNKNOWN: "Ocorreu um erro inesperado.",
+};
+
+function getErrorMessage(error: unknown): string | undefined {
+  if (error instanceof Error) {
+    return error.message.trim() || undefined;
+  }
+
+  if (typeof error === "string") {
+    const message = error.trim();
+    return message && message !== "[object Object]" ? message : undefined;
+  }
+
+  if (typeof error === "object" && error !== null) {
+    const candidate = error as { message?: unknown; error_description?: unknown };
+    for (const value of [candidate.message, candidate.error_description]) {
+      if (typeof value === "string" && value.trim() && value.trim() !== "[object Object]") {
+        return value.trim();
+      }
+    }
+  }
+
+  return undefined;
+}
+
 /**
  * Erro customizado da aplicação para padronização de tratamento.
  */
@@ -70,27 +101,20 @@ function captureSentry(error: unknown, context?: Record<string, unknown>) {
  * Realiza logging, telemetria (Sentry quando configurado) e feedback ao usuário.
  */
 export const handleError = (error: unknown, options: AppErrorOptions = {}) => {
-  const isDevelopment = import.meta.env.DEV;
-  
-  // Normalização do erro
-  let appError: AppError;
-  
-  if (error instanceof AppError) {
-    appError = error;
-  } else if (error instanceof Error) {
-    appError = new AppError(error.message, { 
-      originalError: error, 
-      category: options.category 
-    });
-  } else {
-    appError = new AppError(String(error), { category: options.category });
-  }
+  const category = error instanceof AppError ? error.category : options.category ?? "UNKNOWN";
+  const appError = error instanceof AppError
+    ? error
+    : new AppError(getErrorMessage(error) ?? DEFAULT_ERROR_MESSAGES[category], {
+        originalError: error instanceof Error ? error : undefined,
+        category,
+      });
 
   const mergedContext = { ...appError.context, ...options.context };
+  const userMessage = appError.message.trim() || DEFAULT_ERROR_MESSAGES[appError.category];
 
   // Logging persistente e estruturado para debug
   console.error(
-    `[${appError.category}] ${appError.message}`,
+    `[${appError.category}] ${userMessage}`,
     {
       timestamp: appError.timestamp,
       context: mergedContext,
@@ -102,18 +126,8 @@ export const handleError = (error: unknown, options: AppErrorOptions = {}) => {
 
   // Feedback visual ao usuário (se não for silencioso)
   if (!options.silent && !appError.context.silent) {
-    const defaultMessages: Record<ErrorCategory, string> = {
-      NETWORK: "Erro de conexão. Verifique sua internet.",
-      AUTH: "Sessão expirada ou acesso negado.",
-      DATABASE: "Falha ao processar dados. Tente novamente em instantes.",
-      VALIDATION: "Verifique as informações fornecidas.",
-      NOT_FOUND: "Recurso não encontrado.",
-      UNKNOWN: "Ocorreu um erro inesperado."
-    };
-
-    toast.error(appError.message || defaultMessages[appError.category], {
-      description: isDevelopment ? `[${appError.category}]` : undefined,
-    });
+    // A categoria técnica permanece no console/Sentry; não deve aparecer no toast.
+    toast.error(userMessage);
   }
 
   return appError;

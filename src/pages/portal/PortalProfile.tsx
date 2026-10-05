@@ -248,7 +248,7 @@ export default function PortalProfile() {
               onChange={(e) => setFullName(e.target.value)}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <Label htmlFor="phone">Telefone</Label>
               <Input

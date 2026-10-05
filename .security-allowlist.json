@@ -12,6 +12,10 @@
     {
       "id": "anon_readable_policies:plans",
       "reason": "tabela de planos alimenta a página pública de preços"
+    },
+    {
+      "id": "rls_without_policies:password_history",
+      "reason": "sem acesso direto por API; hashes só são lidos/escritos por RPCs SECURITY DEFINER autenticadas ou pelo service_role"
     }
   ]
 }

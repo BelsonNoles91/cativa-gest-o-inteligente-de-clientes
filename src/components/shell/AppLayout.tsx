@@ -9,7 +9,6 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/shell/AppSidebar";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { BottomNav } from "@/components/shell/BottomNav";
-import { OfflineBanner } from "@/components/shell/OfflineBanner";
 import { InstallAppBanner } from "@/components/shell/InstallAppBanner";
 import { SafeAreaDebugOverlay } from "@/components/debug/SafeAreaDebugOverlay";
 import { TenantBillingProvider } from "@/features/billing/TenantBillingProvider";
@@ -29,7 +28,6 @@ export function AppLayout() {
     <TenantBillingProvider>
       <SidebarProvider>
         <TenantRealtimeSync />
-        <OfflineBanner />
         <div className="flex min-h-screen w-full bg-background">
           <div className="hidden md:block">
             <AppSidebar />

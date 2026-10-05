@@ -56,7 +56,7 @@ export function ProcessSection() {
             transition={{ duration: 0.5, delay: idx * 0.1 }}
             key={idx} className="relative group"
           >
-            <div className="mb-10 text-8xl font-display font-bold text-white/5 transition-all duration-700 group-hover:text-accent/10">
+            <div aria-hidden="true" className="a11y-decorative-watermark mb-10 text-8xl font-display font-bold text-white/5 transition-all duration-700 group-hover:text-accent/10">
               {step.step}
             </div>
             <div className="h-px w-full bg-white/10 mb-8 relative">
@@ -71,7 +71,7 @@ export function ProcessSection() {
             <h4 className="text-white text-xl font-bold mb-4 group-hover:text-accent transition-colors">
               {step.title}
             </h4>
-            <p className="text-white/40 font-light leading-relaxed">
+            <p className="text-white/70 font-light leading-relaxed">
               {step.desc}
             </p>
           </motion.div>

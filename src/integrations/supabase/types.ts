@@ -4856,6 +4856,56 @@ export type Database = {
       }
     }
     Functions: {
+      catalog_create_service_with_price: {
+        Args: { _service: Json; _amount_cents: number; _currency: string }
+        Returns: Json
+      }
+      catalog_update_service_with_price: {
+        Args: { _service_id: string; _patch: Json; _amount_cents: number; _currency?: string | null }
+        Returns: Json
+      }
+      catalog_replace_service_unit_prices: {
+        Args: { _tenant_id: string; _service_id: string; _overrides: Json }
+        Returns: undefined
+      }
+      catalog_replace_service_professional_prices: {
+        Args: { _tenant_id: string; _service_id: string; _overrides: Json }
+        Returns: undefined
+      }
+      catalog_save_package_bundle: {
+        Args: { _id: string | null; _tenant_id: string; _values: Json; _items: Json }
+        Returns: Json
+      }
+      catalog_save_membership_bundle: {
+        Args: { _id: string | null; _tenant_id: string; _values: Json; _benefits: Json }
+        Returns: Json
+      }
+      catalog_save_protocol_bundle: {
+        Args: { _id: string | null; _tenant_id: string; _values: Json; _steps: Json }
+        Returns: Json
+      }
+      create_tenant_with_owner: {
+        Args: {
+          p_name: string
+          p_slug: string
+          p_segment: Database["public"]["Enums"]["tenant_segment"]
+          p_unit_name: string
+          p_timezone?: string
+          p_currency?: string
+          p_unit_phone?: string | null
+          p_brand_primary?: string | null
+          p_brand_secondary?: string | null
+          p_brand_accent?: string | null
+          p_whatsapp_phone?: string | null
+          p_initial_professionals?: Json
+          p_initial_services?: Json
+        }
+        Returns: {
+          tenant_id: string
+          unit_id: string
+          slug: string
+        }[]
+      }
       accept_team_invitation: {
         Args: { _token: string }
         Returns: {
@@ -5623,6 +5673,10 @@ export type Database = {
         Args: { _appointment_id: string; _reason?: string }
         Returns: Json
       }
+      portal_confirm_appointment: {
+        Args: { _appointment_id: string }
+        Returns: Json
+      }
       portal_reschedule_appointment: {
         Args: {
           _appointment_id: string
@@ -5646,6 +5700,10 @@ export type Database = {
         Returns: boolean
       }
       redact_sensitive_data: { Args: { input_data: Json }; Returns: Json }
+      reserve_retention_advisor_evaluation: {
+        Args: { _daily_limit: number; _tenant_id: string }
+        Returns: boolean
+      }
       reject_schedule_request: {
         Args: { _note?: string; _request_id: string }
         Returns: undefined

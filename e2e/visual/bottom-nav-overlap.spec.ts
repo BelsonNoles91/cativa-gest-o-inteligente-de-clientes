@@ -5,7 +5,7 @@
  * pixel a pixel, se algum item interativo (`[data-testid="bottom-nav-item"]`
  * ou `[data-testid="bottom-nav-more"]`) está sendo coberto por:
  *
- *   - Toasters/Sonner (`[data-sonner-toaster]`, `[role="status"]`)
+ *   - Toasters/Sonner (`[data-sonner-toaster] li`, `[role="status"]`)
  *   - OfflineBanner (`[data-testid="offline-banner"]`)
  *   - FABs / botões fixos genéricos (`position: fixed` com z-index >= nav)
  *   - Badge do Lovable (`#lovable-badge`, iframe injetado)
@@ -111,7 +111,6 @@ async function measureBottomNavOverlap(page: Page): Promise<{
 
     // Selectors conhecidos.
     const knownSelectors: { sel: string; label: string; lovable?: boolean }[] = [
-      { sel: "[data-sonner-toaster]", label: "sonner-toaster" },
       { sel: "[data-sonner-toaster] li", label: "sonner-toast" },
       { sel: '[role="status"][aria-live]', label: "aria-status" },
       { sel: '[data-testid="offline-banner"]', label: "offline-banner" },
@@ -131,6 +130,12 @@ async function measureBottomNavOverlap(page: Page): Promise<{
       const navBand = { top: navRect.y, bottom: navRect.y + navRect.height };
       document.querySelectorAll<HTMLElement>("body *").forEach((el) => {
         if (seen.has(el)) return;
+        // O root do Sonner é um container fixo, frequentemente vazio e do
+        // tamanho da viewport. Toasts reais já são coletados acima como <li>.
+        if (el.matches("[data-sonner-toaster]")) return;
+        // Radix ToastViewport também é um <ol> fixo; seus itens acessíveis
+        // (role=status) são medidos individualmente pelos seletores acima.
+        if (el.tagName === "OL") return;
         if (nav && (el === nav || nav.contains(el))) return;
         const cs = getComputedStyle(el);
         if (cs.position !== "fixed" && cs.position !== "sticky") return;

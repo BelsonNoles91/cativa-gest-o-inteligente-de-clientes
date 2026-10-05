@@ -1,7 +1,7 @@
 /**
  * LogoUploader — componente reutilizável para upload do logo do tenant.
  *
- * - Aceita PNG/JPG/SVG/WEBP até 2MB.
+ * - Aceita PNG/JPG/WEBP até 2 MiB.
  * - Sobe para o bucket público `tenant-logos` em `<tenantId>/<timestamp>.<ext>`.
  * - Devolve a URL pública via `onChange`.
  * - Mostra preview e permite remover.
@@ -16,9 +16,9 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { TENANT_LOGO_MAX_BYTES, validateTenantLogoFileContent } from "@/lib/client-media-validation";
 
-const MAX_BYTES = 2 * 1024 * 1024;
-const ACCEPT = "image/png,image/jpeg,image/webp,image/svg+xml";
+const ACCEPT = "image/png,image/jpeg,image/webp";
 
 interface LogoUploaderProps {
   /** Pasta de destino (geralmente o tenantId). */
@@ -49,12 +49,9 @@ export function LogoUploader({
   const handlePick = () => inputRef.current?.click();
 
   const handleFile = async (file: File) => {
-    if (!file.type.startsWith("image/")) {
-      toast.error("Selecione um arquivo de imagem.");
-      return;
-    }
-    if (file.size > MAX_BYTES) {
-      toast.error("Imagem muito grande", { description: "Máximo de 2 MB." });
+    const validationError = await validateTenantLogoFileContent(file);
+    if (validationError) {
+      toast.error("Não foi possível usar este logo", { description: validationError });
       return;
     }
     setUploading(true);
@@ -145,7 +142,7 @@ export function LogoUploader({
           </Button>
         )}
         <p className="text-[11px] text-muted-foreground">
-          PNG, JPG, SVG ou WebP. Máx 2 MB.
+          PNG, JPG ou WebP. Máx {TENANT_LOGO_MAX_BYTES / (1024 * 1024)} MiB.
         </p>
       </div>
     </div>

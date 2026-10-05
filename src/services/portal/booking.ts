@@ -10,11 +10,52 @@
 import {
   getAvailableSlots,
   insertAppointment,
-  setAppointmentStatus,
 } from "@/repositories/scheduling";
 import { supabase } from "@/integrations/supabase/client";
 import type { CancellationPolicySnapshot } from "@/domain/portal";
 import { dateKeyInTimeZone, DEFAULT_TIMEZONE } from "@/lib/date-time";
+
+function parseBookingStart(value: string): Date {
+  const dateParts = /^(\d{4})-(\d{2})-(\d{2})T/.exec(value);
+  if (!dateParts) throw new Error("Informe um horário válido para o agendamento.");
+
+  const [, yearText, monthText, dayText] = dateParts;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  const calendarDate = new Date(0);
+  calendarDate.setUTCHours(0, 0, 0, 0);
+  calendarDate.setUTCFullYear(year, month - 1, day);
+  if (
+    calendarDate.getUTCFullYear() !== year ||
+    calendarDate.getUTCMonth() !== month - 1 ||
+    calendarDate.getUTCDate() !== day
+  ) {
+    throw new Error("Informe um horário válido para o agendamento.");
+  }
+
+  const startsAt = new Date(value);
+  if (!Number.isFinite(startsAt.getTime())) {
+    throw new Error("Informe um horário válido para o agendamento.");
+  }
+  return startsAt;
+}
+
+function validateDuration(durationMinutes: number): void {
+  if (!Number.isSafeInteger(durationMinutes) || durationMinutes <= 0) {
+    throw new Error("A duração do serviço está inválida. Atualize o catálogo antes de continuar.");
+  }
+}
+
+function bookingDay(startsAt: Date, timezone?: string): string {
+  try {
+    const day = dateKeyInTimeZone(startsAt, timezone ?? DEFAULT_TIMEZONE);
+    if (day) return day;
+  } catch {
+    // Converte timezone ausente/corrompido em erro de domínio sem consultar o backend.
+  }
+  throw new Error("O fuso horário do estabelecimento está inválido.");
+}
 
 export interface CreateBookingInput {
   tenantId: string;
@@ -35,17 +76,23 @@ export interface CreateBookingInput {
 }
 
 export async function createBookingFromPortal(input: CreateBookingInput): Promise<string> {
-  const startsAt = new Date(input.startsAt);
+  const startsAt = parseBookingStart(input.startsAt);
+  validateDuration(input.durationMinutes);
+  const minAdvanceHours = input.minAdvanceHours ?? 0;
+  if (!Number.isFinite(minAdvanceHours) || minAdvanceHours < 0) {
+    throw new Error("A antecedência mínima do serviço está inválida.");
+  }
+
   const now = Date.now();
-  const minAdvanceMs = (input.minAdvanceHours ?? 0) * 36e5;
+  const minAdvanceMs = minAdvanceHours * 36e5;
   if (startsAt.getTime() - now < minAdvanceMs) {
     throw new Error(
-      `Este serviço exige pelo menos ${input.minAdvanceHours ?? 0}h de antecedência.`,
+      `Este serviço exige pelo menos ${minAdvanceHours}h de antecedência.`,
     );
   }
 
   // re-valida o slot via RPC
-  const day = dateKeyInTimeZone(startsAt, input.tenantTimezone ?? DEFAULT_TIMEZONE);
+  const day = bookingDay(startsAt, input.tenantTimezone);
   const slots = await getAvailableSlots({
     tenantId: input.tenantId,
     professionalId: input.professionalId,
@@ -102,8 +149,9 @@ type RpcFn = (fn: string, args: Record<string, unknown>) => Promise<{ error: unk
 
 export async function rescheduleFromPortal(input: RescheduleInput): Promise<void> {
   // valida o novo slot
-  const startsAt = new Date(input.startsAt);
-  const day = dateKeyInTimeZone(startsAt, input.tenantTimezone ?? DEFAULT_TIMEZONE);
+  const startsAt = parseBookingStart(input.startsAt);
+  validateDuration(input.durationMinutes);
+  const day = bookingDay(startsAt, input.tenantTimezone);
   const slots = await getAvailableSlots({
     tenantId: input.tenantId,
     professionalId: input.professionalId,
@@ -143,7 +191,10 @@ export async function cancelFromPortal(input: {
 }
 
 export async function confirmFromPortal(appointmentId: string): Promise<void> {
-  await setAppointmentStatus(appointmentId, "confirmed");
+  const { error } = await supabase.rpc("portal_confirm_appointment", {
+    _appointment_id: appointmentId,
+  });
+  if (error) throw new Error(error.message ?? "Erro ao confirmar agendamento");
   // Avisa a recepção e devolve o aviso de confirmação ao cliente.
   // Falhas aqui não podem impedir a confirmação em si.
   try {

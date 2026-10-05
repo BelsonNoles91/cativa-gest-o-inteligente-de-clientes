@@ -11,12 +11,14 @@ export function onlyDigits(value: string | null | undefined): string {
 /** Remove o código do país (55) se vier junto. */
 function normalizeBR(value: string | null | undefined): string {
   let d = onlyDigits(value);
-  if (d.length > 11 && d.startsWith("55")) d = d.slice(2);
-  return d.slice(0, 11);
+  if (d.length >= 13 && d.startsWith("55")) d = d.slice(2);
+  return d;
 }
 
 /** Máscara progressiva: (11) 99999-9999 */
 export function maskMobileBR(value: string | null | undefined): string {
+  // Mantém dígitos excedentes visíveis; truncá-los poderia transformar um
+  // telefone inválido em um número aparentemente válido ao salvar o formulário.
   const d = normalizeBR(value);
   if (d.length === 0) return "";
   if (d.length <= 2) return `(${d}`;

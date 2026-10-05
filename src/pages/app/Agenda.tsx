@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useMemo, useState, type ReactNode } from "react";
 import { useRealtimeRefresh } from "@/features/realtime/TenantRealtimeSync";
 import { useSearchParams } from "react-router-dom";
 import {
@@ -22,7 +22,7 @@ import { AppointmentSummaryDialog } from "@/features/appointments/AppointmentSum
 import { OfflineAgendaBanner } from "@/features/offline/OfflineAgendaBanner";
 import { SlotOfferDialog, type FreedSlotInfo } from "@/features/waitlist/SlotOfferDialog";
 import { useOfflineAgenda } from "@/features/offline/useOfflineAgenda";
-import { enqueueAction, readAgendaSnapshot, saveAgendaSnapshot } from "@/lib/offline-agenda";
+import { enqueueAction, readAgendaSnapshot, readQueue, saveAgendaSnapshot, type PendingAction } from "@/lib/offline-agenda";
 
 import { PageHeader } from "@/components/shell/PageHeader";
 import { PageActionCluster, PrimaryAction } from "@/components/shell/PageActionCluster";
@@ -148,6 +148,35 @@ const EMPTY_BLOCK_FORM: BlockFormState = {
   reason: "",
 };
 
+function applyPendingOfflineActions(
+  appointments: HydratedAppointment[],
+  tenantId: string,
+): HydratedAppointment[] {
+  const pendingByAppointment = new Map<string, PendingAction[]>();
+  for (const action of readQueue()) {
+    if (action.tenantId !== tenantId) continue;
+    const current = pendingByAppointment.get(action.appointmentId) ?? [];
+    current.push(action);
+    pendingByAppointment.set(action.appointmentId, current);
+  }
+
+  if (pendingByAppointment.size === 0) return appointments;
+  return appointments.map((item) => {
+    const pending = pendingByAppointment.get(item.appointment.id);
+    if (!pending) return item;
+    const appointment = { ...item.appointment };
+    for (const action of pending) {
+      if (action.type === "status" && action.status) {
+        appointment.status = action.status as AppointmentStatus;
+      } else if (action.type === "notes") {
+        if (action.notes !== undefined) appointment.notes = action.notes;
+        if (action.internalNotes !== undefined) appointment.internalNotes = action.internalNotes;
+      }
+    }
+    return { ...item, appointment };
+  });
+}
+
 export default function AgendaPage() {
   const [searchParams] = useSearchParams();
   const { currentTenant, currentUnit, availableUnits } = useTenant();
@@ -237,6 +266,27 @@ export default function AgendaPage() {
     if (!currentTenant) return;
     let ignore = false;
     setLoading(true);
+
+    // Ao abrir o app já sem rede, não espere os timeouts das consultas remotas:
+    // restaure imediatamente o snapshot do mesmo tenant, filtros e período.
+    if (!offline.online) {
+      const snapshot = readAgendaSnapshot<HydratedAppointment[]>(cacheKey);
+      if (snapshot) {
+        setAppointments(applyPendingOfflineActions(snapshot.data, currentTenant.id));
+        setUsingCache(true);
+        setOfflineSyncedAt(snapshot.syncedAt);
+      } else {
+        setAppointments([]);
+        setUsingCache(false);
+        setOfflineSyncedAt(null);
+      }
+      setLoading(false);
+      setRefreshing(false);
+      return () => {
+        ignore = true;
+      };
+    }
+
     void (async () => {
       try {
         const [nextAppointments, nextTimeOff, nextRecurring, nextServices, nextClientsPage, nextProfessionals, nextResources, nextBasePrices] = await Promise.all([
@@ -256,7 +306,7 @@ export default function AgendaPage() {
           listBasePrices(currentTenant.id),
         ]);
         if (ignore) return;
-        setAppointments(nextAppointments);
+        setAppointments(applyPendingOfflineActions(nextAppointments, currentTenant.id));
         setUsingCache(false);
         setOfflineSyncedAt(new Date().toISOString());
         saveAgendaSnapshot(cacheKey, nextAppointments);
@@ -271,7 +321,7 @@ export default function AgendaPage() {
         if (ignore) return;
         const snapshot = readAgendaSnapshot<HydratedAppointment[]>(cacheKey);
         if (snapshot) {
-          setAppointments(snapshot.data);
+          setAppointments(applyPendingOfflineActions(snapshot.data, currentTenant.id));
           setUsingCache(true);
           setOfflineSyncedAt(snapshot.syncedAt);
           toast({
@@ -295,7 +345,7 @@ export default function AgendaPage() {
     return () => {
       ignore = true;
     };
-  }, [cacheKey, currentTenant, unitFilter, professionalFilter, range, refreshToken, toast]);
+  }, [cacheKey, currentTenant, offline.online, unitFilter, professionalFilter, range, refreshToken, toast]);
 
   useEffect(() => {
     if (!currentUnitId && availableUnits.length === 0) return;
@@ -500,7 +550,8 @@ export default function AgendaPage() {
         type: "status",
         status: nextStatus,
         reason: nextStatus === "canceled" ? "Cancelado pela equipe na agenda (offline)" : undefined,
-        label: `${item.clientName ?? "Atendimento"} → ${appointmentStatusLabels[nextStatus]}`,
+        // A fila persistida no aparelho não precisa do nome do cliente.
+        label: `Status do atendimento → ${appointmentStatusLabels[nextStatus]}`,
       });
       setAppointments((current) =>
         current.map((row) =>
@@ -706,7 +757,12 @@ export default function AgendaPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div
+      data-testid="agenda-page"
+      data-online={offline.online ? "true" : "false"}
+      data-using-cache={usingCache ? "true" : "false"}
+      className="space-y-6"
+    >
       <PageHeader
         title="Agenda"
         description="Visão diária e semanal com criação, remarcação e controle de status em poucos toques."
@@ -866,8 +922,8 @@ export default function AgendaPage() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
-        <section className="space-y-6">
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        <section className="min-w-0 space-y-6">
           {loading ? (
             <div className="flex h-48 items-center justify-center">
               <Loader2 className="h-5 w-5 animate-spin text-primary" />
@@ -955,7 +1011,7 @@ export default function AgendaPage() {
           )}
         </section>
 
-        <aside className="space-y-6">
+        <aside className="min-w-0 space-y-6">
           {can("blocks.manage") && (
           <Card>
             <CardHeader className="pb-3">
@@ -1032,7 +1088,7 @@ export default function AgendaPage() {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="w-[calc(100vw-2rem)] max-w-4xl sm:w-full">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-4xl">
           <DialogHeader>
             <DialogTitle>{editing ? "Editar agendamento" : "Novo agendamento"}</DialogTitle>
             <DialogDescription>
@@ -1213,7 +1269,7 @@ export default function AgendaPage() {
       </Dialog>
 
       <Dialog open={blockDialogOpen} onOpenChange={setBlockDialogOpen}>
-        <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl sm:w-full">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl">
           <DialogHeader>
             <DialogTitle>Novo bloqueio</DialogTitle>
             <DialogDescription>Cadastre indisponibilidades pontuais ou recorrentes.</DialogDescription>
@@ -1335,7 +1391,7 @@ function AppointmentCard({
   const [summaryOpen, setSummaryOpen] = useState(false);
 
   return (
-    <Card>
+    <Card data-testid="agenda-appointment-card" data-appointment-id={item.appointment.id}>
       <CardContent className={compact ? "pt-5" : "pt-6"}>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-3">
@@ -1483,14 +1539,21 @@ function ToggleField({
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
 }) {
+  const descriptionId = useId();
+
   return (
     <div className="rounded-2xl border border-border/70 p-4">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="font-medium">{label}</p>
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+          <p id={descriptionId} className="mt-1 text-sm text-muted-foreground">{description}</p>
         </div>
-        <Switch checked={checked} onCheckedChange={onCheckedChange} />
+        <Switch
+          aria-label={label}
+          aria-describedby={descriptionId}
+          checked={checked}
+          onCheckedChange={onCheckedChange}
+        />
       </div>
     </div>
   );

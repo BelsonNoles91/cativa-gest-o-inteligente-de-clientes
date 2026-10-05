@@ -1,3 +1,4 @@
+import "./e2e/_helpers/private-artifacts";
 import { defineConfig, devices } from "@playwright/test";
 
 const BASE_URL = process.env.E2E_BASE_URL ?? "http://127.0.0.1:4173";
@@ -25,7 +26,8 @@ export default defineConfig({
   },
   use: {
     baseURL: BASE_URL,
-    storageState: "e2e/.auth/storageState.json",
+    storageState:
+      process.env.E2E_STORAGE_STATE_PATH ?? "e2e/.auth/storageState.json",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     timezoneId: "America/Sao_Paulo",
@@ -66,6 +68,17 @@ export default defineConfig({
         deviceScaleFactor: 2,
         hasTouch: true,
         isMobile: false,
+      },
+    },
+    {
+      name: "mobile-320-portrait",
+      testMatch: /(?:agenda-to-confirmation|dialog-overflow|a11y-contrast)\.spec\.ts$/,
+      use: {
+        browserName: "chromium",
+        viewport: { width: 320, height: 568 },
+        deviceScaleFactor: 2,
+        hasTouch: true,
+        isMobile: true,
       },
     },
     {

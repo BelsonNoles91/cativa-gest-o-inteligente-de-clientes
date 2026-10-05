@@ -10,7 +10,7 @@ export default function Privacy() {
         <PremiumSection variant="soft" padding="lg">
           <div className="max-w-4xl mx-auto px-4">
             <h1 className="font-display text-5xl md:text-7xl text-primary-dark tracking-tighter mb-12">
-              Política de <span className="italic serif text-accent">Privacidade</span>
+              Política de <span className="italic serif text-accent-strong">Privacidade</span>
             </h1>
             <div className="prose prose-slate max-w-none space-y-8 text-primary-dark/80">
               <section>

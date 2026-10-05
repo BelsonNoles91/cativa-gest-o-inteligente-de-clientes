@@ -19,24 +19,30 @@ export interface RenderContext {
 
 function firstName(full?: string | null): string {
   if (!full) return "";
-  return full.trim().split(/\s+/)[0] ?? "";
+  return full.trim().split(/\s+/)[0];
+}
+
+function parseDate(iso?: string | null): Date | null {
+  if (!iso) return null;
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? null : date;
 }
 
 function fmtDate(iso?: string | null): string {
-  if (!iso) return "";
-  const d = new Date(iso);
+  const d = parseDate(iso);
+  if (!d) return "";
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
 function fmtTime(iso?: string | null): string {
-  if (!iso) return "";
-  const d = new Date(iso);
+  const d = parseDate(iso);
+  if (!d) return "";
   return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 }
 
 function fmtDateTime(iso?: string | null): string {
-  if (!iso) return "";
-  const d = new Date(iso);
+  const d = parseDate(iso);
+  if (!d) return "";
   return d.toLocaleString("pt-BR", {
     day: "2-digit", month: "2-digit", year: "numeric",
     hour: "2-digit", minute: "2-digit",

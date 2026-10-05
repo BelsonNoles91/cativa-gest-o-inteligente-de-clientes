@@ -80,6 +80,7 @@ import { QuickFiltersBar } from "@/features/clients/QuickFiltersBar";
 import { RetentionIntelligenceCard } from "@/features/clients/RetentionIntelligenceCard";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { CLIENT_FILE_ACCEPT, CLIENT_PHOTO_ACCEPT } from "@/lib/client-media-validation";
 import { usePermissions } from "@/features/auth/usePermissions";
 
 type FiltersState = {
@@ -1125,10 +1126,10 @@ export default function ClientsPage() {
                               })
                             )}
                           </div>
-                          <div className="grid gap-2 sm:grid-cols-[1fr_110px_auto]">
-                            <Input value={newTagName} onChange={(e) => setNewTagName(e.target.value)} placeholder="Nova tag" />
-                            <Input type="color" value={newTagColor} onChange={(e) => setNewTagColor(e.target.value)} />
-                            <Button variant="outline" onClick={handleCreateTag}>
+                          <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_64px]">
+                            <Input className="min-w-0" value={newTagName} onChange={(e) => setNewTagName(e.target.value)} placeholder="Nova tag" />
+                            <Input className="h-11 w-16 p-1" aria-label="Cor da nova tag" type="color" value={newTagColor} onChange={(e) => setNewTagColor(e.target.value)} />
+                            <Button className="min-h-11 sm:col-span-2" variant="outline" onClick={handleCreateTag}>
                               <Plus className="mr-1.5 h-4 w-4" /> Criar
                             </Button>
                           </div>
@@ -1254,7 +1255,7 @@ export default function ClientsPage() {
                     <Card className="min-w-0">
                       <CardHeader>
                         <CardTitle>Arquivos</CardTitle>
-                        <CardDescription>Anexos, documentos e materiais de apoio.</CardDescription>
+                          <CardDescription>PDF, texto, CSV, Office e imagens compatíveis; conteúdo ativo, como HTML/SVG, não é aceito.</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="space-y-2">
@@ -1275,6 +1276,7 @@ export default function ClientsPage() {
                             id="client-file-upload"
                             data-testid="client-file-upload-input"
                             type="file"
+                            accept={CLIENT_FILE_ACCEPT}
                             className="hidden"
                             onChange={(e) => {
                               const file = e.target.files?.[0] ?? null;
@@ -1364,7 +1366,7 @@ export default function ClientsPage() {
                           id="client-photo-upload"
                           data-testid="client-photo-upload-input"
                           type="file"
-                          accept="image/*"
+                          accept={CLIENT_PHOTO_ACCEPT}
                           className="hidden"
                           onChange={(e) => {
                             const file = e.target.files?.[0] ?? null;

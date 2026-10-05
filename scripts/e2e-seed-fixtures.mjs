@@ -7,6 +7,10 @@ if (!enabled) {
   process.exit(0);
 }
 
+const runId = (process.env.E2E_RUN_ID || process.env.GITHUB_RUN_ID || `local-${Date.now()}`)
+  .replace(/[^a-zA-Z0-9._-]/g, "-")
+  .slice(0, 80);
+
 const required = [
   "VITE_SUPABASE_URL",
   "VITE_SUPABASE_PUBLISHABLE_KEY",
@@ -362,7 +366,7 @@ try {
   }
 
   console.log(
-    "Fixtures E2E: cenário Agenda → Confirmações preparado com sucesso.",
+    `Fixtures E2E (run_id=${runId}): cenário Agenda → Confirmações preparado com sucesso.`,
   );
 } finally {
   await client.auth.signOut();

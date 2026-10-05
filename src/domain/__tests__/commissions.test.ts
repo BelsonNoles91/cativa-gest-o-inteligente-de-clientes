@@ -71,6 +71,38 @@ describe("commissions", () => {
     expect(rows[0].commissionCents).toBe(5000);
   });
 
+  it("ordena extrato por data e preserva valores nulos e referências ausentes", () => {
+    const rows = buildStatement(
+      [
+        appt({ id: "later", startsAt: "2026-03-12T12:00:00.000Z", serviceId: null, clientId: null, totalPriceCents: 0 }),
+        appt({ id: "ignored", startsAt: "2026-03-01T12:00:00.000Z", status: "pending" }),
+        appt({ id: "earlier", startsAt: "2026-03-02T12:00:00.000Z", serviceId: "missing-service", clientId: "missing-client", totalPriceCents: 101 }),
+      ],
+      "p1",
+      10,
+      { s1: "Corte" },
+      { c1: "João" },
+    );
+
+    expect(rows.map(({ id }) => id)).toEqual(["earlier", "later"]);
+    expect(rows[0]).toMatchObject({ serviceName: null, clientName: null, revenueCents: 101, commissionCents: 10 });
+    expect(rows[1]).toMatchObject({ serviceName: null, clientName: null, revenueCents: 0, commissionCents: 0 });
+  });
+
+  it("desempata profissionais com mesma receita pelo nome e inclui profissionais sem vendas", () => {
+    const rows = buildCommissionRows(
+      [appt({ professionalId: "z", totalPriceCents: 5000 }), appt({ professionalId: "a", totalPriceCents: 5000 })],
+      [
+        { id: "z", displayName: "Zélia" },
+        { id: "a", displayName: "Ágata" },
+        { id: "empty", displayName: "Sem vendas" },
+      ],
+      [],
+    );
+    expect(rows.map(({ professionalId }) => professionalId)).toEqual(["a", "z", "empty"]);
+    expect(rows[2]).toMatchObject({ appointmentsCount: 0, revenueCents: 0, commissionCents: 0, netCents: 0, closed: false });
+  });
+
   it("totaliza e formata o mês de referência", () => {
     const rows = buildCommissionRows(
       [appt({})],

@@ -1,3 +1,5 @@
+import { appointmentStatusLabels } from "@/domain/scheduling";
+
 /**
  * Modo offline da recepção.
  *
@@ -12,6 +14,7 @@
 const CACHE_PREFIX = "cativa:agenda-cache:";
 const QUEUE_KEY = "cativa:agenda-queue";
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 dias
+const VALID_APPOINTMENT_STATUSES = new Set(Object.keys(appointmentStatusLabels));
 
 export interface AgendaCacheKey {
   tenantId: string;
@@ -75,8 +78,10 @@ export function readAgendaSnapshot<T>(key: AgendaCacheKey): AgendaCacheEntry<T> 
   if (!raw) return null;
   try {
     const entry = JSON.parse(raw) as AgendaCacheEntry<T>;
-    if (!entry?.syncedAt) return null;
-    if (Date.now() - new Date(entry.syncedAt).getTime() > CACHE_TTL_MS) return null;
+    if (!entry || typeof entry.syncedAt !== "string" || !Array.isArray(entry.data)) return null;
+    const syncedAt = Date.parse(entry.syncedAt);
+    const age = Date.now() - syncedAt;
+    if (!Number.isFinite(syncedAt) || age < 0 || age > CACHE_TTL_MS) return null;
     return entry;
   } catch {
     return null;
@@ -92,7 +97,14 @@ export function pruneExpiredSnapshots(): void {
       if (!raw) continue;
       try {
         const entry = JSON.parse(raw) as AgendaCacheEntry<unknown>;
-        if (!entry?.syncedAt || now - new Date(entry.syncedAt).getTime() > CACHE_TTL_MS) {
+        const syncedAt = typeof entry?.syncedAt === "string" ? Date.parse(entry.syncedAt) : Number.NaN;
+        const age = now - syncedAt;
+        if (
+          !Number.isFinite(syncedAt) ||
+          age < 0 ||
+          age > CACHE_TTL_MS ||
+          !Array.isArray(entry.data)
+        ) {
           localStorage.removeItem(storageKey);
         }
       } catch {
@@ -123,10 +135,31 @@ export function readQueue(): PendingAction[] {
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as PendingAction[]) : [];
+    return Array.isArray(parsed) ? parsed.filter(isPendingAction) : [];
   } catch {
     return [];
   }
+}
+
+function isPendingAction(value: unknown): value is PendingAction {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const action = value as Record<string, unknown>;
+  if (
+    typeof action.id !== "string" || !action.id ||
+    typeof action.tenantId !== "string" || !action.tenantId ||
+    typeof action.appointmentId !== "string" || !action.appointmentId ||
+    typeof action.createdAt !== "string" ||
+    typeof action.label !== "string" ||
+    (action.reason !== undefined && typeof action.reason !== "string") ||
+    (action.notes !== undefined && typeof action.notes !== "string") ||
+    (action.internalNotes !== undefined && typeof action.internalNotes !== "string")
+  ) return false;
+
+  if (action.type === "status") {
+    return typeof action.status === "string" && VALID_APPOINTMENT_STATUSES.has(action.status);
+  }
+  return action.type === "notes" && action.status === undefined &&
+    (action.notes !== undefined || action.internalNotes !== undefined);
 }
 
 export const QUEUE_CHANGED_EVENT = "cativa:agenda-queue-changed";
@@ -155,10 +188,14 @@ export function enqueueAction(action: Omit<PendingAction, "id" | "createdAt">): 
     createdAt: new Date().toISOString(),
   };
   const queue = readQueue();
-  // Uma ação do mesmo tipo para o mesmo atendimento substitui a anterior:
-  // vale sempre a última decisão da recepção.
+  // Uma ação do mesmo tipo para o mesmo atendimento e tenant substitui a
+  // anterior: vale sempre a última decisão da recepção, sem cruzar escopos.
   const filtered = queue.filter(
-    (item) => !(item.appointmentId === entry.appointmentId && item.type === entry.type),
+    (item) => !(
+      item.tenantId === entry.tenantId &&
+      item.appointmentId === entry.appointmentId &&
+      item.type === entry.type
+    ),
   );
   filtered.push(entry);
   writeQueue(filtered);

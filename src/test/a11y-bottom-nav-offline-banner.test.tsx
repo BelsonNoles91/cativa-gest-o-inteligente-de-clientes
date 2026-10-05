@@ -2,7 +2,7 @@
  * Testes de acessibilidade (axe-core) para componentes mobile-críticos:
  *  - BottomNav: navegação inferior (md:hidden) — alvos de toque, aria-expanded
  *    no botão "Mais", role/aria-label da nav, foco visível.
- *  - OfflineBanner: faixa fixa no topo — role=status, aria-live, contraste em
+ *  - OfflineBanner: faixa no header sticky — role=status, aria-live, contraste em
  *    estado offline (warning) e online recuperado (success).
  *
  * Estes testes simulam o ambiente mobile (iOS/Android) ao renderizar a árvore
@@ -246,14 +246,14 @@ describe("OfflineBanner — acessibilidade (axe)", () => {
     });
   });
 
-  it("respeita safe-area no topo (iOS notch) via env(safe-area-inset-top)", async () => {
+  it("fica no fluxo do header, respeitando a safe-area do próprio header", async () => {
     setOnline(false);
     const { container } = render(<OfflineBanner />);
     window.dispatchEvent(new Event("offline"));
     await screen.findByRole("status");
     const wrapper = container.querySelector('[role="status"]') as HTMLElement;
-    // Verifica que a classe contém token de safe-area
-    expect(wrapper.className).toMatch(/env\(safe-area-inset-top\)/);
+    expect(wrapper.className).toMatch(/relative/);
+    expect(wrapper.className).not.toMatch(/fixed/);
   });
 
   it("usa pointer-events corretamente (wrapper transparente, conteúdo clicável)", async () => {

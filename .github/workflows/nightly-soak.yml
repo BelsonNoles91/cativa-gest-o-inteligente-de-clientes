@@ -1,0 +1,97 @@
+name: Nightly local QA soak
+
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  appointment-soak:
+    name: Concorrência de agenda em Supabase efêmero
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: "2.119.0"
+
+      - name: Instala dependências
+        run: npm ci
+
+      - name: Instala Chromium e dependências do browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Inicia Supabase efêmero do runner
+        shell: bash
+        run: |
+          if ! supabase start --exclude studio,mailpit,logflare,vector,postgres-meta,supavisor > "$RUNNER_TEMP/supabase-start.log" 2>&1; then
+            sed -E \
+              -e 's#(postgres(ql)?://)[^[:space:]]+#\1[URL_REDACTED]#g' \
+              -e 's/(API_URL|DB_URL|JWT_SECRET|ANON_KEY|SERVICE_ROLE_KEY|PUBLISHABLE_KEY|SECRET_KEY)=.*/\1=[REDACTED]/' \
+              -e 's/(eyJ[a-zA-Z0-9._-]{20,}|sb_(publishable|secret)_[a-zA-Z0-9_-]+)/[TOKEN_REDACTED]/g' \
+              "$RUNNER_TEMP/supabase-start.log" >&2
+            exit 1
+          fi
+
+      - name: Recria banco a partir das migrations
+        run: supabase db reset --local
+
+      - name: Exporta somente configuração local e mascara chaves efêmeras
+        run: node scripts/e2e-export-local-supabase-env.mjs
+
+      - name: Provisiona perfis sintéticos e tenant QA local
+        run: npm run test:qa:provision:local
+
+      - name: Remove chaves privilegiadas dos passos seguintes
+        if: always()
+        run: |
+          printf 'SUPABASE_SERVICE_ROLE_KEY=\nSUPABASE_DB_URL=\nSUPABASE_QA_DB_URL=\n' >> "$GITHUB_ENV"
+
+      - name: Executa soak isolado de 10 minutos
+        env:
+          E2E_RUN_SOAK: "true"
+          E2E_SOAK_DURATION_MS: "600000"
+          E2E_SOAK_CONCURRENCY: "8"
+          PW_OUTPUT_DIR: e2e/.artifacts-nightly-soak
+          PW_REPORT_DIR: e2e/.report-nightly-soak
+        run: |
+          node scripts/e2e-target-check.mjs --destructive
+          npx playwright test -c playwright.backend.config.ts --grep SOAK
+
+      - name: Gera manifesto e checksum das evidências
+        if: always()
+        run: >-
+          node scripts/e2e-evidence-manifest.mjs
+          --input e2e/.artifacts-qa
+          --input e2e/.artifacts-nightly-soak
+          --input e2e/.report-nightly-soak
+          --output e2e/.artifacts-nightly-soak/evidence-manifest.json
+
+      - name: Publica resultados do soak
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-local-soak-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            e2e/.artifacts-qa/
+            e2e/.artifacts-nightly-soak/
+            e2e/.report-nightly-soak/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Destroi o Supabase efêmero
+        if: always()
+        run: supabase stop --no-backup --yes > /dev/null 2>&1 || true

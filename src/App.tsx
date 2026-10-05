@@ -230,20 +230,34 @@ const App = () => (
                     {/* App autenticado + onboarding completo */}
                     <Route element={<ProtectedRoute />}>
                       <Route element={<RequireOnboarding />}>
-                        <Route path="/app" element={<AppLayout />}>
-                          <Route index element={<Dashboard />} />
-                          <Route path="agenda" element={<AgendaPage />} />
-                          <Route path="clientes" element={<ClientsPage />} />
-                          <Route
-                            path="confirmacoes"
-                            element={
-                              <FeatureGate featureKey="confirmation_center">
-                                <ConfirmationCenter />
-                              </FeatureGate>
-                            }
-                          />
-                          <Route path="lista-de-espera" element={<WaitlistPage />} />
-                          <Route path="minha-agenda" element={<MySchedulePage />} />
+                          <Route path="/app" element={<AppLayout />}>
+                            <Route index element={<Dashboard />} />
+                            <Route path="agenda" element={<AgendaPage />} />
+                            <Route
+                              element={
+                                <RoleGuard
+                                  allowed={["owner", "manager", "frontdesk"]}
+                                />
+                              }
+                            >
+                              <Route path="clientes" element={<ClientsPage />} />
+                            </Route>
+                            <Route element={<RoleGuard allowed={["owner", "manager", "frontdesk"]} />}>
+                              <Route
+                                path="confirmacoes"
+                                element={
+                                  <FeatureGate featureKey="confirmation_center">
+                                    <ConfirmationCenter />
+                                  </FeatureGate>
+                                }
+                              />
+                              <Route path="lista-de-espera" element={<WaitlistPage />} />
+                            </Route>
+                            <Route
+                              element={<RoleGuard allowed={["owner", "manager", "professional"]} />}
+                            >
+                              <Route path="minha-agenda" element={<MySchedulePage />} />
+                            </Route>
                           <Route path="perfil" element={<ProfilePage />} />
 
                           <Route

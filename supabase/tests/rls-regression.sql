@@ -40,6 +40,7 @@ DECLARE
   v_text text;
   v      bigint;
   flag   boolean;
+  system_flags jsonb;
   n_rows int;
   failures int := 0;
 BEGIN
@@ -115,10 +116,21 @@ BEGIN
   PERFORM set_config('request.jwt.claim.sub', '', true);
   PERFORM set_config('request.jwt.claims', NULL, true);
   EXECUTE 'SELECT count(*) FROM public.system_incidents' INTO v;
+  EXECUTE 'SELECT public.get_public_system_flags()' INTO system_flags;
   RESET ROLE;
   IF v <> 0 THEN failures := failures + 1;
     RAISE WARNING 'FALHOU: anônimo leu % incidente(s)', v;
   ELSE RAISE NOTICE 'ok  system_incidents: anônimo não lê incidentes'; END IF;
+
+  IF (SELECT count(*) FROM jsonb_object_keys(system_flags)) <> 3
+     OR jsonb_typeof(system_flags->'enable_signups') <> 'boolean'
+     OR jsonb_typeof(system_flags->'maintenance_mode') <> 'boolean'
+     OR jsonb_typeof(system_flags->'show_cativa_index') <> 'boolean' THEN
+    failures := failures + 1;
+    RAISE WARNING 'FALHOU: RPC pública não retornou exatamente as três flags booleanas permitidas';
+  ELSE
+    RAISE NOTICE 'ok  system flags: anônimo lê apenas três controles públicos tipados';
+  END IF;
 
   EXECUTE 'SET LOCAL ROLE authenticated';
   PERFORM set_config('request.jwt.claim.sub', u_pro::text, true);
@@ -354,7 +366,7 @@ BEGIN
   PERFORM set_config('request.jwt.claims', json_build_object('sub', u_own, 'role', 'authenticated')::text, true);
   EXECUTE format(
     'SELECT id, token FROM public.create_team_invitation(%L::uuid, %L, %L::public.app_role, NULL, 14)',
-    t_a, 'owner-created+rlstest@example.test', 'front_desk'
+    t_a, 'owner-created+rlstest@example.test', 'frontdesk'
   ) INTO v_created_inv, v_token;
   RESET ROLE;
   PERFORM set_config('request.jwt.claim.sub', '', true);
@@ -398,12 +410,12 @@ BEGIN
   PERFORM set_config('request.jwt.claims', json_build_object('sub', u_mng, 'role', 'authenticated')::text, true);
   EXECUTE format(
     'SELECT id FROM public.create_team_invitation(%L::uuid, %L, %L::public.app_role, NULL, 14)',
-    t_a, 'manager-created+rlstest@example.test', 'front_desk'
+    t_a, 'manager-created+rlstest@example.test', 'frontdesk'
   ) INTO v_manager_inv;
   BEGIN
     EXECUTE format(
       'SELECT id FROM public.create_team_invitation(%L::uuid, %L, %L::public.app_role, NULL, 14)',
-      t_b, 'manager-cross-tenant+rlstest@example.test', 'front_desk'
+      t_b, 'manager-cross-tenant+rlstest@example.test', 'frontdesk'
     ) INTO v_uuid;
     flag := false;
   EXCEPTION WHEN OTHERS THEN flag := true;
@@ -422,7 +434,7 @@ BEGIN
   PERFORM set_config('request.jwt.claims', json_build_object('sub', u_sup, 'role', 'authenticated')::text, true);
   EXECUTE format(
     'SELECT id, token FROM public.admin_provision_team_invitation(%L::uuid, %L, %L::public.app_role, NULL, 14)',
-    t_b, 'admin-created+rlstest@example.test', 'front_desk'
+    t_b, 'admin-created+rlstest@example.test', 'frontdesk'
   ) INTO v_admin_inv, v_token;
   EXECUTE format('SELECT count(*) FROM public.admin_list_team_invitations(%L::uuid) WHERE id = %L::uuid', t_b, v_admin_inv)
     INTO v;
@@ -537,6 +549,46 @@ BEGIN
   SELECT COALESCE(is_super_admin, false) INTO flag FROM public.profiles WHERE id = u_own;
   IF flag THEN failures := failures + 1; RAISE WARNING 'FALHOU: owner se promoveu a super admin';
   ELSE RAISE NOTICE 'ok  profiles: owner não se promove a super admin'; END IF;
+
+  -- =========================================================================
+  -- 5. policies de leitura com escopo de papel autenticado
+  -- =========================================================================
+  IF EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename IN ('plan_features', 'tenant_subscriptions')
+      AND cmd IN ('SELECT', 'ALL')
+      AND 'public'::name = ANY(roles)
+  ) THEN
+    failures := failures + 1;
+    RAISE WARNING 'FALHOU: policy de leitura de plan_features/tenant_subscriptions ainda está concedida a PUBLIC';
+  ELSE
+    RAISE NOTICE 'ok  read policies: plan_features/tenant_subscriptions não concedem policy a PUBLIC';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'plan_features'
+      AND policyname = 'Qualquer autenticado lê features de planos'
+      AND cmd = 'SELECT'
+      AND roles = ARRAY['authenticated']::name[]
+  ) OR NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'tenant_subscriptions'
+      AND policyname = 'Qualquer membro lê assinatura do tenant'
+      AND cmd = 'SELECT'
+      AND roles = ARRAY['authenticated']::name[]
+  ) THEN
+    failures := failures + 1;
+    RAISE WARNING 'FALHOU: acesso de leitura autenticado foi removido durante o hardening';
+  ELSE
+    RAISE NOTICE 'ok  read policies: acesso authenticated preservado nas duas tabelas';
+  END IF;
 
   -- =========================================================================
   -- Limpeza (best-effort: o papel de execução pode não ter DELETE em todas

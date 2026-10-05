@@ -96,7 +96,7 @@ export function ModulesSection() {
         </div>
         <h2 className="text-4xl md:text-7xl font-display font-bold text-primary-dark leading-[0.95] tracking-tight mb-6 md:mb-8">
           Tudo o que sua operação precisa, <br className="hidden md:block" />
-          <span className="text-accent italic serif font-normal">em um único sistema.</span>
+          <span className="text-accent-strong italic serif font-normal">em um único sistema.</span>
         </h2>
         <p className="text-lg md:text-xl text-muted-foreground font-light leading-relaxed max-w-2xl mx-auto">
           Cada parte da Cativa foi desenhada para resolver um problema real do dia a dia e, ao mesmo tempo, fortalecer a fidelidade dos seus clientes.
@@ -129,7 +129,7 @@ export function ModulesSection() {
               
               <div className="lg:col-span-5">
                 <div className="flex items-center gap-3 mb-4 md:mb-6">
-                   <span className="text-[10px] font-bold text-accent-strong tracking-[0.3em] uppercase opacity-60">Módulo {module.id}</span>
+                   <span className="text-[10px] font-bold text-accent-strong tracking-[0.3em] uppercase">Módulo {module.id}</span>
                    <div className="h-px w-8 bg-accent/20" />
                 </div>
                 <h3 className="text-3xl md:text-5xl font-display font-bold text-primary-dark mb-4 md:mb-6 group-hover:text-accent transition-colors tracking-tighter">
@@ -148,7 +148,7 @@ export function ModulesSection() {
                        <CheckCircle2 className="h-5 w-5 md:h-6 md:w-6 text-accent" />
                     </div>
                     <div className="space-y-2 md:space-y-4">
-                      <p className="text-[9px] md:text-[11px] font-bold uppercase tracking-[0.25em] text-accent/80">Vantagem Principal</p>
+                      <p className="text-[9px] md:text-[11px] font-bold uppercase tracking-[0.25em] text-accent-strong">Vantagem Principal</p>
                       <p className="text-primary-dark font-medium leading-[1.3] italic text-xl md:text-2xl tracking-tight">
                         "{module.benefit}"
                       </p>

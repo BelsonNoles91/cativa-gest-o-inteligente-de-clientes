@@ -8,8 +8,8 @@
  *   somando: para cada dia do range, para cada profissional ativo na unidade,
  *   somar (close - open) ∩ (proAvail) − bloqueios pontuais.
  *
- * Nota: queries são limitadas em 1000 por chamada do PostgREST. Para volumes maiores
- * a próxima evolução é mover este cálculo para SQL/RPC.
+ * As leituras paginam além do limite por resposta do PostgREST. Para volumes
+ * muito grandes, a próxima evolução é mover agregações pesadas para SQL/RPC.
  */
 import { supabase } from "@/integrations/supabase/client";
 import type {
@@ -18,6 +18,8 @@ import type {
   ClientFact,
   ContactAttemptFact,
 } from "@/domain/analytics";
+import { calculateAvailableMinutes } from "@/domain/availability";
+import { fetchAllPages } from "@/lib/fetch-all-pages";
 import type { AppointmentSource, AppointmentStatus } from "@/domain/scheduling";
 
 const APPT_COLS = `
@@ -27,6 +29,14 @@ const APPT_COLS = `
   confirmed_at, reminded_at, no_show_at, canceled_at, completed_at, created_at
 `;
 
+function chunkValues<T>(values: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let index = 0; index < values.length; index += size) {
+    chunks.push(values.slice(index, index + size));
+  }
+  return chunks;
+}
+
 export interface AnalyticsRangeInput {
   tenantId: string;
   start: string; // ISO
@@ -34,30 +44,36 @@ export interface AnalyticsRangeInput {
 }
 
 export async function fetchAppointments(input: AnalyticsRangeInput): Promise<ApptFact[]> {
-  const { data, error } = await supabase
-    .from("appointments")
-    .select(APPT_COLS)
-    .eq("tenant_id", input.tenantId)
-    .gte("starts_at", input.start)
-    .lt("starts_at", input.end)
-    .order("starts_at");
-  if (error) throw error;
-  return hydrateAppointmentsWithServices((data ?? []) as Record<string, unknown>[]);
+  const data = await fetchAllPages((from, to) =>
+    supabase
+      .from("appointments")
+      .select(APPT_COLS)
+      .eq("tenant_id", input.tenantId)
+      .gte("starts_at", input.start)
+      .lt("starts_at", input.end)
+      .order("starts_at", { ascending: true })
+      .order("id", { ascending: true })
+      .range(from, to),
+  );
+  return hydrateAppointmentsWithServices(data as Record<string, unknown>[]);
 }
 
 /** Agendamentos futuros (para “valor futuro” e “receita em risco”). */
 export async function fetchFutureAppointments(tenantId: string): Promise<ApptFact[]> {
   const now = new Date().toISOString();
   const horizon = new Date(Date.now() + 60 * 86_400_000).toISOString();
-  const { data, error } = await supabase
-    .from("appointments")
-    .select(APPT_COLS)
-    .eq("tenant_id", tenantId)
-    .gte("starts_at", now)
-    .lt("starts_at", horizon)
-    .order("starts_at");
-  if (error) throw error;
-  return hydrateAppointmentsWithServices((data ?? []) as Record<string, unknown>[]);
+  const data = await fetchAllPages((from, to) =>
+    supabase
+      .from("appointments")
+      .select(APPT_COLS)
+      .eq("tenant_id", tenantId)
+      .gte("starts_at", now)
+      .lt("starts_at", horizon)
+      .order("starts_at", { ascending: true })
+      .order("id", { ascending: true })
+      .range(from, to),
+  );
+  return hydrateAppointmentsWithServices(data as Record<string, unknown>[]);
 }
 
 async function hydrateAppointmentsWithServices(
@@ -67,15 +83,28 @@ async function hydrateAppointmentsWithServices(
   const appointmentIds = facts.map((fact) => fact.id);
   if (appointmentIds.length === 0) return facts;
 
-  const { data: items, error } = await supabase
-    .from("appointment_items")
-    .select("appointment_id, service_id, position")
-    .in("appointment_id", appointmentIds)
-    .order("position", { ascending: true });
-  if (error) throw error;
+  const items: Array<{ appointment_id: string; service_id: string | null; position: number; id: string }> = [];
+  const appointmentIdChunks = chunkValues(appointmentIds, 300);
+  // Limita simultaneamente o tamanho do filtro IN e a pressão sobre o banco.
+  for (let index = 0; index < appointmentIdChunks.length; index += 4) {
+    const itemPages = await Promise.all(
+      appointmentIdChunks.slice(index, index + 4).map((ids) =>
+        fetchAllPages((from, to) =>
+          supabase
+            .from("appointment_items")
+            .select("id, appointment_id, service_id, position")
+            .in("appointment_id", ids)
+            .order("position", { ascending: true })
+            .order("id", { ascending: true })
+            .range(from, to),
+        ),
+      ),
+    );
+    items.push(...itemPages.flat());
+  }
 
   const primaryServiceByAppointment = new Map<string, string>();
-  for (const item of items ?? []) {
+  for (const item of items) {
     const appointmentId = item.appointment_id as string;
     const serviceId = item.service_id as string | null;
     if (!serviceId || primaryServiceByAppointment.has(appointmentId)) continue;
@@ -113,23 +142,15 @@ function rowToAppt(r: Record<string, unknown>): ApptFact {
 }
 
 export async function fetchClients(tenantId: string): Promise<ClientFact[]> {
-  const pageSize = 500;
-  const allRows: Record<string, unknown>[] = [];
-  let offset = 0;
-
-  while (true) {
-    const { data, error } = await supabase
+  const allRows = await fetchAllPages((from, to) =>
+    supabase
       .from("clients")
       .select("id, created_at, is_vip, full_name, email, phone, last_visit_at")
       .eq("tenant_id", tenantId)
       .order("created_at", { ascending: true })
-      .range(offset, offset + pageSize - 1);
-    if (error) throw error;
-    const batch = (data ?? []) as Record<string, unknown>[];
-    allRows.push(...batch);
-    if (batch.length < pageSize) break;
-    offset += pageSize;
-  }
+      .order("id", { ascending: true })
+      .range(from, to),
+  ) as Record<string, unknown>[];
 
   const ids = allRows.map((c) => c.id as string);
   const visits = await aggregateClientVisits(tenantId, ids);
@@ -161,21 +182,32 @@ async function aggregateClientVisits(
 ): Promise<Map<string, { count: number; first: string | null; last: string | null }>> {
   const out = new Map<string, { count: number; first: string | null; last: string | null }>();
   if (clientIds.length === 0) return out;
-  const { data, error } = await supabase
-    .from("appointments")
-    .select("client_id, starts_at, status")
-    .eq("tenant_id", tenantId)
-    .in("client_id", clientIds);
-  if (error) throw error;
-  for (const r of data ?? []) {
-    const cid = r.client_id as string;
-    if ((r.status as string) !== "completed") continue;
-    const entry = out.get(cid) ?? { count: 0, first: null, last: null };
-    entry.count += 1;
-    const ts = r.starts_at as string;
-    if (!entry.first || ts < entry.first) entry.first = ts;
-    if (!entry.last || ts > entry.last) entry.last = ts;
-    out.set(cid, entry);
+  const clientIdChunks = chunkValues(clientIds, 100);
+  for (let index = 0; index < clientIdChunks.length; index += 4) {
+    const rowPages = await Promise.all(
+      clientIdChunks.slice(index, index + 4).map((ids) =>
+        fetchAllPages((from, to) =>
+          supabase
+            .from("appointments")
+            .select("id, client_id, starts_at, status")
+            .eq("tenant_id", tenantId)
+            .in("client_id", ids)
+            .order("starts_at", { ascending: true })
+            .order("id", { ascending: true })
+            .range(from, to),
+        ),
+      ),
+    );
+    for (const r of rowPages.flat()) {
+      const cid = r.client_id as string;
+      if ((r.status as string) !== "completed") continue;
+      const entry = out.get(cid) ?? { count: 0, first: null, last: null };
+      entry.count += 1;
+      const ts = r.starts_at as string;
+      if (!entry.first || ts < entry.first) entry.first = ts;
+      if (!entry.last || ts > entry.last) entry.last = ts;
+      out.set(cid, entry);
+    }
   }
   return out;
 }
@@ -190,122 +222,96 @@ export async function fetchAvailability(
     professionalId?: string | null;
   },
 ): Promise<AvailabilityFact> {
-  const { data: hours, error: hErr } = await supabase
-    .from("unit_business_hours")
-    .select("unit_id, weekday, opens_at, closes_at, is_closed")
-    .eq("tenant_id", input.tenantId);
-  if (hErr) throw hErr;
+  const [hours, avails, pros, blocks] = await Promise.all([
+    fetchAllPages((from, to) =>
+      supabase
+        .from("unit_business_hours")
+        .select("unit_id, weekday, opens_at, closes_at, is_closed")
+        .eq("tenant_id", input.tenantId)
+        .order("unit_id", { ascending: true })
+        .order("weekday", { ascending: true })
+        .range(from, to),
+    ),
+    fetchAllPages((from, to) =>
+      supabase
+        .from("professional_availability")
+        .select("professional_id, unit_id, weekday, starts_at, ends_at, is_active")
+        .eq("tenant_id", input.tenantId)
+        .eq("is_active", true)
+        .order("professional_id", { ascending: true })
+        .order("weekday", { ascending: true })
+        .range(from, to),
+    ),
+    fetchAllPages((from, to) =>
+      supabase
+        .from("professionals")
+        .select("id, is_active, unit_id")
+        .eq("tenant_id", input.tenantId)
+        .eq("is_active", true)
+        .order("id", { ascending: true })
+        .range(from, to),
+    ),
+    fetchAllPages((from, to) =>
+      supabase
+        .from("time_off_blocks")
+        .select("scope, professional_id, unit_id, starts_at, ends_at")
+        .eq("tenant_id", input.tenantId)
+        .gt("ends_at", input.start)
+        .lt("starts_at", input.end)
+        .order("starts_at", { ascending: true })
+        .range(from, to),
+    ),
+  ]);
 
-  const { data: avails, error: aErr } = await supabase
-    .from("professional_availability")
-    .select("professional_id, unit_id, weekday, starts_at, ends_at, is_active")
-    .eq("tenant_id", input.tenantId)
-    .eq("is_active", true);
-  if (aErr) throw aErr;
-
-  const { data: pros, error: pErr } = await supabase
-    .from("professionals")
-    .select("id, is_active, unit_id")
-    .eq("tenant_id", input.tenantId)
-    .eq("is_active", true);
-  if (pErr) throw pErr;
-
-  const { data: blocks, error: bErr } = await supabase
-    .from("time_off_blocks")
-    .select("scope, professional_id, unit_id, starts_at, ends_at")
-    .eq("tenant_id", input.tenantId)
-    .gte("ends_at", input.start)
-    .lt("starts_at", input.end);
-  if (bErr) throw bErr;
-
-  let availableMinutes = 0;
-
-  const start = new Date(input.start);
-  const end = new Date(input.end);
-  const dayMs = 86_400_000;
-
-  for (let t = new Date(start); t < end; t = new Date(t.getTime() + dayMs)) {
-    const weekday = t.getDay();
-    const dayStart = new Date(t);
-    dayStart.setHours(0, 0, 0, 0);
-
-    for (const u of hours ?? []) {
-      if (u.is_closed) continue;
-      if ((u.weekday as number) !== weekday) continue;
-      if (input.unitId && u.unit_id !== input.unitId) continue;
-
-      const open = parseHM(u.opens_at as string, dayStart);
-      const close = parseHM(u.closes_at as string, dayStart);
-      const unitMin = Math.max(0, (close.getTime() - open.getTime()) / 60000);
-
-      const unitPros = (pros ?? []).filter(
-        (p) => !p.unit_id || p.unit_id === u.unit_id,
-      );
-      for (const pro of unitPros) {
-        if (input.professionalId && pro.id !== input.professionalId) continue;
-
-        // janelas do profissional naquele dia
-        const windows = (avails ?? []).filter(
-          (a) =>
-            a.professional_id === pro.id &&
-            (a.weekday as number) === weekday &&
-            (!a.unit_id || a.unit_id === u.unit_id),
-        );
-        let proMin: number;
-        if (windows.length === 0) {
-          // se não declarou janela, assume horário da unidade
-          proMin = unitMin;
-        } else {
-          proMin = windows.reduce((acc, w) => {
-            const ws = parseHM(w.starts_at as string, dayStart);
-            const we = parseHM(w.ends_at as string, dayStart);
-            const winStart = new Date(Math.max(open.getTime(), ws.getTime()));
-            const winEnd = new Date(Math.min(close.getTime(), we.getTime()));
-            return acc + Math.max(0, (winEnd.getTime() - winStart.getTime()) / 60000);
-          }, 0);
-        }
-
-        // descontar bloqueios que tocam o dia
-        const dayBlocks = (blocks ?? []).filter(
-          (b) =>
-            (b.scope === "professional" && b.professional_id === pro.id) ||
-            (b.scope === "unit" && b.unit_id === u.unit_id),
-        );
-        for (const blk of dayBlocks) {
-          const bs = new Date(blk.starts_at as string);
-          const be = new Date(blk.ends_at as string);
-          const overlapStart = Math.max(bs.getTime(), dayStart.getTime());
-          const overlapEnd = Math.min(be.getTime(), dayStart.getTime() + dayMs);
-          if (overlapEnd > overlapStart) {
-            proMin = Math.max(0, proMin - (overlapEnd - overlapStart) / 60000);
-          }
-        }
-
-        availableMinutes += proMin;
-      }
-    }
-  }
+  const availableMinutes = calculateAvailableMinutes({
+    start: input.start,
+    end: input.end,
+    unitId: input.unitId,
+    professionalId: input.professionalId,
+    businessHours: (hours ?? []).map((row) => ({
+      unitId: row.unit_id as string,
+      weekday: row.weekday as number,
+      opensAt: row.opens_at as string,
+      closesAt: row.closes_at as string,
+      isClosed: Boolean(row.is_closed),
+    })),
+    professionalAvailability: (avails ?? []).map((row) => ({
+      professionalId: row.professional_id as string,
+      unitId: (row.unit_id as string | null) ?? null,
+      weekday: row.weekday as number,
+      startsAt: row.starts_at as string,
+      endsAt: row.ends_at as string,
+    })),
+    professionals: (pros ?? []).map((row) => ({
+      id: row.id as string,
+      unitId: (row.unit_id as string | null) ?? null,
+    })),
+    blocks: (blocks ?? []).map((row) => ({
+      scope: row.scope as "professional" | "unit",
+      professionalId: (row.professional_id as string | null) ?? null,
+      unitId: (row.unit_id as string | null) ?? null,
+      startsAt: row.starts_at as string,
+      endsAt: row.ends_at as string,
+    })),
+  });
 
   // bookedMinutes/completedMinutes: o caller já carrega os appts; aqui devolvemos só availability.
   return { availableMinutes, bookedMinutes: 0, completedMinutes: 0 };
 }
 
-function parseHM(hm: string, dayStart: Date): Date {
-  const [h, m] = hm.split(":").map(Number);
-  const d = new Date(dayStart);
-  d.setHours(h ?? 0, m ?? 0, 0, 0);
-  return d;
-}
-
 export async function fetchContactAttempts(input: AnalyticsRangeInput): Promise<ContactAttemptFact[]> {
-  const { data, error } = await supabase
-    .from("contact_attempts")
-    .select("id, tenant_id, appointment_id, channel, result, attempted_at")
-    .eq("tenant_id", input.tenantId)
-    .gte("attempted_at", input.start)
-    .lt("attempted_at", input.end);
-  if (error) throw error;
-  return (data ?? []).map((r) => ({
+  const data = await fetchAllPages((from, to) =>
+    supabase
+      .from("contact_attempts")
+      .select("id, tenant_id, appointment_id, channel, result, attempted_at")
+      .eq("tenant_id", input.tenantId)
+      .gte("attempted_at", input.start)
+      .lt("attempted_at", input.end)
+      .order("attempted_at", { ascending: true })
+      .order("id", { ascending: true })
+      .range(from, to),
+  );
+  return data.map((r) => ({
     id: r.id as string,
     tenantId: r.tenant_id as string,
     appointmentId: (r.appointment_id as string) ?? null,
@@ -322,14 +328,17 @@ export interface WaitlistMetricsRaw {
 }
 
 export async function fetchWaitlistMetrics(input: AnalyticsRangeInput): Promise<WaitlistMetricsRaw> {
-  const { data, error } = await supabase
-    .from("waitlist_entries")
-    .select("id, status, created_at")
-    .eq("tenant_id", input.tenantId)
-    .gte("created_at", input.start)
-    .lt("created_at", input.end);
-  if (error) throw error;
-  const rows = data ?? [];
+  const rows = await fetchAllPages((from, to) =>
+    supabase
+      .from("waitlist_entries")
+      .select("id, status, created_at")
+      .eq("tenant_id", input.tenantId)
+      .gte("created_at", input.start)
+      .lt("created_at", input.end)
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true })
+      .range(from, to),
+  );
   return {
     totalOpen: rows.filter((r) => r.status === "open").length,
     worked: rows.filter((r) => r.status !== "open").length,
@@ -338,12 +347,15 @@ export async function fetchWaitlistMetrics(input: AnalyticsRangeInput): Promise<
 }
 
 export async function fetchClientPackages(tenantId: string): Promise<Array<{ used: number; total: number; clientId: string; expiresAt: string | null }>> {
-  const { data, error } = await supabase
-    .from("client_package_balances")
-    .select("client_id, sessions_used, sessions_total, expires_at, status")
-    .eq("tenant_id", tenantId);
-  if (error) throw error;
-  return (data ?? []).map((r) => ({
+  const data = await fetchAllPages((from, to) =>
+    supabase
+      .from("client_package_balances")
+      .select("client_id, sessions_used, sessions_total, expires_at, status")
+      .eq("tenant_id", tenantId)
+      .order("client_id", { ascending: true })
+      .range(from, to),
+  );
+  return data.map((r) => ({
     clientId: r.client_id as string,
     used: r.sessions_used as number,
     total: r.sessions_total as number,
@@ -358,16 +370,19 @@ export async function fetchLabels(tenantId: string): Promise<{
   services: Map<string, string>;
 }> {
   const [u, p, s] = await Promise.all([
-    supabase.from("units").select("id, name").eq("tenant_id", tenantId),
-    supabase.from("professionals").select("id, display_name").eq("tenant_id", tenantId),
-    supabase.from("services").select("id, name").eq("tenant_id", tenantId),
+    fetchAllPages((from, to) =>
+      supabase.from("units").select("id, name").eq("tenant_id", tenantId).order("id").range(from, to),
+    ),
+    fetchAllPages((from, to) =>
+      supabase.from("professionals").select("id, display_name").eq("tenant_id", tenantId).order("id").range(from, to),
+    ),
+    fetchAllPages((from, to) =>
+      supabase.from("services").select("id, name").eq("tenant_id", tenantId).order("id").range(from, to),
+    ),
   ]);
-  if (u.error) throw u.error;
-  if (p.error) throw p.error;
-  if (s.error) throw s.error;
   return {
-    units: new Map((u.data ?? []).map((r) => [r.id as string, r.name as string])),
-    pros: new Map((p.data ?? []).map((r) => [r.id as string, r.display_name as string])),
-    services: new Map((s.data ?? []).map((r) => [r.id as string, r.name as string])),
+    units: new Map(u.map((r) => [r.id as string, r.name as string])),
+    pros: new Map(p.map((r) => [r.id as string, r.display_name as string])),
+    services: new Map(s.map((r) => [r.id as string, r.name as string])),
   };
 }

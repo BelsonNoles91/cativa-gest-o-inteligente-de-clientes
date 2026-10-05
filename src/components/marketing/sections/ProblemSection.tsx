@@ -83,9 +83,9 @@ export function ProblemSection() {
             <div className="absolute bottom-8 md:bottom-12 left-8 md:left-12 right-8 md:right-12 z-20">
                <motion.div 
                  whileHover={{ scale: 1.02 }}
-                 className="bg-accent p-8 md:p-10 rounded-[2rem] md:rounded-[3rem] text-white shadow-2xl"
+                 className="bg-accent p-8 md:p-10 rounded-[2rem] md:rounded-[3rem] text-accent-foreground shadow-2xl"
                >
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] mb-3 md:mb-4 opacity-80">A Realidade</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] mb-3 md:mb-4">A Realidade</p>
                   <p className="text-2xl md:text-3xl font-display font-bold leading-tight mb-6">
                     A confirmação de horários pode consumir horas preciosas da recepção todos os dias.
                   </p>

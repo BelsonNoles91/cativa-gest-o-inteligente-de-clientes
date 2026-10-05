@@ -49,7 +49,13 @@ export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-10 w-10 rounded-full"
+          aria-label="Abrir menu da conta"
+          data-testid="user-menu-trigger"
+        >
           <Avatar className="h-9 w-9 border border-border/60">
             <AvatarFallback className="bg-gradient-brand text-primary-foreground text-sm font-medium">
               {initials}

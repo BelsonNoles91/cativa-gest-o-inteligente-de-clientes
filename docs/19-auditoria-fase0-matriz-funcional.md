@@ -74,7 +74,7 @@ Todas as PKs são `id uuid`. Relações principais:
 | Prioridade | Item |
 |---|---|
 | Info | O protocolo cita "não existem assinaturas", mas o produto tem planos, trials e gestão administrativa de assinaturas **sem cobrança**. Preservado. |
-| P3 | `src/pages/app/Subscription.tsx` ainda mostra "Apoio gratuito para sempre" (plano antigo, conflita com 30 dias grátis). |
+| P3 | Corrigido em 2026-10-04: assinatura e fallback público ainda mostravam "Apoio gratuito para sempre" e planos antigos após a linha Começo/Solo/Equipe/Rede. Agora exibem os quatro planos atuais e distinguem Começo grátis por 30 dias dos trials premium de 14 dias. |
 | P3 | Menu tem dois itens "Clientes" (operação e gestão), pode confundir. |
 | P4 | `README.md` desatualizado ("Lovable Cloud previsto", "Etapa 1", "TypeSafe Jev"). |
 | P4 | Memória/documentação cita `user_roles`; o banco usa `tenant_memberships` (função equivalente, segura). |

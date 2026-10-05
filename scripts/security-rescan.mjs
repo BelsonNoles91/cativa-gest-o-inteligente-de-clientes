@@ -6,11 +6,15 @@
  * gera um resumo em Markdown. Falha (exit 1) quando houver achados
  * críticos não aceitos em `.security-allowlist.json`.
  *
- * Uso:
- *   SUPABASE_DB_URL=postgres://... node scripts/security-rescan.mjs
- *   node scripts/security-rescan.mjs --out security-report.md
+ * Uso (QA local descartável):
+ *   SUPABASE_QA_DB_URL=postgres://... E2E_QA_PROJECT_REF=local \
+ *     E2E_TARGET_ALLOWLIST=local E2E_LOCAL_SUPABASE=true \
+ *     SECURITY_SCAN_PERSIST=0 node scripts/security-rescan.mjs --out /tmp/security-report.md
+ *
+ * Todo alvo é validado por scripts/e2e-db-target-check.mjs antes da conexão.
+ * `DATABASE_URL`/`SUPABASE_DB_URL` genéricos nunca são usados.
  */
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -18,12 +22,90 @@ const args = process.argv.slice(2);
 const outIndex = args.indexOf("--out");
 const outFile = outIndex !== -1 ? args[outIndex + 1] : "security-report.md";
 
-const DB_URL = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL || "";
+const DB_URL = process.env.SUPABASE_QA_DB_URL?.trim() || "";
 if (!DB_URL) {
   console.error(
-    "SUPABASE_DB_URL ausente. Configure o secret SUPABASE_DB_URL no repositório para rodar o re-scan.",
+    "SUPABASE_QA_DB_URL ausente. Informe explicitamente um alvo QA autorizado para rodar o re-scan.",
   );
   process.exit(2);
+}
+
+const targetGuard = spawnSync(
+  process.execPath,
+  [resolve(process.cwd(), "scripts/e2e-db-target-check.mjs")],
+  { cwd: process.cwd(), env: process.env, encoding: "utf8" },
+);
+if (targetGuard?.stdout?.trim()) process.stdout.write(targetGuard.stdout);
+if (!targetGuard || targetGuard.error || targetGuard.status !== 0) {
+  console.error("Re-scan bloqueado antes da conexão: o alvo QA não passou pelo guard de segurança.");
+  if (targetGuard?.stderr?.trim()) console.error(targetGuard.stderr.trim());
+  if (targetGuard?.error) console.error("Não foi possível iniciar o guard de alvo QA.");
+  process.exit(2);
+}
+
+function resolvePsqlTarget() {
+  const hostCheck = spawnSync("psql", ["--version"], { encoding: "utf8" });
+  if (!hostCheck.error) return { command: "psql", prefix: [DB_URL] };
+  if (hostCheck.error.code !== "ENOENT") throw hostCheck.error;
+
+  let databaseUrl;
+  try {
+    databaseUrl = new URL(DB_URL);
+  } catch {
+    throw new Error("SUPABASE_DB_URL precisa ser uma URL PostgreSQL válida.");
+  }
+  const hostname = databaseUrl.hostname.replace(/^\[|\]$/g, "");
+  const localOnly =
+    process.env.E2E_LOCAL_SUPABASE === "true" &&
+    process.env.E2E_QA_PROJECT_REF === "local" &&
+    (process.env.E2E_TARGET_ALLOWLIST ?? "").trim() === "local" &&
+    ["localhost", "127.0.0.1", "::1"].includes(hostname) &&
+    ["postgres:", "postgresql:"].includes(databaseUrl.protocol) &&
+    decodeURIComponent(databaseUrl.username) === "postgres" &&
+    ["/", "/postgres"].includes(databaseUrl.pathname);
+  if (!localOnly) {
+    throw new Error(
+      "psql não está instalado; o fallback Docker só é permitido para Supabase local explicitamente isolado.",
+    );
+  }
+
+  const port = databaseUrl.port || "5432";
+  const listing = execFileSync(
+    "docker",
+    ["ps", `--filter=publish=${port}`, "--format={{json .}}"],
+    { encoding: "utf8" },
+  );
+  const containers = listing
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map((line) => JSON.parse(line))
+    .filter(
+      (container) =>
+        container.State === "running" &&
+        container.Names?.startsWith("supabase_db_") &&
+        container.Image?.startsWith("public.ecr.aws/supabase/postgres:") &&
+        container.Labels?.split(",").some((label) => label.startsWith("com.supabase.cli.project=")),
+    );
+  if (containers.length !== 1) {
+    throw new Error(
+      `Esperado exatamente um container Supabase PostgreSQL publicando a porta ${port}; encontrados: ${containers.length}.`,
+    );
+  }
+
+  console.log("psql do host ausente; varredura limitada ao container Supabase local validado.");
+  return {
+    command: "docker",
+    prefix: ["exec", containers[0].ID, "psql", "-U", "postgres", "-d", "postgres"],
+  };
+}
+
+const psqlTarget = resolvePsqlTarget();
+
+function runPsql(args) {
+  return execFileSync(psqlTarget.command, [...psqlTarget.prefix, ...args], {
+    encoding: "utf8",
+    maxBuffer: 20 * 1024 * 1024,
+  });
 }
 
 const allowlistPath = resolve(process.cwd(), ".security-allowlist.json");
@@ -35,11 +117,18 @@ const accepted = new Map(
 );
 
 function query(sql) {
-  const raw = execFileSync(
-    "psql",
-    [DB_URL, "-X", "-A", "-t", "-F", "\u0001", "--no-psqlrc", "-v", "ON_ERROR_STOP=1", "-c", sql],
-    { encoding: "utf8", maxBuffer: 20 * 1024 * 1024 },
-  );
+  const raw = runPsql([
+    "-X",
+    "-A",
+    "-t",
+    "-F",
+    "\u0001",
+    "--no-psqlrc",
+    "-v",
+    "ON_ERROR_STOP=1",
+    "-c",
+    sql,
+  ]);
   return raw
     .split("\n")
     .map((line) => line.trim())
@@ -229,10 +318,7 @@ if (process.env.GITHUB_STEP_SUMMARY) {
 
 // --- Histórico: grava a execução no banco (tabelas security_scans/_findings) ---
 function exec(sql) {
-  execFileSync("psql", [DB_URL, "-X", "-q", "--no-psqlrc", "-v", "ON_ERROR_STOP=1", "-c", sql], {
-    encoding: "utf8",
-    maxBuffer: 20 * 1024 * 1024,
-  });
+  runPsql(["-X", "-q", "--no-psqlrc", "-v", "ON_ERROR_STOP=1", "-c", sql]);
 }
 
 function quote(value) {

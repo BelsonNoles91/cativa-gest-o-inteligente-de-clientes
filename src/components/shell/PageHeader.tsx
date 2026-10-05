@@ -30,7 +30,7 @@ export function PageHeader({ title, description, icon, actions, className }: Pag
         </div>
       </div>
       {actions && (
-        <div className="flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto">{actions}</div>
+        <div className="flex w-full min-w-0 max-w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto">{actions}</div>
       )}
     </div>
   );

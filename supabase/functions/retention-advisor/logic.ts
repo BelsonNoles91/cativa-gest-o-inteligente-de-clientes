@@ -9,6 +9,7 @@ export const RETENTION_ACTIONS = [
 ] as const;
 
 export type RetentionAction = (typeof RETENTION_ACTIONS)[number];
+export type RetentionUrgencyLevel = "none" | "low" | "moderate" | "high" | "uncertain";
 
 export interface RetentionState {
   evaluatedAt: string;
@@ -45,7 +46,7 @@ export interface RetentionAdvice {
   action: RetentionAction;
   actionLabel: string;
   description: string;
-  urgency: number;
+  urgencyLevel: RetentionUrgencyLevel;
   confidence: number;
   evidenceSufficiency: number;
   model: string;
@@ -56,12 +57,22 @@ export interface RetentionAdvice {
 export interface RetentionPolicy {
   actionConfidenceThreshold: number;
   evidenceSufficiencyThreshold: number;
+  urgencyConfidenceThreshold: number;
 }
 
 export const DEFAULT_RETENTION_POLICY: RetentionPolicy = {
   actionConfidenceThreshold: 0.6,
   evidenceSufficiencyThreshold: 0.65,
+  urgencyConfidenceThreshold: 0.6,
 };
+
+const PROBABILITY_SUM_TOLERANCE = 0.01;
+const CHOICE_PROBABILITY_TOLERANCE = 0.01;
+// Jev rounds Score and each probability independently to two decimals.
+const SCORE_ROUNDING_TOLERANCE = 0.020001;
+// Confidence and probabilities are also rounded independently by the API.
+const CHOICE_CONFIDENCE_TOLERANCE = 0.020001;
+const SCORE_CONFIDENCE_TOLERANCE = 0.030001;
 
 interface ClientRow {
   is_vip?: boolean | null;
@@ -158,7 +169,10 @@ export function buildRetentionState(
 
   const future = appointments.filter((item) => dateMs(item.starts_at) > nowMs);
   const history = appointments.filter((item) => dateMs(item.starts_at) <= nowMs);
-  const recentContacts = contacts.filter((item) => dateMs(item.attempted_at) >= cutoff60Days);
+  const recentContacts = contacts.filter((item) => {
+    const attemptedAt = dateMs(item.attempted_at);
+    return attemptedAt >= cutoff60Days && attemptedAt <= nowMs;
+  });
 
   return {
     evaluatedAt: now.toISOString(),
@@ -206,12 +220,16 @@ export function interpretRetentionResponse(
   state: RetentionState,
   policy: RetentionPolicy = DEFAULT_RETENTION_POLICY,
 ): RetentionAdvice {
-  const actionAnswer = asRecord(response.answers.action);
-  const urgencyAnswer = asRecord(response.answers.urgency);
-  const evidenceAnswer = asRecord(response.answers.evidence_sufficient);
+  if (typeof response?.model !== "string" || response.model.trim() === "") {
+    throw new Error("Resposta do Jev sem modelo válido");
+  }
+  const answers = asRecord(response.answers);
+  const actionAnswer = asRecord(answers.action);
+  const urgencyAnswer = asRecord(answers.urgency);
+  const evidenceAnswer = asRecord(answers.evidence_sufficient);
 
   const rawAction = actionAnswer.choice;
-  if (typeof rawAction !== "string" || !RETENTION_ACTIONS.includes(rawAction as RetentionAction)) {
+  if (!isRetentionAction(rawAction)) {
     throw new Error("Resposta do Jev sem ação válida");
   }
   if (actionAnswer.type !== "choice" || urgencyAnswer.type !== "score" || evidenceAnswer.type !== "noul") {
@@ -221,20 +239,84 @@ export function interpretRetentionResponse(
   const confidence = unitInterval(actionAnswer.confidence, "confiança");
   const evidenceSufficiency = unitInterval(evidenceAnswer.noul, "suficiência");
   const urgencyScore = numericRange(urgencyAnswer.score, 0, 3, "urgência");
+  const urgencyConfidence = unitInterval(urgencyAnswer.confidence, "confiança da urgência");
+
+  const actionProbabilities = probabilityDistribution(
+    actionAnswer.probabilities,
+    RETENTION_ACTIONS,
+    "ação",
+  );
+  const selectedActionProbability = actionProbabilities[rawAction];
+  if (
+    selectedActionProbability <
+    Math.max(...Object.values(actionProbabilities)) - CHOICE_PROBABILITY_TOLERANCE
+  ) {
+    throw new Error("Resposta do Jev com ação incompatível com as probabilidades");
+  }
+  if (
+    Math.abs(confidence - choiceConfidence(Object.values(actionProbabilities))) >
+    CHOICE_CONFIDENCE_TOLERANCE
+  ) {
+    throw new Error("Resposta do Jev com confiança da ação incompatível com as probabilidades");
+  }
+
+  const urgencyLevels = ["0", "1", "2", "3"] as const;
+  const urgencyProbabilities = probabilityDistribution(
+    urgencyAnswer.probabilities,
+    urgencyLevels,
+    "urgência",
+  );
+  const legend = asRecord(urgencyAnswer.legend);
+  if (
+    Object.keys(legend).length !== urgencyLevels.length ||
+    urgencyLevels.some((level) => typeof legend[level] !== "string" || !legend[level].trim())
+  ) {
+    throw new Error("Resposta do Jev com legenda de urgência inválida");
+  }
+  const urgencyProbabilityTotal = urgencyLevels.reduce(
+    (total, level) => total + urgencyProbabilities[level],
+    0,
+  );
+  const expectedUrgency = urgencyLevels.reduce(
+    (total, level) => total + Number(level) * urgencyProbabilities[level],
+    0,
+  ) / urgencyProbabilityTotal;
+  if (Math.abs(urgencyScore - expectedUrgency) > SCORE_ROUNDING_TOLERANCE) {
+    throw new Error("Resposta do Jev com score de urgência incompatível com as probabilidades");
+  }
+  if (
+    !scoreConfidenceCandidates(urgencyLevels.map((level) => urgencyProbabilities[level])).some(
+      (expectedConfidence) => Math.abs(urgencyConfidence - expectedConfidence) <= SCORE_CONFIDENCE_TOLERANCE,
+    )
+  ) {
+    throw new Error("Resposta do Jev com confiança da urgência incompatível com as probabilidades");
+  }
+
+  const highestUrgencyProbability = Math.max(...Object.values(urgencyProbabilities));
+  const mostLikelyUrgencyLevels = urgencyLevels.filter(
+    (level) => highestUrgencyProbability - urgencyProbabilities[level] <= CHOICE_PROBABILITY_TOLERANCE,
+  );
+  const urgencyUncertain =
+    urgencyConfidence < policy.urgencyConfidenceThreshold || mostLikelyUrgencyLevels.length !== 1;
+  const urgencyLevel: RetentionUrgencyLevel = urgencyUncertain
+    ? "uncertain"
+    : (["none", "low", "moderate", "high"] as const)[Number(mostLikelyUrgencyLevels[0])];
 
   const needsContact = rawAction !== "monitor" && rawAction !== "human_review";
   const shouldReview =
     confidence < policy.actionConfidenceThreshold ||
+    urgencyUncertain ||
     evidenceSufficiency < policy.evidenceSufficiencyThreshold ||
-    (needsContact && !state.client.contactAvailable);
-  const action: RetentionAction = shouldReview ? "human_review" : (rawAction as RetentionAction);
+    (needsContact && !state.client.contactAvailable) ||
+    !isActionSupportedByState(rawAction, state);
+  const action: RetentionAction = shouldReview ? "human_review" : rawAction;
 
   return {
     status: action === "human_review" ? "review" : "suggested",
     action,
     actionLabel: ACTION_LABELS[action],
     description: descriptionForAction(action, state),
-    urgency: Math.round((urgencyScore / 3) * 100),
+    urgencyLevel,
     confidence,
     evidenceSufficiency,
     model: response.model,
@@ -246,6 +328,7 @@ export function interpretRetentionResponse(
 export function parseRetentionPolicy(
   actionConfidence: string | undefined,
   evidenceSufficiency: string | undefined,
+  urgencyConfidence?: string,
 ): RetentionPolicy {
   return {
     actionConfidenceThreshold: thresholdOrDefault(
@@ -255,6 +338,10 @@ export function parseRetentionPolicy(
     evidenceSufficiencyThreshold: thresholdOrDefault(
       evidenceSufficiency,
       DEFAULT_RETENTION_POLICY.evidenceSufficiencyThreshold,
+    ),
+    urgencyConfidenceThreshold: thresholdOrDefault(
+      urgencyConfidence,
+      DEFAULT_RETENTION_POLICY.urgencyConfidenceThreshold,
     ),
   };
 }
@@ -284,6 +371,27 @@ function descriptionForAction(action: RetentionAction, state: RetentionState): s
   }
 }
 
+function isActionSupportedByState(action: RetentionAction, state: RetentionState): boolean {
+  switch (action) {
+    case "prioritize_human_contact":
+      return state.client.needsReactivation ||
+        state.client.riskLevel.toLowerCase() === "high" ||
+        state.client.churnRiskScore >= 70 ||
+        state.appointments.futureUnconfirmed > 0 ||
+        state.appointments.noShowsLastYear >= 2;
+    case "offer_rebooking":
+      return state.client.daysSinceLastVisit !== null &&
+        state.client.averageCycleDays !== null &&
+        state.client.daysSinceLastVisit > state.client.averageCycleDays &&
+        state.appointments.futureBooked === 0;
+    case "remind_pending_package":
+      return state.packages.activeWithRemainingSessions > 0 && state.packages.remainingSessions > 0;
+    case "monitor":
+    case "human_review":
+      return true;
+  }
+}
+
 function daysBetween(value: string | null | undefined, now: Date, direction: "past" | "future"): number | null {
   const timestamp = dateMs(value);
   if (!Number.isFinite(timestamp)) return null;
@@ -297,6 +405,9 @@ function dateMs(value: string | null | undefined): number {
 }
 
 function finiteOrNull(value: unknown): number | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "string" && value.trim() === "") return null;
+  if (typeof value !== "number" && typeof value !== "string") return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 }
@@ -310,6 +421,63 @@ function asRecord(value: unknown): Record<string, unknown> {
 
 function unitInterval(value: unknown, label: string): number {
   return numericRange(value, 0, 1, label);
+}
+
+function isRetentionAction(value: unknown): value is RetentionAction {
+  return typeof value === "string" && RETENTION_ACTIONS.some((action) => action === value);
+}
+
+function probabilityDistribution<K extends string>(
+  value: unknown,
+  expectedKeys: readonly K[],
+  label: string,
+): Record<K, number> {
+  const probabilities = asRecord(value);
+  const keys = Object.keys(probabilities);
+  if (
+    keys.length !== expectedKeys.length ||
+    expectedKeys.some((key) => !Object.prototype.hasOwnProperty.call(probabilities, key))
+  ) {
+    throw new Error(`Resposta do Jev com distribuição de probabilidade de ${label} incompleta`);
+  }
+
+  const validated = {} as Record<K, number>;
+  let total = 0;
+  for (const key of expectedKeys) {
+    const probability = numericRange(probabilities[key], 0, 1, `probabilidade de ${label}`);
+    validated[key] = probability;
+    total += probability;
+  }
+  if (Math.abs(total - 1) > PROBABILITY_SUM_TOLERANCE) {
+    throw new Error(`Resposta do Jev com probabilidades de ${label} que não totalizam 1`);
+  }
+  return validated;
+}
+
+function choiceConfidence(probabilities: readonly number[]): number {
+  const optionCount = probabilities.length;
+  if (optionCount < 2) return 1;
+  return (Math.max(...probabilities) - 1 / optionCount) / (1 - 1 / optionCount);
+}
+
+function scoreConfidenceCandidates(probabilities: readonly number[]): number[] {
+  const levelCount = probabilities.length;
+  const mostLikelyProbability = Math.max(...probabilities);
+  const uniformMeanAbsoluteDeviation = probabilities.reduce(
+    (total, _probability, index) => total + Math.abs(index - (levelCount - 1) / 2),
+    0,
+  ) / levelCount;
+  if (uniformMeanAbsoluteDeviation === 0) return [1];
+
+  return probabilities.flatMap((probability, mode) => {
+    if (probability !== mostLikelyProbability) return [];
+    const expectedDistance = probabilities.reduce(
+      (total, candidateProbability, index) =>
+        total + candidateProbability * Math.abs(index - mode),
+      0,
+    );
+    return [Math.max(0, 1 - expectedDistance / uniformMeanAbsoluteDeviation)];
+  });
 }
 
 function numericRange(value: unknown, min: number, max: number, label: string): number {

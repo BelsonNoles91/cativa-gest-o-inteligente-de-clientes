@@ -76,9 +76,12 @@ export default function ForgotPassword() {
               </div>
             </div>
 
-            <Button type="submit" disabled={submitting} className="group h-16 w-full rounded-full bg-primary-dark text-lg font-bold text-white shadow-xl transition-all hover:bg-accent active:scale-[0.98]">
+            <Button type="submit" disabled={submitting} className="group h-auto min-h-16 w-full whitespace-normal rounded-full bg-primary-dark px-4 py-3 text-lg font-bold text-white shadow-xl transition-all hover:bg-accent active:scale-[0.98]">
               {submitting ? <Loader2 className="h-6 w-6 animate-spin" /> : (
-                <span className="flex items-center gap-2">Enviar Link de Recuperação <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" /></span>
+                <span className="flex w-full min-w-0 items-center justify-center gap-2 whitespace-normal text-center">
+                  <span className="min-w-0 whitespace-normal break-words [overflow-wrap:anywhere]">Enviar Link de Recuperação</span>
+                  <ArrowRight className="h-5 w-5 shrink-0 transition-transform group-hover:translate-x-1" />
+                </span>
               )}
             </Button>
           </form>

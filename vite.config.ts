@@ -8,11 +8,13 @@ import { VitePWA } from "vite-plugin-pwa";
 export default defineConfig(({ mode, command }) => {
   // ─────────────────────────────────────────────────────────────
   // Guard de variáveis obrigatórias no build de produção.
-  // Evita publicar um bundle quebrado ("supabaseUrl is required.")
-  // quando o .env não foi injetado no ambiente de build.
-  // Em dev / build:dev apenas avisa — não bloqueia.
+  // Sem um alvo explícito, o fallback poderia publicar o bundle apontando
+  // silenciosamente para outro projeto Supabase.
+  // Em dev / build:dev apenas avisa; o fallback é loopback, nunca um projeto remoto.
   // ─────────────────────────────────────────────────────────────
-  const env = { ...process.env, ...loadEnv(mode, process.cwd(), "") };
+  // Valores fornecidos pelo ambiente de execução/CI devem prevalecer sobre
+  // arquivos .env, como no comportamento padrão do Vite.
+  const env = { ...loadEnv(mode, process.cwd(), ""), ...process.env };
   const configuredSupabaseUrl = env.VITE_SUPABASE_URL;
   const configuredSupabaseKey =
     env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY;
@@ -32,8 +34,9 @@ export default defineConfig(({ mode, command }) => {
       "As seguintes variáveis não estão definidas no ambiente de build:",
       ...missing.map((v) => `  • ${v}`),
       "",
-      "Sem elas o cliente Supabase inicializa como `undefined` e a",
-      "aplicação publicada falha com \"supabaseUrl is required.\".",
+      "Sem elas, desenvolvimento usa somente o Supabase local padrão em",
+      "http://127.0.0.1:54321, com uma chave placeholder sem privilégios.",
+      "Builds de produção são interrompidos até o alvo correto ser explícito.",
       "",
       "Como resolver:",
       "  1. Verifique se o arquivo `.env` existe na raiz do projeto.",
@@ -44,24 +47,24 @@ export default defineConfig(({ mode, command }) => {
       "",
     ].join("\n");
 
-    // Não bloqueamos o build: o Lovable Cloud injeta o .env gerenciado no
-    // ambiente de publish, mas pode haver janelas em que ele ainda não foi
-    // escrito. Nesse caso o `define` abaixo injeta o alvo gerenciado como
-    // fallback, garantindo que o bundle publicado sempre tenha backend.
+    if (command === "build" && mode === "production") {
+      throw new Error(
+        `${message}\nBuild de produção abortado por segurança: configure o URL e a chave pública do projeto Supabase correto antes de publicar.`,
+      );
+    }
+
     console.warn(message);
   }
 
   return ({
-  // Fallback do backend gerenciado (Lovable Cloud): se as variáveis não
-  // estiverem no ambiente de build, injeta o alvo gerenciado para que o
-  // bundle publicado nunca inicialize o cliente com `undefined`.
+  // Fallback local-only para desenvolvimento/build não produtivo.
+  // Builds de produção sem configuração explícita já foram abortados acima.
   define: {
     "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(
-      configuredSupabaseUrl ?? "https://pegvtrvqdvzxysndddts.supabase.co",
+      configuredSupabaseUrl ?? "http://127.0.0.1:54321",
     ),
     "import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY": JSON.stringify(
-      configuredSupabaseKey ??
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlZ3Z0cnZxZHZ6eHlzbmRkZHRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3OTY5MjksImV4cCI6MjA5MjM3MjkyOX0.oZH96G_G5GRHbuX4Gj-Kswb8VmMHC83oZuFqlBqQaSY",
+      configuredSupabaseKey ?? "local-development-key-not-configured",
     ),
   },
   server: {

@@ -201,21 +201,58 @@ function pickLimit(override: number | null | undefined, planValue: number | null
 export function trialDaysLeft(sub: TenantSubscription): number | null {
   if (!sub.trialEndsAt) return null;
   const ms = new Date(sub.trialEndsAt).getTime() - Date.now();
-  return Math.ceil(ms / 86_400_000);
+  const days = Math.ceil(ms / 86_400_000);
+  // Math.ceil produces negative zero for an expiry less than 24 hours ago;
+  // normalize it so expired trials are distinguishable from zero days left.
+  return ms < 0 && days === 0 ? -1 : days;
 }
 
 /** Indica se a assinatura está em grace period (após current_period_end e antes de suspensão). */
-export function isInGracePeriod(sub: TenantSubscription, plan: Plan): boolean {
+export function isInGracePeriod(
+  sub: TenantSubscription,
+  plan: Plan,
+  now = Date.now(),
+): boolean {
   if (sub.status !== "overdue") return false;
   if (!sub.overdueSince) return false;
   const limit = new Date(sub.overdueSince).getTime() + plan.gracePeriodDays * 86_400_000;
-  return Date.now() < limit;
+  return now < limit;
+}
+
+/**
+ * Indica se o tenant pode operar com a assinatura atual.
+ * Assinaturas suspensas/canceladas e trials expirados não liberam o produto;
+ * inadimplência só mantém acesso durante a carência configurada no plano.
+ */
+export function hasSubscriptionAccess(
+  sub: TenantSubscription | null,
+  plan: Plan | null,
+  now = Date.now(),
+): boolean {
+  if (!sub || !plan) return false;
+
+  switch (sub.status) {
+    case "active":
+      return true;
+    case "trialing": {
+      if (!sub.trialEndsAt) return false;
+      const trialEnd = new Date(sub.trialEndsAt).getTime();
+      return Number.isFinite(trialEnd) && now < trialEnd;
+    }
+    case "overdue":
+      return isInGracePeriod(sub, plan, now);
+    case "suspended":
+    case "canceled":
+      return false;
+  }
 }
 
 /** Percentual de uso vs limite. Retorna 0..1, ou null se sem limite. */
 export function usagePct(used: number, limit: number | null): number | null {
-  if (limit === null || limit === undefined || limit <= 0) return null;
-  return Math.min(1, used / limit);
+  if (limit === null || limit === undefined || !Number.isFinite(limit) || limit <= 0) return null;
+  const ratio = used / limit;
+  if (Number.isNaN(ratio)) return 0;
+  return Math.max(0, Math.min(1, ratio));
 }
 
 /** Usuário deve ver alerta quando consumo passa de 80%. */

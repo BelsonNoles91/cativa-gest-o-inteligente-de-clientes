@@ -7,6 +7,8 @@ import { describe, it, expect } from "vitest";
 import {
   canTransition,
   allowedTransitions,
+  formatHourMinute,
+  statusTone,
   type AppointmentStatus,
 } from "@/domain/scheduling";
 
@@ -39,5 +41,33 @@ describe("domain/scheduling — canTransition", () => {
         expect(canTransition(from, to)).toBe(true);
       });
     });
+  });
+
+  it("mapeia todos os estados para o tom visual esperado e protege valor desconhecido", () => {
+    const expected: Array<[AppointmentStatus, string]> = [
+      ["requested", "warning"],
+      ["pending", "warning"],
+      ["confirmed", "info"],
+      ["reminded", "info"],
+      ["arrived", "success"],
+      ["in_service", "success"],
+      ["completed", "success"],
+      ["canceled", "destructive"],
+      ["no_show", "destructive"],
+    ];
+    for (const [status, tone] of expected) expect(statusTone(status)).toBe(tone);
+    expect(statusTone("unknown" as AppointmentStatus)).toBe("default");
+  });
+
+  it("nega status de origem desconhecido sem lançar exceção", () => {
+    expect(canTransition("unknown" as AppointmentStatus, "pending")).toBe(false);
+  });
+});
+
+describe("domain/scheduling — formatação de horário", () => {
+  it("formata hora curta, aceita ISO e trata vazio", () => {
+    expect(formatHourMinute("09:30:45")).toBe("09:30");
+    expect(formatHourMinute("2026-03-01T10:45:00.000Z")).toMatch(/^\d{2}:\d{2}$/);
+    expect(formatHourMinute("")).toBe("");
   });
 });

@@ -6,17 +6,11 @@ import { PremiumSection } from "../layout/PremiumSection";
 import { Logo } from "@/components/brand/Logo";
 import { cn } from "@/lib/utils";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
 
 export function HeroSection() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"]
-  });
-
-  const mockupY = useTransform(scrollYProgress, [0, 1], [0, -100]);
-  const mockupRotate = useTransform(scrollYProgress, [0, 1], [0, 2]);
+  const { scrollY } = useScroll();
+  const mockupY = useTransform(scrollY, [0, 800], [0, -100]);
+  const mockupRotate = useTransform(scrollY, [0, 800], [0, 2]);
 
   return (
     <PremiumSection
@@ -25,15 +19,10 @@ export function HeroSection() {
       className="pt-20 pb-12 md:pt-40 md:pb-40 overflow-hidden md:overflow-visible min-h-screen flex items-center"
       containerSize="xl"
     >
-      <div ref={containerRef} className="absolute inset-0 pointer-events-none" />
-      
+
       {/* Elementos Visuais de Fundo */}
       <div className="absolute top-0 right-0 w-[70%] h-full bg-[#F3EBF0] -skew-x-6 transform origin-top-right -z-10 translate-x-20 opacity-50 md:opacity-100" />
       <div className="absolute top-1/4 left-10 w-1 h-32 bg-accent/20 hidden lg:block" />
-      <div className="absolute top-[10%] right-[5%] text-[12rem] font-display font-bold text-primary/5 select-none pointer-events-none hidden xl:block leading-none">
-        CATIVA
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 xl:gap-24 items-center">
         <motion.div 
           initial={{ opacity: 0, x: -30 }}
@@ -230,7 +219,7 @@ export function HeroSection() {
                                    </div>
                                    <div className={cn(
                                      "text-[7px] md:text-[8px] font-black uppercase tracking-widest px-1.5 md:px-2 py-0.5 md:py-1 rounded-full border",
-                                     item.status === 'Confirmado' ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/20" : "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                                     item.status === 'Confirmado' ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/20" : "bg-amber-500/10 text-amber-800 border-amber-500/20"
                                    )}>
                                      {item.status}
                                    </div>
@@ -249,7 +238,7 @@ export function HeroSection() {
                                </div>
                                <div className="aspect-square rounded-xl bg-accent/10 flex flex-col items-center justify-center gap-1 group/btn cursor-pointer">
                                   <TrendingUp className="h-4 w-4 text-accent group-hover/btn:scale-110 transition-transform" />
-                                  <span className="text-[8px] font-bold text-accent">Relatórios</span>
+                                  <span className="text-[8px] font-bold text-accent-strong">Relatórios</span>
                                </div>
                              </div>
                            </div>

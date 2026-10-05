@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { createClient } from "@supabase/supabase-js";
+import { supabaseAuthStorageKey } from "./e2e-storage-key.mjs";
 
 function loadEnvFile(file) {
   if (!existsSync(file)) return;
@@ -30,30 +31,19 @@ function env(key) {
   return typeof value === "string" && value.trim() ? value.trim() : "";
 }
 
-function tokenStorageKey(projectId, supabaseUrl) {
-  if (projectId) return `sb-${projectId}-auth-token`;
-  if (supabaseUrl) {
-    try {
-      const ref = new URL(supabaseUrl).hostname.split(".")[0];
-      return `sb-${ref}-auth-token`;
-    } catch {
-      // noop
-    }
-  }
-  return "sb-project-auth-token";
-}
-
 loadEnvFile(resolve(process.cwd(), ".env.local"));
 loadEnvFile(resolve(process.cwd(), ".env"));
 
 const supabaseUrl = env("VITE_SUPABASE_URL");
 const publishableKey = env("VITE_SUPABASE_PUBLISHABLE_KEY");
-const projectId = env("VITE_SUPABASE_PROJECT_ID");
 const email = env("E2E_USER");
 const password = env("E2E_PASS");
 const baseUrl = env("E2E_BASE_URL") || "http://127.0.0.1:4173";
 const tenantSlug = env("E2E_TENANT_SLUG");
-const storagePath = resolve(process.cwd(), "e2e/.auth/storageState.json");
+const storagePath = resolve(
+  process.cwd(),
+  process.env.E2E_STORAGE_STATE_PATH?.trim() || "e2e/.auth/storageState.json",
+);
 
 if (!supabaseUrl || !publishableKey || !email || !password) {
   console.error("VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY, E2E_USER e E2E_PASS são obrigatórios.");
@@ -102,7 +92,7 @@ if (tenantSlug) {
 
 const localStorage = [
   {
-    name: tokenStorageKey(projectId, supabaseUrl),
+    name: supabaseAuthStorageKey(supabaseUrl),
     value: JSON.stringify({
       ...data.session,
       user: data.user ?? data.session.user,
@@ -130,6 +120,7 @@ writeFileSync(
     2,
   ),
 );
+chmodSync(storagePath, 0o600);
 
 await supabase.auth.signOut();
 console.log(`storageState gerado em ${storagePath}`);

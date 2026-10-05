@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { test, expect } from "@playwright/test";
 import { AUTH_SKIP_REASON, HAS_E2E_AUTH } from "../_helpers/auth";
+import { getDestructiveE2ESkipReason } from "../_helpers/qaTarget";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -178,6 +179,8 @@ async function cleanupTemporaryUnits(supabase: SupabaseClient, unitIds: string[]
 test.describe("plan limits", () => {
   test.describe.configure({ timeout: 120_000 });
   test.skip(!HAS_E2E_AUTH, AUTH_SKIP_REASON);
+  const qaTargetSkipReason = getDestructiveE2ESkipReason();
+  test.skip(Boolean(qaTargetSkipReason), qaTargetSkipReason ?? "");
 
   test("bloqueia criação de unidade quando plano ou limite efetivo não permite", async ({ page }) => {
     const { supabase, userId } = await createSignedInSupabase();

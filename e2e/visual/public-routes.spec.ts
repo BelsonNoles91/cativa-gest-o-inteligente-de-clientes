@@ -18,6 +18,7 @@ import {
   assertContentNotHiddenByBottomNav,
   assertBottomNavItemsRespectSafeArea,
   assertCriticalActionsAboveBottomNav,
+  resetScrollForFullPageSnapshot,
 } from "../_helpers/visual";
 import { installAnalyticsVisualFixture } from "../_helpers/analyticsVisualFixture";
 
@@ -51,6 +52,38 @@ async function openAuthenticatedVisualRoute(
       await waitForAuthenticatedShell(page);
     }
   }
+}
+
+async function assertSubscriptionPeriodLoaded(
+  page: import("@playwright/test").Page,
+) {
+  for (const label of ["Início do período", "Próxima renovação"]) {
+    const value = page
+      .getByText(label, { exact: true })
+      .locator("xpath=..")
+      .locator("[data-volatile]");
+    await expect(
+      value,
+      `A data de "${label}" precisa estar carregada antes de mascarar dados voláteis.`,
+    ).toHaveText(/\b\d{4}\b/);
+  }
+}
+
+async function assertProfileEmailFieldsLoaded(
+  page: import("@playwright/test").Page,
+) {
+  const fields = page.locator('input[data-volatile]');
+  await expect(fields).toHaveCount(2);
+  const valuesAreValidAndConsistent = await fields.evaluateAll((inputs) => {
+    const [current, next] = inputs.map((input) =>
+      (input as HTMLInputElement).value,
+    );
+    return (
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(current ?? "") &&
+      next === current
+    );
+  });
+  expect(valuesAreValidAndConsistent).toBe(true);
 }
 
 test.describe("rotas públicas", () => {
@@ -98,6 +131,12 @@ test.describe("rotas autenticadas", () => {
         await installAnalyticsVisualFixture(page);
       }
       await openAuthenticatedVisualRoute(page, path);
+      if (name === "assinatura") {
+        await assertSubscriptionPeriodLoaded(page);
+      }
+      if (name === "perfil") {
+        await assertProfileEmailFieldsLoaded(page);
+      }
       await prepareForSnapshot(page);
 
       // Asserções estruturais antes do diff de pixels.
@@ -111,15 +150,29 @@ test.describe("rotas autenticadas", () => {
       await assertBottomNavItemsRespectSafeArea(page);
       // Ações críticas marcadas com data-critical-action ficam acima do nav.
       await assertCriticalActionsAboveBottomNav(page);
+      if (name === "waitlist") {
+        const tabList = page.getByRole("tablist");
+        await expect(tabList.getByRole("tab")).toHaveCount(4);
+        const tabsFit = await tabList.evaluate((element) => {
+          const bounds = element.getBoundingClientRect();
+          const tabs = Array.from(element.querySelectorAll<HTMLElement>('[role="tab"]'));
+          return (
+            element.scrollWidth <= element.clientWidth &&
+            tabs.every((tab) => {
+              const tabBounds = tab.getBoundingClientRect();
+              return tabBounds.left >= bounds.left && tabBounds.right <= bounds.right;
+            })
+          );
+        });
+        expect(tabsFit, "As quatro opções da fila devem caber sem rolagem interna.").toBe(true);
+      }
 
+      await resetScrollForFullPageSnapshot(page);
       await expect(page).toHaveScreenshot(`${name}.png`, {
         fullPage: true,
-        // Mascara áreas voláteis: relógio do header, saudações com hora, KPIs
-        // que mudam por minuto (criados nos últimos 5 min etc).
-        mask: [
-          page.locator("[data-volatile]"),
-          page.locator("time"),
-        ],
+        // Playwright injects this stylesheet during capture; a page-level style
+        // can be lost when fullPage expands the viewport.
+        stylePath: "e2e/_helpers/full-page-snapshot.css",
       });
     });
   }

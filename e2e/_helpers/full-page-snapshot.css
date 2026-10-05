@@ -1,0 +1,22 @@
+/* Fixed navigation is verified by dedicated viewport geometry assertions.
+   Hiding it here prevents it from floating through a full-page screenshot. */
+[data-bottom-nav] {
+  visibility: hidden !important;
+}
+
+/* Keep a full-page baseline independent of remote Google Fonts availability. */
+*,
+*::before,
+*::after {
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-display {
+  font-family: Georgia, "Times New Roman", serif !important;
+}

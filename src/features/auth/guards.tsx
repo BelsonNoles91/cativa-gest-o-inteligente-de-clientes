@@ -78,9 +78,19 @@ export function ProtectedRoute({ children }: { children?: ReactNode }) {
  */
 export function RequireOnboarding({ children }: { children?: ReactNode }) {
   const { user } = useAuth();
-  const { loading, verified, loadError, hasActiveTenant, isClient, isSuperAdmin, refresh } = useTenant();
+  const { loading, verified, loadError, hasActiveTenant, currentRole, isClient, isSuperAdmin, refresh } = useTenant();
+  const location = useLocation();
   const [checkingInvites, setCheckingInvites] = useState(false);
   const [pendingInviteId, setPendingInviteId] = useState<string | null | undefined>(undefined);
+
+  const canUseCachedAgendaOffline =
+    typeof navigator !== "undefined" &&
+    !navigator.onLine &&
+    location.pathname === "/app/agenda" &&
+    hasActiveTenant &&
+    Boolean(currentRole) &&
+    !isClient &&
+    !isSuperAdmin;
 
   // Verificar convites pendentes quando não tem tenant ativo
   useEffect(() => {
@@ -109,7 +119,10 @@ export function RequireOnboarding({ children }: { children?: ReactNode }) {
 
   if (loading) return <FullScreenLoader />;
   if (!verified) {
-    if (loadError) return <LoadErrorScreen onRetry={() => void refresh()} retrying={loading} />;
+    if (loadError) {
+      if (canUseCachedAgendaOffline) return <>{children ?? <Outlet />}</>;
+      return <LoadErrorScreen onRetry={() => void refresh()} retrying={loading} />;
+    }
     return <FullScreenLoader />;
   }
   
@@ -145,31 +158,40 @@ export function OnboardingGuard({ children }: { children?: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const { loading: tenantLoading, verified, loadError, hasActiveTenant, isClient, isSuperAdmin, refresh } = useTenant();
   const location = useLocation();
+  const content = children ?? <Outlet />;
+  const waitingForVerification = authLoading || Boolean(user && (tenantLoading || !verified));
 
-  if (authLoading) return <FullScreenLoader />;
-  if (!user) return <>{children ?? <Outlet />}</>;
-  
-  // Se ainda está carregando ou não verificou, espera.
-  if (tenantLoading) return <FullScreenLoader />;
-  if (!verified) {
-    if (loadError) return <LoadErrorScreen onRetry={() => void refresh()} retrying={tenantLoading} />;
-    return <FullScreenLoader />;
+  // Redirecionamentos só acontecem após a verificação conclusiva. Durante o
+  // carregamento, preservamos o filho montado (oculto sob o loader) para que
+  // signup não perca o estado local do wizard quando Auth/Tenant atualizam.
+  if (!waitingForVerification && user) {
+    // Super Admin não faz onboarding
+    if (isSuperAdmin && location.pathname === "/onboarding") {
+      return <Navigate to="/app" replace />;
+    }
+
+    // Cliente vai para o portal
+    if (isClient && !hasActiveTenant) return <Navigate to="/portal" replace />;
+
+    // Se já tem tenant e está tentando acessar onboarding, manda para /app
+    if (hasActiveTenant && location.pathname === "/onboarding") {
+      return <Navigate to="/app" replace />;
+    }
   }
 
-  // Super Admin não faz onboarding
-  if (isSuperAdmin && location.pathname === "/onboarding") {
-    return <Navigate to="/app" replace />;
-  }
-  
-  // Cliente vai para o portal
-  if (isClient && !hasActiveTenant) return <Navigate to="/portal" replace />;
-  
-  // Se já tem tenant e está tentando acessar onboarding, manda para /app
-  if (hasActiveTenant && location.pathname === "/onboarding") {
-    return <Navigate to="/app" replace />;
-  }
-  
-  return <>{children ?? <Outlet />}</>;
+  const waitingOnTenant = !authLoading && Boolean(user && !tenantLoading && !verified);
+  const showTenantError = waitingOnTenant && Boolean(loadError);
+
+  return (
+    <>
+      <div hidden={waitingForVerification} aria-hidden={waitingForVerification || undefined}>
+        {content}
+      </div>
+      {waitingForVerification && (showTenantError
+        ? <LoadErrorScreen onRetry={() => void refresh()} retrying={tenantLoading} />
+        : <FullScreenLoader />)}
+    </>
+  );
 }
 
 export function RoleGuard({ allowed, children }: { allowed: Role[]; children?: ReactNode }) {

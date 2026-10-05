@@ -199,11 +199,22 @@ export function TenantSubscriptionsTab({
     if (!form?.planId) return "Escolha o plano.";
     if (!form.reason.trim()) return "Informe o motivo da alteração.";
     if (!toIso(form.currentPeriodStart)) return "Informe uma data válida para o início do ciclo.";
-    if (form.status === "trialing" && !toIso(form.trialEndsAt)) return "Informe quando o período de teste termina.";
+    if (form.status === "trialing") {
+      const trialStart = toIso(form.trialStartedAt);
+      const trialEnd = toIso(form.trialEndsAt);
+      if (!trialStart) return "Informe uma data válida para o início do período de teste.";
+      if (!trialEnd) return "Informe quando o período de teste termina.";
+      if (new Date(trialEnd) <= new Date(trialStart)) return "O término do período de teste deve ser posterior ao início.";
+    }
     const discount = Number(form.discount.replace(",", "."));
     if (!Number.isFinite(discount) || discount < 0) return "Informe um desconto válido.";
     const selectedPlan = plans.find((plan) => plan.id === form.planId);
     if (selectedPlan && Math.round(discount * 100) > selectedPlan.priceCents) return "O desconto não pode superar o valor do plano.";
+    const currentPeriodStart = toIso(form.currentPeriodStart);
+    const currentPeriodEnd = toIso(form.currentPeriodEnd);
+    if (currentPeriodEnd && currentPeriodStart && new Date(currentPeriodEnd) <= new Date(currentPeriodStart)) {
+      return "O término do ciclo deve ser posterior ao início.";
+    }
     for (const item of LIMITS) {
       const value = form.limits[item.key];
       if (value && (!Number.isInteger(Number(value)) || Number(value) < 0)) return `${item.label}: use um número inteiro não negativo.`;

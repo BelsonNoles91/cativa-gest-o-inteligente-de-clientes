@@ -5,18 +5,21 @@ on:
     paths:
       - "supabase/migrations/**"
       - "supabase/functions/**"
+      - "supabase/tests/**"
       - ".security-allowlist.json"
       - "scripts/security-rescan.mjs"
+      - "scripts/e2e-db-target-check.mjs"
   push:
     branches: [main]
     paths:
       - "supabase/migrations/**"
       - "supabase/functions/**"
+      - "supabase/tests/**"
   workflow_dispatch:
 
 concurrency:
-  group: security-rescan-${{ github.ref }}
-  cancel-in-progress: true
+  group: security-rescan-qa-${{ github.repository }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -42,25 +45,29 @@ jobs:
       - name: Verifica secret do banco
         id: db-secret
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_QA_DB_URL: ${{ secrets.SUPABASE_QA_DB_URL }}
         run: |
-          if [ -z "$SUPABASE_DB_URL" ]; then
-            echo "::warning::Secret SUPABASE_DB_URL ausente — testes remotos de banco serão ignorados."
+          if [ -z "$SUPABASE_QA_DB_URL" ]; then
+            echo "::warning::Secret SUPABASE_QA_DB_URL ausente — regressões SQL não executadas (registrado no resumo)."
             echo "available=false" >> "$GITHUB_OUTPUT"
-            printf '## Testes de regressão de RLS\n\nNão executados: SUPABASE_DB_URL não configurado.\n' > rls-summary.md
-            printf '## Re-scan de segurança\n\nNão executado: SUPABASE_DB_URL não configurado.\n' > security-report.md
+            printf '## Testes de regressão de RLS\n\nNão executados: SUPABASE_QA_DB_URL não configurado.\n' > rls-summary.md
+            printf '## Re-scan de segurança\n\nNão executado: SUPABASE_QA_DB_URL não configurado.\n' > security-report.md
           else
             echo "available=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Lista migrations alteradas
         id: migrations
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          BEFORE_SHA: ${{ github.event.before }}
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            BASE="origin/${{ github.base_ref }}"
-            git fetch --no-tags --depth=200 origin "${{ github.base_ref }}"
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            BASE="origin/$BASE_REF"
+            git fetch --no-tags --depth=200 origin "$BASE_REF"
           else
-            BASE="${{ github.event.before }}"
+            BASE="$BEFORE_SHA"
           fi
           CHANGED=$(git diff --name-only "$BASE"...HEAD -- supabase/migrations supabase/functions || true)
           {
@@ -69,18 +76,21 @@ jobs:
             if [ -z "$CHANGED" ]; then
               echo "Nenhuma migration ou edge function alterada."
             else
-              echo "$CHANGED" | sed 's/^/- `/; s/$/`/'
+              printf '%s\n' "$CHANGED" | sed 's/^/- /'
             fi
             echo ""
           } > migrations-summary.md
           cat migrations-summary.md >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Aplica migrations pendentes (dry-run de verificação)
+      - name: Verifica conexão com o banco QA (sem aplicar migrations)
         if: steps.db-secret.outputs.available == 'true'
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_QA_DB_URL: ${{ secrets.SUPABASE_QA_DB_URL }}
+          E2E_QA_PROJECT_REF: ${{ secrets.E2E_QA_PROJECT_REF }}
+          E2E_TARGET_ALLOWLIST: ${{ secrets.E2E_TARGET_ALLOWLIST }}
         run: |
-          psql "$SUPABASE_DB_URL" -X -q -c "select 1" > /dev/null
+          node scripts/e2e-db-target-check.mjs
+          psql "$SUPABASE_QA_DB_URL" -X -q -c "select 1" > /dev/null
           echo "Conexão com o banco validada."
 
       - name: Testes de regressão de RLS e isolamento multi-tenant
@@ -88,13 +98,16 @@ jobs:
         if: steps.db-secret.outputs.available == 'true'
         continue-on-error: true
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_QA_DB_URL: ${{ secrets.SUPABASE_QA_DB_URL }}
+          E2E_QA_PROJECT_REF: ${{ secrets.E2E_QA_PROJECT_REF }}
+          E2E_TARGET_ALLOWLIST: ${{ secrets.E2E_TARGET_ALLOWLIST }}
         run: |
+          node scripts/e2e-db-target-check.mjs
           set -o pipefail
           : > rls-output.txt
-          psql "$SUPABASE_DB_URL" -X -v ON_ERROR_STOP=1 \
+          psql "$SUPABASE_QA_DB_URL" -X -v ON_ERROR_STOP=1 \
             -f supabase/tests/rls-regression.sql 2>&1 | tee -a rls-output.txt
-          psql "$SUPABASE_DB_URL" -X -v ON_ERROR_STOP=1 \
+          psql "$SUPABASE_QA_DB_URL" -X -v ON_ERROR_STOP=1 \
             -f supabase/tests/tenant-idor-regression.sql 2>&1 | tee -a rls-output.txt
           {
             echo "## Testes de regressão de RLS e isolamento multi-tenant"
@@ -125,9 +138,13 @@ jobs:
         if: steps.db-secret.outputs.available == 'true'
         continue-on-error: true
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_QA_DB_URL }}
+          SUPABASE_QA_DB_URL: ${{ secrets.SUPABASE_QA_DB_URL }}
+          E2E_QA_PROJECT_REF: ${{ secrets.E2E_QA_PROJECT_REF }}
+          E2E_TARGET_ALLOWLIST: ${{ secrets.E2E_TARGET_ALLOWLIST }}
           SECURITY_SCAN_PR: ${{ github.event.pull_request.number }}
         run: |
+          node scripts/e2e-db-target-check.mjs
           if [ -f migrations-summary.md ]; then
             SECURITY_SCAN_MIGRATIONS=$(grep -o 'supabase/[^`]*' migrations-summary.md | paste -sd, -)
             export SECURITY_SCAN_MIGRATIONS

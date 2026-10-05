@@ -15,8 +15,11 @@ e2e/.auth/
 e2e/.artifacts/
 e2e/.artifacts-*
 e2e/.report/
+e2e/.report-*
 vite.config.ts.timestamp-*.mjs
 *.tsbuildinfo
+test-results/
+coverage/
 
 # Environment & secrets
 .env

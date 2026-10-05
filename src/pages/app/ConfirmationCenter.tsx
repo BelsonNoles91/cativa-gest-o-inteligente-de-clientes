@@ -4,7 +4,7 @@
  * agendamentos e dialog de ação por item.
  */
 import { useRealtimeRefresh } from "@/features/realtime/TenantRealtimeSync";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, Plus, RefreshCcw, Sparkles, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { PageActionCluster, PrimaryAction } from "@/components/shell/PageActionCluster";
@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
@@ -105,6 +104,7 @@ export default function ConfirmationCenter() {
   useRealtimeRefresh(center.refresh);
   const { currentTenant } = useTenant();
   const { toast } = useToast();
+  const actionTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [active, setActive] = useState<QueueItemHydrated | null>(null);
   const [open, setOpen] = useState(false);
   const [rules, setRules] = useState<ConfirmationRule[]>([]);
@@ -115,7 +115,8 @@ export default function ConfirmationCenter() {
   const [templateForm, setTemplateForm] = useState<TemplateFormState>(EMPTY_TEMPLATE_FORM);
   const [ruleForm, setRuleForm] = useState<RuleFormState>(EMPTY_RULE_FORM);
 
-  const handleOpen = (item: QueueItemHydrated) => {
+  const handleOpen = (item: QueueItemHydrated, trigger: HTMLButtonElement) => {
+    actionTriggerRef.current = trigger;
     setActive(item);
     setOpen(true);
   };
@@ -228,20 +229,43 @@ export default function ConfirmationCenter() {
 
   async function handleCreateRule() {
     if (!currentTenant || !ruleForm.name.trim()) return;
+    const hoursBeforeAppointment = ruleForm.hoursBeforeAppointment.trim()
+      ? Number(ruleForm.hoursBeforeAppointment)
+      : 24;
+    const minAppointmentValueCents = ruleForm.minAppointmentValueCents.trim()
+      ? Number(ruleForm.minAppointmentValueCents)
+      : null;
+    if (!Number.isInteger(hoursBeforeAppointment) || hoursBeforeAppointment < 0) {
+      toast({
+        title: "Antecedência inválida",
+        description: "Informe um número inteiro de horas igual ou maior que zero.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (
+      minAppointmentValueCents !== null &&
+      (!Number.isInteger(minAppointmentValueCents) || minAppointmentValueCents < 0)
+    ) {
+      toast({
+        title: "Valor mínimo inválido",
+        description: "Informe um valor inteiro em centavos igual ou maior que zero.",
+        variant: "destructive",
+      });
+      return;
+    }
     setSavingRule(true);
     try {
       await createRule({
         tenantId: currentTenant.id,
         name: ruleForm.name.trim(),
         stage: ruleForm.stage,
-        hoursBeforeAppointment: parseInt(ruleForm.hoursBeforeAppointment || "24", 10) || 24,
+        hoursBeforeAppointment,
         basePriority: parseInt(ruleForm.basePriority || "50", 10) || 50,
         appliesToVip: ruleForm.appliesToVip,
         appliesToHighRisk: ruleForm.appliesToHighRisk,
         appliesToProtocol: ruleForm.appliesToProtocol,
-        minAppointmentValueCents: ruleForm.minAppointmentValueCents.trim()
-          ? parseInt(ruleForm.minAppointmentValueCents, 10)
-          : null,
+        minAppointmentValueCents,
         skipIfAlreadyConfirmed: ruleForm.skipIfAlreadyConfirmed,
         isActive: ruleForm.isActive,
       });
@@ -319,7 +343,7 @@ export default function ConfirmationCenter() {
       />
 
       <div className="grid gap-4 md:grid-cols-3">
-        <MetricCard label="Itens abertos" value={String(center.totalOpen)} helper="Fila ativa do tenant" />
+        <MetricCard label="Itens abertos" value={String(center.totalOpen)} helper="Inclui contatos programados" />
         <MetricCard label="Pendentes" value={String(metrics.pending)} helper="Ainda sem ação" />
         <MetricCard label="Em andamento / retorno" value={String(metrics.inProgress + metrics.followUp)} helper="Operação já tocando" />
       </div>
@@ -340,19 +364,19 @@ export default function ConfirmationCenter() {
         </div>
       )}
 
-      <Tabs
-        value={center.stage}
-        onValueChange={(v) => center.setStage(v as ConfirmationStage)}
-        className="space-y-4"
-      >
-        <TabsList className="h-auto w-full flex-wrap justify-start gap-1 bg-transparent p-0">
+      <section className="space-y-4" aria-label="Fila de confirmações">
+        <div role="group" aria-label="Filtrar confirmações por etapa" className="flex h-auto w-full flex-wrap justify-start gap-1">
           {STAGE_ORDER.map((s) => {
             const count = center.counts[s] ?? 0;
+            const selected = center.stage === s;
             return (
-              <TabsTrigger
+              <Button
                 key={s}
-                value={s}
-                className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                type="button"
+                variant="outline"
+                aria-pressed={selected}
+                onClick={() => center.setStage(s)}
+                className={`flex min-h-11 items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm ${selected ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90" : ""}`}
               >
                 {stageLabels[s]}
                 {count > 0 && (
@@ -360,10 +384,10 @@ export default function ConfirmationCenter() {
                     {count}
                   </span>
                 )}
-              </TabsTrigger>
+              </Button>
             );
           })}
-        </TabsList>
+        </div>
 
         <p className="text-sm text-muted-foreground">{stageDescriptions[center.stage]}</p>
 
@@ -402,12 +426,13 @@ export default function ConfirmationCenter() {
           </div>
 
         )}
-      </Tabs>
+      </section>
 
       <ConfirmationActionDialog
         item={active}
         open={open}
         onOpenChange={setOpen}
+        returnFocusRef={actionTriggerRef}
         templates={center.templates}
         center={center}
       />
@@ -422,12 +447,12 @@ export default function ConfirmationCenter() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Nome" required>
-                <Input value={templateForm.name} onChange={(e) => setTemplateForm((current) => ({ ...current, name: e.target.value }))} />
+              <Field htmlFor="template-name" label="Nome" required>
+                <Input id="template-name" value={templateForm.name} onChange={(e) => setTemplateForm((current) => ({ ...current, name: e.target.value }))} />
               </Field>
-              <Field label="Etapa">
+              <Field htmlFor="template-stage" label="Etapa">
                 <Select value={templateForm.stage} onValueChange={(value) => setTemplateForm((current) => ({ ...current, stage: value as MessageTemplateStage }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="template-stage" aria-label="Etapa do template"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {Object.entries(templateStageLabels).map(([value, label]) => (
                       <SelectItem key={value} value={value}>{label}</SelectItem>
@@ -435,9 +460,9 @@ export default function ConfirmationCenter() {
                   </SelectContent>
                 </Select>
               </Field>
-              <Field label="Canal">
+              <Field htmlFor="template-channel" label="Canal">
                 <Select value={templateForm.channel} onValueChange={(value) => setTemplateForm((current) => ({ ...current, channel: value as MessageChannel }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="template-channel" aria-label="Canal do template"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {Object.entries(channelLabels).map(([value, label]) => (
                       <SelectItem key={value} value={value}>{label}</SelectItem>
@@ -450,8 +475,9 @@ export default function ConfirmationCenter() {
                 Template padrão
               </label>
             </div>
-            <Field label="Mensagem" required>
+            <Field htmlFor="template-message" label="Mensagem" required>
               <Textarea
+                id="template-message"
                 rows={5}
                 value={templateForm.body}
                 onChange={(e) => setTemplateForm((current) => ({ ...current, body: e.target.value }))}
@@ -511,12 +537,12 @@ export default function ConfirmationCenter() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Nome" required>
-                <Input value={ruleForm.name} onChange={(e) => setRuleForm((current) => ({ ...current, name: e.target.value }))} />
+              <Field htmlFor="rule-name" label="Nome" required>
+                <Input id="rule-name" value={ruleForm.name} onChange={(e) => setRuleForm((current) => ({ ...current, name: e.target.value }))} />
               </Field>
-              <Field label="Etapa">
+              <Field htmlFor="rule-stage" label="Etapa">
                 <Select value={ruleForm.stage} onValueChange={(value) => setRuleForm((current) => ({ ...current, stage: value as ConfirmationStage }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="rule-stage" aria-label="Etapa da regra"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {STAGE_ORDER.map((stage) => (
                       <SelectItem key={stage} value={stage}>{stageLabels[stage]}</SelectItem>
@@ -524,14 +550,14 @@ export default function ConfirmationCenter() {
                   </SelectContent>
                 </Select>
               </Field>
-              <Field label="Horas antes">
-                <Input type="number" value={ruleForm.hoursBeforeAppointment} onChange={(e) => setRuleForm((current) => ({ ...current, hoursBeforeAppointment: e.target.value }))} />
+              <Field htmlFor="rule-hours-before" label="Horas antes do contato">
+                <Input id="rule-hours-before" type="number" min={0} step={1} value={ruleForm.hoursBeforeAppointment} onChange={(e) => setRuleForm((current) => ({ ...current, hoursBeforeAppointment: e.target.value }))} />
               </Field>
-              <Field label="Prioridade base">
-                <Input type="number" value={ruleForm.basePriority} onChange={(e) => setRuleForm((current) => ({ ...current, basePriority: e.target.value }))} />
+              <Field htmlFor="rule-base-priority" label="Prioridade base">
+                <Input id="rule-base-priority" type="number" value={ruleForm.basePriority} onChange={(e) => setRuleForm((current) => ({ ...current, basePriority: e.target.value }))} />
               </Field>
-              <Field label="Valor mínimo (centavos)">
-                <Input type="number" value={ruleForm.minAppointmentValueCents} onChange={(e) => setRuleForm((current) => ({ ...current, minAppointmentValueCents: e.target.value }))} />
+              <Field htmlFor="rule-min-value" label="Valor mínimo (centavos)">
+                <Input id="rule-min-value" type="number" min={0} step={1} value={ruleForm.minAppointmentValueCents} onChange={(e) => setRuleForm((current) => ({ ...current, minAppointmentValueCents: e.target.value }))} />
               </Field>
             </div>
 
@@ -610,17 +636,19 @@ function MetricCard({ label, value, helper }: { label: string; value: string; he
 }
 
 function Field({
+  htmlFor,
   label,
   required = false,
   children,
 }: {
+  htmlFor: string;
   label: string;
   required?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <div className="space-y-2">
-      <Label>
+      <Label htmlFor={htmlFor}>
         {label} {required ? <span className="text-destructive">*</span> : null}
       </Label>
       {children}

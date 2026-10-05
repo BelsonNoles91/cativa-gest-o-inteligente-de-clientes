@@ -62,6 +62,39 @@ describe("buildTeamRanking", () => {
     expect(ranking.rows[0].revenueProgressPct).toBe(0);
     expect(ranking.totals.revenueProgressPct).toBe(0);
   });
+
+  it("ordena empates nominais, mantém zero em meta não positiva e não divide por zero", () => {
+    const ranking = buildTeamRanking(
+      [appt({ professionalId: "p1", status: "no_show" }), appt({ professionalId: "p1", status: "canceled" })],
+      [
+        { id: "z", displayName: "Zélia" },
+        { id: "a", displayName: "Ágata" },
+        { id: "p1", displayName: "Léo" },
+      ],
+      [
+        { professionalId: "a", periodMonth: "2026-05-01", revenueGoalCents: 0, appointmentsGoal: -1 },
+        { professionalId: "p1", periodMonth: "2026-05-01", revenueGoalCents: 1000, appointmentsGoal: 0 },
+      ],
+    );
+
+    expect(ranking.rows.map(({ professionalId }) => professionalId)).toEqual(["a", "p1", "z"]);
+    expect(ranking.rows.find(({ professionalId }) => professionalId === "p1")).toMatchObject({
+      completed: 0,
+      clients: 0,
+      noShows: 1,
+      cancellations: 1,
+      averageTicketCents: 0,
+      revenueProgressPct: 0,
+      appointmentsProgressPct: 0,
+    });
+    expect(ranking.totals.completed).toBe(0);
+  });
+
+  it("inicia semana no domingo pela segunda-feira UTC anterior", () => {
+    const week = weekRange(new Date("2026-05-17T18:00:00Z"));
+    expect(week.start).toBe("2026-05-11T00:00:00.000Z");
+    expect(week.end).toBe("2026-05-18T00:00:00.000Z");
+  });
 });
 
 describe("períodos", () => {

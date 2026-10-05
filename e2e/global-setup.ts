@@ -22,6 +22,7 @@
 import { chromium, type FullConfig, type Browser } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
 import {
+  chmodSync,
   existsSync,
   mkdirSync,
   writeFileSync,
@@ -41,6 +42,13 @@ function warn(msg: string, err?: unknown) {
   console.warn(
     `${TAG} WARN ${msg}` +
       (err instanceof Error ? ` :: ${err.message}` : ""),
+  );
+}
+
+function getStorageStatePath(): string {
+  return resolve(
+    process.cwd(),
+    process.env.E2E_STORAGE_STATE_PATH?.trim() || "e2e/.auth/storageState.json",
   );
 }
 
@@ -156,22 +164,13 @@ async function attemptLogin(
       // Erros de credencial → permanece em /auth/login com toast → timeout aqui.
       await page.waitForURL(/\/(app|onboarding)/, { timeout: 30_000 });
 
-      const storagePath = resolve(
-        process.cwd(),
-        "e2e/.auth/storageState.json",
-      );
+      const storagePath = getStorageStatePath();
       await ctx.storageState({ path: storagePath });
+      chmodSync(storagePath, 0o600);
 
       // Validação: storage NÃO pode estar vazio (cookies ou origins).
-      const stored = JSON.parse(readFileSync(storagePath, "utf8"));
-      const hasAuth =
-        (Array.isArray(stored.cookies) && stored.cookies.length > 0) ||
-        (Array.isArray(stored.origins) &&
-          stored.origins.some(
-            (o: { localStorage?: unknown[] }) =>
-              Array.isArray(o.localStorage) && o.localStorage.length > 0,
-          ));
-      if (!hasAuth) {
+      const stored: unknown = JSON.parse(readFileSync(storagePath, "utf8"));
+      if (!hasAuthenticatedStorageState(stored)) {
         throw new Error(
           "storageState gerado está vazio — login pode ter falhado silenciosamente.",
         );
@@ -214,6 +213,19 @@ function tokenStorageKey(projectId: string | undefined, supabaseUrl: string | un
     }
   }
   return "sb-project-auth-token";
+}
+
+function hasAuthenticatedStorageState(value: unknown): boolean {
+  if (!value || typeof value !== "object") return false;
+  const state = value as { cookies?: unknown; origins?: unknown };
+  const hasCookies = Array.isArray(state.cookies) && state.cookies.length > 0;
+  const origins = Array.isArray(state.origins)
+    ? (state.origins as Array<{ localStorage?: unknown }>)
+    : [];
+  const hasLocalStorage = origins.some(
+    (origin) => Array.isArray(origin.localStorage) && origin.localStorage.length > 0,
+  );
+  return hasCookies || hasLocalStorage;
 }
 
 async function attemptDirectAuthLogin(
@@ -299,6 +311,7 @@ async function attemptDirectAuthLogin(
         2,
       ),
     );
+    chmodSync(storagePath, 0o600);
 
     log("login direto via Supabase OK, storageState salvo");
     return { ok: true };
@@ -319,7 +332,7 @@ export default async function globalSetup(config: FullConfig) {
     process.env.E2E_BASE_URL ??
     "http://127.0.0.1:8080";
 
-  const storagePath = resolve(process.cwd(), "e2e/.auth/storageState.json");
+  const storagePath = getStorageStatePath();
   const dir = dirname(storagePath);
   try {
     if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
@@ -332,11 +345,32 @@ export default async function globalSetup(config: FullConfig) {
   const password = process.env.E2E_PASS;
 
   if (!email || !password) {
+    if (process.env.E2E_STORAGE_STATE_PATH?.trim() && existsSync(storagePath)) {
+      let providedState: unknown;
+      try {
+        // O arquivo contém credenciais de sessão. Restringe o acesso antes
+        // mesmo de validá-lo, inclusive quando o JSON estiver malformado.
+        chmodSync(storagePath, 0o600);
+        providedState = JSON.parse(readFileSync(storagePath, "utf8"));
+      } catch (err) {
+        throw new Error(
+          `E2E_STORAGE_STATE_PATH não contém JSON válido; preservado sem sobrescrita. ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
+      if (hasAuthenticatedStorageState(providedState)) {
+        log("E2E_USER/E2E_PASS ausentes — preservando a sessão autenticada explicitamente fornecida");
+      } else {
+        warn("E2E_USER/E2E_PASS ausentes — preservando o storageState explícito sem autenticação");
+      }
+      return;
+    }
+
     try {
       writeFileSync(
         storagePath,
         JSON.stringify({ cookies: [], origins: [] }, null, 2),
       );
+      chmodSync(storagePath, 0o600);
     } catch (err) {
       warn("não consegui gravar storageState vazio", err);
     }
@@ -369,6 +403,7 @@ export default async function globalSetup(config: FullConfig) {
           storagePath,
           JSON.stringify({ cookies: [], origins: [] }, null, 2),
         );
+        chmodSync(storagePath, 0o600);
       } catch {
         /* noop */
       }

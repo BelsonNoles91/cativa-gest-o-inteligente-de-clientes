@@ -1,6 +1,7 @@
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 import webpush from "npm:web-push@3.6.7";
+import type { Database } from "../../../src/integrations/supabase/types.ts";
 
 /**
  * Notificações push (Web Push / VAPID).
@@ -33,7 +34,7 @@ type PushRow = {
 };
 
 async function sendTo(
-  admin: ReturnType<typeof createClient>,
+  admin: SupabaseClient<Database>,
   subs: PushRow[],
   payload: Record<string, unknown>,
 ) {
@@ -77,7 +78,8 @@ Deno.serve(async (req) => {
     }
     webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 
-    const admin = createClient(
+    // This function intentionally uses ungenerated table types for its service-role client.
+    const admin = createClient<Database>(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { persistSession: false } },
@@ -86,7 +88,7 @@ Deno.serve(async (req) => {
     if (action === "test") {
       const authHeader = req.headers.get("Authorization");
       if (!authHeader) return json({ error: "Não autenticado." }, 401);
-      const userClient = createClient(
+      const userClient = createClient<Database>(
         Deno.env.get("SUPABASE_URL") ?? "",
         Deno.env.get("SUPABASE_ANON_KEY") ?? "",
         { global: { headers: { Authorization: authHeader } }, auth: { persistSession: false } },
@@ -115,7 +117,7 @@ Deno.serve(async (req) => {
       const appointmentId = typeof body.appointmentId === "string" ? body.appointmentId : "";
       if (!appointmentId) return json({ error: "Atendimento não informado." }, 400);
 
-      const userClient = createClient(
+      const userClient = createClient<Database>(
         Deno.env.get("SUPABASE_URL") ?? "",
         Deno.env.get("SUPABASE_ANON_KEY") ?? "",
         { global: { headers: { Authorization: authHeader } }, auth: { persistSession: false } },

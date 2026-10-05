@@ -87,7 +87,7 @@ export default function Login() {
 
         {/* Formulário */}
         {emailVisible && (
-        <form onSubmit={onSubmit} className="space-y-6" noValidate>
+        <form onSubmit={onSubmit} className="space-y-6">
           <div className="space-y-4">
             <div className="space-y-2">
               <Label
@@ -148,10 +148,11 @@ export default function Login() {
                 />
                 <button
                   type="button"
-                  tabIndex={-1}
                   onClick={() => setShowPassword((v) => !v)}
                   aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 grid h-10 w-10 place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-white hover:text-accent focus-visible:outline-none"
+                  aria-controls="password"
+                  aria-pressed={showPassword}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 grid h-11 w-11 place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-white hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -200,11 +201,11 @@ export default function Login() {
 
           <p className="text-center text-[10px] leading-relaxed text-muted-foreground font-medium px-8">
             Ao continuar você concorda com os{" "}
-            <Link to="/termos" className="text-primary-dark hover:underline">
+            <Link to="/termos" className="text-primary-dark underline underline-offset-4 hover:text-accent-strong">
               Termos de Uso
             </Link>{" "}
             e a{" "}
-            <Link to="/privacidade" className="text-primary-dark hover:underline">
+            <Link to="/privacidade" className="text-primary-dark underline underline-offset-4 hover:text-accent-strong">
               Política de Privacidade
             </Link>
             .

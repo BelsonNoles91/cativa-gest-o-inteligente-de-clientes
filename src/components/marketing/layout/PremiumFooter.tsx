@@ -1,6 +1,6 @@
 import { SignupLink, useSignupsOpen } from "@/features/system/SignupLink";
 import { Link } from "react-router-dom";
-import { ArrowRight, Instagram, Linkedin, Mail, MapPin, Phone } from "lucide-react";
+import { Instagram, Linkedin, Mail, MapPin } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 
@@ -33,10 +33,16 @@ const FOOTER_LINKS = [
   },
 ];
 
-export function PremiumFooter() {
+export function PremiumFooter({
+  reserveMobileCtaSpace = false,
+}: {
+  reserveMobileCtaSpace?: boolean;
+}) {
   const signupsOpen = useSignupsOpen();
   return (
-    <footer className="bg-primary-dark text-white pt-24 pb-12 border-t border-white/5 overflow-hidden relative">
+    <footer
+      className={`bg-primary-dark text-white pt-24 ${reserveMobileCtaSpace ? "pb-[calc(8rem+env(safe-area-inset-bottom))] lg:pb-12" : "pb-12"} border-t border-white/5 overflow-hidden relative`}
+    >
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent/10 blur-[150px] rounded-full -z-10 translate-x-1/2 translate-y-1/2" />
       
       <div className="max-w-7xl mx-auto px-4 md:px-8">
@@ -53,10 +59,6 @@ export function PremiumFooter() {
                <a href="mailto:contato@cativagestao.com.br" className="flex items-center gap-3 text-white/70 hover:text-accent transition-colors">
                   <Mail className="h-5 w-5" />
                   <span>contato@cativagestao.com.br</span>
-               </a>
-               <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-white/70 hover:text-accent transition-colors">
-                  <Phone className="h-5 w-5" />
-                  <span>Falar com Especialista</span>
                </a>
                <div className="flex items-center gap-3 text-white/70">
                   <MapPin className="h-5 w-5" />

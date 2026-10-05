@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { expect, test } from "@playwright/test";
+import { getDestructiveE2ESkipReason } from "../_helpers/qaTarget";
 
 function env(key: string) {
   const value = process.env[key];
@@ -60,6 +61,8 @@ async function createClientFixture(supabase: SupabaseClient, tenantId: string, l
 
 test.describe("Isolamento multi-tenant remoto", () => {
   test.describe.configure({ timeout: 120_000 });
+  const qaTargetSkipReason = getDestructiveE2ESkipReason();
+  test.skip(Boolean(qaTargetSkipReason), qaTargetSkipReason ?? "");
   test.skip(
     !HAS_TWO_TENANTS,
     "Configure E2E_TENANT_B_USER/E2E_TENANT_B_PASS para validar dois tenants reais no ambiente remoto.",

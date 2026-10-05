@@ -1,77 +1,130 @@
-
-import { test, expect } from '@playwright/test';
+import { createClient } from "@supabase/supabase-js";
+import { expect, test, type Page } from "@playwright/test";
+import { getDestructiveE2ESkipReason } from "./_helpers/qaTarget";
 
 /**
- * Este teste simula o fluxo completo de diferentes papéis no sistema.
- * 1. Owner: Cria tenant e configura o negócio.
- * 2. Frontdesk: Gerencia clientes e agenda.
- * 3. Professional: Visualiza sua própria agenda e confirma atendimentos.
+ * Jornadas de navegação por papel. Os CRUDs completos ficam nas specs de
+ * diagnóstico dedicadas; aqui validamos as rotas operacionais e as ações que
+ * cada papel deve conseguir iniciar, sem depender de seletores inventados.
  */
-
-test.describe('Fluxo Multi-Papel (Owner, Frontdesk, Professional)', () => {
-  
-  // Limpar sessão global para testar logins diferentes em cada teste
+test.describe("Fluxo multi-papel (owner, frontdesk e professional)", () => {
+  // Cada cenário autentica uma conta diferente, sem herdar a sessão do setup.
   test.use({ storageState: { cookies: [], origins: [] } });
-  
-  test('Owner deve conseguir configurar tenant e convidar equipe', async ({ page }) => {
-    // Login como Owner
-    await page.goto('/auth/login');
-    await page.fill('input#email', 'owner.a@cativa.test');
-    await page.fill('input#password', 'Cativa@Test2026');
-    await page.click('button[type="submit"]');
-    
-    // Validar Dashboard
-    await expect(page).toHaveURL(/\/app/);
-    await expect(page.locator('h1')).toContainText(/Bem-vindo/i);
-    
-    // Navegar para Configurações
-    await page.click('nav >> text=Configurações');
-    await expect(page.locator('h2')).toContainText(/Perfil da Empresa/i);
-    
-    // Criar um novo serviço
-    await page.click('nav >> text=Serviços');
-    await page.click('button:has-text("Novo serviço")');
-    await page.fill('input#name', 'Serviço E2E Test');
-    await page.fill('input#duration_minutes', '45');
-    await page.click('button:has-text("Salvar")');
-    
-    await expect(page.locator('table')).toContainText('Serviço E2E Test');
+
+  async function loginAs(
+    page: Page,
+    email: string | undefined,
+    password: string | undefined,
+    role: string,
+  ) {
+    const skipReason =
+      getDestructiveE2ESkipReason() ??
+      (!email?.trim() || !password?.trim()
+        ? `Credenciais E2E de ${role} ausentes; nenhuma conta fictícia será usada.`
+        : undefined);
+    test.skip(Boolean(skipReason), skipReason);
+
+    const supabaseUrl = process.env.VITE_SUPABASE_URL;
+    const publishableKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    const tenantSlug = process.env.E2E_TENANT_SLUG;
+    if (!supabaseUrl || !publishableKey || !tenantSlug) {
+      throw new Error("Configuração local de autenticação/perfil QA incompleta.");
+    }
+
+    // Esta spec mede autorização e jornadas por perfil, não a UI de login
+    // (coberta pelas suítes de autenticação com mocks e sessão vazia).
+    const supabase = createClient(supabaseUrl, publishableKey, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    });
+    const { data, error } = await supabase.auth.signInWithPassword({ email: email!, password: password! });
+    if (error || !data.session || !data.user) {
+      throw new Error(`Login QA direto falhou para o perfil ${role}: ${error?.status ?? "sessão ausente"}`);
+    }
+
+    const { data: membership, error: membershipError } = await supabase
+      .from("tenant_memberships")
+      .select("tenant_id, role, status, tenants!inner(slug)")
+      .eq("user_id", data.user.id)
+      .eq("status", "active")
+      .eq("tenants.slug", tenantSlug)
+      .single();
+    if (membershipError) throw membershipError;
+    if (membership.role !== role) {
+      throw new Error(`Fixture de ${role} autenticou com papel ${membership.role}.`);
+    }
+
+    const projectId = process.env.VITE_SUPABASE_PROJECT_ID;
+    let storageKey = "sb-project-auth-token";
+    if (projectId) storageKey = `sb-${projectId}-auth-token`;
+    else {
+      try {
+        storageKey = `sb-${new URL(supabaseUrl).hostname.split(".")[0]}-auth-token`;
+      } catch {
+        // Mantém a chave de fallback; a navegação mostrará o diagnóstico caso esteja incorreta.
+      }
+    }
+    await page.addInitScript(
+      ({ key, session, user, tenantId }) => {
+        window.localStorage.clear();
+        window.localStorage.setItem(key, JSON.stringify({ ...session, user, weak_password: null }));
+        window.localStorage.setItem("cativa.currentTenantId", tenantId);
+      },
+      { key: storageKey, session: data.session, user: data.user, tenantId: membership.tenant_id },
+    );
+
+    await page.goto("/app");
+    await expect(page).toHaveURL(/\/app(?:\/|$)/, { timeout: 20_000 });
+    await page.locator("[data-app-main]").first().waitFor({ state: "visible" });
+    // Evita que o ponteiro simulado mantenha o toast de login sob hover.
+    await page.mouse.move(1, 1);
+  }
+
+  async function openRoute(page: Page, route: string, heading: string) {
+    await page.goto(route);
+    await expect(page.getByRole("heading", { name: heading, exact: true })).toBeVisible();
+  }
+
+  test("Owner acessa configurações e catálogo de serviços", async ({ page }) => {
+    await loginAs(page, process.env.E2E_USER, process.env.E2E_PASS, "owner");
+
+    await openRoute(page, "/app/configuracoes", "Configurações");
+    await expect(page.getByTestId("settings-tab-business")).toBeVisible();
+
+    await openRoute(page, "/app/servicos", "Serviços");
+    await expect(page.getByRole("button", { name: "Novo serviço" })).toBeVisible();
   });
 
-  test('Frontdesk deve gerenciar clientes e agendamentos', async ({ page }) => {
-    // Login como Frontdesk
-    await page.goto('/auth/login');
-    await page.fill('input#email', 'recepcao@cativa.test');
-    await page.fill('input#password', 'Cativa@Test2026');
-    await page.click('button[type="submit"]');
+  test("Frontdesk acessa CRM e inicia a operação da agenda", async ({ page }) => {
+    await loginAs(
+      page,
+      process.env.E2E_FRONTDESK_USER,
+      process.env.E2E_FRONTDESK_PASS,
+      "frontdesk",
+    );
 
-    // Adicionar Cliente
-    await page.click('nav >> text=Clientes');
-    await page.click('nav >> text=Clientes');
-    await page.click('button:has-text("Novo cliente")');
-    await page.fill('input#full_name', 'Cliente Teste E2E');
-    await page.fill('input#email', 'cliente.e2e@test.com');
-    await page.click('button:has-text("Salvar")');
+    await openRoute(page, "/app/clientes", "Clientes");
+    await expect(page.getByTestId("clients-create-cta")).toBeVisible();
 
-    // Criar Agendamento na Agenda
-    await page.click('nav >> text=Agenda');
-    await page.click('button:has-text("Novo agendamento")');
-    await page.fill('input[placeholder*="cliente"]', 'Cliente Teste E2E');
-    await page.click('text=Cliente Teste E2E');
-    await page.click('button:has-text("Confirmar Agendamento")');
-
-    await expect(page.locator('.appointment-card')).toBeVisible();
+    await openRoute(page, "/app/agenda", "Agenda");
+    await expect(page.getByRole("button", { name: "Novo agendamento" })).toBeVisible();
   });
 
-  test('Professional deve ver apenas seus atendimentos', async ({ page }) => {
-    // Login como Professional
-    await page.goto('/auth/login');
-    await page.fill('input#email', 'profissional@cativa.test');
-    await page.fill('input#password', 'Cativa@Test2026');
-    await page.click('button[type="submit"]');
+  test("Professional acessa agenda da unidade e sua disponibilidade", async ({ page }) => {
+    await loginAs(
+      page,
+      process.env.E2E_PROFESSIONAL_USER,
+      process.env.E2E_PROFESSIONAL_PASS,
+      "professional",
+    );
 
-    await page.click('nav >> text=Agenda');
-    // Deve haver um filtro automático pelo seu próprio ID
-    await expect(page.locator('.professional-filter')).toHaveValue(/me/i);
+    // Regra do produto: o profissional pode consultar a agenda da unidade;
+    // a agenda pessoal é a área para editar sua disponibilidade.
+    await openRoute(page, "/app/agenda", "Agenda");
+    await expect(
+      page.getByRole("combobox", { name: "Filtrar por profissional" }),
+    ).toContainText("Todos os profissionais");
+
+    await openRoute(page, "/app/minha-agenda", "Minha agenda");
+    await expect(page.getByRole("heading", { name: "Novo horário de atendimento" })).toBeVisible();
   });
 });

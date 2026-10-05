@@ -1,21 +1,31 @@
+import "./e2e/_helpers/private-artifacts";
 import { defineConfig, devices } from "@playwright/test";
 
 const BASE_URL = process.env.E2E_BASE_URL ?? "http://127.0.0.1:4173";
+const OUTPUT_DIR = process.env.PW_OUTPUT_DIR ?? "./e2e/.artifacts-smoke";
+const REPORT_DIR = process.env.PW_REPORT_DIR ?? "e2e/.report-smoke";
+const JUNIT_FILE = process.env.PW_JUNIT_FILE ?? `${OUTPUT_DIR}/junit.xml`;
 
 export default defineConfig({
   testDir: "./e2e/diagnostics",
-  outputDir: "./e2e/.artifacts-smoke",
+  outputDir: OUTPUT_DIR,
   fullyParallel: false,
   forbidOnly: false,
   retries: 0,
   workers: 1,
   timeout: 90_000,
-  reporter: [["line"]],
+  reporter: [
+    ["line"],
+    ["junit", { outputFile: JUNIT_FILE }],
+    ["html", { open: "never", outputFolder: REPORT_DIR }],
+  ],
   use: {
     baseURL: BASE_URL,
-    storageState: "e2e/.auth/storageState.json",
-    trace: "off",
-    screenshot: "off",
+    storageState:
+      process.env.E2E_STORAGE_STATE_PATH ?? "e2e/.auth/storageState.json",
+    trace: "retain-on-failure",
+    screenshot: "only-on-failure",
+    video: "retain-on-failure",
     timezoneId: "America/Sao_Paulo",
     locale: "pt-BR",
   },

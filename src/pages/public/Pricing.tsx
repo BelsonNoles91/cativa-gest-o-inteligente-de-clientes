@@ -33,7 +33,7 @@ import { handleError } from "@/lib/error-handler";
 const FAQ = [
   {
     q: "O Cativa possui plano gratuito?",
-    a: "A Cativa oferece 30 dias grátis para você começar sem cartão. Ao fim do período, escolha o plano que melhor atende ao seu negócio; seus dados permanecem preservados.",
+    a: "O plano Começo oferece 30 dias grátis; os planos Solo, Equipe e Rede incluem 14 dias de avaliação, sem cartão. Ao fim do período, você decide se assina e seus dados permanecem preservados.",
   },
   {
     q: "Preciso de cartão de crédito para começar?",
@@ -62,59 +62,83 @@ const FAQ = [
 ];
 
 // ---------------------------------------------------------------------------
-// Fallback curado (caso o banco ainda não esteja semeado)
+// Fallback curado da linha atual (migration 0030) caso a leitura do catálogo falhe.
 // ---------------------------------------------------------------------------
 const FALLBACK_PLANS: Array<{
   name: string;
   description: string;
   priceCents: number;
   billingPeriod: PlanBillingPeriod;
+  trialDays: number;
   features: string[];
   highlight?: boolean;
 }> = [
   {
-    name: "Apoio",
-    description: "Ideal para quem está começando agora.",
+    name: "Começo",
+    description:
+      "Para sair do papel e organizar a agenda hoje mesmo. Grátis por 30 dias: depois você escolhe um plano pago ou a conta fica só para consulta — nada é apagado.",
     priceCents: 0,
     billingPeriod: "monthly",
+    trialDays: 30,
     features: [
-      "1 unidade",
-      "1 profissional",
-      "Até 25 atendimentos/mês",
-      "Até 50 clientes ativos",
-      "100 MB de armazenamento",
+      "1 profissional e 1 unidade",
+      "Até 30 agendamentos por mês",
+      "Agenda completa e fácil de usar",
+      "Página de agendamento com link e QR code",
+      "Portal do cliente: histórico, remarcação e cancelamento",
+      "Confirmação de horário por WhatsApp",
+      "Avisos e lembretes no celular",
     ],
   },
   {
-    name: "Empreendedor",
-    description: "Para o profissional que quer crescer com controle.",
-    priceCents: 4490,
+    name: "Solo",
+    description:
+      "Para o profissional autônomo que quer agenda cheia e zero bagunça: manicure, lash designer, barbeiro, tatuador.",
+    priceCents: 5790,
     billingPeriod: "monthly",
+    trialDays: 14,
     features: [
-      "1 unidade",
-      "Até 2 profissionais",
-      "Até 300 atendimentos/mês",
-      "Até 500 clientes ativos",
-      "500 MB de armazenamento",
-      "Agendamento online",
-      "Logo personalizada",
+      "Tudo do plano Começo",
+      "Clientes e agendamentos ilimitados",
+      "Espaço do Cliente com entrada por Google/Apple",
+      "Lista de espera: preencha horários vagos na hora",
+      "Pacotes e combos do seu atendimento",
+      "Relatórios essenciais do seu negócio",
     ],
+  },
+  {
+    name: "Equipe",
+    description:
+      "Para salões e clínicas que querem crescer: retenção, metas e inteligência trabalhando pelo seu negócio todos os dias.",
+    priceCents: 9790,
+    billingPeriod: "monthly",
+    trialDays: 14,
     highlight: true,
+    features: [
+      "Tudo do plano Solo",
+      "Até 6 profissionais na mesma agenda",
+      "Resumo inteligente com IA do seu dia",
+      "Reativação automática de clientes com cupom",
+      "Valor de cada cliente e previsão de faturamento",
+      "Metas, ranking e comissões da equipe",
+      "Portal do profissional com a agenda dele",
+      "Índice Cativa: o termômetro da retenção",
+    ],
   },
   {
-    name: "Studio",
-    description: "Gestão completa sem limites de escala.",
-    priceCents: 9490,
+    name: "Rede",
+    description:
+      "Para quem tem filiais ou quer escalar: todas as unidades em uma visão consolidada, com a sua marca em tudo.",
+    priceCents: 24790,
     billingPeriod: "monthly",
+    trialDays: 14,
     features: [
-      "Unidades ilimitadas",
+      "Tudo do plano Equipe",
       "Profissionais ilimitados",
-      "Atendimentos ilimitados",
-      "Até 2.000 clientes ativos",
-      "5 GB de armazenamento",
-      "Agendamento online",
-      "Logo personalizada",
-      "Relatórios avançados",
+      "Várias unidades com visão consolidada",
+      "Marca própria: suas cores e seu logo",
+      "Importação assistida de clientes e agenda",
+      "Atendimento prioritário",
     ],
   },
 ];
@@ -134,7 +158,6 @@ export default function Pricing() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    setError(false);
     
     try {
       const all = await listPlans();
@@ -150,6 +173,7 @@ export default function Pricing() {
         byPlan.set(f.planId, arr);
       });
 
+      setError(false);
       setPlans(
         publicPlans.map((p) => ({
           ...p,
@@ -157,7 +181,9 @@ export default function Pricing() {
         })),
       );
     } catch (err) {
-      handleError(err, { category: "DATABASE" });
+      // A página já renderiza um estado inline com opção de nova tentativa.
+      // Evita um segundo toast técnico e redundante sobre o mesmo erro.
+      handleError(err, { category: "DATABASE", silent: true });
       setError(true);
       setPlans([]);
     } finally {
@@ -202,7 +228,7 @@ export default function Pricing() {
               Simples como precisa ser. Robusto como o seu negócio merece.
             </h1>
             <p className="mt-3 text-muted-foreground">
-              Plano gratuito para sempre ou trial de 14 dias nos planos premium. Sem cartão.
+              Comece com 30 dias grátis no Começo ou teste os planos premium por 14 dias. Sem cartão.
             </p>
 
             {availablePeriods.length > 1 && (
@@ -230,25 +256,18 @@ export default function Pricing() {
 
       {/* PLANS */}
       <section className="container pb-16 md:pb-20">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-muted-foreground animate-in fade-in duration-500">
-            <Loader2 className="mb-4 h-8 w-8 animate-spin text-primary" />
-            <p className="text-lg font-medium">Carregando planos profissionais…</p>
-          </div>
-        ) : error ? (
-          <div className="mx-auto max-w-md rounded-2xl border border-danger/20 bg-danger/5 p-8 text-center animate-in zoom-in-95 duration-300">
-            <h3 className="text-lg font-semibold text-danger">Falha na conexão</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Não conseguimos carregar os planos em tempo real. Tente novamente ou use nossos valores base abaixo.
-            </p>
-            <Button 
-              variant="outline" 
-              onClick={loadData} 
-              className="mt-6 gap-2"
-            >
-              <RefreshCcw className="h-4 w-4" /> Tentar novamente
-            </Button>
-          </div>
+        {error ? (
+          <>
+            <PricingConnectionStatus error loading={loading} onRetry={loadData} />
+            <FallbackGrid />
+          </>
+        ) : loading ? (
+          <>
+            <PricingConnectionStatus loading onRetry={loadData} />
+            <div className="invisible pointer-events-none" aria-hidden="true">
+              <FallbackGrid />
+            </div>
+          </>
         ) : visiblePlans && visiblePlans.length > 0 ? (
           <PricingGrid plans={visiblePlans} />
         ) : (
@@ -257,7 +276,10 @@ export default function Pricing() {
 
         <p className="mt-8 text-center text-xs text-muted-foreground">
           Precisa de algo customizado para múltiplas unidades?{" "}
-          <a href={`mailto:contato@cativa.app`} className="text-primary underline-offset-4 hover:underline">
+          <a
+            href="mailto:contato@cativa.app"
+            className="inline-block max-w-full whitespace-normal break-words align-middle text-primary underline underline-offset-4 hover:text-primary-dark [overflow-wrap:anywhere]"
+          >
             Fale com a gente
           </a>
           .
@@ -312,7 +334,7 @@ export default function Pricing() {
 
       {/* CTA */}
       <section className="container pb-20 md:pb-28">
-        <div className="rounded-3xl bg-gradient-brand p-10 text-center text-primary-foreground shadow-lg md:p-16">
+        <div className="rounded-3xl bg-gradient-brand p-6 text-center text-primary-foreground shadow-lg sm:p-10 md:p-16">
           <h2 className="font-display text-3xl md:text-4xl">
             Comece em minutos. Cresça com clareza.
           </h2>
@@ -320,7 +342,11 @@ export default function Pricing() {
             Crie seu negócio na Cativa, importe seus dados e veja o Índice Cativa em poucos dias.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Button asChild size="lg" className="h-12 rounded-xl bg-background px-6 text-foreground hover:bg-background/90">
+            <Button
+              asChild
+              size="lg"
+              className="h-auto min-h-12 w-full max-w-full whitespace-normal break-words rounded-xl bg-background px-4 py-3 text-center text-foreground hover:bg-background/90 sm:w-auto sm:px-6"
+            >
               <Link to="/onboarding">
                 Começar agora grátis <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
@@ -334,6 +360,48 @@ export default function Pricing() {
   );
 }
 
+function PricingConnectionStatus({
+  error = false,
+  loading,
+  onRetry,
+}: {
+  error?: boolean;
+  loading: boolean;
+  onRetry: () => void;
+}) {
+  return (
+    <div
+      role={error ? "alert" : "status"}
+      aria-live={error ? "assertive" : "polite"}
+      aria-busy={loading}
+      className={cn(
+        "mx-auto flex min-h-56 max-w-md flex-col items-center justify-center rounded-2xl border p-8 text-center",
+        error
+          ? "border-danger/20 bg-danger/5 animate-in zoom-in-95 duration-300"
+          : "border-border/70 bg-card text-muted-foreground",
+      )}
+    >
+      <h3 className={cn("text-lg font-semibold", error && "text-danger")}>
+        {error ? "Falha na conexão" : "Carregando planos"}
+      </h3>
+      <p className="mt-2 text-sm text-muted-foreground">
+        {error
+          ? "Não conseguimos carregar os planos em tempo real. Tente novamente ou use nossos valores base abaixo."
+          : "Estamos buscando os planos vigentes. Os valores base ficam disponíveis se a conexão falhar."}
+      </p>
+      <Button
+        variant="outline"
+        onClick={onRetry}
+        disabled={loading}
+        className="mt-6 min-w-48 gap-2"
+      >
+        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />}
+        {loading && !error ? "Carregando…" : "Tentar novamente"}
+      </Button>
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Grids
 // ---------------------------------------------------------------------------
@@ -341,7 +409,7 @@ function PricingGrid({ plans }: { plans: PlanWithFeatures[] }) {
   return (
     <div
       className={cn(
-        "mx-auto mt-10 grid gap-6",
+        "mx-auto mt-10 grid grid-cols-1 gap-6",
         plans.length === 1 && "max-w-md",
         plans.length === 2 && "md:grid-cols-2 max-w-3xl",
         plans.length === 3 && "md:grid-cols-3 max-w-6xl",
@@ -367,7 +435,7 @@ function PricingGrid({ plans }: { plans: PlanWithFeatures[] }) {
 
 function FallbackGrid() {
   return (
-    <div className="mx-auto mt-10 grid max-w-6xl gap-6 md:grid-cols-3">
+    <div className="mx-auto mt-10 grid grid-cols-1 max-w-7xl gap-6 md:grid-cols-2 lg:grid-cols-4">
       {FALLBACK_PLANS.map((p) => (
         <PlanCard
           key={p.name}
@@ -378,7 +446,7 @@ function FallbackGrid() {
           period={p.billingPeriod}
           features={p.features}
           highlight={p.highlight}
-          trialDays={14}
+          trialDays={p.trialDays}
         />
       ))}
     </div>
@@ -406,8 +474,8 @@ function PlanCard({
   highlight,
   trialDays,
 }: PlanCardProps) {
-  const isFree = priceCents === 0 && name.toLowerCase().includes("apoio");
-  const isCustom = priceCents === 0 && !isFree;
+  const isCustom = period === "custom";
+  const isFree = priceCents === 0 && !isCustom;
   const periodLabel =
     period === "monthly" ? "/mês"
     : period === "quarterly" ? "/trimestre"
@@ -418,14 +486,16 @@ function PlanCard({
   return (
     <div
       className={cn(
-        "relative flex flex-col rounded-[2rem] border bg-card p-6 shadow-sm transition-all duration-300 md:p-8",
+        "relative flex min-w-0 flex-col rounded-[2rem] border bg-card p-6 shadow-sm transition-all duration-300 md:p-8",
         "hover:shadow-lg hover:-translate-y-1 group",
         highlight ? "border-primary/50 shadow-md ring-1 ring-primary/20" : "border-border/60",
       )}
     >
       {highlight && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 rounded-full bg-gradient-brand px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-primary-foreground shadow-md animate-fade-in">
-          <Sparkles className="h-3.5 w-3.5" /> Mais escolhido
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-brand px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-primary-foreground shadow-md animate-fade-in">
+            <Sparkles className="h-3.5 w-3.5" /> Mais escolhido
+          </span>
         </span>
       )}
       <h3 className="font-display text-xl">{name}</h3>
@@ -444,7 +514,15 @@ function PlanCard({
         )}
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
-        {isFree ? `${trialDays || 30} dias grátis · sem cartão` : `Trial de ${trialDays} dias · sem cartão`}
+        {isCustom
+          ? "Preço sob consulta"
+          : isFree
+            ? trialDays > 0
+              ? `Grátis por ${trialDays} dias · sem cartão`
+              : "Plano gratuito · sem cartão"
+            : trialDays > 0
+              ? `Trial de ${trialDays} dias · sem cartão`
+              : "Sem período de teste"}
       </p>
 
       <ul className="mt-6 flex-1 space-y-2.5 text-sm">

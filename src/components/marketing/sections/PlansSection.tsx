@@ -44,6 +44,7 @@ const TRUST_ITEMS = [
 export function PlansSection() {
   const [plans, setPlans] = useState<PublicPlan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -55,6 +56,7 @@ export function PlansSection() {
         .order("display_order", { ascending: true });
       if (!active) return;
       if (error) console.error("Erro ao buscar planos:", error);
+      setLoadFailed(Boolean(error));
       setPlans((data ?? []).filter((p) => ((p.metadata ?? {}) as Meta).show_on_landing === true));
       setLoading(false);
     }
@@ -70,7 +72,40 @@ export function PlansSection() {
     };
   }, []);
 
-  if (loading || plans.length === 0) return null;
+  if (loading) {
+    return (
+      <div
+        role="status"
+        aria-busy="true"
+        className="mx-auto flex max-w-2xl flex-col items-center gap-4 rounded-3xl border border-border/60 bg-card/80 p-8 text-center"
+      >
+        <span className="h-5 w-40 animate-pulse rounded-full bg-muted" />
+        <span className="h-4 w-64 max-w-full animate-pulse rounded-full bg-muted/70" />
+      </div>
+    );
+  }
+
+  if (loadFailed || plans.length === 0) {
+    return (
+      <div
+        data-testid="plans-empty-state"
+        role={loadFailed ? "alert" : undefined}
+        className="mx-auto flex max-w-2xl flex-col items-center gap-4 rounded-3xl border border-border/60 bg-card/80 p-8 text-center shadow-sm"
+      >
+        <p className="font-display text-xl font-semibold text-primary-dark">
+          {loadFailed ? "Não conseguimos carregar os planos agora." : "Confira os planos disponíveis."}
+        </p>
+        <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
+          {loadFailed
+            ? "Os valores base continuam disponíveis na página de preços."
+            : "Veja valores, recursos e opções de teste em um só lugar."}
+        </p>
+        <Button asChild variant="premium" className="min-h-12 rounded-full px-6">
+          <Link to="/planos">Ver planos e preços</Link>
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div>

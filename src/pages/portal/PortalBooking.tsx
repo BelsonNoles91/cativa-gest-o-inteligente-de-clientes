@@ -66,18 +66,32 @@ export default function PortalBooking() {
   const rescheduleId = params.get("reschedule");
   const dateParam = params.get("date");
   const [canBook, setCanBook] = useState<boolean | null>(null);
+  const [canBookCheckFailed, setCanBookCheckFailed] = useState(false);
+  const [eligibilityAttempt, setEligibilityAttempt] = useState(0);
   useEffect(() => {
     if (!activeLink || !user) return;
     let alive = true;
-    supabase
-      .rpc("portal_can_book", { _user_id: user.id, _tenant_id: activeLink.tenantId })
-      .then(({ data, error }) => {
-        if (alive) setCanBook(error ? true : Boolean(data));
-      });
+    setCanBook(null);
+    setCanBookCheckFailed(false);
+    void (async () => {
+      try {
+        const { data, error } = await supabase.rpc("portal_can_book", {
+          _user_id: user.id,
+          _tenant_id: activeLink.tenantId,
+        });
+        if (!alive) return;
+        setCanBook(error ? false : Boolean(data));
+        setCanBookCheckFailed(Boolean(error));
+      } catch {
+        if (!alive) return;
+        setCanBook(false);
+        setCanBookCheckFailed(true);
+      }
+    })();
     return () => {
       alive = false;
     };
-  }, [activeLink, user]);
+  }, [activeLink, user, eligibilityAttempt]);
 
   const [step, setStep] = useState<Step>(1);
   const [units, setUnits] = useState<PortalUnitOption[]>([]);
@@ -94,6 +108,7 @@ export default function PortalBooking() {
   const [chosenSlot, setChosenSlot] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [oldStartsAt, setOldStartsAt] = useState<string | null>(null);
+  const [rescheduleServiceId, setRescheduleServiceId] = useState<string | null>(null);
 
   // Carrega catálogo + valores iniciais (preferências)
   useEffect(() => {
@@ -125,8 +140,16 @@ export default function PortalBooking() {
             setOldStartsAt(old.startsAt);
             setUnitId(old.unitId);
             setProId(old.professionalId);
-            // tenta recuperar serviço via items: lemos via repositório
-            // (mantemos simples: o cliente reescolhe se necessário).
+            const itemResult = await supabase
+              .from("appointment_items")
+              .select("service_id")
+              .eq("appointment_id", rescheduleId)
+              .order("position")
+              .limit(1)
+              .maybeSingle();
+            const existingServiceId = itemResult.error ? null : itemResult.data?.service_id ?? null;
+            setRescheduleServiceId(existingServiceId);
+            setService(sv.find((option) => option.id === existingServiceId) ?? null);
           }
         }
       } finally {
@@ -143,6 +166,9 @@ export default function PortalBooking() {
     () => pros.filter((p) => !p.unitId || p.unitId === unitId),
     [pros, unitId],
   );
+  const visibleServices = rescheduleId
+    ? services.filter((option) => option.id === rescheduleServiceId)
+    : services;
 
   // Carrega slots quando muda dia/profissional/serviço/unidade
   useEffect(() => {
@@ -235,6 +261,29 @@ export default function PortalBooking() {
     );
   }
 
+  if (!rescheduleId && canBook === null) {
+    return (
+      <div className="grid place-items-center gap-3 py-20 text-sm text-muted-foreground" role="status">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        Verificando acesso ao agendamento...
+      </div>
+    );
+  }
+
+  if (!rescheduleId && canBookCheckFailed) {
+    return (
+      <div role="alert" className="mx-auto max-w-lg rounded-2xl border p-6 text-center">
+        <h1 className="font-display text-xl font-semibold">Não foi possível validar o acesso</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Não conseguimos confirmar se este portal pode criar agendamentos agora. Tente novamente.
+        </p>
+        <Button className="mt-4" onClick={() => setEligibilityAttempt((attempt) => attempt + 1)}>
+          Tentar novamente
+        </Button>
+      </div>
+    );
+  }
+
   if (!rescheduleId && canBook === false) {
     return (
       <div className="py-8">
@@ -272,7 +321,7 @@ export default function PortalBooking() {
           <h2 className="text-sm font-semibold text-muted-foreground">
             Escolha o serviço
           </h2>
-          {services.length === 0 ? (
+          {visibleServices.length === 0 ? (
             <EmptyState
               icon={<Sparkles className="h-6 w-6" />}
               title="Sem serviços disponíveis"
@@ -280,7 +329,7 @@ export default function PortalBooking() {
             />
           ) : (
             <ul className="space-y-2">
-              {services.map((s) => (
+              {visibleServices.map((s) => (
                 <li key={s.id}>
                   <button
                     type="button"
