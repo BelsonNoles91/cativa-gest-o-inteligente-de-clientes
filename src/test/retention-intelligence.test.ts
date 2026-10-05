@@ -228,6 +228,31 @@ describe("retention intelligence", () => {
     expect(result.action).toBe("human_review");
   });
 
+  it("routes a stale reactivation flag with a confirmed future booking to human review", () => {
+    const conflicting = state({ needsReactivation: true });
+    conflicting.appointments.futureBooked = 1;
+    conflicting.appointments.futureUnconfirmed = 0;
+
+    expect(
+      interpretRetentionResponse(
+        jevResponse({ action: "prioritize_human_contact" }),
+        conflicting,
+      ),
+    ).toMatchObject({ status: "review", action: "human_review", automaticAction: false });
+  });
+
+  it("routes impossible package and appointment counters to human review", () => {
+    const conflicting = state({ needsReactivation: false });
+    conflicting.appointments.futureUnconfirmed = 2;
+    conflicting.appointments.futureBooked = 1;
+    conflicting.packages.remainingSessions = 3;
+    conflicting.packages.expiringWithin30Days = 1;
+
+    expect(
+      interpretRetentionResponse(jevResponse({ action: "monitor" }), conflicting),
+    ).toMatchObject({ status: "review", action: "human_review", automaticAction: false });
+  });
+
   it("rejects malformed or unknown model answers", () => {
     expect(() => interpretRetentionResponse(jevResponse({ action: "delete_client" }), state())).toThrow(
       "ação válida",
@@ -453,6 +478,7 @@ describe("retention intelligence", () => {
       daysSinceLastVisit: 10,
       averageCycleDays: 30,
     });
+    unconfirmed.appointments.futureBooked = 1;
     unconfirmed.appointments.futureUnconfirmed = 1;
     expect(
       interpretRetentionResponse(jevResponse({ action: "prioritize_human_contact" }), unconfirmed).action,

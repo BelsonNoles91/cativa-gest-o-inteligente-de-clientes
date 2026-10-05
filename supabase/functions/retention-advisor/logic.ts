@@ -308,6 +308,7 @@ export function interpretRetentionResponse(
     urgencyUncertain ||
     evidenceSufficiency < policy.evidenceSufficiencyThreshold ||
     (needsContact && !state.client.contactAvailable) ||
+    hasConflictingRetentionSignals(state) ||
     !isActionSupportedByState(rawAction, state);
   const action: RetentionAction = shouldReview ? "human_review" : rawAction;
 
@@ -371,7 +372,18 @@ function descriptionForAction(action: RetentionAction, state: RetentionState): s
   }
 }
 
-function isActionSupportedByState(action: RetentionAction, state: RetentionState): boolean {
+export function hasConflictingRetentionSignals(state: RetentionState): boolean {
+  const { appointments, packages, client } = state;
+  return (
+    appointments.futureUnconfirmed > appointments.futureBooked ||
+    (client.needsReactivation && appointments.futureBooked > 0 && appointments.futureUnconfirmed === 0) ||
+    (packages.activeWithRemainingSessions === 0 &&
+      (packages.remainingSessions > 0 || packages.expiringWithin30Days > 0)) ||
+    packages.expiringWithin30Days > packages.activeWithRemainingSessions
+  );
+}
+
+export function isActionSupportedByState(action: RetentionAction, state: RetentionState): boolean {
   switch (action) {
     case "prioritize_human_contact":
       return state.client.needsReactivation ||

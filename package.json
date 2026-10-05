@@ -30,6 +30,7 @@
     "test:e2e:sql-junit": "node --test scripts/run-e2e-sql-regressions.test.mjs",
     "test:security:target": "node --test scripts/security-rescan-target.test.mjs",
     "test:jev:live": "node --experimental-strip-types scripts/jev-live-smoke.mjs",
+    "test:jev:benchmark:live": "node --experimental-strip-types scripts/jev-retention-benchmark.mjs",
     "test:storage:check": "node scripts/e2e-storage-check.mjs",
     "test:storage:check:local": "node scripts/e2e-storage-local-smoke.mjs",
     "test:visual:check": "node scripts/e2e-preflight.mjs",
