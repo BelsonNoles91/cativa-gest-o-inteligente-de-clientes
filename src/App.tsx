@@ -42,18 +42,25 @@ const queryClient = new QueryClient({
 function lazyWithReload<T extends ComponentType<never>>(
   factory: () => Promise<{ default: T }>,
 ): LazyExoticComponent<T> {
+  const key = `__lovable_chunk_reload__:${factory.toString()}`;
   return lazy(() =>
-    factory().catch((error) => {
-      const key = "__lovable_chunk_reload__";
-      if (typeof window !== "undefined" && !sessionStorage.getItem(key)) {
-        sessionStorage.setItem(key, "1");
-        window.location.reload();
-        // Return a never-resolving promise while the page reloads.
-        return new Promise<{ default: T }>(() => {});
-      }
-      handleError(error, { category: 'NETWORK', context: { type: 'chunk_load_fail' } });
-      throw error;
-    }),
+    factory()
+      .then((module) => {
+        // A trava pertence a este chunk; sucesso em outra tela não pode
+        // consumir a única tentativa de recuperação desta importação.
+        if (typeof window !== "undefined") sessionStorage.removeItem(key);
+        return module;
+      })
+      .catch((error) => {
+        if (typeof window !== "undefined" && !sessionStorage.getItem(key)) {
+          sessionStorage.setItem(key, "1");
+          window.location.reload();
+          // Return a never-resolving promise while the page reloads.
+          return new Promise<{ default: T }>(() => {});
+        }
+        handleError(error, { category: 'NETWORK', context: { type: 'chunk_load_fail' } });
+        throw error;
+      }),
   );
 }
 

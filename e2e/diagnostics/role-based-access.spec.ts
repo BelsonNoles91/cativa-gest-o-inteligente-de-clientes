@@ -250,19 +250,28 @@ async function injectSession(page: Page, session: Session, user: User, tenantId:
 }
 
 async function expectPath(page: Page, path: string, expectedPath: string) {
-  // Auth/tenant guards podem redirecionar antes de DOMContentLoaded. Considerar
-  // somente essa interrupção esperada e estabilizar a navegação direta.
+  // Guards de auth/tenant podem redirecionar durante a inicialização do app.
   let webkitInternalLoadError = false;
-  const captureWebKitLoadError = (request: import("@playwright/test").Request) => {
-    if (/WebKit encountered an internal error/i.test(request.failure()?.errorText ?? "")) {
-      webkitInternalLoadError = true;
-    }
+  const consoleErrors: string[] = [];
+  const failedRequests: string[] = [];
+  const captureConsoleError = (message: import("@playwright/test").ConsoleMessage) => {
+    if (message.type() === "error") consoleErrors.push(message.text());
   };
-  page.on("requestfailed", captureWebKitLoadError);
+  const captureFailedRequest = (request: import("@playwright/test").Request) => {
+    const failure = request.failure()?.errorText ?? "falha sem detalhe do navegador";
+    failedRequests.push(`${request.method()} ${request.url()} — ${failure}`);
+    if (/WebKit encountered an internal error/i.test(failure)) webkitInternalLoadError = true;
+  };
+  const capturePageError = (error: Error) => consoleErrors.push(error.stack ?? error.message);
+  page.on("console", captureConsoleError);
+  page.on("requestfailed", captureFailedRequest);
+  page.on("pageerror", capturePageError);
   const navigate = async () => {
     for (let attempt = 0; attempt < 2; attempt += 1) {
       try {
-        await page.goto(path, { waitUntil: "domcontentloaded", timeout: 20_000 });
+        // Espera apenas o documento ser comprometido. A prontidão real da rota
+        // é verificada abaixo, depois do carregamento do chunk React lazy.
+        await page.goto(path, { waitUntil: "commit", timeout: 20_000 });
         return;
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
@@ -303,10 +312,26 @@ async function expectPath(page: Page, path: string, expectedPath: string) {
       const currentPath = () => new URL(page.url()).pathname;
       if (currentPath() !== expectedPath && currentPath() !== path) await navigate();
       await expect.poll(currentPath, { timeout: 15_000 }).toBe(expectedPath);
+      if (expectedPath.startsWith("/app")) {
+        // A presença do shell não basta: se um chunk da tela falhar, o app
+        // mantém este fallback visível indefinidamente.
+        const routeFallback = page.locator(
+          'main[data-app-context="tenant"] [aria-busy="true"][aria-label="Carregando"]',
+        );
+        await expect(routeFallback).toBeHidden({ timeout: 20_000 });
+      }
       return;
     }
+  } catch (error) {
+    await test.info().attach("diagnostico-carregamento-de-rota.json", {
+      body: JSON.stringify({ path, expectedPath, consoleErrors, failedRequests }, null, 2),
+      contentType: "application/json",
+    });
+    throw error;
   } finally {
-    page.off("requestfailed", captureWebKitLoadError);
+    page.off("console", captureConsoleError);
+    page.off("requestfailed", captureFailedRequest);
+    page.off("pageerror", capturePageError);
   }
 }
 
