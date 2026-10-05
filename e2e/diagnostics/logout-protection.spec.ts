@@ -108,7 +108,7 @@ test("Logout encerra sessão e impede acesso posterior à área autenticada", as
   try {
     await page.goto("/app");
   } catch (error) {
-    if (!(error instanceof Error) || !/interrupted by another navigation/.test(error.message)) {
+    if (!(error instanceof Error) || !/(?:interrupted by another navigation|NS_BINDING_ABORTED)/i.test(error.message)) {
       throw error;
     }
   }

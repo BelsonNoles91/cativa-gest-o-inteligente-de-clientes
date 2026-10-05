@@ -25,7 +25,9 @@ export function HeroSection() {
       <div className="absolute top-1/4 left-10 w-1 h-32 bg-accent/20 hidden lg:block" />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 xl:gap-24 items-center">
         <motion.div 
-          initial={{ opacity: 0, x: -30 }}
+          // Mantém o conteúdo principal visível no primeiro paint; animar
+          // opacidade aqui atrasava o LCP do título em dispositivos lentos.
+          initial={{ x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="relative z-10 px-4 md:px-0 text-center"
@@ -41,7 +43,7 @@ export function HeroSection() {
           </motion.div>
 
           <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
             className="font-display text-[2.5rem] sm:text-6xl md:text-7xl xl:text-[7rem] leading-[0.95] tracking-tight text-primary-dark mb-8 relative"
