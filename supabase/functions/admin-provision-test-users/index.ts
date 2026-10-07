@@ -149,20 +149,37 @@ Deno.serve(async (req) => {
   );
   const usersByEmail = new Map<string, string>();
   const authPageSize = 200;
+  // Retry com backoff para mitigar erros transitórios do Auth ("Database error
+  // finding users") observados em CI. O Supabase Auth pode retornar 5xx sob
+  // carga ou durante deploys internos; reexecutar algumas vezes evita falhas
+  // completas do provisionamento por um erro momentâneo.
+  const maxListRetries = 3;
   for (let page = 1; usersByEmail.size < targetEmails.size; page += 1) {
-    const { data: list, error: listErr } = await admin.auth.admin.listUsers({
-      page,
-      perPage: authPageSize,
-    });
-    if (listErr) {
+    let lastError: Error | null = null;
+    let users: { email?: string; id: string }[] = [];
+    for (let attempt = 0; attempt <= maxListRetries; attempt += 1) {
+      const { data: list, error: listErr } = await admin.auth.admin.listUsers({
+        page,
+        perPage: authPageSize,
+      });
+      if (!listErr) {
+        users = list?.users ?? [];
+        lastError = null;
+        break;
+      }
+      lastError = listErr;
+      if (attempt < maxListRetries) {
+        await new Promise((r) => setTimeout(r, 500 * 2 ** attempt));
+      }
+    }
+    if (lastError) {
       return json(
-        { error: `Falha ao consultar usuários existentes: ${listErr.message}` },
+        { error: `Falha ao consultar usuários existentes: ${lastError.message}` },
         500,
         headers,
       );
     }
 
-    const users = list?.users ?? [];
     for (const user of users) {
       const normalizedEmail = (user.email ?? "").toLowerCase();
       if (targetEmails.has(normalizedEmail)) {

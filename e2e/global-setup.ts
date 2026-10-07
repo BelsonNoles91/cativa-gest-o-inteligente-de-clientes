@@ -259,6 +259,15 @@ async function attemptDirectAuthLogin(
         name: tokenStorageKey(projectId, supabaseUrl),
         value: sessionPayload,
       },
+      // Suprime o InstallAppBanner nos testes visuais autenticados para evitar
+      // regressão de screenshot causada por banner transitório dependente de
+      // beforeinstallprompt/userAgent. O addInitScript do beforeEach reforça
+      // isso em cada navegação, mas o storageState garante o valor já na
+      // hidratação inicial do React.
+      {
+        name: "cativa:install-dismissed",
+        value: "1",
+      },
     ];
     const tenantSlug = process.env.E2E_TENANT_SLUG?.trim();
     if (tenantSlug) {
